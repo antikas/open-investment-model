@@ -1,0 +1,12 @@
+break_id,reconciliation_type,cause_classification,record_ref,expected_side,difference_amount,difference_qty,materiality,description
+BRK-0001,position,fx,POS-0004,custodian,178199.70,,medium,custodian USD-translates POS-0004 at a different FX rate (178199.70 difference)
+BRK-0002,position,pricing,POS-0012,custodian,63373.84,,medium,custodian marks POS-0012 63373.84 above the internal IBOR mark
+BRK-0003,position,timing,POS-0021,custodian,,7363,low,trade booked trade-date internally but settlement-date by the custodian for POS-0021 (TD/SD timing; custodian lags 7363 units — the in-flight trade quantity)
+BRK-0004,position,timing,POS-0022,custodian,,2582,low,trade booked trade-date internally but settlement-date by the custodian for POS-0022 (TD/SD timing; custodian lags 2582 units — the in-flight trade quantity)
+BRK-0005,position,fx,POS-0023,custodian,182041.08,,medium,custodian USD-translates POS-0023 at a different FX rate (182041.08 difference)
+BRK-0006,position,data_error,POS-0033,custodian,,2549,medium,custodian share count for POS-0033 is 2549 units below the internal book
+BRK-0007,position,pricing,POS-0034,custodian,155317.83,,medium,custodian marks POS-0034 155317.83 above the internal IBOR mark
+BRK-0008,position,data_error,POS-0051,custodian,,3388,medium,custodian share count for POS-0051 is 3388 units below the internal book
+BRK-0009,transaction,missing_transaction,TXN-00046,internal,-248330.19,,medium,settled transaction TXN-00046 present in the internal book is absent from the administrator's transaction record
+BRK-0010,transaction,missing_transaction,ADMIN-TXN-EXTRA-01,custodian,359046,,medium,administrator records transaction ADMIN-TXN-EXTRA-01 that is absent from the internal book
+BRK-0011,cash,data_error,PF-0001,internal,96571,,medium,administrator cash balance for PF-0001 disagrees with the custodian by 96571 (cash reconciliation break)

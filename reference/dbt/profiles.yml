@@ -1,0 +1,62 @@
+# agentINVEST dbt profiles — canonical data layer (ADR-0054).
+#
+# Two targets:
+#   dev   — dbt-duckdb, in-process, the default. The duckdb DATABASE FILE lands
+#           on WSL2-native ext4 (NOT the 9p /mnt/d repo mount — a duckdb
+#           locking/perf hazard, P-R2). The dbt *source* (this file, models,
+#           seeds) stays in the repo; only the materialised db file is on ext4
+#           and gitignored.
+#   prod  — dbt-postgres PLACEHOLDER. It documents the dev->prod path per
+#           ADR-0054 (dbt-duckdb dev -> dbt-postgres prod, co-located with
+#           Restate's Postgres backend in a SEPARATE schema). It need not
+#           connect for this scaffold; the connection params are env-var driven
+#           so no credentials are committed. See README for the P-R3 reconcile
+#           (this canonical store is distinct from Restate's own backend).
+#
+# This file is committed (no secrets — duckdb path is a local file, postgres is
+# env-var driven). The build script sets DBT_PROFILES_DIR to this directory so a
+# fresh checkout resolves it without a ~/.dbt/profiles.yml.
+
+agentinvest:
+  target: dev
+  outputs:
+
+    dev:
+      type: duckdb
+      # The duckdb database file on WSL2-native ext4 (P-R2). The launchers
+      # (scripts/dbt-build.sh via lib/agentinvest-venv-path.sh) EXPORT a
+      # checkout-keyed AGENTINVEST_DUCKDB_PATH
+      # (~/.local/share/agentinvest/duckdb/canonical-<token>.duckdb) so concurrent
+      # checkouts / CI do not collide on duckdb's single-writer file lock (OIM-110
+      # cycle-2 — the P-MAJOR-2 entry condition, same keying the venv uses). The
+      # launcher is the keying AUTHORITY; the literal below is ONLY the fallback for a
+      # bare `dbt` run that did NOT go through a launcher.
+      #
+      # NOTE the asymmetry between the two shared-state defaults — they are NOT the
+      # same posture. The venv default is checkout-LOCAL: uv defaults UV_PROJECT_ENVIRONMENT
+      # to a `.venv` in the project directory, so a bare `uv run` has no shared-singleton
+      # to clobber — there is no un-keyed venv bypass. The duckdb default below IS a
+      # shared singleton: a bare `dbt` (no launcher, no AGENTINVEST_DUCKDB_PATH) lands on
+      # one fixed `~/.local/share/agentinvest/duckdb/canonical.duckdb`, so two such bare
+      # runs across checkouts WOULD collide on it. This is single-operator off-path only
+      # (no launcher, no CI runs bare dbt — every launcher and CI path keys the file), so
+      # the concurrent-collision class the keying closes stays closed; the bare-dbt
+      # singleton is the residual that the keyed launcher is the authority over.
+      # (~/.local/share -> /root/.local/share on this WSL2). `~` is expanded by
+      # duckdb/dbt at connect time.
+      path: "{{ env_var('AGENTINVEST_DUCKDB_PATH', '~/.local/share/agentinvest/duckdb/canonical.duckdb') }}"
+      threads: 4
+
+    prod:
+      # PLACEHOLDER — documents the dev->prod path (ADR-0054). Not expected to
+      # connect for the OIM-102 scaffold. Production co-locates with Restate's
+      # Postgres cluster but in a SEPARATE schema (agentinvest_canonical.*),
+      # distinct from Restate's own backend schema — see the P-R3 reconcile.
+      type: postgres
+      host: "{{ env_var('AGENTINVEST_PG_HOST', 'localhost') }}"
+      port: "{{ (env_var('AGENTINVEST_PG_PORT', '5432')) | int }}"
+      user: "{{ env_var('AGENTINVEST_PG_USER', 'agentinvest') }}"
+      password: "{{ env_var('AGENTINVEST_PG_PASSWORD', '') }}"
+      dbname: "{{ env_var('AGENTINVEST_PG_DBNAME', 'agentinvest') }}"
+      schema: "{{ env_var('AGENTINVEST_PG_SCHEMA', 'agentinvest_canonical') }}"
+      threads: 4

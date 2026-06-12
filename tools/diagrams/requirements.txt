@@ -1,0 +1,5 @@
+# Hybrid D generator dependencies.
+# Two small, well-bounded MIT libraries — see tools/diagrams/README.md
+# §"Dependency tree" for the framework-skepticism rationale.
+jinja2>=3.1,<4
+graphviz>=0.20,<1

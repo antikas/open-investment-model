@@ -1,0 +1,624 @@
+# OpenIM core entity model — D2 source.
+#
+# The core entity set (no specialisation packs). Each entity is a sql_table
+# with its golden key and a small set of representative attributes; clicking
+# an entity opens its file. Full attribute schemas are in the entity files
+# themselves.
+#
+# A Mermaid form of this diagram lives at ../03-conceptual-erd.md.
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+  }
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Primary core — the eight entities every institutional investor has.
+# ──────────────────────────────────────────────────────────────────
+
+E_01_LegalEntity: {
+  shape: sql_table
+  legal_entity_id: "varchar  PK (golden key)"
+  legal_name: varchar
+  domicile: varchar
+  lei: "varchar  (FIBO-aligned)"
+  roles: "array  (issuer / counterparty / manager / custodian / administrator / portfolio_company / client / borrower)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-01-legal-entity.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_02_Instrument: {
+  shape: sql_table
+  instrument_id: "varchar  PK"
+  instrument_name: varchar
+  asset_class_id: "varchar  FK -> E_09"
+  issuer_legal_entity_id: "varchar  FK -> E_01"
+  instrument_type: "varchar  (listed_equity / debt / derivative / fund_interest / loan / real_asset / cash)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-02-instrument-asset.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_03_Portfolio: {
+  shape: sql_table
+  portfolio_id: "varchar  PK"
+  portfolio_name: varchar
+  mandate_facet: "json  (the codified mandate)"
+  owning_legal_entity_id: "varchar  FK -> E_01"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-03-portfolio-mandate.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_04_Holding: {
+  shape: sql_table
+  holding_id: "varchar  PK"
+  portfolio_id: "varchar  FK -> E_03"
+  instrument_id: "varchar  FK -> E_02"
+  book: "enum  (ibor / abor)  KEY-PARTITION"
+  quantity: decimal
+  as_of_date: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-04-holding-position.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_05_Transaction: {
+  shape: sql_table
+  transaction_id: "varchar  PK"
+  portfolio_id: "varchar  FK -> E_03"
+  instrument_id: "varchar  FK -> E_02"
+  transaction_type: "enum  (trade / subscription / call / distribution / corp_action / transfer)"
+  trade_date: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-05-transaction.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_06_CashFlowEvent: {
+  shape: sql_table
+  cash_flow_id: "varchar  PK"
+  transaction_id: "varchar  FK -> E_05"
+  cf_date: date
+  amount: decimal
+  currency: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-06-cash-flow-event.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_07_Valuation: {
+  shape: sql_table
+  valuation_id: "varchar  PK"
+  holding_id: "varchar  FK -> E_04"
+  instrument_id: "varchar  FK -> E_02"
+  valuation_date: date
+  value: decimal
+  method: "enum  (observable_price / mark_to_model / manager_mark / appraisal / amortised_cost)  KEY-PARTITION"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-07-valuation.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+E_08_PriceMarketData: {
+  shape: sql_table
+  price_id: "varchar  PK"
+  instrument_id: "varchar  FK -> E_02"
+  price_date: date
+  price: decimal
+  source: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-08-price-market-data.md
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Reference and identity core — the supporting machinery.
+# ──────────────────────────────────────────────────────────────────
+
+E_09_AssetClass: {
+  shape: sql_table
+  asset_class_id: "varchar  PK"
+  asset_class_name: "varchar  (the nine-class taxonomy)"
+  parent_class_id: "varchar  FK (hierarchical)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-09-asset-class.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_10_BenchmarkIndex: {
+  shape: sql_table
+  benchmark_id: "varchar  PK"
+  benchmark_name: varchar
+  asset_class_id: "varchar  FK -> E_09"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-10-benchmark-and-index.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_11_ClassificationType: {
+  shape: sql_table
+  classification_type_id: "varchar  PK"
+  classification_type_name: "varchar  (sector / strategy / geography / esg_pillar / ...)"
+  valid_values: "array  (extensible — data, not schema)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-11-classification-type-and-value.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_12_ClassificationHistory: {
+  shape: sql_table
+  classification_id: "varchar  PK"
+  subject_entity_id: varchar
+  classification_type_id: "varchar  FK -> E_11"
+  classification_value: varchar
+  effective_from: "date  (BI-TEMPORAL)"
+  effective_to: date
+  record_from: "date  (BI-TEMPORAL)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-12-classification-history.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_13_EntityAlias: {
+  shape: sql_table
+  alias_id: "varchar  PK"
+  master_entity_id: varchar
+  alias_name: varchar
+  source: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-13-entity-alias.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_14_ExternalIdentifier: {
+  shape: sql_table
+  external_id_id: "varchar  PK"
+  master_entity_id: varchar
+  identifier_scheme: "enum  (LEI / FIGI / ISIN / SEDOL / private_cusip / vendor_X)"
+  identifier_value: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-14-external-identifier.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+E_15_DocumentMetadata: {
+  shape: sql_table
+  document_id: "varchar  PK"
+  source_uri: varchar
+  document_type: varchar
+  received_date: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-15-document-metadata.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Risk core — the four risk entities.
+# ──────────────────────────────────────────────────────────────────
+
+E_16_RiskLimit: {
+  shape: sql_table
+  limit_id: "varchar  PK"
+  portfolio_id: "varchar  FK -> E_03"
+  limit_type: "enum  (market / credit / counterparty / concentration / liquidity / leverage / mandate)"
+  threshold: decimal
+  effective_from: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-16-risk-limit.md
+  style: {fill: "#e8e8e8"; stroke: "#7a7a7a"}
+}
+
+E_17_Scenario: {
+  shape: sql_table
+  scenario_id: "varchar  PK"
+  scenario_name: varchar
+  scenario_type: "enum  (historical / hypothetical / reverse)"
+  shocks: "json  (factor / instrument shock spec)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-17-scenario.md
+  style: {fill: "#e8e8e8"; stroke: "#7a7a7a"}
+}
+
+E_18_LimitBreach: {
+  shape: sql_table
+  limit_breach_id: "varchar  PK"
+  limit_id: "varchar  FK -> E_16"
+  portfolio_id: "varchar  FK -> E_03"
+  breach_value: decimal
+  breach_date: date
+  resolution_state: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-18-limit-breach.md
+  style: {fill: "#e8e8e8"; stroke: "#7a7a7a"}
+}
+
+E_19_RiskMeasurement: {
+  shape: sql_table
+  measurement_id: "varchar  PK"
+  subject_id: "varchar  (portfolio_id or holding_id)"
+  risk_type: "enum  KEY-PARTITION"
+  scenario_id: "varchar  FK -> E_17  (nullable)"
+  measured_value: decimal
+  measurement_date: date
+  metric_definition_id: "varchar  FK -> E_22"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-19-risk-measurement.md
+  style: {fill: "#e8e8e8"; stroke: "#7a7a7a"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Computed-result and metadata core — stored, provenance-bearing
+# results (E-20 to E-23 + E-37 + E-38).
+# ──────────────────────────────────────────────────────────────────
+
+E_20_PerformanceResult: {
+  shape: sql_table
+  performance_result_id: "varchar  PK"
+  subject_type: "varchar  (portfolio / mandate / composite / total_fund / asset_class)"
+  subject_id: varchar
+  period_start: date
+  period_end: date
+  return_method: "varchar  (time_weighted / money_weighted / modified_dietz / since_inception)"
+  return_value: decimal
+  metric_definition_id: "varchar  FK -> E_22"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-20-performance-result.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+E_21_ESGMeasurement: {
+  shape: sql_table
+  esg_measurement_id: "varchar  PK"
+  subject_type: "varchar  (instrument / issuer / fund / portfolio)"
+  subject_id: varchar
+  pillar: "varchar  (environmental / social / governance / climate / impact)"
+  measure_type: "varchar  (score / rating / emissions / controversy / taxonomy_alignment)"
+  as_of_date: date
+  value: decimal
+  provider: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-21-esg-measurement.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+E_22_MetricDefinition: {
+  shape: sql_table
+  metric_definition_id: "varchar  PK"
+  metric_name: "varchar  (time_weighted_return / value_at_risk_99_1d / dpi / ...)"
+  metric_family: "varchar  (performance / risk / exposure / accounting / esg)"
+  formula_spec: "json  (typed computation spec)"
+  version: varchar
+  effective_from: date
+  status: "varchar  (draft / certified / deprecated)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-22-metric-definition.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+E_23_ExtractionRecord: {
+  shape: sql_table
+  extraction_record_id: "varchar  PK"
+  document_id: "varchar  FK -> E_15"
+  source_type: "varchar  (capital_account_statement / gp_quarterly_report / distribution_notice / ...)"
+  as_of_period: date
+  extracted_fields: "json  (parsed field set)"
+  extraction_method: "varchar  (manual / template / model)"
+  validation_status: "varchar  (pending / validated / flagged / rejected)"
+  version: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-23-extraction-record.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+E_37_ESGComplianceResult: {
+  shape: sql_table
+  esg_compliance_result_id: "varchar  PK"
+  subject_type: "varchar  (portfolio / fund / composite)"
+  subject_id: varchar
+  as_of_date: date
+  sfdr_article_classification: "varchar  (article_6 / article_8 / article_9 / n_a)"
+  taxonomy_alignment_percentage: decimal
+  pai_indicators: "json  (SFDR RTS template set)"
+  mandate_esg_screen_result: "varchar  (pass / fail / breach)"
+  metric_definition_id: "varchar  FK -> E_22"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-37-esg-compliance-result.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+E_38_InternalCreditRating: {
+  shape: sql_table
+  internal_credit_rating_id: "varchar  PK"
+  subject_type: "varchar  (issuer / instrument)"
+  subject_id: varchar
+  rating_scale: varchar
+  rating_value: "varchar  (firm's grade on the scale)"
+  rating_methodology_id: "varchar  FK -> E_22"
+  rating_change_reason: "varchar  (initial / upgrade / downgrade / affirmation / withdrawal)"
+  rating_watch_status: "varchar  (stable / positive_watch / negative_watch / developing)"
+  effective_from: date
+  effective_to: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-38-internal-credit-rating.md
+  style: {fill: "#e6f0e6"; stroke: "#5a8a5a"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Operational core — the owned, lifecycle-bearing artefacts of the
+# operations and governance functions (E-24 to E-26 + E-32 + E-34 to E-36).
+# ──────────────────────────────────────────────────────────────────
+
+E_24_ReconciliationBreak: {
+  shape: sql_table
+  break_id: "varchar  PK"
+  reconciliation_type: "varchar  (position / cash / transaction / ibor_abor / custodian / counterparty)"
+  record_a_ref: "varchar  (OpenIM-side record)"
+  record_b_ref: "varchar  (counter-record)"
+  as_of_date: date
+  difference_amount: decimal
+  cause_classification: "varchar  (timing / pricing / missing_transaction / data_error / fx / fees / unexplained)"
+  status: "varchar  (open / investigated / escalated / resolved / accepted)"
+  age_days: int
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-24-reconciliation-break.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_25_Account: {
+  shape: sql_table
+  account_id: "varchar  PK"
+  account_type: "varchar  (safekeeping / cash)  KEY-PARTITION"
+  account_number: varchar
+  holder_entity_id: "varchar  FK -> E_01"
+  portfolio_links: "array  FK -> E_03"
+  currency: char
+  account_status: "varchar  (opening / active / dormant / closing / closed)"
+  segregation: "varchar  (segregated / omnibus — safekeeping only)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-25-account.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_26_CollateralPosition: {
+  shape: sql_table
+  collateral_position_id: "varchar  PK"
+  relationship_type: "varchar  (master_agreement / securities_loan / repo / clearing)"
+  relationship_ref: varchar
+  posting_direction: "varchar  (posted / received)"
+  collateral_instrument_id: "varchar  FK -> E_02"
+  market_value: decimal
+  haircut_pct: decimal
+  collateral_value: decimal
+  counterparty_entity_id: "varchar  FK -> E_01"
+  as_of_date: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-26-collateral-position.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_32_TaxLot: {
+  shape: sql_table
+  tax_lot_id: "varchar  PK"
+  client_entity_id: "varchar  FK -> E_01"
+  instrument_id: "varchar  FK -> E_02"
+  acquisition_transaction_id: "varchar  FK -> E_05"
+  acquisition_date: date
+  quantity: decimal
+  cost_basis_amount: decimal
+  lot_relief_method: "varchar  (specific_id / fifo / lifo / hifo / min_tax)"
+  wash_sale_adjustment_amount: decimal
+  holding_period_class: "varchar  (short_term / long_term)"
+  status: "varchar  (open / closed / partially_closed)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-32-tax-lot.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_34_InvestmentAuthorisation: {
+  shape: sql_table
+  authorisation_id: "varchar  PK"
+  investment_route: "varchar  (fund_commitment / direct_investment)  CO-OWNED"
+  subject_id: "varchar  (fund / portfolio_company / real_asset)"
+  ic_memorandum_ref: "varchar  FK -> E_15"
+  decision: "varchar  (approve / approve_with_conditions / decline / defer)"
+  committee_meeting_date: date
+  recommended_commitment_amount: decimal
+  approved_commitment_amount: decimal
+  status: "varchar  (draft / under_review / decided / superseded)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-34-investment-authorisation.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_35_ComplaintRecord: {
+  shape: sql_table
+  complaint_id: "varchar  PK"
+  client_entity_id: "varchar  FK -> E_01"
+  complaint_received_date: date
+  complaint_category: "varchar  (suitability / service / charges / performance / mis-sale)"
+  final_response_date: date
+  fos_referral_provided: boolean
+  root_cause_classification: varchar
+  is_systemic_finding: boolean
+  status: "varchar  (open / investigating / final_response_issued / escalated_to_fos / closed)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-35-complaint-record.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+E_36_OversightException: {
+  shape: sql_table
+  oversight_exception_id: "varchar  PK"
+  administrator_entity_id: "varchar  FK -> E_01"
+  exception_date: date
+  exception_type: "varchar  (shadow_nav_difference / fee_calculation_variance / reconciliation_gap / breach_resolution_lag)"
+  severity: "varchar  (minor / material / significant)"
+  monetary_impact_amount: decimal
+  status: "varchar  (open / investigating / resolved / escalated)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-36-oversight-exception.md
+  style: {fill: "#f5ede0"; stroke: "#a07a4a"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Strategy core — the objective / target / plan records that
+# allocation and portfolio construction serve (E-27 to E-31 + E-33).
+# ──────────────────────────────────────────────────────────────────
+
+E_27_LiabilityProfile: {
+  shape: sql_table
+  liability_profile_id: "varchar  PK"
+  subject_type: "varchar  (pension_scheme / insurance_book / mandate)  CO-OWNED"
+  subject_id: varchar
+  as_of_date: date
+  projection_basis: "varchar  (funding / accounting / solvency / best_estimate)"
+  cash_flows: "json  (projected stream)"
+  pv01: decimal
+  present_value: decimal
+  currency: char
+  version: varchar
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-27-liability-profile.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+E_28_RiskBudget: {
+  shape: sql_table
+  risk_budget_id: "varchar  PK"
+  subject_type: "varchar  (strategy / pod / portfolio_manager / portfolio)"
+  subject_id: varchar
+  budget_measure: "varchar  (volatility_contribution / var_allowance / stop_loss / capital_at_risk)"
+  allocated_amount: decimal
+  total_pool_ref: varchar
+  drawdown_trigger: decimal
+  effective_from: date
+  effective_to: date
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-28-risk-budget.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+E_29_AllocationPlan: {
+  shape: sql_table
+  plan_id: "varchar  PK"
+  plan_type: "varchar  (strategic / reference_portfolio / commitment_pacing)  KEY-PARTITION"
+  subject_id: "varchar  FK -> E_03"
+  version: varchar
+  effective_from: date
+  effective_to: date
+  plan_content: "json  (target weights / reference holdings / pacing schedule)"
+  approved_by: varchar
+  status: "varchar  (draft / approved / in_force / superseded)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-29-allocation-plan.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+E_30_Goal: {
+  shape: sql_table
+  goal_id: "varchar  PK"
+  household_entity_id: "varchar  FK -> E_01"
+  goal_name: varchar
+  goal_type: "varchar  (retirement / education / legacy / major_purchase / lifestyle / philanthropic)"
+  priority_layer: "varchar  (safety / lifestyle / aspirational)"
+  target_value: decimal
+  target_date: date
+  required_probability_of_success: float
+  funding_portfolio_id: "varchar  FK -> E_03"
+  status: "varchar  (proposed / active / met / abandoned / revised)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-30-goal.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+E_31_GoalProgressMeasurement: {
+  shape: sql_table
+  goal_progress_measurement_id: "varchar  PK"
+  goal_id: "varchar  FK -> E_30"
+  as_of_date: date
+  probability_of_success: float
+  funding_adequacy: decimal
+  projected_value_at_target: decimal
+  cma_set_ref: varchar
+  metric_definition_id: "varchar  FK -> E_22"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-31-goal-progress-measurement.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+E_33_FinancialPlan: {
+  shape: sql_table
+  financial_plan_id: "varchar  PK"
+  household_entity_id: "varchar  FK -> E_01"
+  version: varchar
+  effective_from: date
+  effective_to: date
+  plan_content: "json  (cash-flow / decumulation / estate / insurance strategy)"
+  goal_set: "array  FK -> E_30"
+  approved_by_advisor: varchar
+  status: "varchar  (draft / presented_to_client / accepted / in_force / superseded)"
+  link: https://github.com/antikas/open-investment-model/blob/main/model/entities/core/E-33-financial-plan.md
+  style: {fill: "#ede4f0"; stroke: "#7a5aa0"}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# Relationships — the principal joins.
+# Cardinality: -> (many-to-one), <-> (many-to-many).
+# ──────────────────────────────────────────────────────────────────
+
+# Primary core flows
+E_02_Instrument.issuer_legal_entity_id -> E_01_LegalEntity.legal_entity_id: "issued by"
+E_03_Portfolio.owning_legal_entity_id -> E_01_LegalEntity.legal_entity_id: "owned / managed by"
+E_04_Holding.portfolio_id -> E_03_Portfolio.portfolio_id: "held in"
+E_04_Holding.instrument_id -> E_02_Instrument.instrument_id: "position in"
+E_05_Transaction.portfolio_id -> E_03_Portfolio.portfolio_id: "affects"
+E_05_Transaction.instrument_id -> E_02_Instrument.instrument_id: "in"
+E_06_CashFlowEvent.transaction_id -> E_05_Transaction.transaction_id: "generated by"
+E_07_Valuation.holding_id -> E_04_Holding.holding_id: "values holding"
+E_07_Valuation.instrument_id -> E_02_Instrument.instrument_id: "values instrument"
+E_08_PriceMarketData.instrument_id -> E_02_Instrument.instrument_id: "price for"
+
+# Benchmark relationships (E-10)
+E_03_Portfolio -> E_10_BenchmarkIndex: "benchmarked against"
+E_10_BenchmarkIndex -> E_02_Instrument: "composed of (constituents)"
+
+# Reference / identity
+E_02_Instrument.asset_class_id -> E_09_AssetClass.asset_class_id: "classified as"
+E_02_Instrument -> E_12_ClassificationHistory: "classified by (time-varying)"
+E_10_BenchmarkIndex.asset_class_id -> E_09_AssetClass.asset_class_id: "asset class"
+E_12_ClassificationHistory.classification_type_id -> E_11_ClassificationType.classification_type_id: "uses type"
+E_13_EntityAlias -> E_01_LegalEntity: "alias of (party)"
+E_13_EntityAlias -> E_02_Instrument: "alias of (instrument)"
+E_14_ExternalIdentifier -> E_01_LegalEntity: "external id (party)"
+E_14_ExternalIdentifier -> E_02_Instrument: "external id (instrument)"
+
+# Document and pricing flows
+E_05_Transaction -> E_15_DocumentMetadata: "evidenced by"
+E_07_Valuation -> E_08_PriceMarketData: "may consume (observable input)"
+
+# Risk core
+E_16_RiskLimit.portfolio_id -> E_03_Portfolio.portfolio_id: "constrains"
+E_19_RiskMeasurement -> E_16_RiskLimit: "checked against"
+E_19_RiskMeasurement.subject_id -> E_03_Portfolio.portfolio_id: "measures portfolio"
+E_19_RiskMeasurement.subject_id -> E_04_Holding.holding_id: "measures holding"
+E_19_RiskMeasurement.scenario_id -> E_17_Scenario.scenario_id: "under scenario"
+E_19_RiskMeasurement.metric_definition_id -> E_22_MetricDefinition.metric_definition_id: "computed to"
+E_18_LimitBreach.limit_id -> E_16_RiskLimit.limit_id: "breach of"
+E_18_LimitBreach.portfolio_id -> E_03_Portfolio.portfolio_id: "raised on"
+
+# Computed-result and metadata core
+E_20_PerformanceResult.subject_id -> E_03_Portfolio.portfolio_id: "return for"
+E_20_PerformanceResult.metric_definition_id -> E_22_MetricDefinition.metric_definition_id: "computed to"
+E_21_ESGMeasurement -> E_02_Instrument: "about (instrument)"
+E_21_ESGMeasurement -> E_01_LegalEntity: "about (issuer)"
+E_23_ExtractionRecord.document_id -> E_15_DocumentMetadata.document_id: "parsed from"
+E_37_ESGComplianceResult.subject_id -> E_03_Portfolio.portfolio_id: "compliance for"
+E_37_ESGComplianceResult -> E_21_ESGMeasurement: "consumes"
+E_37_ESGComplianceResult.metric_definition_id -> E_22_MetricDefinition.metric_definition_id: "computed to"
+E_38_InternalCreditRating -> E_02_Instrument: "rates (instrument)"
+E_38_InternalCreditRating -> E_01_LegalEntity: "rates (issuer)"
+E_38_InternalCreditRating.rating_methodology_id -> E_22_MetricDefinition.metric_definition_id: "methodology"
+
+# Operational core
+E_24_ReconciliationBreak -> E_04_Holding: "discrepancy on"
+E_25_Account.portfolio_links -> E_03_Portfolio.portfolio_id: "settles through"
+E_25_Account.holder_entity_id -> E_01_LegalEntity.legal_entity_id: "held with"
+E_26_CollateralPosition.collateral_instrument_id -> E_02_Instrument.instrument_id: "asset posted"
+E_26_CollateralPosition.counterparty_entity_id -> E_01_LegalEntity.legal_entity_id: "counterparty"
+E_32_TaxLot.client_entity_id -> E_01_LegalEntity.legal_entity_id: "client"
+E_32_TaxLot.instrument_id -> E_02_Instrument.instrument_id: "position in"
+E_32_TaxLot.acquisition_transaction_id -> E_05_Transaction.transaction_id: "acquired by"
+E_34_InvestmentAuthorisation -> E_02_Instrument: "authorises (subject)"
+E_34_InvestmentAuthorisation.ic_memorandum_ref -> E_15_DocumentMetadata.document_id: "IC memo"
+E_35_ComplaintRecord.client_entity_id -> E_01_LegalEntity.legal_entity_id: "from client"
+E_36_OversightException.administrator_entity_id -> E_01_LegalEntity.legal_entity_id: "vs administrator"
+
+# Strategy core
+E_27_LiabilityProfile -> E_03_Portfolio: "strategy target"
+E_28_RiskBudget -> E_03_Portfolio: "allocated to"
+E_29_AllocationPlan.subject_id -> E_03_Portfolio.portfolio_id: "governs"
+E_30_Goal.household_entity_id -> E_01_LegalEntity.legal_entity_id: "client objective"
+E_30_Goal.funding_portfolio_id -> E_03_Portfolio.portfolio_id: "funded by"
+E_31_GoalProgressMeasurement.goal_id -> E_30_Goal.goal_id: "measures"
+E_31_GoalProgressMeasurement.metric_definition_id -> E_22_MetricDefinition.metric_definition_id: "computed to"
+E_33_FinancialPlan.household_entity_id -> E_01_LegalEntity.legal_entity_id: "household"
+E_33_FinancialPlan.goal_set -> E_30_Goal.goal_id: "contains"
+
+# ──────────────────────────────────────────────────────────────────
+# Primary-spine FKs added under the 2026-05-24 entity-model audit —
+# closes the audit's M1..M5 gaps where the entity attribute schemas
+# declare these FKs but the conceptual diagrams did not edge them.
+# ──────────────────────────────────────────────────────────────────
+
+E_03_Portfolio.parent_portfolio_id -> E_03_Portfolio.portfolio_id: "parent of (sub-portfolio)"
+E_03_Portfolio.asset_class -> E_09_AssetClass.asset_class_id: "asset-class portfolio"
+E_05_Transaction.counterparty_entity_id -> E_01_LegalEntity.legal_entity_id: "counterparty"
+E_06_CashFlowEvent.portfolio_id -> E_03_Portfolio.portfolio_id: "cash in / out"
+E_06_CashFlowEvent.instrument_id -> E_02_Instrument.instrument_id: "concerning"
+E_18_LimitBreach.measurement_id -> E_19_RiskMeasurement.measurement_id: "measurement that crossed"

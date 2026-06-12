@@ -1,0 +1,106 @@
+# OpenIM layer stack — D2 source.
+#
+# Renders OpenIM's position in the standards landscape. Each layer box is
+# clickable: OpenIM boxes open in-repo INDEX files (absolute GitHub URLs);
+# external standards open PRIOR-ART.md, which is the project's own
+# credibility artefact explaining each layer relationship.
+#
+# A Mermaid form of this diagram lives at ../01-layer-stack.md.
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+  }
+}
+
+direction: down
+
+# ─────────────────────────────────────────────────────────
+# Agent channel — what an agent talks to.
+# ─────────────────────────────────────────────────────────
+agent_layer: "Agent channel" {
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+
+  agentinvest: "agentINVEST\n— MCP server · typed tool surface —\nOpenIM defines" {
+    link: https://github.com/antikas/open-investment-model/blob/main/reference/README.md
+    style: {fill: "#1f3a5f"; font-color: "#ffffff"; bold: true; stroke: "#0e1e33"}
+  }
+}
+
+# ─────────────────────────────────────────────────────────
+# OpenIM — the new layer this project introduces.
+# ─────────────────────────────────────────────────────────
+openim_layer: "OpenIM — the reference model" {
+  style: {fill: "#dfe8f7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+
+  service_domains: "Service-domain model\n— what the firm does —\n17 Business Domains / 171 Service Domains" {
+    link: https://github.com/antikas/open-investment-model/blob/main/model/service-domains/INDEX.md
+    style: {fill: "#1f3a5f"; font-color: "#ffffff"; bold: true; stroke: "#0e1e33"}
+  }
+
+  entity_model: "Canonical entity model\n— what the firm knows —\n73 entities (38 core + 4 specialisation packs)" {
+    link: https://github.com/antikas/open-investment-model/blob/main/model/entities/INDEX.md
+    style: {fill: "#1f3a5f"; font-color: "#ffffff"; bold: true; stroke: "#0e1e33"}
+  }
+}
+
+# ─────────────────────────────────────────────────────────
+# Layers OpenIM reuses or aligns to.
+# ─────────────────────────────────────────────────────────
+below_layer: "Layers OpenIM reuses or aligns to" {
+  style: {fill: "#f0eee6"; stroke: "#a09578"; font-color: "#5a513a"}
+
+  isda_cdm: "ISDA CDM\nTransaction layer · trades and trade lifecycle\nreuse" {
+    link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+    style: {fill: "#e8eef7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+  }
+
+  fibo: "FIBO\nConcept ontology · instruments and legal entities\nalign to / build on" {
+    link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+    style: {fill: "#e8eef7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+  }
+
+  identifiers: "Identifiers\nLEI · FIGI · ISIN · CUSIP · Private CUSIP\nreference / resolve across" {
+    link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+    style: {fill: "#e8eef7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+  }
+
+  wire: "Wire / messaging\nISO 20022 · FIX · FpML\ninterop edge" {
+    link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+    style: {fill: "#e8eef7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+  }
+
+  reporting: "Reporting / performance\nILPA templates · GIPS\nconsume / conform to" {
+    link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+    style: {fill: "#e8eef7"; stroke: "#5b7aa6"; font-color: "#1f3a5f"}
+  }
+}
+
+# ─────────────────────────────────────────────────────────
+# Governance companion — runs alongside the whole stack.
+# ─────────────────────────────────────────────────────────
+governance: "FINOS AI Governance Framework\nGovernance companion · align to" {
+  link: https://github.com/antikas/open-investment-model/blob/main/PRIOR-ART.md
+  style: {fill: "#f0eee6"; stroke: "#a09578"; font-color: "#5a513a"; bold: true}
+}
+
+# ─────────────────────────────────────────────────────────
+# Relationships — what depends on / consumes / aligns to what.
+# ─────────────────────────────────────────────────────────
+
+agent_layer.agentinvest -> openim_layer.service_domains: "exposes"
+agent_layer.agentinvest -> openim_layer.entity_model: "operates over"
+
+openim_layer.service_domains -> below_layer.isda_cdm: "consumes (trades)"
+openim_layer.service_domains -> below_layer.wire: "consumes (messages)"
+openim_layer.service_domains -> below_layer.reporting: "consumes / conforms to"
+
+openim_layer.entity_model -> below_layer.fibo: "builds on (FIBO semantics)"
+openim_layer.entity_model -> below_layer.identifiers: "references / resolves across"
+
+openim_layer -> governance: "aligns to" {
+  style: {stroke-dash: 3}
+}
+agent_layer -> governance: "aligns to" {
+  style: {stroke-dash: 3}
+}

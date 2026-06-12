@@ -1,0 +1,21 @@
+alias_id,subject_type,subject_id,alias_name,first_seen_at,source,confirmed_by
+ALIAS-0001,fund,INS-0001,INS-0001 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0002,fund,INS-0002,INS-0002 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0003,fund,INS-0003,INS-0003 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0004,fund,INS-0004,INS-0004 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0005,fund,INS-0005,INS-0005 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0006,fund,INS-0006,INS-0006 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0007,fund,INS-0007,INS-0007 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0008,fund,INS-0008,INS-0008 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0009,fund,INS-0009,INS-0009 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0010,fund,INS-0010,INS-0010 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0011,fund,INS-0011,INS-0011 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0012,fund,INS-0012,INS-0012 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0013,fund,INS-0013,INS-0013 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0014,fund,INS-0014,INS-0014 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0015,fund,INS-0054,INS-0054 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0016,fund,INS-0055,INS-0055 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0017,fund,INS-0056,INS-0056 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0018,fund,INS-0059,INS-0059 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0019,fund,INS-0060,INS-0060 (short),2020-09-30,administrator_statement,steward.patel
+ALIAS-0020,legal_entity,LE-0001,Acme AM,2018-01-15,data_vendor,steward.jones

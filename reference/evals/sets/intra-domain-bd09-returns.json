@@ -1,0 +1,155 @@
+{
+  "set_id": "intra-domain-bd09-returns",
+  "description": "Intra-domain (within-office) tool-selection golden set over BD-09 SD-09.1 Performance Measurement's near-duplicate return tools. Tool specs are authored faithfully from the SD-09.1 Service Operation descriptions (the oracle); the 4 focus tools are the confusable return calculations the SD spec itself distinguishes: time-weighted return, money-weighted return, strike-period-returns (sub-period linking), and gross-vs-net. The composite / currency / reconcile Service Operations are carried as additional catalogue tools so selection is realistic (not a closed 4-way), but the cases and labels centre on the 4 return tools, each appearing as both a correct answer and a confuser.",
+  "tools": [
+    {
+      "tool_id": "SO-09-01-twr",
+      "name": "Calculate time-weighted return",
+      "description": "Calculate the return that removes the effect of external cash flow timing. The basis for comparing a portfolio against a benchmark and against peers. Independent of when contributions and withdrawals occurred; geometrically links sub-period returns struck around each external cash flow so the figure measures the manager's decisions, not the investor's flow timing."
+    },
+    {
+      "tool_id": "SO-09-01-mwr",
+      "name": "Calculate money-weighted return",
+      "description": "Calculate the internal rate of return on the dated cash-flow series. The investor's actual experienced return wherever external cash-flow timing matters, and the standard performance basis in private markets. Solves for the single rate that discounts the dated contributions and withdrawals to the ending value; sensitive to the size and timing of the investor's cash flows (an IRR / dollar-weighted figure)."
+    },
+    {
+      "tool_id": "SO-09-01-period-linking",
+      "name": "Strike period returns",
+      "description": "Strike daily, monthly, quarterly, year-to-date and since-inception returns by linking the sub-period returns. Compounds the constituent single-period returns across a longer horizon to produce the period-end and cumulative figures for a chosen frequency; turns a series of short-interval returns into a YTD or since-inception number."
+    },
+    {
+      "tool_id": "SO-09-01-gross-net",
+      "name": "Compute gross and net returns",
+      "description": "Compute return before and after management fees, performance fees and expenses. The gross figure is the return on the assets before any fee deduction; the net figure deducts management fees, performance fees and fund expenses to give the investor's after-fee return. The difference between the two is the total fee drag over the period."
+    },
+    {
+      "tool_id": "SO-09-01-composite",
+      "name": "Compute composite returns",
+      "description": "Compute the asset-weighted return of a defined group of portfolios run to one strategy. Aggregates the member portfolios' returns weighted by their assets to produce the strategy-level composite figure used in GIPS presentation."
+    },
+    {
+      "tool_id": "SO-09-01-currency",
+      "name": "Apply currency treatment",
+      "description": "Convert and, where a hedge applies, decompose local-currency, currency and hedged return. Separates the return earned in the asset's local currency from the currency-translation effect and from the contribution of any currency hedge."
+    },
+    {
+      "tool_id": "SO-09-01-reconcile",
+      "name": "Reconcile return to the book of record",
+      "description": "Confirm the calculated return ties to the change in value and the cash flows recorded in the IBOR/ABOR. A control check that the produced return figure is consistent with the accounting book of record over the period."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "C01-twr-benchmark-compare",
+      "query": "I need the portfolio return that strips out the timing of client contributions so I can compare the manager against the benchmark and peers.",
+      "expected_tool_id": "SO-09-01-twr",
+      "confusers": ["SO-09-01-mwr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
+      "rationale": "Removing external cash-flow timing for benchmark/peer comparison is the defining purpose of time-weighted return per SD-09.1. MWR is the trap (also a return over cash flows, but it does the opposite — it keeps flow timing in); period-linking and gross/net share the 'return' vocabulary."
+    },
+    {
+      "case_id": "C02-mwr-investor-experience",
+      "query": "What return did the client actually experience given the size and dates of the money they put in and took out? I want the IRR on the cash-flow series.",
+      "expected_tool_id": "SO-09-01-mwr",
+      "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
+      "rationale": "The investor's actual experienced return on the dated cash-flow series (IRR / dollar-weighted) is money-weighted return. TWR is the near-duplicate that deliberately removes exactly what MWR keeps."
+    },
+    {
+      "case_id": "C03-period-linking-ytd",
+      "query": "Take the monthly returns we already have and chain them into a year-to-date and since-inception figure.",
+      "expected_tool_id": "SO-09-01-period-linking",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-composite"],
+      "rationale": "Linking sub-period returns into YTD / since-inception is the strike-period-returns operation. TWR is the confuser because TWR also links sub-period returns — but its job is the flow-timing removal, not the frequency compounding."
+    },
+    {
+      "case_id": "C04-gross-net-fee-drag",
+      "query": "Give me the return before fees and the return after deducting management and performance fees, so I can show the client the fee drag.",
+      "expected_tool_id": "SO-09-01-gross-net",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-reconcile"],
+      "rationale": "Before-and-after-fee return and the fee drag is the gross-and-net operation. TWR/MWR are the confusers because either could be reported gross or net — but the fee-deduction transform itself is this tool."
+    },
+    {
+      "case_id": "C05-twr-flow-neutral",
+      "query": "Produce a return that is neutral to when the investor added or withdrew cash, for the composite presentation.",
+      "expected_tool_id": "SO-09-01-twr",
+      "confusers": ["SO-09-01-mwr", "SO-09-01-composite", "SO-09-01-period-linking"],
+      "rationale": "Flow-neutral return is TWR. 'composite' in the query is bait toward the composite tool; MWR is the flow-sensitive opposite."
+    },
+    {
+      "case_id": "C06-mwr-private-irr",
+      "query": "For the private-credit sleeve, compute the standard private-markets performance basis — the rate that discounts the drawdowns and distributions to the current value.",
+      "expected_tool_id": "SO-09-01-mwr",
+      "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-currency"],
+      "rationale": "The standard private-markets basis discounting dated cash flows is money-weighted return per SD-09.1. TWR is the public-markets near-duplicate."
+    },
+    {
+      "case_id": "C07-period-linking-quarterly",
+      "query": "Compound our daily returns up to a clean quarterly and since-inception number for the fund.",
+      "expected_tool_id": "SO-09-01-period-linking",
+      "confusers": ["SO-09-01-twr", "SO-09-01-gross-net", "SO-09-01-mwr"],
+      "rationale": "Compounding daily into quarterly/since-inception across a horizon is strike-period-returns. TWR shares the linking mechanism but is identified by flow removal."
+    },
+    {
+      "case_id": "C08-gross-net-after-fee",
+      "query": "Show the after-fee return the investor keeps once management fees, performance fees and expenses come out, alongside the pre-fee figure.",
+      "expected_tool_id": "SO-09-01-gross-net",
+      "confusers": ["SO-09-01-mwr", "SO-09-01-twr", "SO-09-01-period-linking"],
+      "rationale": "Pre-fee and after-fee return is gross-and-net. The 'investor keeps' phrasing is bait toward MWR (the investor's experienced return)."
+    },
+    {
+      "case_id": "C09-twr-manager-skill",
+      "query": "I want the figure that reflects the manager's investment decisions only, with the effect of cash-flow timing taken out, to rank our managers.",
+      "expected_tool_id": "SO-09-01-twr",
+      "confusers": ["SO-09-01-mwr", "SO-09-01-gross-net", "SO-09-01-reconcile"],
+      "rationale": "Manager-skill return with cash-flow timing removed is TWR. MWR is the flow-sensitive confuser."
+    },
+    {
+      "case_id": "C10-mwr-dollar-weighted",
+      "query": "Compute the dollar-weighted return that accounts for how much money was invested at each point in time.",
+      "expected_tool_id": "SO-09-01-mwr",
+      "confusers": ["SO-09-01-twr", "SO-09-01-composite", "SO-09-01-period-linking"],
+      "rationale": "Dollar-weighted, amount-and-timing-sensitive return is money-weighted return. TWR is the explicitly flow-insensitive near-duplicate."
+    },
+    {
+      "case_id": "C11-period-linking-cumulative",
+      "query": "Chain the sub-period returns we computed into the cumulative figure at the chosen reporting frequency.",
+      "expected_tool_id": "SO-09-01-period-linking",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-gross-net"],
+      "rationale": "Chaining sub-period returns into a cumulative frequency figure is strike-period-returns. TWR also chains sub-period returns — the deliberate confuser."
+    },
+    {
+      "case_id": "C12-gross-net-expense-impact",
+      "query": "What is the impact of fund expenses and fees on the return — the gap between what the assets earned and what the investor received after costs?",
+      "expected_tool_id": "SO-09-01-gross-net",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-currency"],
+      "rationale": "The earned-vs-received-after-costs gap is the gross-to-net fee drag. The flow-return tools are the vocabulary confusers."
+    },
+    {
+      "case_id": "C13-twr-vs-mwr-explicit",
+      "query": "Give me the time-weighted return for the mandate, not the money-weighted one.",
+      "expected_tool_id": "SO-09-01-twr",
+      "confusers": ["SO-09-01-mwr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
+      "rationale": "Names TWR explicitly while naming MWR as the rejected near-duplicate — the most direct adversarial pairing of the two confusable returns."
+    },
+    {
+      "case_id": "C14-mwr-vs-twr-explicit",
+      "query": "Give me the money-weighted (IRR) return for this account, not the time-weighted figure.",
+      "expected_tool_id": "SO-09-01-mwr",
+      "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
+      "rationale": "The mirror of C13: names MWR explicitly and TWR as the rejected confuser."
+    },
+    {
+      "case_id": "C15-period-linking-since-inception",
+      "query": "Link our quarterly returns up to a since-inception number for the report.",
+      "expected_tool_id": "SO-09-01-period-linking",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-composite"],
+      "rationale": "Linking quarterly into since-inception is strike-period-returns. TWR is the linking-mechanism confuser; composite is the report-context bait."
+    },
+    {
+      "case_id": "C16-gross-net-pre-and-post",
+      "query": "Report both the pre-fee and the post-fee return so we can disclose the management fee and performance fee deduction.",
+      "expected_tool_id": "SO-09-01-gross-net",
+      "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-period-linking"],
+      "rationale": "Pre-fee and post-fee return with the fee deduction is gross-and-net. The return-family confusers share most vocabulary."
+    }
+  ]
+}

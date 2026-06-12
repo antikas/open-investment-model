@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.turbo/
+*.log
+
+# scratch-file convention (openim-builder spec)
+_probe-*
+_test-*
+_scratch-*

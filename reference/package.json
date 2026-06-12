@@ -1,0 +1,48 @@
+{
+  "name": "@agentinvest/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "agentINVEST reference-implementation polyglot workspace root. Holds the TypeScript orchestrator/control-surface packages (ts/), the Python tool+data layer (python/, uv-managed), and OpenIM's OWN Restate substrate launcher (scripts/, config/). The dbt canonical data layer (dbt/) slots beside these in OIM-102 without moving anything.",
+  "scripts": {
+    "restate:install": "node scripts/install-restate.mjs",
+    "dev:restate": "node scripts/run-restate-server.mjs",
+    "smoke:cross-language": "node scripts/smoke-cross-language.mjs",
+    "demo:phase2": "node scripts/phase2-demo.mjs",
+    "vo:semantics": "pnpm -C ts exec tsx src/orchestrator/vo-semantics-proof.ts",
+    "crash-replay": "node scripts/crash-replay-proof.mjs",
+    "shell-crash": "node scripts/plan-crash-proof.mjs",
+    "plan-crash": "node scripts/plan-crash-proof.mjs",
+    "dispatch-fanout": "node scripts/dispatch-fanout-proof.mjs",
+    "dispatch-partial-failure": "node scripts/dispatch-partial-failure-proof.mjs",
+    "dispatch-crash": "node scripts/dispatch-crash-proof.mjs",
+    "dispatch-live-e2e": "node scripts/dispatch-live-e2e.mjs",
+    "approval-gate": "node scripts/approval-gate-proof.mjs",
+    "nav-workflow": "node scripts/nav-workflow-proof.mjs",
+    "operator-ui-live": "node scripts/operator-ui-live-proof.mjs",
+    "approval-registry:clear": "node scripts/clear-approval-registry-state.mjs",
+    "full-chain-demo": "node scripts/full-chain-demo.mjs",
+    "audit-export": "pnpm -C ts exec tsx src/audit/audit-export-cli.ts",
+    "audit-verify": "pnpm -C ts exec tsx src/audit/audit-verify-cli.ts",
+    "audit-export-live": "node scripts/audit-export-live-proof.mjs",
+    "audit-export-fixture": "pnpm -C ts exec tsx src/audit/audit-export-fixture-proof.ts",
+    "shell:proof": "pnpm -C ts exec tsx src/orchestrator/shell-and-skew-proof.ts",
+    "dbt:build": "node scripts/dbt-build.mjs",
+    "evals": "node scripts/evals-run.mjs",
+    "operator-ui:dev": "pnpm -C operator-ui dev",
+    "operator-ui:build": "pnpm -C operator-ui build",
+    "operator-ui:start": "pnpm -C operator-ui start",
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check",
+    "test": "pnpm -r test",
+    "openapi:lint": "node scripts/openapi-lint.mjs",
+    "openapi:smoke": "node scripts/openapi-smoke.mjs"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "6.15.0",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

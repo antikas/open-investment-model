@@ -1,0 +1,21 @@
+# agentINVEST reference workspace (pnpm).
+#
+# Package-manager reconciliation (OIM-101): the OIM-100 floor shipped npm
+# (package-lock.json). This workspace standardises on pnpm — the running Restate
+# instance is launched from the pnpm-based sibling repo, pnpm is the package
+# manager the implementation plan named, and pnpm's workspace protocol is
+# the clean way to tie the TS packages together as OIM-102+/OIM-180/181 add more
+# (@agentinvest/canonical-model, @agentinvest/runtime). One lockfile at the root
+# (pnpm-lock.yaml); the per-package package-lock.json is removed.
+#
+# The Python workspace (python/) is uv-managed and is NOT a pnpm package — uv
+# owns its own lockfile (python/uv.lock). The two language workspaces are tied
+# only by the shared Restate substrate they both register against, which is the
+# polyglot seam ADR-0054 specifies. The dbt workspace (dbt/, OIM-102) likewise
+# lives beside these without being a pnpm package.
+packages:
+  - ts
+  # The Operator UI v0.1 (OIM-142) — a Next.js + Tailwind console (its own dep set:
+  # next/react/tailwind). A separate pnpm package beside ts/; it CALLS the shared
+  # Restate admin + ingress, it does not register a Restate deployment.
+  - operator-ui

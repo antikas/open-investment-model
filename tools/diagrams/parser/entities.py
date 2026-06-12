@@ -1,0 +1,270 @@
+"""Entity-file parser.
+
+Reads `model/entities/INDEX.md` plus every entity file under
+`core/` and `specialisations/<pack>/`. The output `EntityModel` carries
+the entity records, the FK declarations, the owning + consuming SDs (as
+declared on the entity file's `## Owned and consumed by` section), and
+the specialisation parent for pack entities.
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from .errors import ParseError
+
+
+_ENTITY_FILE_RE = re.compile(r"^(E|PM|PB|DR|RA)-(\d{2})-(.+)\.md$")
+_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA)-(\d{2})\b")
+_SD_ID_RE = re.compile(r"\bSD-(\d{2})\.(\d+)\b")
+_FK_RE = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA)[_-]?\d{2,3})", re.IGNORECASE)
+_TITLE_RE = re.compile(r"^#\s+(E|PM|PB|DR|RA)-(\d{2})\s+[—-]\s+(.+?)\s*$")
+_SPECIALISES_RE = re.compile(r"\*\*Specialises:\*\*\s*((?:E|PM|PB|DR|RA)-\d{2})")
+
+
+@dataclass
+class Entity:
+    id: str                              # "E-NN" / "PM-NN" / "PB-NN" / "DR-NN" / "RA-NN"
+    prefix: str                          # "E" / "PM" / "PB" / "DR" / "RA"
+    num: int
+    name: str                            # title text
+    path: Path
+    summary: str = ""                    # first paragraph after H1
+    specialises: str | None = None       # parent entity id (specialisation packs only)
+    owned_by: list[str] = field(default_factory=list)        # SD ids (one or several)
+    consumed_by: list[str] = field(default_factory=list)     # SD ids
+    fk_targets: list[str] = field(default_factory=list)       # entity ids referenced as FKs
+
+    @property
+    def pack(self) -> str:
+        """`core` for E-NN, the pack-slug ("private-markets" etc.) for others."""
+        return {
+            "E": "core",
+            "PM": "private-markets",
+            "PB": "public-markets",
+            "DR": "derivatives",
+            "RA": "real-assets",
+        }[self.prefix]
+
+
+@dataclass
+class EntityModel:
+    entities: list[Entity]
+
+    def by_id(self) -> dict[str, Entity]:
+        return {e.id: e for e in self.entities}
+
+    def by_pack(self) -> dict[str, list[Entity]]:
+        out: dict[str, list[Entity]] = {}
+        for e in self.entities:
+            out.setdefault(e.pack, []).append(e)
+        return out
+
+
+def _read(p: Path) -> str:
+    return p.read_text(encoding="utf-8")
+
+
+def _line_no(text: str, ix: int) -> int:
+    return text.count("\n", 0, ix) + 1
+
+
+def _extract_section(text: str, heading: str) -> str | None:
+    pattern = re.compile(rf"^{re.escape(heading)}\s*$", re.MULTILINE)
+    m = pattern.search(text)
+    if not m:
+        return None
+    start = m.end()
+    nxt = re.search(r"^#{1,2}\s+\S", text[start:], re.MULTILINE)
+    end = start + nxt.start() if nxt else len(text)
+    return text[start:end].strip("\n")
+
+
+def _extract_bold_block(body: str, label: str) -> str | None:
+    pattern = re.compile(
+        rf"^\s*-\s+\*\*{re.escape(label)}:?\*\*([^\n]*(?:\n(?!\s*-\s|\s*\*\*|\s*$)[^\n]*)*)",
+        re.MULTILINE,
+    )
+    m = pattern.search(body)
+    if not m:
+        return None
+    return m.group(1).strip()
+
+
+def _normalise_entity_id(raw: str) -> str:
+    """Map FK match like 'E_09' or 'E-09' or 'E09' to canonical 'E-09'."""
+    raw = raw.replace("_", "-")
+    if "-" not in raw:
+        # 'E09' -> 'E-09'
+        for prefix in ("PM", "PB", "DR", "RA"):
+            if raw.upper().startswith(prefix):
+                return f"{prefix}-{raw[len(prefix):].zfill(2)}"
+        return f"{raw[0].upper()}-{raw[1:].zfill(2)}"
+    a, b = raw.split("-", 1)
+    return f"{a.upper()}-{b.zfill(2)}"
+
+
+def _parse_entity_file(path: Path, expected_prefix: str, expected_num: int) -> Entity:
+    text = _read(path)
+    lines = text.splitlines()
+    if not lines:
+        raise ParseError(path, 1, "empty entity file")
+    m = _TITLE_RE.match(lines[0])
+    if not m:
+        raise ParseError(path, 1,
+                         "entity H1 does not match '# X-NN — Title' (X in E/PM/PB/DR/RA)")
+    pfx, num = m.group(1), int(m.group(2))
+    if pfx != expected_prefix or num != expected_num:
+        raise ParseError(path, 1,
+                         f"entity H1 says {pfx}-{num:02d} but file is "
+                         f"{expected_prefix}-{expected_num:02d}")
+    name = m.group(3).strip()
+    ent_id = f"{pfx}-{num:02d}"
+
+    # First paragraph after the H1.
+    summary = ""
+    para_lines: list[str] = []
+    for raw in lines[1:]:
+        if raw.strip() == "" and not para_lines:
+            continue
+        if raw.startswith("#") or raw.startswith("**"):
+            if para_lines:
+                break
+            else:
+                continue
+        if raw.strip() == "" and para_lines:
+            break
+        para_lines.append(raw.strip())
+    if para_lines:
+        summary = " ".join(para_lines).strip()
+
+    ent = Entity(id=ent_id, prefix=pfx, num=num, name=name, path=path, summary=summary)
+
+    sp = _SPECIALISES_RE.search(text)
+    if sp:
+        ent.specialises = sp.group(1)
+
+    # FK declarations — anywhere in the file (attribute schema tables).
+    fk_targets: list[str] = []
+    for fk_m in _FK_RE.finditer(text):
+        target = _normalise_entity_id(fk_m.group(1))
+        if target != ent_id and target not in fk_targets:
+            fk_targets.append(target)
+    ent.fk_targets = fk_targets
+
+    # Ownership / consumption.
+    own_sect = _extract_section(text, "## Owned and consumed by")
+    if not own_sect:
+        raise ParseError(path, None,
+                         "entity file missing '## Owned and consumed by' section")
+    owned_by_text = _extract_bold_block(own_sect, "Owned by")
+    consumed_by_text = _extract_bold_block(own_sect, "Consumed by")
+    if not owned_by_text:
+        raise ParseError(path, None,
+                         "entity '## Owned and consumed by' missing '**Owned by:**' line")
+    if not consumed_by_text:
+        raise ParseError(path, None,
+                         "entity '## Owned and consumed by' missing '**Consumed by:**' line")
+
+    seen: list[str] = []
+    for sm in _SD_ID_RE.finditer(owned_by_text):
+        sid = f"SD-{sm.group(1)}.{sm.group(2)}"
+        if sid not in seen:
+            seen.append(sid)
+    ent.owned_by = seen
+
+    seen = []
+    for sm in _SD_ID_RE.finditer(consumed_by_text):
+        sid = f"SD-{sm.group(1)}.{sm.group(2)}"
+        if sid not in seen:
+            seen.append(sid)
+    ent.consumed_by = seen
+
+    if not ent.owned_by:
+        raise ParseError(path, None,
+                         "entity '**Owned by:**' line names no Service Domain")
+    return ent
+
+
+def parse_entities(repo_root: Path) -> EntityModel:
+    ent_dir = repo_root / "model" / "entities"
+    if not ent_dir.is_dir():
+        raise ParseError(ent_dir, None, "entities directory not found")
+
+    entities: list[Entity] = []
+
+    # Core.
+    core_dir = ent_dir / "core"
+    if not core_dir.is_dir():
+        raise ParseError(core_dir, None, "entities/core directory not found")
+    for p in sorted(core_dir.glob("*.md")):
+        if p.name.upper().startswith("README"):
+            continue
+        m = _ENTITY_FILE_RE.match(p.name)
+        if not m:
+            raise ParseError(p, None,
+                             f"core entity filename does not match X-NN-slug.md "
+                             f"(got {p.name})")
+        if m.group(1) != "E":
+            raise ParseError(p, None,
+                             f"core entity has non-E prefix ({m.group(1)})")
+        entities.append(_parse_entity_file(p, "E", int(m.group(2))))
+
+    # Specialisation packs.
+    spec_dir = ent_dir / "specialisations"
+    if spec_dir.is_dir():
+        for pack_dir in sorted(spec_dir.iterdir()):
+            if not pack_dir.is_dir():
+                continue
+            pack_prefix_map = {
+                "private-markets": "PM",
+                "public-markets": "PB",
+                "derivatives": "DR",
+                "real-assets": "RA",
+            }
+            if pack_dir.name not in pack_prefix_map:
+                raise ParseError(pack_dir, None,
+                                 f"unknown specialisation pack {pack_dir.name!r}")
+            expected_pfx = pack_prefix_map[pack_dir.name]
+            for p in sorted(pack_dir.glob("*.md")):
+                if p.name.upper().startswith("README"):
+                    continue
+                m = _ENTITY_FILE_RE.match(p.name)
+                if not m:
+                    raise ParseError(p, None,
+                                     f"pack entity filename does not match X-NN-slug.md")
+                if m.group(1) != expected_pfx:
+                    raise ParseError(p, None,
+                                     f"pack entity has prefix {m.group(1)}, "
+                                     f"expected {expected_pfx}")
+                entities.append(_parse_entity_file(p, expected_pfx, int(m.group(2))))
+
+    return EntityModel(entities=entities)
+
+
+def validate_entity_references(em: EntityModel) -> None:
+    """Every FK target and Specialises target must resolve to a known entity."""
+    known = {e.id for e in em.entities}
+    for e in em.entities:
+        if e.specialises and e.specialises not in known:
+            raise ParseError(e.path, None,
+                             f"{e.id} **Specialises:** unknown {e.specialises}")
+        for fk in e.fk_targets:
+            if fk not in known:
+                # FKs to abstract types (e.g. "Fund Family") slip through the
+                # regex when prefixed with a known pack letter; ignore those
+                # whose number doesn't exist rather than failing.
+                # Conservative: just record a defect once the entity list is
+                # complete.
+                raise ParseError(e.path, None,
+                                 f"{e.id} FK -> unknown entity {fk}")
+
+
+def validate_entity_sd_references(em: EntityModel, sd_ids: set[str]) -> None:
+    """Every SD named on an entity's Owned by / Consumed by line must exist."""
+    for e in em.entities:
+        for sid in e.owned_by + e.consumed_by:
+            if sid not in sd_ids:
+                raise ParseError(e.path, None,
+                                 f"{e.id} references unknown {sid}")

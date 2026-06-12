@@ -1,0 +1,49 @@
+name: 'agentinvest'
+version: '0.1.0'
+config-version: 2
+
+# Links to profiles.yml. The profile is resolved from this directory first
+# (DBT_PROFILES_DIR set to reference/dbt/ by the build script), so a fresh
+# checkout needs no ~/.dbt/profiles.yml.
+profile: 'agentinvest'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+analysis-paths: ["analyses"]
+snapshot-paths: ["snapshots"]
+
+# Build artefacts (compiled SQL, run results, the duckdb file is NOT here — it
+# is on ext4 per the profile; see README). All gitignored.
+target-path: "target"
+clean-targets: ["target", "dbt_packages", "logs"]
+
+# Directory-level materialisation defaults, following the architecture-§4
+# staging/intermediate/marts convention. Only `staging` carries a model now;
+# the intermediate/marts folders are created empty so OIM-110/111 land without
+# moving files. (The investment-dbt-lab shape: staging = views, marts = tables.)
+models:
+  agentinvest:
+    staging:
+      +materialized: view        # staging is a cheap 1:1 typed view over the seed
+      +schema: staging
+    intermediate:
+      # The bi-temporal materialisation (OIM-110, the OIM-103 P-R4 carry-forward):
+      # the append-only *_bitemporal log models set +materialized: incremental in
+      # their own config blocks (idempotent append on the unique key); the *_versioned
+      # and *_current models are cheap views over the full log. The folder default is
+      # view; the incremental models override per-model. Architecture §4 `intermediate`.
+      +materialized: view
+      +schema: intermediate
+    marts:
+      # Consumer-facing aggregations (the holdings fact, the fund NAV, the performance
+      # appraisal). Materialised as TABLES (the marts convention; the architecture-§4
+      # shape) — they are read repeatedly by the tools and the NAV / performance
+      # workflows, so a persisted table beats re-running the roll-up per read.
+      +materialized: table
+      +schema: marts
+
+seeds:
+  agentinvest:
+    +schema: raw                 # seeds land in a `raw` schema; staging reads from there

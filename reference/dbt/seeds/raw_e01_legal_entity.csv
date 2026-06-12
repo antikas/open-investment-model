@@ -1,0 +1,54 @@
+entity_id,entity_name,entity_type,lei,domicile,parent_entity_id,known_aliases,external_ids,status,first_seen_at
+LE-0001,Acme Asset Management LLP,partnership,5493001KJTIIGC8Y1R12,GB,,Acme AM;Acme Asset Mgmt,"{""LEI"":""5493001KJTIIGC8Y1R12""}",active,2018-01-15
+LE-0002,Global Custody Bank NA,corporation,7H6GLXDRUGQFU57RNE97,US,,GCB;Global Custody,"{""LEI"":""7H6GLXDRUGQFU57RNE97""}",active,2018-02-01
+LE-0003,Treasury of the United States,government body,254900HROIFWPRGM1V77,US,,US Treasury;UST,{},active,2018-03-10
+LE-0004,Private Equity GP LE-0004 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0005,Private Equity GP LE-0005 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0006,Private Equity GP LE-0006 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0007,Private Equity GP LE-0007 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0008,Private Equity GP LE-0008 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0009,Private Equity GP LE-0009 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0010,Private Equity GP LE-0010 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0011,Private Equity GP LE-0011 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0012,Private Credit GP LE-0012 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0013,Private Credit GP LE-0013 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0014,Private Credit GP LE-0014 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0015,Private Credit GP LE-0015 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0016,Private Credit GP LE-0016 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0017,Private Credit GP LE-0017 Ltd,partnership,,KY,LE-0001,,{},active,2018-01-01
+LE-0018,Issuer LE-0018 Corp,corporation,,US,,,{},active,2019-05-12
+LE-0019,Issuer LE-0019 Corp,corporation,,US,,,{},active,2018-07-14
+LE-0020,Issuer LE-0020 Corp,corporation,,US,,,{},active,2018-05-13
+LE-0021,Issuer LE-0021 Corp,corporation,,US,,,{},active,2019-04-10
+LE-0022,Issuer LE-0022 Corp,corporation,,US,,,{},active,2019-02-10
+LE-0023,Issuer LE-0023 Corp,corporation,,US,,,{},active,2019-08-10
+LE-0024,Issuer LE-0024 Corp,corporation,,US,,,{},active,2019-01-13
+LE-0025,Issuer LE-0025 Corp,corporation,,US,,,{},active,2018-01-13
+LE-0026,Issuer LE-0026 Corp,corporation,,US,,,{},active,2018-08-10
+LE-0027,Issuer LE-0027 Corp,corporation,,US,,,{},active,2019-07-12
+LE-0028,Issuer LE-0028 Corp,corporation,,US,,,{},active,2018-07-15
+LE-0029,Issuer LE-0029 Corp,corporation,,US,,,{},active,2018-03-10
+LE-0030,Issuer LE-0030 Corp,corporation,,US,,,{},active,2018-03-15
+LE-0031,Issuer LE-0031 Corp,corporation,,US,,,{},active,2018-09-11
+LE-0032,Issuer LE-0032 Corp,corporation,,US,,,{},active,2019-02-10
+LE-0033,Issuer LE-0033 Corp,corporation,,US,,,{},active,2019-02-13
+LE-0034,Issuer LE-0034 Corp,corporation,,US,,,{},active,2018-06-13
+LE-0035,Issuer LE-0035 Corp,corporation,,US,,,{},active,2018-07-14
+LE-0036,Issuer LE-0036 Corp,corporation,,US,,,{},active,2018-09-13
+LE-0037,Issuer LE-0037 Corp,corporation,,US,,,{},active,2019-01-11
+LE-0038,Issuer LE-0038 Corp,corporation,,US,,,{},active,2018-07-15
+LE-0039,Issuer LE-0039 Corp,corporation,,US,,,{},active,2019-04-11
+LE-0040,Issuer LE-0040 Corp,corporation,,US,,,{},active,2019-02-15
+LE-0041,Issuer LE-0041 Corp,corporation,,US,,,{},active,2018-04-11
+LE-0042,Issuer LE-0042 Corp,corporation,,US,,,{},active,2019-05-14
+LE-0043,Issuer LE-0043 Corp,corporation,,US,,,{},active,2018-04-14
+LE-0044,Issuer LE-0044 Corp,corporation,,US,,,{},active,2019-06-10
+LE-0045,Issuer LE-0045 Corp,corporation,,US,,,{},active,2019-02-14
+LE-0046,Issuer LE-0046 Corp,corporation,,US,,,{},active,2018-03-13
+LE-0047,Issuer LE-0047 Corp,corporation,,US,,,{},active,2018-09-10
+LE-0048,Issuer LE-0048 Corp,corporation,,US,,,{},active,2019-03-12
+LE-0049,Private Equity GP LE-0049 Ltd,partnership,,KY,LE-0001,,{},active,2019-01-01
+LE-0050,Private Equity GP LE-0050 Ltd,partnership,,KY,LE-0001,,{},active,2019-01-01
+LE-0051,Private Equity GP LE-0051 Ltd,partnership,,KY,LE-0001,,{},active,2019-01-01
+LE-0052,Hedge Funds / Active Strategies GP LE-0052 Ltd,partnership,,KY,LE-0001,,{},active,2019-01-01
+LE-0053,Hedge Funds / Active Strategies GP LE-0053 Ltd,partnership,,KY,LE-0001,,{},active,2019-01-01

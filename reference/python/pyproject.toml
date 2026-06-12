@@ -1,0 +1,80 @@
+[project]
+name = "agentinvest-tools"
+version = "0.0.0"
+description = "agentINVEST Python tool + data layer (ADR-0054 polyglot split). The financial-data ecosystem side — typed Restate tool services invoked over the shared substrate by the TS orchestrator. The dbt canonical data layer (OIM-102) and the typed per-Service-Operation tool surface (OIM-103+) build on this workspace."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # The Restate Python SDK — the cross-language RPC counterpart to the TS
+    # SDK. Pinned to a release whose schema matches the OpenIM-owned Restate
+    # server pin (v1.6.2). Ships a manylinux wheel (no Rust build needed on the
+    # Linux side — see the workspace note about the WSL2 placement).
+    "restate-sdk==0.18.1",
+    # Pure-Python ASGI server the SDK serves its endpoint through.
+    "hypercorn>=0.17",
+    # Pydantic v2 — the typed canonical-model schemas (OIM-103, the seed of the
+    # @agentinvest/canonical-model package OIM-180). Shared across the tools, the
+    # orchestrator and the data layer; hence a base dependency, not a dev/dbt one.
+    "pydantic>=2.9",
+    # The MCP SDK — the agent-to-agent ingress surface (the MCP server exposes the
+    # bd09 tool catalogue to an external agent and dispatches to the Restate handler).
+    "mcp>=1.2",
+    # httpx — the MCP server's runtime client, dispatching each MCP tool call to the
+    # bd09 Restate handler over the ingress (a runtime dep, not test-only).
+    "httpx>=0.27",
+    # The Anthropic SDK — the agentinvestPlanner service's one frontier-LLM .plan() call
+    # (Sonnet 4.6 structured output via forced tool-use). OIM-130, ADR-0054 v0.1.
+    "anthropic>=0.40",
+    # python-dotenv — loads ANTHROPIC_API_KEY from the gitignored reference/.env
+    # (never hard-coded / committed). OIM-130.
+    "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    # OpenAPI 3.1 validation of Restate's auto-generated bd09 surface (verify-only).
+    "openapi-spec-validator>=0.7",
+]
+# The dbt canonical-data layer (OIM-102). dbt-duckdb is the dev adapter
+# (in-process); dbt-postgres documents the dev->prod path per ADR-0054 and
+# installs cleanly in dev too (it is a thin libpq-binding adapter — no server
+# needed to install, only to connect, and the prod profile target need not
+# connect). Kept in a dedicated group so the lean tool runtime is not bloated
+# with the dbt toolchain by default; `uv sync --group dbt` pulls it in, and the
+# dbt-build script does that automatically. dbt itself is excluded from
+# ruff/mypy (it is invoked, not imported by the tool code).
+dbt = [
+    "dbt-duckdb>=1.9",
+    "dbt-postgres>=1.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/agentinvest_tools",
+    "src/agentinvest_canonical_model",
+    "src/agentinvest_demo",
+    "src/agentinvest_orchestrator",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,140 @@
+version: 2
+
+# The bi-temporal materialisation of the three append-only canonical entities —
+# Valuation, Risk Measurement and Performance Result. Each carries two time axes:
+#
+#   valid-time   (the business as-of date already in the entity) — when the fact is
+#                true of the world (valuation_date / as_of_date / period_end).
+#   system-time  (the knowledge date) — when the firm recorded the fact. A restatement
+#                is the same fact recorded later with a different value; the prior
+#                figure stays queryable as-of its knowledge window.
+#
+# Three models per entity:
+#   *_bitemporal — the append-only log (one row per recorded mark; incremental append).
+#   *_versioned  — the log with derived system-time bounds (system_valid_from /
+#                  system_valid_to / is_current_knowledge); the as-of-knowledge surface.
+#   *_current    — the latest-recorded mark per logical key; the everyday "value now".
+#
+# Access patterns:
+#   current value         : the *_current model.
+#   value as-of knowledge K: *_versioned where system_valid_from <= K
+#                            and (system_valid_to is null or K < system_valid_to).
+#   value as-of valid-time : filter the valid-time column (valuation_date / as_of_date /
+#                            period_end) <= the as-of date.
+
+models:
+  # --- E-07 Valuation -------------------------------------------------------
+  - name: int_e07_valuation_bitemporal
+    description: >
+      Append-only bi-temporal log of Valuation. One row per recorded mark; a restated
+      value for a prior valuation_date is a new row with a later system_valid_from.
+      Materialised incremental (idempotent append on valuation_id).
+    columns:
+      - name: valuation_id
+        description: Primary key of the recorded mark.
+        data_tests: [unique, not_null]
+      - name: system_valid_from
+        description: The knowledge date this mark was recorded.
+        data_tests: [not_null]
+
+  - name: int_e07_valuation_versioned
+    description: >
+      The Valuation log with derived system-time bounds — system_valid_to is the
+      knowledge date the next mark for the same (position_id, valuation_date) superseded
+      this one; is_current_knowledge marks the latest. The as-of-knowledge surface.
+    columns:
+      - name: valuation_id
+        data_tests: [unique, not_null]
+
+  - name: int_e07_valuation_current
+    description: >
+      The current-knowledge value per (position_id, valuation_date) — the latest-recorded
+      mark. What a NAV strike reads. A revision supersedes the prior mark here.
+    columns:
+      - name: valuation_id
+        data_tests: [unique, not_null]
+
+  # --- E-19 Risk Measurement ------------------------------------------------
+  - name: int_e19_risk_bitemporal
+    description: >
+      Append-only bi-temporal log of Risk Measurement. A model-recalibration restatement
+      for a prior as_of_date is a new row recorded later. Incremental append on measurement_id.
+    columns:
+      - name: measurement_id
+        data_tests: [unique, not_null]
+      - name: system_valid_from
+        data_tests: [not_null]
+
+  - name: int_e19_risk_versioned
+    description: >
+      The Risk Measurement log with derived system-time bounds over the logical key
+      (subject_id, risk_type, measure_type, as_of_date). The as-of-knowledge surface.
+    columns:
+      - name: measurement_id
+        data_tests: [unique, not_null]
+
+  - name: int_e19_risk_current
+    description: >
+      The current-knowledge risk figure per (subject_id, risk_type, measure_type,
+      as_of_date) — the latest-recorded measurement.
+    columns:
+      - name: measurement_id
+        data_tests: [unique, not_null]
+
+  # --- E-20 Performance Result ----------------------------------------------
+  - name: int_e20_performance_bitemporal
+    description: >
+      Append-only bi-temporal log of Performance Result. A recomputed return for a prior
+      period is a new row recorded later (the as-struck figure is preserved for GIPS
+      verification). Incremental append on performance_result_id.
+    columns:
+      - name: performance_result_id
+        data_tests: [unique, not_null]
+      - name: system_valid_from
+        data_tests: [not_null]
+
+  - name: int_e20_performance_versioned
+    description: >
+      The Performance Result log with derived system-time bounds over the logical key
+      (subject_id, return_basis, return_method, period_start, period_end). The
+      as-of-knowledge surface; the as-struck figure stays queryable for verification.
+    columns:
+      - name: performance_result_id
+        data_tests: [unique, not_null]
+
+  - name: int_e20_performance_current
+    description: >
+      The current-knowledge return per logical performance key — the latest-recomputed
+      figure the firm reports now.
+    columns:
+      - name: performance_result_id
+        data_tests: [unique, not_null]
+
+  # --- cross-entity joins (the position-level facts the marts read) ---------
+  - name: int_position_valuation
+    description: >
+      A holding (Holding / Position) resolved to its current valuation and asset class.
+      One row per holding book-row (position_id, book); the valuation attaches
+      book-agnostically to the logical holding, and the asset class resolves through the
+      instrument by an integer key (integer = integer). The current-knowledge mark is
+      carried; the as-of (bi-temporal) path stays in the versioned valuation model.
+    columns:
+      - name: position_id
+        description: The logical holding.
+        data_tests: [not_null]
+      - name: book
+        description: ibor or abor.
+        data_tests: [not_null]
+
+  - name: int_position_risk
+    description: >
+      A holding resolved to its current holding-subject risk measurements (subject_type =
+      holding), alongside its instrument and asset class. One row per holding-subject
+      measurement; portfolio- and fund-level risk stays in the current risk model.
+    columns:
+      - name: measurement_id
+        description: The risk measurement.
+        data_tests: [not_null]
+      - name: position_id
+        description: The logical holding the measurement is for.
+        data_tests: [not_null]

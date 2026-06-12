@@ -1,0 +1,127 @@
+{
+  "description": "Synthetic labelled-break oracle for the W2 reconciliation substrate. Each record is a deliberately-injected break between the internal book and the synthetic external comparator feed (custodian holdings/cash + administrator statement). The taxonomy is E-24 Reconciliation Break's vocabulary (reconciliation_type / cause_classification / materiality). This manifest is the zero-missed-breaks ground truth: a reconciliation engine run over the feed must detect exactly these breaks and no others.",
+  "count": 11,
+  "breaks": [
+    {
+      "break_id": "BRK-0001",
+      "reconciliation_type": "position",
+      "cause_classification": "fx",
+      "record_ref": "POS-0004",
+      "expected_side": "custodian",
+      "difference_amount": "178199.70",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "custodian USD-translates POS-0004 at a different FX rate (178199.70 difference)"
+    },
+    {
+      "break_id": "BRK-0002",
+      "reconciliation_type": "position",
+      "cause_classification": "pricing",
+      "record_ref": "POS-0012",
+      "expected_side": "custodian",
+      "difference_amount": "63373.84",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "custodian marks POS-0012 63373.84 above the internal IBOR mark"
+    },
+    {
+      "break_id": "BRK-0003",
+      "reconciliation_type": "position",
+      "cause_classification": "timing",
+      "record_ref": "POS-0021",
+      "expected_side": "custodian",
+      "difference_amount": "",
+      "difference_qty": "7363",
+      "materiality": "low",
+      "description": "trade booked trade-date internally but settlement-date by the custodian for POS-0021 (TD/SD timing; custodian lags 7363 units — the in-flight trade quantity)"
+    },
+    {
+      "break_id": "BRK-0004",
+      "reconciliation_type": "position",
+      "cause_classification": "timing",
+      "record_ref": "POS-0022",
+      "expected_side": "custodian",
+      "difference_amount": "",
+      "difference_qty": "2582",
+      "materiality": "low",
+      "description": "trade booked trade-date internally but settlement-date by the custodian for POS-0022 (TD/SD timing; custodian lags 2582 units — the in-flight trade quantity)"
+    },
+    {
+      "break_id": "BRK-0005",
+      "reconciliation_type": "position",
+      "cause_classification": "fx",
+      "record_ref": "POS-0023",
+      "expected_side": "custodian",
+      "difference_amount": "182041.08",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "custodian USD-translates POS-0023 at a different FX rate (182041.08 difference)"
+    },
+    {
+      "break_id": "BRK-0006",
+      "reconciliation_type": "position",
+      "cause_classification": "data_error",
+      "record_ref": "POS-0033",
+      "expected_side": "custodian",
+      "difference_amount": "",
+      "difference_qty": "2549",
+      "materiality": "medium",
+      "description": "custodian share count for POS-0033 is 2549 units below the internal book"
+    },
+    {
+      "break_id": "BRK-0007",
+      "reconciliation_type": "position",
+      "cause_classification": "pricing",
+      "record_ref": "POS-0034",
+      "expected_side": "custodian",
+      "difference_amount": "155317.83",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "custodian marks POS-0034 155317.83 above the internal IBOR mark"
+    },
+    {
+      "break_id": "BRK-0008",
+      "reconciliation_type": "position",
+      "cause_classification": "data_error",
+      "record_ref": "POS-0051",
+      "expected_side": "custodian",
+      "difference_amount": "",
+      "difference_qty": "3388",
+      "materiality": "medium",
+      "description": "custodian share count for POS-0051 is 3388 units below the internal book"
+    },
+    {
+      "break_id": "BRK-0009",
+      "reconciliation_type": "transaction",
+      "cause_classification": "missing_transaction",
+      "record_ref": "TXN-00046",
+      "expected_side": "internal",
+      "difference_amount": "-248330.19",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "settled transaction TXN-00046 present in the internal book is absent from the administrator's transaction record"
+    },
+    {
+      "break_id": "BRK-0010",
+      "reconciliation_type": "transaction",
+      "cause_classification": "missing_transaction",
+      "record_ref": "ADMIN-TXN-EXTRA-01",
+      "expected_side": "custodian",
+      "difference_amount": "359046",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "administrator records transaction ADMIN-TXN-EXTRA-01 that is absent from the internal book"
+    },
+    {
+      "break_id": "BRK-0011",
+      "reconciliation_type": "cash",
+      "cause_classification": "data_error",
+      "record_ref": "PF-0001",
+      "expected_side": "internal",
+      "difference_amount": "96571",
+      "difference_qty": "",
+      "materiality": "medium",
+      "description": "administrator cash balance for PF-0001 disagrees with the custodian by 96571 (cash reconciliation break)"
+    }
+  ]
+}

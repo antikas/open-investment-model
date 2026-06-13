@@ -30,6 +30,7 @@ from agentinvest_orchestrator.planner import ToolDescriptor
 BD09_SERVICE_NAME = "bd09"
 BD12_SERVICE_NAME = "bd12"
 BD12_RECON_SERVICE_NAME = "bd12Recon"
+ENTITY_RESOLUTION_SERVICE_NAME = "entityResolution"
 
 
 def load_tool_catalogue_from_bd09(
@@ -109,7 +110,48 @@ def load_tool_catalogue_from_bd12_recon(
     behaviour). Each descriptor carries the tool's reconcile input schema (as_of / persist) so the
     planner can fill ``args`` plausibly. Additive to bd09 + bd12 — those descriptors are untouched.
     """
-    from agentinvest_tools.bd12_recon_service import _REGISTRY
+    from agentinvest_tools.bd12_recon_service import (
+        _REGISTRY,
+        PROPOSER_SO_ID,
+        PROPOSER_SUMMARY,
+        PROPOSER_TOOL_NAME,
+        ProposeRequest,
+    )
+
+    reconcile_tools = tuple(
+        ToolDescriptor(
+            so_id=spec.so_id,
+            name=spec.name,
+            summary=spec.summary,
+            input_schema=spec.input_model.model_json_schema(),
+        )
+        for spec in _REGISTRY.values()
+    )
+    # SO-12.10-05 — the propose-only cause-proposer (OIM-162 cycle-2), appended after the four
+    # reconcile tools (additive; the reconcile descriptors are byte-unperturbed).
+    proposer_tool = ToolDescriptor(
+        so_id=PROPOSER_SO_ID,
+        name=PROPOSER_TOOL_NAME,
+        summary=PROPOSER_SUMMARY,
+        input_schema=ProposeRequest.model_json_schema(),
+    )
+    return (*reconcile_tools, proposer_tool)
+
+
+def load_tool_catalogue_from_entity_resolution(
+    task: str,  # noqa: ARG001 - the seam's task arg (a real retriever would scope on it)
+) -> tuple[ToolDescriptor, ...]:
+    """Load the SD-13.2 resolution candidate catalogue from the entityResolution registry (the
+    seam).
+
+    The SD-13.2 entity-resolution tools (resolve_batch · get_golden_record · list_review_queue,
+    OIM-199), loaded the SAME way as the bd09 / bd12 / bd12Recon catalogues — in-process from the
+    ``entityResolution`` ``_REGISTRY`` (the SSOT ``list_capabilities`` serves), NOT over an ingress
+    HTTP hop (which would deadlock the single-loop endpoint from inside an async handler). Load-all
+    (the v0.1 seam behaviour). Each descriptor carries the tool's input schema so the planner can
+    fill ``args`` plausibly. Additive to bd09 + bd12 + bd12Recon — those descriptors are untouched.
+    """
+    from agentinvest_tools.entity_resolution_service import _REGISTRY
 
     return tuple(
         ToolDescriptor(
@@ -127,13 +169,12 @@ def load_tool_catalogue_from_services(
 ) -> tuple[ToolDescriptor, ...]:
     """The orchestrator-path catalogue across the registered per-BD read/compute services.
 
-    Aggregates the BD-09 (performance) + BD-12 (book-of-record read) + BD-12 SD-12.10 (reconcile)
-    catalogues the planner selects among — the load-all v0.1 seam over the services. The BD-09
-    descriptors come first, BYTE-FOR-BYTE as ``load_tool_catalogue_from_bd09`` produces them (so the
-    W1 NAV-strike path that resolves the BD-09 / NAV tools is unperturbed), then the bd12 read
-    tools,
-    then the bd12Recon reconcile tools — each set *appended*, never interleaved into nor altering
-    the
+    Aggregates the BD-09 (performance) + BD-12 (book-of-record read) + BD-12 SD-12.10 (reconcile) +
+    BD-13 SD-13.2 (entity resolution) catalogues the planner selects among — the load-all v0.1 seam
+    over the services. The BD-09 descriptors come first, BYTE-FOR-BYTE as
+    ``load_tool_catalogue_from_bd09`` produces them (so the W1 NAV-strike path that resolves the
+    BD-09 / NAV tools is unperturbed), then the bd12 read tools, then the bd12Recon reconcile tools,
+    then the entityResolution tools — each set *appended*, never interleaved into nor altering the
     earlier entries (additive). When the surface grows (OIM-120+), a real per-task retriever scopes
     HERE without changing the planner.
     """
@@ -141,6 +182,7 @@ def load_tool_catalogue_from_services(
         load_tool_catalogue_from_bd09(task)
         + load_tool_catalogue_from_bd12(task)
         + load_tool_catalogue_from_bd12_recon(task)
+        + load_tool_catalogue_from_entity_resolution(task)
     )
 
 

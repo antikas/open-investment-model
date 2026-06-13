@@ -78,17 +78,27 @@ from agentinvest_tools.bd12_recon import (
     InternalCashReplay,
     InternalPositionRow,
     InternalTransaction,
+    ProposalStoreUnavailableError,
     ReconcileCashInput,
     ReconcileIborAborInput,
     ReconcilePositionInput,
     ReconcileTransactionsInput,
     append_breaks,
+    append_proposals,
+    assemble_bundle,
+    assemble_value_context,
+    propose_cause,
     reconcile_cash,
     reconcile_ibor_abor,
     reconcile_position,
     reconcile_transactions,
 )
 from agentinvest_tools.bd12_recon.break_finding import BreakFinding
+from agentinvest_tools.bd12_recon.proposer import (
+    CauseProposal,
+    ProposerDeterministicError,
+    ProposerTransientError,
+)
 
 BD12_RECON_SERVICE_NAME = "bd12Recon"
 
@@ -438,6 +448,147 @@ def _register() -> None:
 _register()
 
 
+# ======================================================================================
+# SO-12.10-05 — the PROPOSE-ONLY LLM cause-proposer over the `unexplained` residue (OIM-162
+# cycle-2). ADDITIVE: the four reconcile SOs (SO-12.10-01..04) + ``_REGISTRY`` + ``_dispatch``
+# above are byte-unperturbed. The proposer has a DIFFERENT shape (it generates + captures
+# proposals over the residue, it does NOT emit/persist break findings), so it carries its own
+# request model, closure and dispatch branch — it never routes through the reconcile ``ToolSpec``.
+#
+# THE DETERMINISTIC SPINE. This SO writes ONLY to the append-only proposal store (the LLM's entire
+# writable universe). It NEVER writes the of-record break store, NEVER changes a break's
+# of-record cause, NEVER mutates IBOR/ABOR. The LLM PROPOSES; the deterministic rules CLASSIFY.
+# CI runs against a deterministic stub client (no live model in the gate); the one live smoke is
+# proven separately (the cycle report). No live model call happens on this path unless a real
+# client is injected.
+# ======================================================================================
+
+PROPOSER_SO_ID = "SO-12.10-05"
+PROPOSER_TOOL_NAME = "propose_unexplained_causes"
+PROPOSER_SUMMARY = (
+    "Propose-only LLM cause-proposer over the `unexplained` reconciliation residue — emits "
+    "captured proposals (append-only), NEVER the of-record cause (the deterministic spine holds)."
+)
+
+
+class ProposeRequest(BaseModel):
+    """The proposer request — an as-of date (+ optional capture toggle).
+
+    The proposer runs the four reconciles non-persisting, filters the ``unexplained`` residue,
+    assembles each break's observable-evidence bundle (the label forbidden) and proposes a cause.
+    ``capture`` controls whether the proposals are appended to the engine-owned proposal store
+    (default true — the flywheel capture stage). ``extra="forbid"`` — an unrecognised arg is a 400.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    as_of_date: str = Field(
+        default="2026-03-31", description="The as-of date (defaults to the canonical book date)."
+    )
+    capture: bool = Field(
+        default=True,
+        description="Append the proposals to the engine-owned append-only proposal store.",
+    )
+
+
+class ProposeOutput(BaseModel):
+    """The proposer result — the captured proposals + counts (NO of-record mutation)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    as_of_date: str = Field(description="The as-of date the proposer honoured.")
+    n_unexplained: int = Field(description="The of-record `unexplained` residue size.")
+    n_proposals: int = Field(description="The proposals generated (one per residue break).")
+    proposals: tuple[CauseProposal, ...] = Field(
+        description="The captured proposals (proposed cause / confidence / rationale / snapshot)."
+    )
+
+
+def _gather_unexplained_residue(
+    as_of_date: str,
+) -> tuple[list[tuple[BreakFinding, Decimal | None, Decimal | None, Decimal | None]], object]:
+    """Run the four reconciles non-persisting and gather the of-record ``unexplained`` residue.
+
+    Returns the residue breaks each paired with the observable values needed for the bundle (the
+    internal value, the external value, the in-flight quantity), plus the run-level value-ratio
+    cluster context. Reads ONLY the neutral observable feed (never the label). The of-record cause
+    is the deterministic value the reconciles assigned — a break is in the residue iff that value
+    is ``unexplained``.
+    """
+    preview = ReconcileRequest(as_of_date=as_of_date, persist=False)
+    all_findings: list[BreakFinding] = []
+    internal_by_ref: dict[str, Decimal] = {}
+    external_by_ref: dict[str, Decimal] = {}
+
+    # position: carry the book value (internal) + custodian value (external) for the ratio context.
+    pos_out, pos_findings = _reconcile_position(preview)
+    all_findings.extend(pos_findings)
+    custodian = {c.position_id: c for c in read_custodian_holdings(as_of_date)}
+    internal_pos = {r.position_id: r for r in _read_all_internal_positions("ibor", as_of_date)}
+    for f in pos_findings:
+        ip = internal_pos.get(f.record_a_ref)
+        cp = custodian.get(f.record_a_ref)
+        if ip is not None:
+            internal_by_ref[f.record_a_ref] = ip.book_market_value_usd
+        if cp is not None:
+            external_by_ref[f.record_a_ref] = cp.market_value_usd
+
+    for fn in (_reconcile_cash, _reconcile_transactions, _reconcile_ibor_abor):
+        _o, findings = fn(preview)
+        all_findings.extend(findings)
+
+    value_context = assemble_value_context(all_findings, internal_by_ref, external_by_ref)
+    in_flight = {t.instrument_id: t.quantity for t in _read_all_in_flight(as_of_date)}
+
+    residue: list[tuple[BreakFinding, Decimal | None, Decimal | None, Decimal | None]] = []
+    for f in all_findings:
+        if f.cause_classification != "unexplained":
+            continue
+        iv = internal_by_ref.get(f.record_a_ref)
+        ev = external_by_ref.get(f.record_a_ref)
+        instr = internal_pos.get(f.record_a_ref)
+        ifq = in_flight.get(instr.instrument_id) if instr is not None else None
+        residue.append((f, iv, ev, ifq))
+    return residue, value_context
+
+
+def _propose_unexplained(
+    req: ProposeRequest,
+    run_id: str,
+    *,
+    client: Any | None = None,
+) -> ProposeOutput:
+    """Generate + capture proposals over the ``unexplained`` residue — the propose-only flywheel.
+
+    Gathers the residue, assembles each break's observable-evidence bundle (the label forbidden),
+    proposes a cause via the injected client (a deterministic stub in CI; a real Anthropic client
+    only when one is injected), and appends the proposals to the append-only proposal store. The
+    of-record cause is NEVER changed — the proposal is captured at ``status = proposed`` only.
+    """
+    residue, value_context = _gather_unexplained_residue(req.as_of_date)
+    proposals: list[CauseProposal] = []
+    for seq, (finding, iv, ev, ifq) in enumerate(residue):
+        bundle = assemble_bundle(
+            finding,
+            break_id=f"BRK-{run_id}-{seq:04d}",
+            internal_value=iv,
+            external_value=ev,
+            in_flight_qty=ifq,
+            value_context=value_context,  # type: ignore[arg-type]
+        )
+        proposals.append(propose_cause(bundle, client=client))
+
+    if req.capture and proposals:
+        append_proposals(proposals, run_id=run_id)
+
+    return ProposeOutput(
+        as_of_date=req.as_of_date,
+        n_unexplained=len(residue),
+        n_proposals=len(proposals),
+        proposals=tuple(proposals),
+    )
+
+
 class ExecuteSoInput(BaseModel):
     """The ``execute_so`` request envelope — a named SO plus its reconcile args.
 
@@ -553,6 +704,138 @@ def _dispatch(spec: ToolSpec, args: dict[str, Any], run_id: str) -> ExecuteSoOut
     }
 
 
+class _StubProposerClient:
+    """A deterministic stub Anthropic client for the proposer over the ingress (NO live model).
+
+    The ingress / CI path must NEVER make a live model call (the no-live-LLM-in-the-gate discipline,
+    the planner precedent). This stub returns a deterministic, schema-valid proposal derived from
+    the
+    OBSERVABLE EVIDENCE in the prompt — it mirrors what a sound model would propose from the same
+    bundle, WITHOUT a network call, WITHOUT reading any label (the prompt carries none). It honours
+    the same response SHAPE the real client returns (a list of content blocks with a tool_use
+    block),
+    so ``propose_cause`` parses it identically. The one LIVE smoke (a real Anthropic call) is proven
+    separately and pasted in the cycle report; it is never on this path.
+    """
+
+    _model_id_for_capture = "stub:deterministic-evidence-echo"
+
+    class _Block:
+        def __init__(self, input_: dict[str, Any]) -> None:
+            self.type = "tool_use"
+            self.name = "emit_cause_proposal"
+            self.input = input_
+
+    class _Response:
+        def __init__(self, content: list[Any]) -> None:
+            self.content = content
+            self.stop_reason = "tool_use"
+
+    class _Messages:
+        def create(self, **kwargs: Any) -> Any:
+            prompt = kwargs["messages"][0]["content"]
+            proposal = _StubProposerClient._propose_from_prompt(prompt)
+            return _StubProposerClient._Response([_StubProposerClient._Block(proposal)])
+
+    def __init__(self) -> None:
+        self.messages = _StubProposerClient._Messages()
+
+    @staticmethod
+    def _propose_from_prompt(prompt: str) -> dict[str, Any]:
+        """Derive a deterministic proposal from the prompt's observable evidence (no label, no net).
+
+        Reads the ``ratio_direction`` + ``in_flight_qty`` + ``difference_qty`` lines from the prompt
+        (the same observable evidence the deterministic rule sees) and proposes the cause a sound
+        analyst would from them. This is a DETERMINISTIC ECHO of the observable evidence, not a
+        model
+        — it is the CI/ingress stand-in so the seam is exercised end-to-end without a live call.
+        """
+        below = "ratio_direction: below" in prompt
+        above = "ratio_direction: above" in prompt
+        has_in_flight = (
+            "in_flight_qty (a known TD/SD trade for this instrument): None" not in prompt
+        )
+        qty_only = "value_ratio (external/internal): None" in prompt
+        if above:
+            cause, conf, why = (
+                "pricing", 0.6,
+                "the custodian marks the holding above the book (ratio_direction above) — an "
+                "idiosyncratic mark difference, the pricing signature.",
+            )
+        elif below and has_in_flight:
+            cause, conf, why = (
+                "timing", 0.5,
+                "a downward value difference with a known in-flight TD/SD trade for the" 
+                    "instrument.",
+            )
+        elif below:
+            cause, conf, why = (
+                "fx", 0.45,
+                "a downward (custodian-lower) value difference consistent with an FX-translation "
+                "rate difference, though no shared-ratio cluster confirms it on this break alone.",
+            )
+        elif qty_only:
+            cause, conf, why = (
+                "data_error", 0.4,
+                "a quantity divergence with no value impact and no in-flight trade — a data-error "
+                "shape with no rule signal.",
+            )
+        else:
+            cause, conf, why = (
+                "unexplained", 0.2,
+                "the observable evidence does not support a specific cause; honest abstention.",
+            )
+        return {
+            "proposed_cause": cause,
+            "confidence": conf,
+            "rationale": why,
+            "evidence_cited": ["ratio_direction", "in_flight_qty", "difference_qty"],
+        }
+
+
+def _dispatch_proposer(args: dict[str, Any], run_id: str) -> ExecuteSoOutput:
+    """Validate the args, gather the residue, propose (STUB client on the ingress), capture, shape.
+
+    Runs inside the journaled ``ctx.run`` step. Uses the deterministic stub client — NO live model
+    call on the ingress/CI path. The capture is append-only insert-only to the proposal store (a new
+    ``status = proposed`` event); it never writes the of-record break store, never changes a break's
+    of-record cause (the deterministic spine). The deterministic run-scoped proposal ids keep a
+    replay/re-capture idempotent.
+    """
+    try:
+        request = ProposeRequest.model_validate(args)
+    except ValidationError as exc:
+        raise TerminalError(
+            f"{PROPOSER_SO_ID} ({PROPOSER_TOOL_NAME}): invalid arguments — "
+            f"{exc.error_count()} error(s): {exc}",
+            status_code=400,
+        ) from exc
+
+    _who = f"{PROPOSER_SO_ID} ({PROPOSER_TOOL_NAME})"
+    try:
+        output = _propose_unexplained(request, run_id, client=_StubProposerClient())
+    except (MartsUnavailableError, ProposalStoreUnavailableError) as exc:
+        raise TerminalError(f"{_who}: {exc}", status_code=422) from exc
+    except ProposerTransientError as exc:  # pragma: no cover - the stub never faults transiently
+        raise TerminalError(f"{_who}: {exc}", status_code=503) from exc
+    except (ProposerDeterministicError, ValueError, TypeError, KeyError) as exc:
+        raise TerminalError(
+            f"{_who}: {type(exc).__name__}: {exc}", status_code=422
+        ) from exc
+
+    return {
+        "result": output.model_dump(mode="json"),
+        "provenance": {
+            "soId": PROPOSER_SO_ID,
+            "tool": PROPOSER_TOOL_NAME,
+            "runId": run_id,
+            "breakIds": [p.break_id for p in output.proposals],
+            "persisted": bool(request.capture and output.proposals),
+        },
+        "computedBy": f"python:{BD12_RECON_SERVICE_NAME}",
+    }
+
+
 def _coerce_envelope(req: Any) -> dict[str, Any]:
     if isinstance(req, ExecuteSoInput):
         return req.model_dump()
@@ -589,17 +872,28 @@ async def execute_so(ctx: restate.Context, req: ExecuteSoInput) -> ExecuteSoOutp
     envelope = _coerce_envelope(req)
 
     so_id = envelope.get("soId")
+    args = envelope.get("args", {})
+    as_of = args.get("as_of_date", "2026-03-31") if isinstance(args, dict) else "2026-03-31"
+
+    # SO-12.10-05 — the propose-only LLM cause-proposer (OIM-162 cycle-2). ADDITIVE branch: the four
+    # reconcile SOs route through ``_REGISTRY`` below unchanged. The proposer dispatches via its own
+    # closure (a different shape — it captures proposals, not break findings) and uses the
+    # DETERMINISTIC STUB client (no live model on the ingress; the spine — writes only the proposal
+    # store, never the of-record cause).
+    if so_id == PROPOSER_SO_ID:
+        run_id = f"{ctx.request().id}-{PROPOSER_SO_ID}-{as_of}"
+        return await ctx.run(f"so-{PROPOSER_SO_ID}", lambda: _dispatch_proposer(args, run_id))
+
     spec = _REGISTRY.get(so_id) if so_id is not None else None
     if spec is None:
         raise TerminalError(
-            f"unknown Service Operation '{so_id}' — registered: {sorted(_REGISTRY)}",
+            f"unknown Service Operation '{so_id}' — registered: "
+            f"{sorted([*_REGISTRY, PROPOSER_SO_ID])}",
             status_code=404,
         )
 
-    args = envelope.get("args", {})
     # The run id scopes a reconcile run's break ids; derived from the invocation id (replay-stable)
     # + the so_id + the as-of, so a replay reproduces the SAME ids (the append stays idempotent).
-    as_of = args.get("as_of_date", "2026-03-31") if isinstance(args, dict) else "2026-03-31"
     run_id = f"{ctx.request().id}-{spec.so_id}-{as_of}"
 
     return await ctx.run(f"so-{spec.so_id}", lambda: _dispatch(spec, args, run_id))
@@ -622,4 +916,15 @@ async def list_capabilities(ctx: restate.Context) -> ListCapabilitiesOutput:
         }
         for spec in _REGISTRY.values()
     ]
+    # SO-12.10-05 — the propose-only cause-proposer (OIM-162 cycle-2), appended after the four
+    # reconcile tools (additive; the reconcile entries are unperturbed).
+    capabilities.append(
+        {
+            "soId": PROPOSER_SO_ID,
+            "name": PROPOSER_TOOL_NAME,
+            "summary": PROPOSER_SUMMARY,
+            "inputSchema": ProposeRequest.model_json_schema(),
+            "outputSchema": ProposeOutput.model_json_schema(),
+        }
+    )
     return {"service": BD12_RECON_SERVICE_NAME, "capabilities": capabilities}

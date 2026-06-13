@@ -19,3 +19,9 @@ ALIAS-0017,fund,INS-0056,INS-0056 (short),2020-09-30,administrator_statement,ste
 ALIAS-0018,fund,INS-0059,INS-0059 (short),2020-09-30,administrator_statement,steward.patel
 ALIAS-0019,fund,INS-0060,INS-0060 (short),2020-09-30,administrator_statement,steward.patel
 ALIAS-0020,legal_entity,LE-0001,Acme AM,2018-01-15,data_vendor,steward.jones
+ALIAS-0021,legal_entity,LE-0004,Bolt Rides,2021-06-30,gp_manager_report,steward.jones
+ALIAS-0022,legal_entity,LE-0004,Bolt Technologies,2021-06-30,administrator_statement,steward.jones
+ALIAS-0023,legal_entity,LE-0012,Helios Renewables,2021-06-30,gp_manager_report,steward.jones
+ALIAS-0024,legal_entity,LE-0018,Cardinal Pipeline,2021-06-30,data_vendor,steward.jones
+ALIAS-0025,legal_entity,LE-0048,Sterling Foods,2021-06-30,data_vendor,steward.jones
+ALIAS-0026,legal_entity,LE-0052,Vanta Strategies,2021-06-30,gp_manager_report,steward.jones

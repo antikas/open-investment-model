@@ -92,12 +92,20 @@ INGRESS_URL = os.environ.get("AGENTINVEST_RESTATE_INGRESS_URL", "http://localhos
 BD09_SERVICE_NAME = "bd09"
 BD12_SERVICE_NAME = "bd12"
 BD12_RECON_SERVICE_NAME = "bd12Recon"
+ENTITY_RESOLUTION_SERVICE_NAME = "entityResolution"
 # The per-BD model-free dispatch services the MCP face exposes. Each hosts the SAME
 # execute_so / list_capabilities envelope, so the server loads each catalogue and routes each tool
 # call (by its SO name) to its owning service. bd09 (performance) + bd12 (book-of-record read,
-# OIM-161) + bd12Recon (SD-12.10 reconcile, OIM-162). Additive: bd09's + bd12's listing + dispatch
-# are byte-identical to before — bd12Recon is appended.
-SERVICE_NAMES = (BD09_SERVICE_NAME, BD12_SERVICE_NAME, BD12_RECON_SERVICE_NAME)
+# OIM-161) + bd12Recon (SD-12.10 reconcile, OIM-162) + entityResolution (SD-13.2 entity resolution,
+# OIM-199). Additive: bd09's + bd12's + bd12Recon's listing + dispatch are byte-identical to before
+# —
+# entityResolution is appended.
+SERVICE_NAMES = (
+    BD09_SERVICE_NAME,
+    BD12_SERVICE_NAME,
+    BD12_RECON_SERVICE_NAME,
+    ENTITY_RESOLUTION_SERVICE_NAME,
+)
 MCP_SERVER_NAME = "agentinvest"
 
 # The concurrency-guard bound. A generous default so a normal single-operator session is never
@@ -338,6 +346,7 @@ _SERVICE_BY_SO_PREFIX: tuple[tuple[str, str], ...] = (
     ("SO-09-", BD09_SERVICE_NAME),
     ("SO-12.10-", BD12_RECON_SERVICE_NAME),
     ("SO-12.", BD12_SERVICE_NAME),
+    ("SO-13.2-", ENTITY_RESOLUTION_SERVICE_NAME),
 )
 
 

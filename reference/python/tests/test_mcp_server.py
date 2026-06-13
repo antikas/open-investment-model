@@ -33,6 +33,7 @@ import pytest
 from agentinvest_tools.bd09_service import _REGISTRY
 from agentinvest_tools.bd12_recon_service import _REGISTRY as _BD12_RECON_REGISTRY
 from agentinvest_tools.bd12_service import _REGISTRY as _BD12_REGISTRY
+from agentinvest_tools.entity_resolution_service import _REGISTRY as _ER_REGISTRY
 from agentinvest_tools.mcp_server import (
     McpServiceUnavailableError,
     McpToolError,
@@ -90,6 +91,22 @@ _BD12_RECON_CATALOGUE = {
     ],
 }
 
+# The entityResolution (SD-13.2 resolution) catalogue the MCP face now also aggregates (OIM-199).
+# Built from the live entityResolution registry so the mock stays in lock-step with the real tools.
+_ENTITY_RESOLUTION_CATALOGUE = {
+    "service": "entityResolution",
+    "capabilities": [
+        {
+            "soId": spec.so_id,
+            "name": spec.name,
+            "summary": spec.summary,
+            "inputSchema": spec.input_model.model_json_schema(),
+            "outputSchema": spec.output_model.model_json_schema(),
+        }
+        for spec in _ER_REGISTRY.values()
+    ],
+}
+
 
 def _mock_ingress(
     execute_response: tuple[int, dict[str, Any]] | None = None,
@@ -108,10 +125,13 @@ def _mock_ingress(
             return httpx.Response(200, json=_BD12_CATALOGUE)
         if request.url.path == "/bd12Recon/list_capabilities":
             return httpx.Response(200, json=_BD12_RECON_CATALOGUE)
+        if request.url.path == "/entityResolution/list_capabilities":
+            return httpx.Response(200, json=_ENTITY_RESOLUTION_CATALOGUE)
         if request.url.path in (
             "/bd09/execute_so",
             "/bd12/execute_so",
             "/bd12Recon/execute_so",
+            "/entityResolution/execute_so",
         ):
             assert execute_response is not None, "no execute_so response configured"
             status, body = execute_response
@@ -136,8 +156,9 @@ async def test_list_tools_generates_descriptors_from_the_aggregated_catalogue() 
     names = [t.name for t in tools]
     # The bd09 five come FIRST, byte-for-byte as before (the W1 NAV-path tools unperturbed)...
     assert names[:5] == ["SO-09-01", "SO-09-02", "SO-09-03", "SO-09-04", "SO-09-05"]
-    # ...then the bd12 read tools (OIM-161) and the bd12Recon reconcile tools (OIM-162) are
-    # APPENDED, additive — the 9 IBOR + ABOR reads plus the 4 SD-12.10 reconciles.
+    # ...then the bd12 read tools (OIM-161), the bd12Recon reconcile tools (OIM-162) and the
+    # entityResolution tools (OIM-199) are APPENDED, additive — the 9 IBOR + ABOR reads, the 4
+    # SD-12.10 reconciles, and the 3 SD-13.2 resolution tools.
     assert set(names[5:]) == {
         "SO-12.1-01",
         "SO-12.1-02",
@@ -152,6 +173,9 @@ async def test_list_tools_generates_descriptors_from_the_aggregated_catalogue() 
         "SO-12.10-02",
         "SO-12.10-03",
         "SO-12.10-04",
+        "SO-13.2-01",
+        "SO-13.2-02",
+        "SO-13.2-03",
     }
     for tool in tools:
         # The inputSchema is the tool's real Pydantic JSON Schema (auto-generated, not a stub):
@@ -336,6 +360,8 @@ def _catalogue_then(
             return httpx.Response(200, json=_BD12_CATALOGUE)
         if request.url.path == "/bd12Recon/list_capabilities":
             return httpx.Response(200, json=_BD12_RECON_CATALOGUE)
+        if request.url.path == "/entityResolution/list_capabilities":
+            return httpx.Response(200, json=_ENTITY_RESOLUTION_CATALOGUE)
         if request.url.path == "/bd09/execute_so":
             return execute_handler(request)
         return httpx.Response(404, text=f"unexpected path {request.url.path}")
@@ -460,6 +486,8 @@ async def test_real_mcp_client_malformed_catalogue_does_not_crash_session() -> N
             return httpx.Response(200, json=_BD12_CATALOGUE)
         if request.url.path == "/bd12Recon/list_capabilities":
             return httpx.Response(200, json=_BD12_RECON_CATALOGUE)
+        if request.url.path == "/entityResolution/list_capabilities":
+            return httpx.Response(200, json=_ENTITY_RESOLUTION_CATALOGUE)
         return httpx.Response(404, text="unexpected")
 
     async with _client(httpx.MockTransport(handler)) as client:
@@ -471,11 +499,11 @@ async def test_real_mcp_client_malformed_catalogue_does_not_crash_session() -> N
             assert "unreadable" in exc_info.value.error.message
             assert "Expecting value" not in exc_info.value.error.message
             # The session SURVIVES — a second list (catalogue recovered) round-trips cleanly. The
-            # bd09 five come first, then the bd12 nine + bd12Recon four appended (aggregated face).
+            # bd09 five first, then bd12 nine + bd12Recon four + entityResolution three appended.
             recovered = await session.list_tools()
             names = [t.name for t in recovered.tools]
             assert names[:5] == ["SO-09-01", "SO-09-02", "SO-09-03", "SO-09-04", "SO-09-05"]
-            assert len(names) == 18
+            assert len(names) == 21
 
 
 @pytest.mark.anyio
@@ -496,6 +524,8 @@ async def test_real_mcp_client_partial_catalogue_does_not_crash_session() -> Non
             return httpx.Response(200, json=_BD12_CATALOGUE)
         if request.url.path == "/bd12Recon/list_capabilities":
             return httpx.Response(200, json=_BD12_RECON_CATALOGUE)
+        if request.url.path == "/entityResolution/list_capabilities":
+            return httpx.Response(200, json=_ENTITY_RESOLUTION_CATALOGUE)
         return httpx.Response(404, text="unexpected")
 
     async with _client(httpx.MockTransport(handler)) as client:
@@ -506,8 +536,9 @@ async def test_real_mcp_client_partial_catalogue_does_not_crash_session() -> Non
             assert "unreadable" in exc_info.value.error.message
             assert "'capabilities'" not in exc_info.value.error.message
             recovered = await session.list_tools()
-            # The aggregated face: bd09 five + bd12 nine + bd12Recon four = 18 read/compute tools.
-            assert len(recovered.tools) == 18
+            # The aggregated face: bd09 five + bd12 nine + bd12Recon four + entityResolution three
+            # = 21 read/compute tools.
+            assert len(recovered.tools) == 21
 
 
 @pytest.mark.anyio
@@ -700,6 +731,8 @@ async def test_concurrency_guard_busy_past_the_bound(
             return httpx.Response(200, json=_BD12_CATALOGUE)
         if request.url.path == "/bd12Recon/list_capabilities":
             return httpx.Response(200, json=_BD12_RECON_CATALOGUE)
+        if request.url.path == "/entityResolution/list_capabilities":
+            return httpx.Response(200, json=_ENTITY_RESOLUTION_CATALOGUE)
         # execute_so: signal we are in-flight, then block until released.
         in_flight.set()
         await release.wait()
@@ -794,10 +827,10 @@ async def test_real_mcp_client_round_trips_list_and_call() -> None:
         async with create_connected_server_and_client_session(server) as session:
             listed = await session.list_tools()
             names = [t.name for t in listed.tools]
-            # The aggregated face: bd09 five first (unperturbed), then the bd12 nine (OIM-161) and
-            # the bd12Recon four (OIM-162).
+            # The aggregated face: bd09 five first (unperturbed), then the bd12 nine (OIM-161), the
+            # bd12Recon four (OIM-162) and the entityResolution three (OIM-199).
             assert names[:5] == ["SO-09-01", "SO-09-02", "SO-09-03", "SO-09-04", "SO-09-05"]
-            assert len(names) == 18
+            assert len(names) == 21
             call = await session.call_tool(
                 "SO-09-04", {"portfolio_return": "0.12", "benchmark_return": "0.10"}
             )

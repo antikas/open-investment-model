@@ -57,7 +57,7 @@ struck **quarterly** plus a since-inception figure per fund.
 | `raw_e06_cash_flow_event.csv` | Cash Flow Event | The dated, signed cash movements — the cash leg of a settled trade, dividends, coupons, fees | `cash_flow_id` | ~100 |
 | `raw_e07_valuation.csv` | Valuation | The append-only value trajectory of each holding — one row per mark, with method, level, source and confidence | `valuation_id` | ~1,100 |
 | `raw_e09_asset_class.csv` | Asset Class | The nine-class controlled taxonomy (public / private / both) | `asset_class_key` | 9 |
-| `raw_e13_entity_alias.csv` | Entity Alias | Alternate names a master record has been seen under | `alias_id` | ~20 |
+| `raw_e13_entity_alias.csv` | Entity Alias | Alternate names a master record has been seen under | `alias_id` | ~25 |
 | `raw_e14_external_identifier.csv` | External Identifier | Cross-references from a golden key to external-system identifiers (LEI, ISIN, internal) | `external_id_record` | ~50 |
 | `raw_e19_risk_measurement.csv` | Risk Measurement | The append-only risk-measure trajectory — VaR, exposure, stress loss, liquidity tier — per fund, struck monthly | `measurement_id` | ~250 |
 | `raw_e20_performance_result.csv` | Performance Result | The append-only return trajectory — time-weighted quarterly returns, gross and net, plus a since-inception figure per fund | `performance_result_id` | ~50 |
@@ -172,33 +172,44 @@ right amount), invent **none**, and disagree with the manifest on nothing. There
 unlabelled differences hiding in the feed, and no labels without a real difference behind
 them — on positions, transactions or cash.
 
-Two of the break classes are grounded in the rest of the data rather than being free-
+Several of the break classes are grounded in the rest of the data rather than being free-
 standing figures: a **cash** break is a fund whose administrator balance differs from its
 custodian balance by exactly the labelled amount (every other fund's two balances are
 equal), and a **timing** break is a holding that genuinely carries an in-flight
 (unsettled) trade — the custodian, recording on a settlement-date basis, lags the
-internal trade-date book by exactly that trade's quantity.
+internal trade-date book by exactly that trade's quantity. An **ibor_abor** break is an
+IBOR-vs-ABOR internal divergence no known accounting class (timing / accrual / cost-basis)
+explains, and an **A/B-disagreement** case is a holding whose internal book value and
+valuation mark diverge while the custodian ties the book — so two independent computations
+of the same position genuinely disagree.
 
 The manifest uses the standard reconciliation-break vocabulary:
 
-- `reconciliation_type` — what was being reconciled: `position` / `cash` / `transaction`
-  (also `ibor_abor` / `custodian` / `counterparty` in the wider vocabulary).
+- `reconciliation_type` — what was being reconciled: `position` / `cash` / `transaction` /
+  `ibor_abor` (also `custodian` / `counterparty` in the wider vocabulary), plus `nav` for a
+  fund-level administrator-NAV-vs-internal-NAV divergence (an oversight surface, not a
+  position/cash/transaction/ibor_abor reconcile).
 - `cause_classification` — the root cause: `pricing` (the custodian marks a security
   differently) / `data_error` (a different quantity or balance) / `missing_transaction`
   (a trade in one record but not the other) / `timing` (a trade booked trade-date in one
   record, settlement-date in the other — the TD/SD difference) / `fx` (a currency-
-  translation difference). The five differences the feed carries — **price · quantity ·
-  missing/extra transaction · timing/TD-SD · FX** — map onto these.
+  translation difference) / `fees` (a fee/charge difference with no observable fee record —
+  a cause a deterministic rule set cannot reach from the data alone) / `unexplained`. The
+  taxonomy classes the feed carries — **price · quantity · missing/extra transaction ·
+  timing/TD-SD · FX · cash** — map onto these.
 - `materiality` — `low` / `medium` / `high`, by the size of the difference.
 - `record_ref` and `expected_side` — which record disagreed, and on which side
   (`custodian` or `internal`) the difference sits.
 
-The feed carries on the order of a dozen catalogued breaks — roughly two of each
-difference type across the positions, two on the transaction record (one the
-administrator is missing, one it has in excess), and one on cash — against a clear
-majority of matching rows. The manifest's count equals the number of injected breaks;
-the unbroken rows are the larger part of the feed, so a reconciliation has to *find* the
-breaks rather than assume every row is one.
+The feed carries on the order of two-to-three dozen catalogued breaks — at least two of
+each difference type across the positions (price · quantity · timing · FX), three on the
+transaction record (one the administrator is missing, two it has in excess), two on cash,
+a handful of deliberately-adversarial fx-vs-pricing shapes (designed to misclassify under
+a ratio-cluster rule), at least two rule-unreachable breaks designed to land
+`unexplained`, an A/B-disagreement case, and a fund-level administrator-NAV divergence —
+against a clear majority of matching rows. The manifest's count equals the number of
+injected breaks; the unbroken rows are the larger part of the feed, so a reconciliation
+has to *find* the breaks rather than assume every row is one.
 
 `break_labels.csv` and `break_labels.json` are the same manifest in two forms (the JSON
 adds a top-level `count` and `description`); use whichever is easier to read.

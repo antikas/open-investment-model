@@ -1,0 +1,22 @@
+source_record_id,true_entity_id,resolution_outcome,difficulty_tier,note
+ERF-0001,LE-0001,resolved,exact_lei,exact LEI match to Acme Asset Management LLP (the high-confidence first tier)
+ERF-0002,LE-0002,resolved,exact_lei,exact LEI match to Global Custody Bank NA
+ERF-0003,LE-0003,resolved,exact_lei,exact LEI match to the US Treasury
+ERF-0004,LE-0001,resolved,alias_match,"the E-13 alias ""Acme AM"" maps to LE-0001 (no inbound LEI)"
+ERF-0005,LE-0001,resolved,alias_match,"the known-alias ""Acme Asset Mgmt"" maps to LE-0001 (no inbound LEI)"
+ERF-0006,LE-0003,resolved,alias_match,"the known-alias ""US Treasury"" maps to LE-0003 (no inbound LEI)"
+ERF-0007,LE-0002,resolved,alias_match,"the known-alias ""Global Custody"" maps to LE-0002 (no inbound LEI)"
+ERF-0008,LE-0004,resolved,name_variant_no_id,"the private company ""Bolt Rides Ltd"" (no LEI, no internal key) resolves to LE-0004 via the E-13 alias ""Bolt Rides"" + KY domicile corroboration"
+ERF-0009,LE-0004,resolved,name_variant_no_id,"the hard no-universal-identifier private case: ""Bolt Technologies OÜ"" (Estonian legal form, no LEI, no internal key) resolves to LE-0004 via the E-13 alias ""Bolt Technologies"" + KY domicile + parent-hint corroboration — the answer is absent from the surface string"
+ERF-0010,LE-0012,resolved,name_variant_no_id,"the private company ""Helios Renewables Ltd"" (no LEI) resolves to LE-0012 via the E-13 alias ""Helios Renewables"" + KY domicile"
+ERF-0011,LE-0012,resolved,name_variant_no_id,"the suffix-free variant ""Helios Renewables"" (no LEI) resolves to LE-0012 via the same E-13 alias"
+ERF-0012,LE-0052,resolved,name_variant_no_id,"the private company ""Vanta Strategies Ltd"" (no LEI) resolves to LE-0052 via the E-13 alias ""Vanta Strategies"" + KY domicile"
+ERF-0013,LE-0018,resolved,name_variant_no_id,"the issuer ""Cardinal Pipeline Corporation"" (no LEI) resolves to LE-0018 via the E-13 alias ""Cardinal Pipeline"" (Corp/Corporation suffix normalised)"
+ERF-0014,LE-0048,resolved,name_variant_no_id,"the issuer ""STERLING FOODS INCORPORATED"" (no LEI) resolves to LE-0048 via the E-13 alias ""Sterling Foods"" (case + Inc/Incorporated suffix normalised)"
+ERF-0015,,new,ambiguous,net-new entity (Meridian Strategic Partners LP) with no master and no ID — one half of the genuinely-ambiguous Meridian pair
+ERF-0016,,ambiguous,ambiguous,"Meridian Strategic Partners with a CONFLICTING domicile (SG vs the LP's KY) and no ID — genuinely ambiguous against ERF-0015; MUST NOT auto-merge (quarantine)"
+ERF-0017,,new,ambiguous,net-new entity (Northwind Capital Advisors Ltd) with no master and no ID
+ERF-0018,,new,ambiguous,"net-new entity (Apex Global Holdings Ltd, KY) with no master and no ID — one half of the genuinely-ambiguous Apex pair"
+ERF-0019,,ambiguous,ambiguous,"Apex Global Holdings Ltd with an IDENTICAL name but a CONFLICTING domicile (SG vs KY) and no ID — two distinct/unknown entities the cascade MUST NOT force-merge (the cardinal mis-merge trap; quarantine)"
+ERF-0020,,new,ambiguous,"net-new private company ""Crestline Partners Ltd"" (KY) with no master and no ID — one half of a realistic no-universal-ID near-collision"
+ERF-0021,,ambiguous,ambiguous,"""Crestline Partners"" with a CONFLICTING domicile (SG vs the KY record) and no ID — a genuine private-markets near-collision (two distinct ""Crestline"" entities in different jurisdictions); MUST NOT auto-merge (quarantine)"

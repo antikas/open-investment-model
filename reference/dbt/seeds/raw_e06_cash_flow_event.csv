@@ -1,4 +1,7 @@
 cash_flow_id,portfolio_id,instrument_id,transaction_id,cash_flow_date,cash_flow_type,direction,amount,currency,source
+CF-00104,PF-0001,,,2026-03-31,contribution,inflow,5794487.00,USD,custodian_feed
+CF-00105,PF-0002,,,2026-03-31,contribution,inflow,9397721.00,USD,custodian_feed
+CF-00106,PF-0003,,,2026-03-31,contribution,inflow,3091610.00,USD,custodian_feed
 CF-00001,PF-0004,INS-0001,TXN-00007,2024-09-02,principal,outflow,-225897.10,USD,custodian_feed
 CF-00002,PF-0004,INS-0002,TXN-00008,2025-06-02,principal,outflow,-528768.79,USD,custodian_feed
 CF-00003,PF-0004,INS-0003,TXN-00009,2025-07-02,principal,outflow,-234544.59,USD,custodian_feed

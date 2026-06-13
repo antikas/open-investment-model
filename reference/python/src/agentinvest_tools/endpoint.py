@@ -34,6 +34,7 @@ from agentinvest_tools.bd09_service import bd09
 from agentinvest_tools.bd12_recon_service import bd12Recon
 from agentinvest_tools.bd12_service import bd12
 from agentinvest_tools.canonical_data_service import canonicalData
+from agentinvest_tools.entity_resolution_service import entityResolution
 from agentinvest_tools.nav_data_service import navData
 from agentinvest_tools.py_tools_service import py_tools
 
@@ -71,6 +72,15 @@ DEPLOY_URL = os.environ.get("AGENTINVEST_PY_DEPLOY_URL", f"http://localhost:{PY_
 # breaks DETERMINISTICALLY (no LLM — cycle-1), and persists E-24 break findings APPEND-ONLY to an
 # engine-owned break store. It emits findings only — no correcting entry, no status transition, no
 # gate (those are OIM-163). Same execute_so / list_capabilities envelope. Not an agent.
+# entityResolution (OIM-199) — the SD-13.2 ENTITY-RESOLUTION service, bound beside bd12Recon. A
+# model-free SERVICE hosting the three resolution tools (resolve_batch · get_golden_record ·
+# list_review_queue): resolve_batch reads the E-01 masters + the inbound entity feed (via
+# entity_resolution_data), runs the DETERMINISTIC three-tier cascade (exact external-id ->
+# name/alias
+# key -> steward review queue — NO LLM), and persists golden records + quarantined records
+# APPEND-ONLY
+# to two engine-owned stores. The genuinely-ambiguous are quarantined, never force-merged (zero
+# mis-merges is the cardinal floor). Same execute_so / list_capabilities envelope. Not an agent.
 app = restate.app(
     services=[
         py_tools,
@@ -81,6 +91,7 @@ app = restate.app(
         canonicalData,
         bd12,
         bd12Recon,
+        entityResolution,
     ]
 )
 

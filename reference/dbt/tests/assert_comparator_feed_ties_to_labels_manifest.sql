@@ -14,9 +14,12 @@
 --       label for that position_id, AND every position-class custodian-side label
 --       (price/qty/fx/timing) corresponds to a break-flagged custodian holding — a
 --       two-way set equality on position_id;
---   (B) the manifest's total count equals the number of distinct injected breaks
---       (the 8 position breaks visible as break_notes + the 2 transaction breaks + the
---       1 cash break = the manifest row count).
+--   (B) the manifest's total count equals the sum of the per-class injected-break counts,
+--       re-derived from the manifest BY CLASS (not a fixed N): the custodian-side position
+--       breaks (which must also equal the feed's flagged holdings) + the position-INTERNAL
+--       A/B-disagreement breaks + the transaction breaks + the cash breaks + the ibor_abor
+--       rule-unreachable breaks + the nav shadow-divergence breaks. The body below enumerates
+--       every class, so the check tracks the seed and no orphan row escapes the sum.
 
 with feed_position_breaks as (
     -- the position_ids the custodian feed actually flags as broken
@@ -26,7 +29,10 @@ with feed_position_breaks as (
 ),
 
 labelled_position_breaks as (
-    -- the position_ids the manifest labels as a custodian-side position break
+    -- the position_ids the manifest labels as a custodian-side position break. The
+    -- A/B-disagreement (OIM-197) is a position label whose expected_side is INTERNAL (the
+    -- custodian ties the book; the break is the internal book-vs-mark gap) — it carries NO
+    -- custodian break_note, so it is correctly excluded from the custodian-side set equality.
     select distinct record_ref as position_id
     from {{ ref('stg_break_labels') }}
     where reconciliation_type = 'position'
@@ -47,9 +53,12 @@ phantom_label as (
 ),
 
 -- (B) the manifest count must equal the injected-break count. The injected breaks are:
---     the distinct break-flagged custodian holdings (position breaks) + the transaction
---     breaks (missing + extra) + the cash break(s). We re-derive that total from the feed
---     and compare to the manifest row count.
+--     the distinct break-flagged custodian holdings (custodian-side position breaks) + the
+--     transaction breaks (missing + extra) + the cash break(s) + the OIM-197 surfaces (the
+--     position-INTERNAL A/B-disagreement, the ibor_abor rule-unreachable breaks, the nav
+--     shadow-divergence). We re-derive the total from the manifest's class counts and confirm
+--     (i) the custodian-side position labels equal the feed's flagged holdings, and (ii) the
+--     manifest total has no orphan rows beyond the enumerated classes.
 counts as (
     select
         (select count(*) from {{ ref('stg_break_labels') }})                       as manifest_count,
@@ -59,7 +68,15 @@ counts as (
         (select count(*) from {{ ref('stg_break_labels') }}
             where reconciliation_type = 'cash')                                    as manifest_cash_breaks,
         (select count(*) from {{ ref('stg_break_labels') }}
-            where reconciliation_type = 'position')                                as manifest_position_breaks
+            where reconciliation_type = 'position'
+              and expected_side = 'custodian')                                     as manifest_pos_cust_breaks,
+        (select count(*) from {{ ref('stg_break_labels') }}
+            where reconciliation_type = 'position'
+              and expected_side = 'internal')                                      as manifest_pos_internal_breaks,
+        (select count(*) from {{ ref('stg_break_labels') }}
+            where reconciliation_type = 'ibor_abor')                               as manifest_ibor_abor_breaks,
+        (select count(*) from {{ ref('stg_break_labels') }}
+            where reconciliation_type = 'nav')                                     as manifest_nav_breaks
 ),
 
 count_mismatch as (
@@ -67,12 +84,15 @@ count_mismatch as (
         'manifest-count-mismatch' as failure,
         manifest_count,
         feed_position_breaks,
-        manifest_position_breaks
+        manifest_pos_cust_breaks
     from counts
-    -- the manifest's position breaks must equal the feed's flagged position holdings, AND
-    -- the manifest total must equal position + transaction + cash breaks (no orphan rows).
-    where manifest_position_breaks <> feed_position_breaks
-       or manifest_count <> (manifest_position_breaks + manifest_txn_breaks + manifest_cash_breaks)
+    -- the manifest's custodian-side position breaks must equal the feed's flagged position
+    -- holdings, AND the manifest total must equal the sum of every enumerated class (no orphans).
+    where manifest_pos_cust_breaks <> feed_position_breaks
+       or manifest_count <> (
+            manifest_pos_cust_breaks + manifest_pos_internal_breaks + manifest_txn_breaks
+            + manifest_cash_breaks + manifest_ibor_abor_breaks + manifest_nav_breaks
+          )
 )
 
 select position_id as detail, failure from unlabelled_feed_break

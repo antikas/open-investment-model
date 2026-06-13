@@ -249,9 +249,10 @@ models:
 
   - name: stg_admin_statement
     description: >
-      The fund administrator's statement — transaction + cash lines the firm reconciles
-      against (SD-12.10 transaction matching + cash reconciliation). Synthetic; carries
-      labelled missing/extra-transaction and cash breaks (break_labels.csv oracle).
+      The fund administrator's statement — transaction + cash + fund-level NAV lines the firm
+      reconciles against (SD-12.10 transaction matching + cash reconciliation; the nav line is
+      the SD-12.16 shadow-NAV oversight input). Synthetic; carries labelled missing/extra-
+      transaction, cash and shadow-NAV-divergence breaks (break_labels.csv oracle).
     columns:
       - name: admin_record_id
         data_tests:
@@ -261,7 +262,9 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['transaction', 'cash']
+              # 'nav' (OIM-197): the fund-level administrator NAV — the SD-12.16 shadow-NAV
+              # oversight input (OIM-164), not an SD-12.10 reconcile surface.
+              values: ['transaction', 'cash', 'nav']
 
   - name: stg_break_labels
     description: >
@@ -279,7 +282,10 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              values: ['position', 'cash', 'transaction', 'ibor_abor', 'custodian', 'counterparty']
+              # 'nav' (OIM-197): the labelled shadow-NAV divergence — an SD-12.16 oversight
+              # (E-36) surface (OIM-164), carried in the oracle but NOT an E-24 / SD-12.10
+              # reconcile type (the OIM-162 engine reconciles position/cash/transaction/ibor_abor).
+              values: ['position', 'cash', 'transaction', 'ibor_abor', 'custodian', 'counterparty', 'nav']
       - name: cause_classification
         data_tests:
           - not_null
@@ -297,6 +303,55 @@ models:
           - not_null
           - accepted_values:
               values: ['custodian', 'internal']
+
+  # --- the entity-resolution feed + oracle (OIM-199; SYNTHETIC, not canonical entities) ----
+  # The inbound legal-entity feed the deterministic three-tier resolution cascade runs over, plus
+  # the labelled oracle (true entity_id / NEW / AMBIGUOUS + difficulty tier). Derived to exercise the
+  # difficulty gradient over the E-01 masters. NOT OpenIM entities — no model file, out of the
+  # schema-drift scope.
+
+  - name: stg_entity_resolution_feed
+    description: >
+      The inbound entity-resolution feed — legal-entity records from three named source systems
+      (custodian / administrator / internal_onboarding) carrying labelled duplicates and variants of
+      a subset of the E-01 masters plus net-new entities (SD-13.2 entity resolution, OIM-199).
+      Synthetic; the cascade resolves it deterministically into golden records + a review queue.
+    columns:
+      - name: source_record_id
+        data_tests:
+          - unique
+          - not_null
+      - name: source_system
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['custodian', 'administrator', 'internal_onboarding']
+      - name: raw_name
+        data_tests: [not_null]
+      - name: received_at
+        data_tests: [not_null]
+
+  - name: stg_entity_resolution_labels
+    description: >
+      The labelled entity-resolution oracle — the TRUE canonical E-01 entity_id (or NEW / AMBIGUOUS)
+      for every feed record, tagged with the difficulty tier (exact_lei / alias_match /
+      name_variant_no_id / ambiguous). The ZERO-mis-merge ground truth the resolution eval scores the
+      cascade against. Also emitted as entity_resolution_labels.json (the form the engine / eval read).
+    columns:
+      - name: source_record_id
+        data_tests:
+          - unique
+          - not_null
+      - name: resolution_outcome
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['resolved', 'new', 'ambiguous']
+      - name: difficulty_tier
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['exact_lei', 'alias_match', 'name_variant_no_id', 'ambiguous']
 
   - name: stg_e07_valuation
     description: >

@@ -37,6 +37,7 @@ ADMIN_URL = os.environ.get("RESTATE_ADMIN_URL", "http://localhost:9070")
 BD09_SERVICE_NAME = "bd09"
 BD12_SERVICE_NAME = "bd12"
 BD12_RECON_SERVICE_NAME = "bd12Recon"
+ENTITY_RESOLUTION_SERVICE_NAME = "entityResolution"
 
 
 def normalise_emitter_quirks(spec: Any) -> Any:
@@ -207,6 +208,42 @@ def assert_bd12_recon_surface(spec: dict[str, Any]) -> dict[str, Any]:
     paths = spec.get("paths", {})
     assert "/bd12Recon/execute_so" in paths, f"execute_so path missing — paths: {sorted(paths)}"
     assert "/bd12Recon/list_capabilities" in paths, (
+        f"list_capabilities path missing — paths: {sorted(paths)}"
+    )
+
+    schemas = spec.get("components", {}).get("schemas", {})
+    req = schemas.get("execute_soRequest", {})
+    typed_envelope = (
+        isinstance(req, dict)
+        and req.get("type") == "object"
+        and "soId" in req.get("properties", {})
+    )
+
+    return {
+        "openapi": spec.get("openapi"),
+        "title": spec.get("info", {}).get("title"),
+        "handler_paths": [p for p in sorted(paths) if not p.startswith("/restate/")],
+        "request_schema_typed": typed_envelope,
+        "schema_names": sorted(schemas),
+    }
+
+
+def assert_entity_resolution_surface(spec: dict[str, Any]) -> dict[str, Any]:
+    """Assert the entityResolution (SD-13.2 resolution) surface is present in the auto-generated
+    spec.
+
+    The entityResolution service auto-generates its OWN OpenAPI 3.1 spec from its handler
+    signatures (the ``ResolveBatchRequest`` / resolution-output Pydantic models). Confirms the two
+    handler paths and that the ``execute_so`` request schema is a *typed object* naming ``soId``
+    (the envelope typing, inherited from the bd12Recon precedent). The same shape as
+    ``assert_bd12_recon_surface``,
+    scoped to the entityResolution paths.
+    """
+    paths = spec.get("paths", {})
+    assert "/entityResolution/execute_so" in paths, (
+        f"execute_so path missing — paths: {sorted(paths)}"
+    )
+    assert "/entityResolution/list_capabilities" in paths, (
         f"list_capabilities path missing — paths: {sorted(paths)}"
     )
 

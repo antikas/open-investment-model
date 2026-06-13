@@ -60,7 +60,7 @@ surfaces: "Channels & surfaces" {
 
   cli: "agentinvest-cli\nTypeScript (tsx)\nbootstrap · seed · serve\n[BUILT]" {class: built}
 
-  mcp: "MCP server\nstdio sidecar · catalogue → MCP tool descriptors\ndispatches to the bd09 / bd12 / bd12Recon services (journaled)\n[BUILT]" {class: built-soft}
+  mcp: "MCP server\nstdio sidecar · catalogue → MCP tool descriptors\ndispatches to the bd09 / bd12 / bd12Recon / entityResolution services (journaled)\n[BUILT]" {class: built-soft}
 
   openapi: "OpenAPI surface\nRestate auto-gen 3.1 · self-served /openapi.json + /docs\nprogrammatic / human ingress\n[BUILT]" {class: built}
 
@@ -97,7 +97,7 @@ runtime: "agentINVEST runtime — Restate-registered handlers" {
 
   fanout: "Ephemeral fan-out subagents\nspawned only for independent legs\n[PLANNED]" {class: planned}
 
-  recon_propose: "Propose-only AI stage over unexplained breaks\nexplanation proposals only · never a state mutation · never in the truth path\n[PLANNED — designed, not built]" {class: planned}
+  recon_propose: "Propose-only AI stage over unexplained breaks (SO-12.10-05)\nagentinvestPlanner seam · Anthropic Sonnet 4.6 structured output over a deterministic evidence bundle\nexplanation proposals ONLY → the append-only proposals store · NEVER a state mutation · NEVER in the of-record truth path\nthe of-record cause stays `unexplained`; the LLM's only writable surface is the proposals table\n[BUILT — complete and audited · the first experience-flywheel turn, spine intact]" {class: built-soft}
 
   recon_correct: "Correction workflow — the first state-mutating write\ncorrecting entry to the books behind the high-stakes approval gate\n[PLANNED — not built]" {class: planned}
 
@@ -112,10 +112,12 @@ runtime: "agentINVEST runtime — Restate-registered handlers" {
     bdNN: "Per-BD model-free services (one per BD)\nPython · execute_so dispatch + list_capabilities · journaled steps\ndeterministic-error → Restate TerminalError (no retry storm)\n[BUILT: bd09 — 5 performance SOs · bd12 — 9 IBOR/ABOR read SOs · further BDs PLANNED]" {class: built-soft}
 
     recon: "bd12Recon service — the SD-12.10 reconciliation engine\nPython · deterministic dual-pipeline reconcile (position · cash · transaction-match · IBOR/ABOR)\nreads the internal dual book + the external comparator feeds · deterministic cause classification\nappends findings to the break store (insert-only) · no LLM in the truth path\n[BUILT — complete and audited]" {class: built-soft}
+
+    entity_resolution: "entityResolution service — the SD-13.2 entity-resolution capability\nPython · deterministic three-tier cascade (exact external-ID → alias + normalised-name + metadata → steward review queue)\ngolden-record survivorship · the no-universal-identifier reality · NO LLM in the of-record resolve path (module-graph asserted)\nresolve_batch · get_golden_record · list_review_queue · UPSTREAM of reconciliation (resolved golden keys are what recon assumes)\n[BUILT — complete and audited · zero mis-merge / zero missed-merge eval]" {class: built-soft}
   }
 
   # The typed tool catalogue (capability axis, NOT the agent axis).
-  tools: "Typed tool catalogue — per-Service-Operation functions\nPython + Pydantic over the canonical model\n171 SD / ~1,030 SO = tools (not agents)\n[BUILT: 19 tools — 5 BD-09 return (oracle-tested) + 9 BD-12 IBOR/ABOR read + 4 SD-12.10 reconcile + 1 sample · the rest of the ~1,030 PLANNED]" {class: built-soft}
+  tools: "Typed tool catalogue — per-Service-Operation functions\nPython + Pydantic over the canonical model\n171 SD / ~1,030 SO = tools (not agents)\n[BUILT: 23 tools — 5 BD-09 return (oracle-tested) + 9 BD-12 IBOR/ABOR read + 5 SD-12.10 (4 reconcile + 1 propose-only) + 3 SD-13.2 entity-resolution + 1 sample · the rest of the ~1,030 PLANNED]" {class: built-soft}
 }
 
 # ─────────────────────────────────────────────────────────
@@ -131,6 +133,10 @@ data: "Canonical data layer — dbt" {
   store: "Canonical store\nduckdb (dev — on WSL2-native ext4 on Windows) · keyed per checkout\nsynthetic seed: 3 funds · bi-temporal as-of history\n[BUILT]" {class: built-soft}
 
   break_store: "Append-only break store — E-24 break events\nengine-owned duckdb · separate from the canonical store · insert-only, immutable\nno update, no status transition, no delete\n[BUILT — complete and audited]" {class: built-soft}
+
+  er_stores: "Append-only entity-resolution stores\nengine-owned duckdb (separate keyed files) · insert-only, immutable · the break-store pattern\ngolden-record store (resolved) + steward review-queue (in_review)\n[BUILT — complete and audited]" {class: built-soft}
+
+  proposals_store: "Append-only proposals store — the propose-only LLM's ONLY writable surface\nengine-owned duckdb · insert-only, immutable · the break-store pattern (allowlist + AST scan)\nbreak_id · model id · evidence snapshot · prompt hash · proposed cause · rationale · confidence · status=proposed\n[BUILT — complete and audited · the deterministic-spine boundary]" {class: built-soft}
 }
 
 # ─────────────────────────────────────────────────────────
@@ -194,9 +200,17 @@ runtime.orchestrator -> runtime.bd_services.bdNN: "SEAM 2 — dispatch (parallel
 runtime.bd_services.recon -> data.dbt: "reads the internal dual book (IBOR/ABOR) + the external comparator feeds · BUILT + proven"
 runtime.bd_services.recon -> data.break_store: "appends break findings (journaled · insert-only · BUILT + proven)"
 
-# The forward reconciliation stages — designed/planned, not built.
-runtime.recon_propose -> data.break_store: "reads unexplained breaks · proposes explanations only" {style: {stroke-dash: 4}}
+# The propose-only stage — BUILT: reads the unexplained residue, writes proposals ONLY (never the books).
+runtime.recon_propose -> data.break_store: "reads the unexplained residue (of-record cause unchanged) · BUILT + proven"
+runtime.recon_propose -> data.proposals_store: "appends explanation proposals (insert-only · the LLM's only write) · BUILT + proven"
+# The correction workflow — still designed/planned, not built (OIM-163).
 runtime.recon_correct -> runtime.approval: "the correcting entry rides the high-stakes gate" {style: {stroke-dash: 4}}
+
+# The entity-resolution engine reads the inbound feed + the E-01/E-13/E-14 masters and
+# appends golden records + review-queue entries — append-only, deterministic, no LLM in
+# the of-record path. It sits UPSTREAM of reconciliation (resolved golden keys are assumed).
+runtime.bd_services.entity_resolution -> data.dbt: "reads the inbound entity feed + E-01 / E-13 alias / E-14 external-id masters · BUILT + proven"
+runtime.bd_services.entity_resolution -> data.er_stores: "appends golden records + review-queue entries (journaled · insert-only · BUILT + proven)"
 
 # The plan loop selects tools via tool-RAG.
 runtime.plan_loop -> runtime.tools: "tool-RAG selects (per task · load-all at the current tool count)"

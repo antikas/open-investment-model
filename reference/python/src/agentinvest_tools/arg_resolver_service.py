@@ -87,6 +87,12 @@ _BD12_NO_PORTFOLIO_SO_IDS = ("SO-12.2-04",)
 # Additive to the BD-09/BD-12 resolution above.
 _BD12_RECON_SO_IDS = ("SO-12.10-01", "SO-12.10-02", "SO-12.10-03", "SO-12.10-04")
 
+# The SD-12.10 PROPOSE-ONLY cause-proposer (OIM-162 cycle-2, added INCREMENTALLY + additively). Its
+# args are abstract ({as_of_date, capture}) — the bd12Recon service gathers the `unexplained`
+# residue itself — so the resolver derives only the run scope, like the reconcile resolver. Kept
+# separate from `_BD12_RECON_SO_IDS` so the reconcile resolver (the four SOs) is byte-unperturbed.
+_BD12_PROPOSER_SO_ID = "SO-12.10-05"
+
 
 class ResolveStepArgsRequest(BaseModel):
     """Wire shape of a resolve request — one plan step's tool + the abstract window args.
@@ -416,3 +422,62 @@ async def resolve_recon_step_args(
         }
 
     return await ctx.run(f"resolve-recon-{so_id}", _resolve)
+
+
+# --- SD-12.10 propose-only cause-proposer resolution (OIM-162 cycle-2, incremental + additive) ---
+
+
+class ResolveProposerStepArgsResult(TypedDict):
+    """The resolved SD-12.10 propose-only cause-proposer args + the run provenance.
+
+    ``args`` is the abstract proposer request dict ({as_of_date, capture}) ready to dispatch to
+    ``bd12Recon.execute_so`` for ``SO-12.10-05`` — the bd12Recon service gathers the `unexplained`
+    residue itself, so the resolver derives only the run SCOPE (the as-of, and whether to capture).
+    """
+
+    soId: str
+    asOfDate: str
+    capture: bool
+    args: dict[str, Any]
+    computedBy: str
+
+
+@argResolver.handler(name="resolveProposerStepArgs", input_serde=PassThroughJsonSerde())
+async def resolve_proposer_step_args(
+    ctx: restate.Context, req: ResolveStepArgsRequest
+) -> ResolveProposerStepArgsResult:
+    """Resolve the SD-12.10 propose-only cause-proposer step into its args (SO-12.10-05).
+
+    The incremental, ADDITIVE resolution for the cycle-2 proposer (the reconcile resolver above is
+    byte-unperturbed). The proposer args are abstract by design — the bd12Recon service gathers the
+    `unexplained` residue + assembles the bundles itself — so this resolver derives the run SCOPE
+    ({as_of_date, capture}) WITHOUT a marts read and WITHOUT a portfolio. The as-of defaults to the
+    canonical book date; ``capture`` defaults to true (the flywheel captures every proposal).
+
+    Clean failures, never fabricated args: a ``soId`` that is not the proposer SO is a
+    ``TerminalError`` (422).
+    """
+    request = _coerce_request(req)
+    so_id = request.soId
+
+    if so_id != _BD12_PROPOSER_SO_ID:
+        raise TerminalError(
+            f"argResolver cannot resolve proposer args for {so_id!r}: this handler resolves only "
+            f"the SD-12.10 propose-only cause-proposer {_BD12_PROPOSER_SO_ID!r}. This step "
+            f"surfaces as a clean failure rather than dispatching on fabricated inputs.",
+            status_code=422,
+        )
+
+    as_of = request.asOfDate or _BD12_DEFAULT_AS_OF
+
+    def _resolve() -> ResolveProposerStepArgsResult:
+        args: dict[str, Any] = {"as_of_date": as_of, "capture": True}
+        return {
+            "soId": so_id,
+            "asOfDate": as_of,
+            "capture": True,
+            "args": args,
+            "computedBy": f"python:{ARG_RESOLVER_SERVICE_NAME}",
+        }
+
+    return await ctx.run(f"resolve-proposer-{so_id}", _resolve)

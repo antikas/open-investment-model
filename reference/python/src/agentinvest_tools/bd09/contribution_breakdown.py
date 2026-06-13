@@ -14,7 +14,7 @@ segment and the total. The contribution-sums-to-total invariant is the same on a
 tool does not privilege one (the caller chooses sector or asset-class for the BD-09 use; the
 common BD-09 axis is asset-class, matching E-09, with sector available for an equity sleeve).
 
-External oracle (build-gate §A2 hand-verifiable): the contribution identity is exact —
+External oracle (hand-verifiable): the contribution identity is exact —
 ``sum_i w_i * r_i`` equals the supplied/derived total to <= 1 bp absolute, verified in the test
 suite against a hand-derived breakdown (no published toy oracle is invented; the summing
 identity is the oracle, and a deliberately weight-unbalanced input is rejected).

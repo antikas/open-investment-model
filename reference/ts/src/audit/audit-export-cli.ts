@@ -1,10 +1,10 @@
 /**
- * `pnpm audit-export` — the invokable audit-journal export CLI (OIM-151 part 5).
+ * `pnpm audit-export` — the invokable audit-journal export CLI.
  *
  * Runs the GATHER → CHAIN → WRITE pipeline: enumerate the real agentINVEST audit records over the
  * authoritative admin-API + ingress read path, hash-chain them, and write a JSON-L export + a
  * chain-tip manifest to the local output dir (`AGENTINVEST_AUDIT_EXPORT_DIR`). The export is
- * runnable NOW; the NIGHTLY CRON trigger is DEFERRED (deploy-surface, OIM-150) — this builds it
+ * runnable NOW; the NIGHTLY CRON trigger is DEFERRED (deploy-surface) — this builds it
  * invokable, the scheduler wires it later.
  *
  * S3 IS DEFERRED (v0.2). This writes a LOCAL file (tamper-EVIDENCE — the chain makes an edit
@@ -25,7 +25,7 @@ function out(line = ''): void {
   process.stdout.write(`${line}\n`);
 }
 
-const HELP = `${CLI} — export the agentINVEST audit journal as a hash-chained JSON-L file (OIM-151 v0.1)
+const HELP = `${CLI} — export the agentINVEST audit journal as a hash-chained JSON-L file (v0.1)
 
 USAGE
   pnpm audit-export [--dir <path>]
@@ -33,7 +33,7 @@ USAGE
 WHAT IT DOES
   1. GATHER — enumerates the real audit records (the investmentOperation 'operation-closed'
      records + the navCalculation 'nav-published' records) via the admin API (key enumeration)
-     + the ingress (state reads) — the OIM-142 read path, READ-ONLY.
+     + the ingress (state reads) — READ-ONLY.
   2. CHAIN  — folds them (in deterministic order) into a SHA-256 hash chain
      (chainHash = sha256(prevHash || canonicalJSON(record)), documented genesis seed).
   3. WRITE  — writes the chained entries as JSON-L + a chain-tip manifest to the output dir.

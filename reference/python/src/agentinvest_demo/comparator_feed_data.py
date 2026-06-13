@@ -1,8 +1,8 @@
-"""The external comparator-feed reader — the OIM-160 custodian + administrator records, READ-ONLY.
+"""The external comparator-feed reader — the custodian + administrator records, READ-ONLY.
 
-This is the **outside-data** end of the OIM-162 reconciliation engine (Helland: data-on-the-outside
+This is the **outside-data** end of the reconciliation engine (Helland: data-on-the-outside
 is immutable, identified, as-of; it crosses the service boundary as a fact the firm reconciles its
-*inside* book against). It reads the OIM-160 synthetic external comparator feed from the dbt-built
+*inside* book against). It reads the synthetic external comparator feed from the dbt-built
 canonical store:
 
 - the **custodian holdings** (``stg_custodian_holdings`` — one position-id-aligned row per holding,
@@ -13,7 +13,7 @@ canonical store:
 
 WHY A SEPARATE READER (not ``book_of_record_data``). ``book_of_record_data`` is the *internal* dual
 book reader, and its load-bearing invariant is that it reads the internal book ONLY — never the
-comparator feed (the OIM-161 read services must not see the answer side). The reconciliation engine
+comparator feed (the read services must not see the answer side). The reconciliation engine
 reconciles the internal book (read via ``book_of_record_data``) AGAINST the outside data (read
 here). Keeping the two readers separate keeps that invariant honest: the internal-book read stays
 comparator-blind, and this reader is the explicit outside-data seam. It REUSES ``marts.py``'s
@@ -26,14 +26,14 @@ interpolated) — no injection surface.
 
 NOT THE ORACLE. This reader reads the *feed* (the custodian/administrator records the engine
 reconciles). It deliberately does **not** read ``break_labels.{csv,json}`` (the labelled-break
-manifest) — that manifest is the OIM-165 eval's ground truth (the score key), not an engine input.
+manifest) — that manifest is the eval's ground truth (the score key), not an engine input.
 The engine classifies breaks deterministically from the feed's observable evidence, never by reading
 the answer key. (``break_note`` IS a column on ``stg_custodian_holdings``, but the engine's
 deterministic classifier does not use it as the cause signal — it derives the cause from neutral
 observable evidence: the quantity/value differences, the in-flight trades, and the FX-translation
 ratio cluster. See the engine's rule-classifier docstring.)
 
-SYNTHETIC, NOT A LIVE CUSTODIAN. The comparator feed is the OIM-160 synthetic custodian/admin
+SYNTHETIC, NOT A LIVE CUSTODIAN. The comparator feed is the synthetic custodian/admin
 feed; a green read proves the typed outside-data read + the as-of plumbing, NOT a read against a
 live custodian or a production reconciliation.
 """
@@ -108,8 +108,8 @@ def read_custodian_holdings(
 ) -> list[CustodianHoldingRow]:
     """Read the custodian holdings records as of ``as_of_date`` — READ-ONLY, parameterised.
 
-    The position-reconciliation counter-record: one position-id-aligned row per holding (OIM-160
-    built one custodian row per holding). The as-of is a bound parameter. ``break_note`` is NOT
+    The position-reconciliation counter-record: one position-id-aligned row per holding (one
+    custodian row per holding). The as-of is a bound parameter. ``break_note`` is NOT
     projected — the engine classifies from neutral observable evidence, not the injected label.
     """
     path = duckdb_path or resolve_duckdb_path()

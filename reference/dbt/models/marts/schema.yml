@@ -3,14 +3,14 @@ version: 2
 # The consumer-facing marts — the aggregates the tools and the NAV-strike and
 # performance-appraisal workflows read. Materialised as tables (the project's marts
 # convention). Each carries its invariant tests; the headline is the NAV invariant
-# (NAV = Σ market values + accruals − fees, to the build-gate NAV tolerance), tested
+# (NAV = Σ market values + accruals − fees, to a ratified NAV tolerance), tested
 # falsifiably against an independent re-aggregation of the source in
 # tests/assert_mart_fund_nav_invariant.sql.
 #
 # Honest boundary: these marts compute over synthetic data. A green pipeline — a green
 # NAV invariant included — proves the data-layer arithmetic and the as-of plumbing, not
 # a struck production NAV or a verified return. The fiduciary strike (matched to an
-# independent shadow pipeline and a published GIPS/CFA oracle, to the build-gate
+# independent shadow pipeline and a published GIPS/CFA oracle, to a ratified
 # tolerance, behind a human approval gate) is later, oracle-anchored work.
 
 models:

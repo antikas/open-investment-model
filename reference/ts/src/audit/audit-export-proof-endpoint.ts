@@ -1,6 +1,6 @@
 /**
  * Audit-export proof endpoint — hosts the FULL production agentINVEST surface (`runEndpoint`,
- * including the REAL `investmentOperation` VO + the `auditJournalExport` handler) for the OIM-151
+ * including the REAL `investmentOperation` VO + the `auditJournalExport` handler) for the
  * live export proof. NOT a probe: the proof runs a real operation on the production VO to produce a
  * real `operation-closed` audit record, then the export gathers + chains + writes that REAL record.
  *
@@ -8,7 +8,7 @@
  * seam in `investment-operation.ts`) so seam-1 bypasses the LLM call — the audit record produced is
  * REAL VO state (not a fixture record), only the planner's non-determinism is removed. The shared
  * Python `:9091` endpoint (bd09/argResolver/…) is reused; this TS endpoint is the one the controller
- * spawns + tears down (OIM-184 reuse-safe).
+ * spawns + tears down (reuse-safe).
  */
 import { runEndpoint } from '../substrate/endpoint.js';
 import { awaitAdminReady, registerDeployment, resolveDeployUrl } from '../substrate/restate-reach.js';

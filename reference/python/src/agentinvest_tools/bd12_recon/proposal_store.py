@@ -1,4 +1,4 @@
-"""The append-only LLM-proposal store — engine-owned, insert-only, immutable (OIM-162 cycle-2).
+"""The append-only LLM-proposal store — engine-owned, insert-only, immutable.
 
 The propose-only LLM's ENTIRE writable universe (the deterministic spine). The LLM classifier
 (``proposer.py``) never writes the of-record cause — it PROPOSES, and every proposal is captured
@@ -13,7 +13,7 @@ pattern verbatim:
   proposal, once captured, is never modified. The API surface is ``append_proposals`` +
   ``read_proposals`` + ``count_proposals`` only. (A proposal is PROMOTED into a deterministic rule
   by
-  a HUMAN-GATED CODE CHANGE through an audited cycle — never a runtime ``status`` flip here; this
+  a HUMAN-GATED CODE CHANGE — never a runtime ``status`` flip here; this
   store has no promote path, by construction.)
 - is **ENGINE-OWNED and SEPARATE from the dbt canonical store AND from the break store** — its OWN
   duckdb file (``AGENTINVEST_PROPOSAL_STORE_PATH`` override, else a checkout-keyed default DISTINCT
@@ -34,7 +34,7 @@ THE LLM CANNOT WRITE OF-RECORD (the architecture invariant). This store holds PR
 acts on. The of-record reconciliation cause lives in the break store (``break_store.py``), which the
 proposer never writes. The spine holds: the LLM's only persisted output is an annotation here.
 
-SYNTHETIC, FINDINGS-ONLY. The proposals are over the OIM-160/197 synthetic ``unexplained`` residue —
+SYNTHETIC, FINDINGS-ONLY. The proposals are over the synthetic ``unexplained`` residue —
 never a production reconciliation, never an acted-on classification.
 """
 
@@ -192,7 +192,7 @@ def append_proposals(
     The LLM proposal is captured here ONLY — it never enters the break store, the canonical layer,
     or
     any of-record state (the deterministic spine). Promotion of a proposal into a deterministic rule
-    is a HUMAN-GATED CODE CHANGE through an audited cycle, never a runtime write here.
+    is a HUMAN-GATED CODE CHANGE, never a runtime write here.
     """
     path = store_path or resolve_proposal_store_path()
     con = _connect(path, read_only=False)

@@ -1,4 +1,4 @@
-"""Deterministic legal-entity name normalisation — the Tier-2 match key (OIM-199 cycle-1).
+"""Deterministic legal-entity name normalisation — the Tier-2 match key.
 
 The deterministic core of the resolution cascade's Tier-2 (alias / normalised-name match). A pure,
 total function ``normalise_name`` that maps a raw legal-entity name string to a canonical
@@ -10,7 +10,7 @@ case-folding, whitespace collapse, diacritic stripping, punctuation removal, leg
 stripping — NOT a model. There is no LLM, no learned embedding, no fuzzy edit-distance threshold:
 the normalised form is an EXACT, reproducible function of the input. Two names match at Tier-2 iff
 their normalised forms are byte-equal. The probabilistic / LLM-proposer tier (a model proposing a
-candidate match for steward review) is a deliberately-deferred later cycle — it is NOT here, and the
+candidate match for steward review) is deliberately out of scope here — it is NOT present, and the
 resolve-of-record path imports none of it (the module-graph spine assertion enforces that).
 
 WHY DETERMINISTIC NORMALISATION, NOT FUZZY MATCHING. A mis-merge silently corrupts the golden
@@ -20,8 +20,8 @@ collapse to an exact key falls THROUGH to the steward review queue (Tier-3), whe
 That is the honest boundary: deterministic normalisation is the floor the model's ``## Resolution``
 section names; anything subtler is quarantined, never force-merged.
 
-SYNTHETIC, DETERMINISTIC. The suffix list + the diacritic map are a documented, illustrative v0.1
-rule set tuned to the synthetic resolution oracle (OIM-199) — not a benchmarked real-world
+SYNTHETIC, DETERMINISTIC. The suffix list + the diacritic map are a documented, illustrative
+rule set tuned to the synthetic resolution oracle — not a benchmarked real-world
 name-normalisation distribution. A real deployment would extend the suffix list and the
 transliteration map; the SEAM (a pure normalise function the cascade keys on) is what is
 load-bearing.
@@ -33,7 +33,7 @@ import re
 import unicodedata
 
 # The legal-form suffixes stripped from the END of a normalised name. A declared, auditable list —
-# extend it in a future cycle for new jurisdictions; never make it a learned/fuzzy threshold. The
+# extend it for new jurisdictions; never make it a learned/fuzzy threshold. The
 # longer multi-token forms are listed first so "limited" is stripped before a bare "ltd" rule could
 # leave a dangling token (the strip is longest-match-first within each pass).
 _LEGAL_SUFFIXES: tuple[str, ...] = (
@@ -117,7 +117,7 @@ def normalise_name(raw: str | None) -> str:
     the
     empty string (which never matches a real master — it falls through to review).
 
-    Examples (the OIM-199 oracle variants):
+    Examples (the synthetic oracle variants):
       "Private Equity GP LE-0004 Ltd"     -> "private equity gp le-0004"
       "Private Equity GP LE-0004 Limited" -> "private equity gp le-0004"   (suffix variant)
       "ISSUER LE-0048 CORP"               -> "issuer le-0048"              (case + suffix)

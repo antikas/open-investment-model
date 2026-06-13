@@ -1,5 +1,4 @@
-"""The entity-resolution data-access reader — the E-01 masters + the inbound feed, READ-ONLY
-(OIM-199).
+"""The entity-resolution data-access reader — the E-01 masters + the inbound feed, READ-ONLY.
 
 The read seam the deterministic resolution cascade runs over. Two reads from the dbt-built canonical
 store:
@@ -17,7 +16,7 @@ NOT THE ORACLE. This reader reads the FEED + the MASTERS the cascade resolves fr
 does **not** read ``entity_resolution_labels.{csv,json}`` (the labelled oracle). That manifest is
 the
 EVAL's ground truth (the score key), never an engine input — the cascade resolves from the feed's
-observable evidence only (the OIM-160 oracle-integrity discipline; the answer-key never leaks into
+observable evidence only (the oracle-integrity discipline; the answer-key never leaks into
 the resolver). The eval (``test_entity_resolution_eval``) reads the oracle and scores the cascade's
 decisions against it; the of-record path never sees it.
 
@@ -27,7 +26,7 @@ no free-form SQL, no injection surface. It REUSES ``marts.py``'s store-path reso
 ``_connect``
 + the ``MartsUnavailableError`` contract (one store convention).
 
-SYNTHETIC, NOT PRODUCTION. The masters + feed are the OIM-199 synthetic resolution oracle; a green
+SYNTHETIC, NOT PRODUCTION. The masters + feed are the synthetic resolution oracle; a green
 read proves the typed reference-data + feed read, NOT a read against a live master-data platform.
 """
 

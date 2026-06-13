@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * End-to-end proof for the `NavCalculationWorkflow` (OIM-133) — the production workflow
+ * End-to-end proof for the `NavCalculationWorkflow` — the production workflow
  * exercised over synthetic data: the multi-step journaled NAV strike with the high-stakes
- * approval gate at the irreversible PUBLISH step, the first REAL high-stakes wiring. Extends
- * the OIM-132 approval-gate proof + the OIM-104 production crash-replay pattern.
+ * approval gate at the irreversible PUBLISH step. The same patterns as the approval-gate
+ * proof and the production crash-replay proofs.
  *
- * What it exercises, ALL on the REAL `navCalculation` workflow (reading the actual OIM-111
+ * What it exercises, ALL on the REAL `navCalculation` workflow (reading the actual
  * marts via the `navData` Python service — NO LLM, deterministic):
  *
  *   (d) GREEN E2E + GENUINE CROSS-MART §A1 RECONCILE — strike the NAV for each real seed fund
@@ -15,8 +15,8 @@
  *       X==X); then NAV = gross + accruals − fees ties to the mart's published `nav_usd` (the
  *       §A1 identity, dbt-enforced upstream). The struck NAV reconciles to `mart_fund_nav`.
  *   (g) PAST-AS-OF REFUSED ON THE WIRE — a past `navKnowledgeDate` to `navData` over the ingress
- *       returns the 422 refusal (NOT a current NAV), the OIM-111 honest boundary held end-to-end
- *       (the cycle-2 wire-bound fix).
+ *       returns the 422 refusal (NOT a current NAV) — the honest boundary holds end-to-end,
+ *       refused on the wire.
  *   (b) THE GATE AT PUBLISH — APPROVE → publishes (a publish record, status=published);
  *       REJECT → terminal abort ("aborted-by-operator", status=aborted), NO publish record
  *       (the gate precedes publish — no half-published NAV).
@@ -35,7 +35,7 @@
  * `POST {ingress}/navCalculation/{workflowId}/run`; its state via the shared `status` handler:
  * `POST {ingress}/navCalculation/{workflowId}/status`.
  *
- * Reuse-safe teardown (OIM-184): the SHARED Python deployment (:9091 — now carrying
+ * Reuse-safe teardown: the SHARED Python deployment (:9091 — now carrying
  * bd09/agentinvestPlanner/pyTools/navData) is torn down ONLY if THIS run spawned it
  * (pySpawnedByUs). If reused, it is LEFT REGISTERED — never strip a shared resource (other local
  * projects sharing the dev substrate + concurrent OpenIM work depend on it). NEVER `wsl --shutdown`.
@@ -288,10 +288,10 @@ async function readMartNav(fundId) {
 }
 
 /**
- * PAST-AS-OF REFUSED ON THE WIRE (g) — the cycle-2 wire-bound fix. A past `navKnowledgeDate` to
+ * PAST-AS-OF REFUSED ON THE WIRE (g). A past `navKnowledgeDate` to
  * `navData/getFundNavComponents` over the ingress must return a 422 refusal (a TerminalError),
- * NOT a current NAV with HTTP 200 (the cycle-1 defect: the handler dropped the field). Drives the
- * EXACT RPC the workflow makes, on the wire — the radius the cycle-1 unit test did not walk.
+ * NOT a current NAV with HTTP 200. Drives the EXACT RPC the workflow makes, on the wire — a unit
+ * test alone does not walk that radius.
  */
 async function runPastAsOfRefusedOnTheWire(fundId) {
   log('');
@@ -329,7 +329,7 @@ async function runPastAsOfRefusedOnTheWire(fundId) {
 const work = mkdtempSync(path.join(tmpdir(), 'agentinvest-navwf-'));
 let pyChild = null;
 // Did THIS run spawn the shared Python endpoint (:9091)? Gates ALL Python-side teardown —
-// never strip a shared deployment we did not spawn (OIM-184; other local projects sharing
+// never strip a shared deployment we did not spawn (other local projects sharing
 // the dev substrate + concurrent OpenIM work depend on it). The TS proof endpoint we always
 // spawn, so it is always cleaned up.
 let pySpawnedByUs = false;
@@ -642,7 +642,7 @@ async function main() {
   log('the gate fires unconditionally (publish is high-stakes by declaration, riskScore 1.0). NO LLM — deterministic marts compute + the gate.');
 
   // navData up (the marts-read seam). Reuse the shared :9091 endpoint if registered; only spawn
-  // if not (OIM-184 reuse-safety). navData is bound beside bd09 in the same endpoint.
+  // if not (reuse-safety). navData is bound beside bd09 in the same endpoint.
   if (await awaitServiceRegistered('navData', 2)) {
     log('navData already registered — reusing the running Python endpoint (no spawn). LEFT INTACT on exit (shared).');
   } else {
@@ -665,8 +665,7 @@ async function main() {
   for (const fundId of SEED_FUNDS) {
     results[`approve-${fundId}`] = await runApprovePublishReconcile(fundId);
   }
-  // (g) past-as-of refused on the wire (the cycle-2 wire-bound fix) — one fund (the class is the
-  // dropped field, not the fund).
+  // (g) past-as-of refused on the wire — one fund (the class is the past-as-of field, not the fund).
   results.pastAsOfWire = await runPastAsOfRefusedOnTheWire('PF-0001');
   // (b) reject → no publish (one fund — the class is direction, not fund).
   results.reject = await runRejectNoPublish('PF-0003');
@@ -675,7 +674,7 @@ async function main() {
   // (c) publish-exactly-once — crash after approval in the publish window + read-back on re-submit.
   results.publishOnce = await runPublishExactlyOnce('PF-0001');
 
-  // Teardown — only what THIS run spawned (OIM-184). The TS proof endpoints are all self-pruned
+  // Teardown — only what THIS run spawned. The TS proof endpoints are all self-pruned
   // per flow. The shared Python :9091 deployment is torn down ONLY if WE spawned it.
   if (pySpawnedByUs) {
     try {
@@ -702,7 +701,7 @@ async function main() {
   log(`  (c) PUBLISH-exactly-once (crash in publish window)   : ${results.publishOnce ? 'PASS' : 'FAIL'}`);
   log('');
   if (allPass) {
-    log('The production NavCalculationWorkflow exercised end-to-end over synthetic data (OIM-133): multi-step journaled NAV');
+    log('The production NavCalculationWorkflow exercised end-to-end over synthetic data: multi-step journaled NAV');
     log('strike; the gate fires at the irreversible publish (approve→publishes / reject→no-publish); a real crash mid-strike');
     log('recovers (steps replayed, publish exactly-once — internal-journal record, no external write yet); a past-as-of date is');
     log('refused on the wire (422); the struck NAV reconciles across two marts (holdings ↔ mart_fund_nav gross) + the §A1');

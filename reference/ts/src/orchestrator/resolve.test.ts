@@ -1,5 +1,5 @@
 /**
- * Unit proof of the RESOLVE step's collection logic (OIM-134) — the abstract-arg → concrete-input
+ * Unit proof of the RESOLVE step's collection logic — the abstract-arg → concrete-input
  * resolution against `argResolver`, isolated from the substrate with a fake service client.
  *
  * The live, production-VO proof of the full resolve→dispatch→aggregate→close chain (a real Sonnet

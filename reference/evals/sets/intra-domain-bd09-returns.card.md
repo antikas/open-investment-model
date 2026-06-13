@@ -4,11 +4,11 @@ measures: within-office tool-selection accuracy over BD-09 SD-09.1's near-duplic
 metric: within-office selection accuracy (correct selections / total cases)
 bar: 0.95
 oracle: model/service-domains/BD-09-performance-and-analytics/SD-09.1-performance-measurement.md (the Service Operation descriptions — the tool differentiae are derived from the SD spec, not asserted)
-author: openim-builder (the doing-agent that built this eval set)
-blesser: blind audit (the F functional auditor; re-confirmed by a follow-up F+P) — blessed 2026-05-31; author ≠ blesser satisfied (see reference/evals/README.md)
+author: set authors
+blesser: independent review (blessed 2026-05-31; author != blesser satisfied — see reference/evals/README.md)
 set_ref: intra-domain-bd09-returns.json
 focus_tool_ids: [SO-09-01-twr, SO-09-01-mwr, SO-09-01-period-linking, SO-09-01-gross-net]
-notes: Tranche-0, gate-E within-office bar (build-gate annex §E). The selector measured this cycle is a declared deterministic baseline (token-overlap) — a harness-validation datapoint, NOT agentINVEST's tool-selection accuracy and NOT a verdict on the single-orchestrator bet (goal (f)).
+notes: The selector measured here is a declared deterministic baseline (token-overlap) — a harness-validation datapoint, NOT agentINVEST's tool-selection accuracy and NOT a verdict on the single-orchestrator bet.
 ---
 
 # Eval card — BD-09 SD-09.1 intra-domain return-tool selection
@@ -20,8 +20,8 @@ return tools of BD-09 SD-09.1 Performance Measurement. A selector is shown a
 realistic analyst query and must pick the single correct return tool from the
 SD-09.1 catalogue; the eval reports the fraction it gets right.
 
-This is the **baseline** arm of the gate-E test (build-gate annex §E). The bar is
-**≥ 95%** within-office selection accuracy. Per §E: if a real selector fails the
+This is the **baseline** within-office arm. The bar is
+**≥ 95%** within-office selection accuracy: if a real selector fails the
 within-office bar, the catalogue / tool-RAG design is broken — *not* a topology
 problem. The **cross-office** torture arm and the cross-office-minus-within-office
 gap metric are a **separate eval set**, not this eval.
@@ -30,7 +30,7 @@ gap metric are a **separate eval set**, not this eval.
 
 `model/service-domains/BD-09-performance-and-analytics/SD-09.1-performance-measurement.md`.
 The four focus tools and their differentiae are **derived from the SD-09.1
-Service Operation descriptions**, not asserted from the brief:
+Service Operation descriptions**, not asserted:
 
 - **SO-09-01-twr — time-weighted return:** removes the effect of external
   cash-flow timing; the basis for benchmark and peer comparison.
@@ -63,20 +63,20 @@ near-duplicate pair. (The honest boundary already prevents the headline number
 being read as a verdict; this qualification keeps the *card's* adversariality
 claim honest about which cases carry the discriminating power.)
 
-## Author ≠ blesser (the §G three-role eval governance)
+## Author ≠ blesser (independent-bless eval governance)
 
-- **author:** `openim-builder` (the doing-agent) authored this set and card.
-- **blesser:** the **blind audit** (three-role separation), blessed
-  2026-05-31. The **F (functional) blind audit-agent** read this set blind,
+- **author:** the set authors authored this set and card.
+- **blesser:** an **independent reviewer** (fresh context), blessed
+  2026-05-31. The independent review read this set blind,
   independently re-derived its fidelity to SD-09.1, confirmed the confusers are
   genuine near-duplicates (the baseline's three misses land on the true TWR/MWR
-  semantic-inversion axis — not a toy set), and certified it; a follow-up F+P
-  re-audit re-confirmed. Author (`openim-builder`) ≠ blesser (the audit) is
-  genuinely satisfied — distinct agents, fresh context, structural separation. The
+  semantic-inversion axis — not a toy set), and certified it; a follow-up
+  re-review re-confirmed. Author ≠ blesser is
+  genuinely satisfied — distinct actors, fresh context, structural separation. The
   `single_actor_authored_and_blessed()` guard remains live for future sets, and the
   runner still prints a GOVERNANCE WARNING when `author == blesser`.
 
-## The honest boundary (goal (f))
+## The honest boundary
 
 The number this eval emits is the **baseline selector's** accuracy — a
 **harness-validation datapoint**. It is **NOT** agentINVEST's tool-selection

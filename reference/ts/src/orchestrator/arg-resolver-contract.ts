@@ -1,17 +1,17 @@
 /**
  * Typed cross-language RPC contract for the `argResolver` service — the orchestrator's
- * abstract-arg → concrete-tool-input resolution seam (the resolve step, OIM-134).
+ * abstract-arg → concrete-tool-input resolution seam (the resolve step).
  *
  * The orchestrator's seam-1 `.plan()` loop emits a plan whose steps name a tool (`soId`) and
  * ABSTRACT window args (a fund + a period + a sector/asset-class axis) — the planner cannot know
- * the concrete begin/end NAV or per-segment weights, those live in the OIM-111 marts. The RESOLVE
+ * the concrete begin/end NAV or per-segment weights, those live in the marts. The RESOLVE
  * step (between plan and dispatch) calls the Python `argResolver.resolveStepArgs` handler over
  * Restate's typed RPC to derive each step's CONCRETE inputs from the marts; the resolved args then
  * feed the seam-2 DISPATCH step. The TS side does NOT import Python — it declares a type-only
  * service-definition handle describing the service name + the handler's typed I/O, and
  * `ctx.serviceClient(ARG_RESOLVER_SERVICE)` gives a typed client routed to the Python service.
  *
- * REUSE, NOT RE-IMPLEMENTATION. The Python resolver IMPORTS the OIM-115 demo's marts→tool-input
+ * REUSE, NOT RE-IMPLEMENTATION. The Python resolver IMPORTS the demo's marts→tool-input
  * derivation (`read_fund_window` + `_total_return_args` / `_breakdown_args`); this seam READS those
  * derived inputs. The orchestrator does NOT re-derive them.
  *
@@ -20,7 +20,7 @@
  * so the routed call is `.resolveStepArgs(...)` (camelCase, as registered — matching the `navData`
  * / `pyTools` convention).
  *
- * Topology (ADR-0054): `argResolver` is a model-free Restate *service* — a data tool boundary. It
+ * Topology: `argResolver` is a model-free Restate *service* — a data tool boundary. It
  * carries NO reasoning loop (it is mechanism — read the marts, derive the inputs — not a second
  * `.plan()`).
  *
@@ -53,7 +53,7 @@ export interface ResolveStepArgsRequest {
 
 /**
  * The resolved concrete tool inputs + the window provenance. `args` is the tool's CONCRETE input
- * dict (ready to dispatch to `bd09.execute_so` for `soId`), derived from the marts via the OIM-115
+ * dict (ready to dispatch to `bd09.execute_so` for `soId`), derived from the marts via the demo
  * derivation. The window fields (`fundName`, `beginDate`, `endDate`, `periodDays`, `beginNav`,
  * `endNav`) echo the resolved window so the orchestrator + the aggregate can carry it. Money
  * figures inside `args` are exact decimal strings (no float).

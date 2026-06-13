@@ -7,7 +7,7 @@ Emits E-24-shaped cash-break findings with a deterministic of-record cause.
 THE DUAL-INDEPENDENT-PIPELINE (the safety property):
 
 - **Pipeline A — the direct comparison.** The custodian cash balance vs the administrator cash
-  balance per fund (the OIM-160 cash break is injected as a custodian-vs-admin disagreement —
+  balance per fund (the synthetic cash break is injected as a custodian-vs-admin disagreement —
   BRK-0011, PF-0001).
 - **Pipeline B — the E-06 cash-flow-replay derivation.** The internal cash balance DERIVED by
   replaying the E-06 cash-flow events up to the as-of (Kleppmann derive-by-replay: the balance is a
@@ -19,14 +19,14 @@ replay-derived internal balance differs from both, or vice versa), the disagreem
 break flagged ``pipeline_disagreement=True`` — never silently reconciled.
 
 THE DETERMINISTIC CLASSIFIER: a cash-balance disagreement beyond the to-the-cent tolerance is
-``data_error`` (the OIM-160 cash break is labelled ``data_error``); the engine does not force-fit a
+``data_error`` (the synthetic cash break is labelled ``data_error``); the engine does not force-fit a
 finer cause it cannot observe.
 
 Pure and deterministic: the custodian balances, the admin balances and the E-06 cash flows are read
 by the data-access layers and passed in; this tool reconciles, classifies and surfaces. No I/O.
 
-Honest boundary: a reconcile over the OIM-160 **synthetic** feed, FINDINGS-ONLY — never a production
-cash reconciliation against a live bank/custodian, never a correcting entry (OIM-163).
+Honest boundary: a reconcile over a **synthetic** feed, FINDINGS-ONLY — never a production
+cash reconciliation against a live bank/custodian, never a correcting entry.
 """
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ class ReconcileCashOutput(BaseModel):
     n_pipeline_b_abstained: int = Field(
         default=0,
         description="Funds where the E-06 replay was not balance-grade, so Pipeline B abstained "
-        "(surfaced — the OIM-160 seed is not a balance ledger; single-pipeline A is of-record).",
+        "(surfaced — the synthetic seed is not a balance ledger; single-pipeline A is of-record).",
     )
     breaks: tuple[BreakFinding, ...] = Field(
         description="The E-24-shaped cash-break findings, ordered by record_a_ref."
@@ -123,7 +123,7 @@ def _replay_is_balance_grade(replay_balance: Decimal, external: Decimal) -> bool
     Pipeline B for cash needs a replay-derived BALANCE to compare against the external balances. The
     E-06 cash-flow seed reconstructs a balance only where the flow log is balance-grade (sums to a
     figure of the same order/sign as the external balance). Where the replay sum is a small,
-    opposite-sign flow-delta (the OIM-160 seed is NOT a balance ledger — it carries a handful of
+    opposite-sign flow-delta (the synthetic seed is NOT a balance ledger — it carries a handful of
     illustrative flows, not the funding history), the replay is NOT balance-grade and Pipeline B
     abstains rather than manufacturing a false disagreement against every fund. The gate: the replay
     must be within an order of magnitude of, and the same sign as, the external balance.
@@ -141,8 +141,8 @@ def reconcile_cash(inp: ReconcileCashInput) -> ReconcileCashOutput:
 
     Pipeline A compares custodian vs admin per fund (the of-record cash reconcile). Pipeline B
     compares each external against the E-06 replay-derived internal BALANCE — but only where the
-    replay is balance-grade (see ``_replay_is_balance_grade``); where it is not (the OIM-160 seed is
-    not a balance ledger), Pipeline B abstains and ``n_pipeline_b_abstained`` records it — surfaced,
+    replay is balance-grade (see ``_replay_is_balance_grade``); where it is not (the synthetic seed
+    is not a balance ledger), Pipeline B abstains and ``n_pipeline_b_abstained`` records it — surfaced,
     NOT silently dropped and NOT a manufactured disagreement. A balance-grade Pipeline B that
     genuinely disagrees with A is surfaced as a pipeline disagreement. Pure and deterministic.
     """

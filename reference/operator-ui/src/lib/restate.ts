@@ -28,6 +28,29 @@ const INGRESS_URL = process.env.RESTATE_INGRESS_URL ?? 'http://127.0.0.1:8080';
 /** No long-poll caching — the console always reads the live state. */
 const NO_STORE: RequestInit = { cache: 'no-store' };
 
+/**
+ * The agentINVEST service allowlist. This is agentINVEST's operator console. On a SHARED Restate
+ * (e.g. a workstation also running a sibling project), the admin `/deployments` lists EVERY
+ * deployment on the cluster — including the sibling's. We scope every topology view to agentINVEST's
+ * own services so a sibling project's deployments and service names never surface here. Override with
+ * a comma-separated `OPERATOR_UI_SERVICE_ALLOWLIST` if agentINVEST's service set grows.
+ */
+const DEFAULT_AGENTINVEST_SERVICES = [
+  // Python endpoint (:9091)
+  'navData', 'bd09', 'pyTools', 'argResolver', 'canonicalData', 'agentinvestPlanner',
+  'entityResolution', 'bd12Recon',
+  // TS orchestrator (:9090)
+  'investmentOperation', 'navCalculation', 'approvalRegistry', 'approvalRegistryReader',
+];
+const AGENTINVEST_SERVICES = new Set(
+  process.env.OPERATOR_UI_SERVICE_ALLOWLIST?.split(',').map((s) => s.trim()).filter(Boolean) ??
+    DEFAULT_AGENTINVEST_SERVICES,
+);
+/** A deployment belongs to agentINVEST iff it hosts at least one agentINVEST service. */
+function isAgentinvestDeployment(services?: { name: string }[]): boolean {
+  return (services ?? []).some((s) => AGENTINVEST_SERVICES.has(s.name));
+}
+
 async function ingressPost<T>(handlerPath: string, body: unknown): Promise<T> {
   const res = await fetch(`${INGRESS_URL}/${handlerPath}`, {
     method: 'POST',
@@ -75,6 +98,7 @@ export async function listServices(): Promise<ServiceSummary[]> {
     const body = (await res.json()) as { deployments?: AdminDeployment[] };
     const out: ServiceSummary[] = [];
     for (const dep of body.deployments ?? []) {
+      if (!isAgentinvestDeployment(dep.services)) continue; // scope to agentINVEST on a shared cluster
       for (const svc of dep.services ?? []) {
         out.push({ name: svc.name, ty: svc.ty ?? 'service', deploymentId: dep.id, uri: dep.uri });
       }
@@ -146,7 +170,9 @@ export async function listDeployments(): Promise<DeploymentsSummary> {
     const res = await fetch(`${ADMIN_URL}/deployments`, { signal: AbortSignal.timeout(5000), ...NO_STORE });
     if (res.ok) {
       const body = (await res.json()) as { deployments?: AdminDeploymentFull[] };
-      deployments = body.deployments ?? [];
+      // Scope to agentINVEST's own deployments — on a shared Restate the admin lists every
+      // deployment on the cluster (including a sibling project's); the console must not surface them.
+      deployments = (body.deployments ?? []).filter((d) => isAgentinvestDeployment(d.services));
     }
   } catch {
     return { deployments: [], inFlightTotal: 0, versionDistributionPrecise: false };
@@ -203,7 +229,7 @@ export interface CanonicalTable {
   name: string;
   schema: string;
   table: string;
-  layer: 'mart' | 'staging' | string;
+  layer: 'canonical' | 'bitemporal' | 'mart' | 'staging' | string;
   rowCount: number;
 }
 
@@ -274,7 +300,7 @@ export interface ApprovalList {
 
 /**
  * List the pending + recently-resolved approvals from the ADDITIVE pending-approvals
- * registry (the index the OIM-132 gate's notify also records each notice in). This is
+ * registry (the index the approval gate's notify also records each notice in). This is
  * a REAL data source: each pending row is a LIVE operation/workflow paused at the gate
  * awaiting a decision. Returns empty lists if the registry reader is not registered
  * (e.g. the agentINVEST endpoint is down) rather than throwing.
@@ -293,7 +319,7 @@ export async function listApprovals(): Promise<ApprovalList> {
  * UI surfaces this honestly ("no longer pending") and records NO decision. The ingress
  * returns HTTP 202 for resolving a dead/already-resolved awakeable, so a bare 202 is NOT
  * confirmation the action had an effect — we confirm liveness against the op's recorded
- * state BEFORE resolving (OIM-142 cycle-2, fix #3).
+ * state BEFORE resolving.
  */
 export class StaleApprovalError extends Error {
   readonly operationId: string;
@@ -344,7 +370,7 @@ async function readOperationLiveStatus(
  * use `/resolve` for both (the gate reads `decision.approved`); the reason is recorded
  * in the gate's abort-trace.
  *
- * STALE-ROW GUARD (OIM-142 cycle-2, fix #3): before resolving, CONFIRM the operation is
+ * STALE-ROW GUARD: before resolving, CONFIRM the operation is
  * genuinely suspended at the gate (its recorded status is live-at-gate). A bare ingress
  * 202 is NOT that confirmation — the ingress returns 202 for a dead/already-resolved
  * awakeable, which is how a click on a stale row previously recorded a phantom `approved`.
@@ -382,7 +408,7 @@ export async function decideApproval(
     throw new Error(`resolve awakeable ${awakeableId} failed ${res.status}: ${await res.text()}`);
   }
 
-  // NO-STALE-ASSERT (OIM-142 cycle-3, defence-in-depth for P-MINOR-1). The ingress returns
+  // NO-STALE-ASSERT (defence-in-depth). The ingress returns
   // 202 even for a DEAD/already-resolved awakeable (no effect) — so a 202 here is NOT proof
   // the operator's decision took effect. The TOCTOU race: the pre-read above saw the op live
   // (striking/running) and the gate's durable timeout THEN fired underneath, aborting the op.
@@ -417,7 +443,7 @@ export interface OperationView {
   status: string;
   /** A one-line human summary (the plan summary / the fund). */
   summary: string | null;
-  /** The full recorded state (the OIM-134 audit record lives under `auditRecord`). */
+  /** The full recorded state (the audit record lives under `auditRecord`). */
   state: Record<string, unknown> | null;
 }
 
@@ -433,7 +459,7 @@ interface AdminInvocation {
  * `/query` endpoint speaks Arrow IPC, which is awkward to parse here; instead we read
  * the operation KEYS the registry + recent invocations expose and fetch each one's
  * recorded `status` over the ingress (the virtual-object / workflow state, where the
- * OIM-134 `operation-closed` audit record lives). Returns the operations whose state
+ * `operation-closed` audit record lives). Returns the operations whose state
  * we can read — read-only, no mutation.
  */
 export async function listOperations(): Promise<OperationView[]> {
@@ -461,7 +487,7 @@ export async function listOperations(): Promise<OperationView[]> {
   return views.filter((v): v is OperationView => v !== null);
 }
 
-/** Read a single operation's recorded state (the full OIM-134 audit record for the detail view). */
+/** Read a single operation's recorded state (the full audit record for the detail view). */
 export async function getOperation(kind: string, operationId: string): Promise<Record<string, unknown> | null> {
   if (kind !== 'investmentOperation' && kind !== 'navCalculation') return null;
   try {
@@ -528,6 +554,6 @@ async function queryInvocations(): Promise<AdminInvocation[]> {
   // The admin /query returns Arrow IPC (binary) — parsing it needs the arrow lib, which
   // we keep out of the thin slice. The registry path (2) above recovers every GATED
   // operation's key (the load-bearing ones — every approval is a real operation). The
-  // admin-API correlation of NON-gated completed operations is an OIM-142b enrichment.
+  // admin-API correlation of NON-gated completed operations is a later enrichment.
   return [];
 }

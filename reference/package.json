@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "agentINVEST reference-implementation polyglot workspace root. Holds the TypeScript orchestrator/control-surface packages (ts/), the Python tool+data layer (python/, uv-managed), and OpenIM's OWN Restate substrate launcher (scripts/, config/). The dbt canonical data layer (dbt/) slots beside these in OIM-102 without moving anything.",
+  "description": "agentINVEST reference-implementation polyglot workspace root. Holds the TypeScript orchestrator/control-surface packages (ts/), the Python tool+data layer (python/, uv-managed), and OpenIM's OWN Restate substrate launcher (scripts/, config/). The dbt canonical data layer (dbt/) slots beside these without moving anything.",
   "scripts": {
     "restate:install": "node scripts/install-restate.mjs",
     "dev:restate": "node scripts/run-restate-server.mjs",

@@ -1,30 +1,30 @@
 /**
  * The RESOLVE step (between seam 1 PLAN and seam 2 DISPATCH) — the abstract-arg → concrete-input
- * resolution layer (OIM-134, the new capability).
+ * resolution layer.
  *
  * The orchestrator's seam-1 `.plan()` loop produces a `Plan` whose `steps[]` each name a `soId`
  * + ABSTRACT args (the planner knows the fund + the period + a sector axis, but not the concrete
- * begin/end NAV or the per-segment weights — those live in the OIM-111 marts). The DISPATCH step
+ * begin/end NAV or the per-segment weights — those live in the marts). The DISPATCH step
  * needs the tools' CONCRETE inputs. THIS step bridges them: for each plan step it calls the Python
  * `argResolver.resolveStepArgs` handler over Restate (which READS the marts and DERIVES the concrete
- * inputs via the OIM-115 derivation), and produces a `ResolvedStep` carrying the concrete args
+ * inputs), and produces a `ResolvedStep` carrying the concrete args
  * dispatch will pass to `bd09.execute_so`.
  *
- * THE MISSING LINK OIM-131 SURFACED. OIM-131's dispatch passed the planner's args AS GIVEN; a step
- * whose args the planner could not resolve surfaced as a clean failure. The OIM-115 demo resolved
- * the args BY HAND in an explicit script. This step is that resolution moved into the orchestrator's
- * flow, so the chain runs AUTONOMOUSLY: the planner decides the tools, the resolver derives their
- * args, dispatch runs them — no by-hand glue.
+ * WHY THIS STEP EXISTS. Without it, dispatch would pass the planner's args AS GIVEN; a step
+ * whose args the planner could not resolve would surface as a clean failure, and the args would
+ * have to be resolved BY HAND in an explicit script. This step moves that resolution into the
+ * orchestrator's flow, so the chain runs AUTONOMOUSLY: the planner decides the tools, the resolver
+ * derives their args, dispatch runs them — no by-hand glue.
  *
  * RESOLVE IS MECHANISM, not a reasoning loop. It is DETERMINISTIC (no LLM): it reads the marts and
  * derives the inputs. There is exactly one reasoning loop (the `.plan()` step at seam 1); this is a
  * journaled data-derivation seam.
  *
- * HONESTLY BOUNDED TO THE BD-09 RETURN TOOLS (v0.1). The resolver knows SO-09-01 / SO-09-05 (the
- * OIM-115 demo's two tools). A step naming any other tool, or a step the marts cannot resolve (a
+ * HONESTLY BOUNDED TO THE BD-09 RETURN TOOLS (v0.1). The resolver knows SO-09-01 / SO-09-05. A
+ * step naming any other tool, or a step the marts cannot resolve (a
  * missing fund, an unbuilt store), surfaces as a CLEAN FAILURE (`{ status: 'unresolved' }`) — NEVER
  * fabricated inputs (no fake data driving a real-looking attribution). A general resolver for the
- * ~900-tool catalogue is forward (OIM-120+).
+ * ~900-tool catalogue is forward work.
  *
  * THE LEGAL RESTATE SHAPE. Each `ctx.serviceClient(ARG_RESOLVER_SERVICE).resolveStepArgs(...)` is a
  * journaled RPC at the handler top level — NO enclosing `ctx.run` (a context action nested inside a

@@ -1,10 +1,9 @@
 """Record-then-score — integrate the REAL ``.plan()`` selector into the harness.
 
-This is the OIM-105 P-MAJOR-1 carry-forward made real: OIM-130's planner is
-async / durable / non-deterministic (it makes a real Sonnet 4.6 call), so it
-CANNOT be a synchronous ``Selector`` scored live in the runner loop (that would
-either measure a sync stand-in, or async-ify the deterministic interface and break
-the harness's replay-stability). Instead:
+The planner is async / durable / non-deterministic (it makes a real Sonnet 4.6
+call), so it CANNOT be a synchronous ``Selector`` scored live in the runner loop
+(that would either measure a sync stand-in, or async-ify the deterministic
+interface and break the harness's replay-stability). Instead:
 
 1. **Record.** Run the real planner ONCE over every case in an eval set, taking
    the plan's PRIMARY tool selection (``plan.selected_so_ids()[0]``) as that case's
@@ -24,8 +23,8 @@ deterministic + replay-stable (score) — NOT a sync proxy, NOT an async-ified
 interface. The transcript is keyed by ``case_id`` so a re-score reads exactly the
 selections the planner made.
 
-The gate-E number is whatever the planner actually scores — reported HONESTLY by
-the runner. A miss is a real architectural signal (see the runner's honest
+The gap-metric number is whatever the planner actually scores — reported HONESTLY
+by the runner. A miss is a real architectural signal (see the runner's honest
 boundary), never something to fudge.
 """
 
@@ -38,7 +37,7 @@ from pathlib import Path
 from agentinvest_evals.schema import EvalSet, ToolSpec
 from agentinvest_orchestrator.planner import ToolDescriptor, plan_task
 
-# The transcript home (a builder artefact — the recorded planner selections).
+# The transcript home — the recorded planner selections.
 _TRANSCRIPTS_DIR = Path(__file__).resolve().parents[3] / "evals" / "transcripts"
 
 
@@ -101,7 +100,7 @@ def record_transcript(eval_set: EvalSet, *, model_label: str) -> PlanTranscript:
     set's catalogue (load-all seam) and the case query; the plan's PRIMARY tool
     selection is recorded. The candidate set is identical to the baseline's, so the
     comparison is apples-to-apples. Makes one real Sonnet call per case — keep the
-    set small (the OIM-105/106 sets are 16 + 28 cases).
+    set small (the sets are 16 + 28 cases).
     """
     catalogue = _descriptors_for(eval_set.tools)
     valid_ids = {t.tool_id for t in eval_set.tools}
@@ -163,13 +162,13 @@ class TranscriptSelector:
 
 
 def transcript_path(set_id: str, model_label: str) -> Path:
-    """The on-disk path for a recorded transcript (a builder artefact)."""
+    """The on-disk path for a recorded transcript."""
     safe = model_label.replace("/", "-")
     return _TRANSCRIPTS_DIR / f"{set_id}.{safe}.transcript.json"
 
 
 def save_transcript(transcript: PlanTranscript) -> Path:
-    """Write a transcript to its builder-artefact path; return the path."""
+    """Write a transcript to its on-disk path; return the path."""
     path = transcript_path(transcript.set_id, transcript.model)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(transcript.to_json() + "\n", encoding="utf-8")
@@ -177,6 +176,6 @@ def save_transcript(transcript: PlanTranscript) -> Path:
 
 
 def load_transcript(set_id: str, model_label: str) -> PlanTranscript:
-    """Load a previously-recorded transcript from its builder-artefact path."""
+    """Load a previously-recorded transcript from its on-disk path."""
     path = transcript_path(set_id, model_label)
     return PlanTranscript.from_json(path.read_text(encoding="utf-8"))

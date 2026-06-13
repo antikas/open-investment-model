@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * OIM-151 LIVE audit-export proof — gather REAL audit records → chain → write JSON-L → verify green.
+ * LIVE audit-export proof — gather REAL audit records → chain → write JSON-L → verify green.
  *
  * Brings up the FULL production agentINVEST TS endpoint (the REAL investmentOperation VO +
  * auditJournalExport), runs ONE real operation on the production VO to produce a real
@@ -9,7 +9,7 @@
  * then runs `audit-export` (gather→chain→write) + `audit-verify` over the REAL record and asserts the
  * export verifies GREEN.
  *
- * REUSE-SAFE (OIM-184). The shared Python :9091 endpoint (bd09/argResolver/navData/agentinvestPlanner)
+ * REUSE-SAFE. The shared Python :9091 endpoint (bd09/argResolver/navData/agentinvestPlanner)
  * is REUSED if already registered — NEVER torn down (other local projects sharing the dev substrate
  * + concurrent OpenIM work depend on it). Only the TS endpoint THIS run spawns is pruned on exit.
  * NEVER `wsl --shutdown`.

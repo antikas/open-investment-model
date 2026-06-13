@@ -5,7 +5,7 @@ dispatch service) as an ASGI app (via hypercorn) and registers them against the
 shared Restate so their handlers are invocable over the ingress. This is the Python
 counterpart of the TS ``endpoint.ts``.
 
-P-R6 (OIM-101): the Python endpoint listens on its OWN port (default 9091,
+The Python endpoint listens on its OWN port (default 9091,
 distinct from the TS endpoint's 9090) so the TS and Python deployments are two
 separate registrations against the same Restate. On Windows this endpoint runs
 INSIDE WSL2 (same network namespace as the Restate server), so Restate reaches
@@ -43,36 +43,36 @@ ADMIN_URL = os.environ.get("RESTATE_ADMIN_URL", "http://localhost:9070")
 # Restate reaches this endpoint over localhost (same WSL2 network namespace).
 DEPLOY_URL = os.environ.get("AGENTINVEST_PY_DEPLOY_URL", f"http://localhost:{PY_ENDPOINT_PORT}")
 
-# agentinvestPlanner (OIM-130) — the planning step's service, bound beside bd09
-# (the OIM-113 pattern). It is a model-free SERVICE hosting the one .plan()
-# reasoning loop; the orchestrator calls its planTask handler at seam 1 over
-# Restate RPC. The name is agentINVEST-scoped so it does not collide with a
-# same-named sibling-project service on the shared dev Restate.
-# navData (OIM-133) — the NAV-strike workflow's marts-read seam, bound beside bd09. A
+# agentinvestPlanner — the planning step's service, bound beside bd09. It is a
+# model-free SERVICE hosting the one .plan() reasoning loop; the orchestrator calls
+# its planTask handler at seam 1 over Restate RPC. The name is agentINVEST-scoped so
+# it does not collide with a same-named sibling-project service on the shared dev Restate.
+# navData — the NAV-strike workflow's marts-read seam, bound beside bd09. A
 # model-free SERVICE: the TS navCalculation workflow calls its getFundNavComponents handler
 # to read the per-fund §A1 NAV components from mart_fund_nav. Not an agent; no reasoning loop.
-# argResolver (OIM-134) — the orchestrator's abstract-arg → concrete-tool-input resolution seam,
+# argResolver — the orchestrator's abstract-arg → concrete-tool-input resolution seam,
 # bound beside bd09/navData. A model-free SERVICE: the TS investmentOperation's resolve step calls
 # its resolveStepArgs handler to derive the SO-09-01/05 concrete inputs from the marts (REUSING the
-# OIM-115 derivation). Not an agent; no reasoning loop.
-# canonicalData (OIM-142b) — the Operator UI inspector's read seam, bound beside navData. A
+# shared marts-read derivation). Not an agent; no reasoning loop.
+# canonicalData — the Operator UI inspector's read seam, bound beside navData. A
 # model-free, READ-ONLY SERVICE: the Operator UI's Canonical-data inspector calls its listTables /
 # sampleTable handlers to browse the dbt-built canonical layer (marts + realised staging entities)
 # over the ingress (the Windows Next.js cannot read the WSL2-ext4 duckdb file directly).
 # Allowlisted table names + a parameterised capped sample — no free-form SQL / no injection surface.
-# bd12 (OIM-161) — the BD-12 book-of-record READ service, bound beside bd09 (the OIM-113 pattern). A
+# bd12 — the BD-12 book-of-record READ service, bound beside bd09. A
 # model-free, READ-ONLY SERVICE hosting the SD-12.1 IBOR + SD-12.2 ABOR read tools: each execute_so
-# reads the OIM-160 canonical dual book via the book_of_record_data data-access layer at an as-of
-# and shapes a typed result. Exposes the two books to BE reconciled (OIM-162); it does not reconcile
+# reads the canonical dual book via the book_of_record_data data-access layer at an as-of
+# and shapes a typed result. Exposes the two books to BE reconciled; it does not reconcile
 # them and writes nothing. Same execute_so / list_capabilities envelope as bd09. Not an agent.
-# bd12Recon (OIM-162) — the SD-12.10 RECONCILIATION service, bound beside bd12. A model-free SERVICE
+# bd12Recon — the SD-12.10 RECONCILIATION service, bound beside bd12. A model-free SERVICE
 # hosting the four reconcile tools (position · cash · transaction-matching · IBOR/ABOR): each
 # execute_so reads the internal dual book (via book_of_record_data) AND the external comparator feed
 # (via comparator_feed_data) at an as-of, runs the DUAL-INDEPENDENT-PIPELINE reconcile, classifies
-# breaks DETERMINISTICALLY (no LLM — cycle-1), and persists E-24 break findings APPEND-ONLY to an
+# breaks DETERMINISTICALLY (no LLM), and persists E-24 break findings APPEND-ONLY to an
 # engine-owned break store. It emits findings only — no correcting entry, no status transition, no
-# gate (those are OIM-163). Same execute_so / list_capabilities envelope. Not an agent.
-# entityResolution (OIM-199) — the SD-13.2 ENTITY-RESOLUTION service, bound beside bd12Recon. A
+# gate (those live behind the breach gate). Same execute_so / list_capabilities envelope. Not an
+# agent.
+# entityResolution — the SD-13.2 ENTITY-RESOLUTION service, bound beside bd12Recon. A
 # model-free SERVICE hosting the three resolution tools (resolve_batch · get_golden_record ·
 # list_review_queue): resolve_batch reads the E-01 masters + the inbound entity feed (via
 # entity_resolution_data), runs the DETERMINISTIC three-tier cascade (exact external-id ->

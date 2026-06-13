@@ -1,5 +1,4 @@
-"""The deterministic entity-resolution capability — the three-tier cascade + golden records
-(OIM-199).
+"""The deterministic entity-resolution capability — the three-tier cascade + golden records.
 
 OpenIM's signature differentiator made runnable: the no-universal-identifier reality + the
 deterministic three-tier resolution cascade (exact external-id -> deterministic name/alias key ->
@@ -8,10 +7,10 @@ internal golden key and quarantining the genuinely-ambiguous to a human, never f
 
 THE DETERMINISTIC SPINE. The of-record resolve path (``cascade`` + ``normaliser``) imports NO LLM /
 proposer / model module — the resolution decision is a pure function of the feed record's observable
-evidence + the standing reference data. The probabilistic / LLM-proposer tier is a deliberately-
-deferred later cycle. The module-graph spine assertion enforces the import-closure cleanliness.
+evidence + the standing reference data. The probabilistic / LLM-proposer tier is deliberately out of
+scope here. The module-graph spine assertion enforces the import-closure cleanliness.
 
-The two append-only stores (``review_queue_store`` + ``golden_record_store``) are the OIM-162
+The two append-only stores (``review_queue_store`` + ``golden_record_store``) are the
 ``break_store`` pattern verbatim — insert-only, immutable, engine-owned, ``dbt build``-safe.
 """
 

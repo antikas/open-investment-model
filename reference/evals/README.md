@@ -1,10 +1,10 @@
-# agentINVEST eval substrate (`reference/evals/`) — builder runbook
+# agentINVEST eval substrate (`reference/evals/`)
 
-> **Builder surface.** This directory is the agentINVEST **eval substrate** — the
-> measuring instrument, built before the things it measures (the eval-first
-> thesis). It is a builder-facing surface: eval cards and this README carry bar
-> provenance and build framing. The reader-facing description of agentINVEST
-> lives in `../README.md` and stays clean of this.
+This directory is the agentINVEST **eval substrate** — the measuring instrument,
+built before the things it measures (the eval-first thesis). It holds the eval
+sets and the eval cards; the harness code lives in the Python workspace under
+`reference/python/src/agentinvest_evals/`. The reader-facing description of
+agentINVEST lives in `../README.md`.
 
 ## What this is — and the one thing it is not (the honest boundary)
 
@@ -26,13 +26,13 @@ selector's selections are scored through this same harness against the same gold
 set (via the record-then-score adapter described under "How a selector is scored"
 — the production `.plan()` is async/durable, so it is *recorded then scored*, not
 wrapped in a synchronous proxy). A green from the baseline would say the baseline
-is decent on this set; a red says
-the baseline is weak. Neither is a statement about the production selector. Do not
-read the baseline's number as "tool selection proven" or "cross-office risk
-retired" — that substitution (proving an adjacent construct and narrating it as
-the production one) is the equivalence-substitution failure the build is armoured
-against: a system's own success claims are not verification; evaluation must run
-against an independent oracle.
+is decent on this set; a red says the baseline is weak. Neither is a statement
+about the production selector. Do not read the baseline's number as "tool
+selection proven" or "cross-office risk retired" — that substitution (proving an
+adjacent construct and narrating it as the production one) is the
+equivalence-substitution failure the substrate is armoured against: a system's
+own success claims are not verification; evaluation must run against an
+independent oracle.
 
 The runner prints this honest-boundary statement on every run, so the number is
 never read in isolation.
@@ -45,7 +45,7 @@ From `reference/` (Windows host launches into WSL2 automatically, same as
 ```sh
 pnpm evals                 # run the intra-domain eval with the baseline selector
 pnpm evals -- --check-replay   # also assert two in-process runs are byte-identical
-pnpm evals -- --gap        # run the gate-E gap metric over the cross-office set
+pnpm evals -- --gap        # run the gap metric over the cross-office set
 pnpm evals -- --gap --replay-hash   # the gap run's portable, encoding-independent CI key
 ```
 
@@ -57,10 +57,10 @@ uv run python -m agentinvest_evals --check-replay
 ```
 
 **Exit code:** `0` iff the selector's accuracy `>=` the declared bar; **non-zero
-on a bar miss** (so it is CI-gate-ready) or on a malformed / one-sided set. The
-`reference/` CI pipeline that would invoke this on every push is a **later item —
-named here, not built**: the harness is wired to fail a build; nothing yet runs it
-as a gate.
+on a bar miss** (so it is CI-gate-ready) or on a malformed / one-sided set. A
+`reference/` CI pipeline that invokes this on every push is a **later item — named
+here, not built**: the harness is wired to fail a build; nothing yet runs it as a
+gate.
 
 **Replay / regression property:** the report carries no timestamps, paths, PIDs or
 randomness; the baseline selector is exact-integer and order-stable; so two runs
@@ -91,12 +91,12 @@ lives here under `reference/evals/sets/`.
 
 ```
 reference/evals/
-  README.md                                  # this builder runbook (author≠blesser + the honest boundary)
+  README.md                                  # this file
   sets/
     intra-domain-bd09-returns.json           # the within-office eval SET (tool catalogue + golden cases)
     intra-domain-bd09-returns.card.md         # its eval CARD (measures / bar / oracle / author / blesser)
     cross-office-front-vs-middle.json         # the cross-office torture SET + within-office control arm (office-arm-tagged)
-    cross-office-front-vs-middle.card.md       # its eval CARD (the gate-E gap metric / oracle / author / blesser)
+    cross-office-front-vs-middle.card.md       # its eval CARD (the gap metric / oracle / author / blesser)
   transcripts/                                 # recorded real-planner selections (record-then-score inputs)
     intra-domain-bd09-returns.claude-sonnet-4-6.transcript.json
     cross-office-front-vs-middle.claude-sonnet-4-6.transcript.json
@@ -106,13 +106,13 @@ reference/python/src/agentinvest_evals/      # the harness package (in the one u
   __main__.py                                # `python -m agentinvest_evals`
   schema.py                                  # EvalCase / EvalSet / EvalCard — the SSOT format
   selector.py                                # the Selector Protocol + the deterministic baseline
-  runner.py                                  # the offline runner: single-set accuracy>=bar + the gate-E gap metric; non-zero on a bar miss
+  runner.py                                  # the offline runner: single-set accuracy>=bar + the gap metric; non-zero on a bar miss
   record_then_score.py                       # the record-then-score adapter: real-planner transcript -> deterministic re-score
 reference/python/tests/test_evals_harness.py  # replay-stability, bar-bites, toy-set-guard, interface-walk, gap-metric + two-part-trigger tests
 reference/scripts/evals-run.sh + evals-run.mjs # the Windows->WSL2 launcher (mirrors dbt-build.*)
 ```
 
-## The eval-set + eval-card format (the reused SSOT)
+## The eval-set + eval-card format
 
 - **Eval set** (`*.json`): a `tools` catalogue (`tool_id` / `name` / `description`)
   + `cases`, each a `query` → `expected_tool_id` + the near-duplicate `confusers`
@@ -126,22 +126,21 @@ reference/scripts/evals-run.sh + evals-run.mjs # the Windows->WSL2 launcher (mir
 format** is the reused SSOT and *does* extend additively: a cross-office set is
 just another `EvalSet`, cross-office confuser *pairs* are just more confuser ids,
 the **office-arm tag** is one additive `office_arm` field on each case
-that defaults to `within-office` (so the original untagged set parses unchanged),
-and the production selector consumes exactly this `EvalSet` shape (its selections
-scored via the record-then-score adapter above). Adding fields is additive — keep
-the existing fields stable.
+that defaults to `within-office` (so an untagged set parses unchanged), and the
+production selector consumes exactly this `EvalSet` shape (its selections scored
+via the record-then-score adapter above). Adding fields is additive — keep the
+existing fields stable.
 
-**The gate-E gap metric was NOT an additive eval set — it is
-net-new runner/verdict structural work.** Gate-E's
-cross-office verdict is *two* sub-population accuracies (within-office and
-cross-office), their *difference* (the gap), and a *two-part trigger* (gap `> 5pp`
-primary OR cross-office `< 90%` backstop). None of that is expressible through the
-original single-set runner: `RunResult.passed` is a single `accuracy >= bar`, and
-the default `main` path runs one set against one `bar`. So the runner gained a
-partitioned-by-office-arm run path (`gap_metric` → `GapResult`), the gap
-computation, the two-limb trigger, and a `--gap` CLI mode —
-**structural runner work, not just another set file** — while the
-single-set `accuracy >= bar` default path is kept working unchanged alongside it.
+**The gap metric is NOT an additive eval set — it is net-new runner/verdict
+structural work.** The cross-office verdict is *two* sub-population accuracies
+(within-office and cross-office), their *difference* (the gap), and a *two-part
+trigger* (gap `> 5pp` primary OR cross-office `< 90%` backstop). None of that is
+expressible through the single-set runner: `RunResult.passed` is a single
+`accuracy >= bar`, and the default `main` path runs one set against one `bar`. So
+the runner gained a partitioned-by-office-arm run path (`gap_metric` →
+`GapResult`), the gap computation, the two-limb trigger, and a `--gap` CLI mode —
+**structural runner work, not just another set file** — while the single-set
+`accuracy >= bar` default path is kept working unchanged alongside it.
 
 ## How a selector is scored (and how the production selector integrates)
 
@@ -162,14 +161,14 @@ it is the `InvestmentOperation` virtual object's `.plan()` step — an LLM tool-
 call that is **async, network-bound, durably journaled, and non-deterministic**.
 It cannot be wrapped in a synchronous `Selector` proxy and scored live: doing that
 would score a synchronous stand-in, not the real durable `.plan()` step — the
-**probe-substitution failure** the build is armoured against (a stand-in's
+**probe-substitution failure** the substrate is armoured against (a stand-in's
 success is not verification of the production construct). Nor is the answer to
 make this interface `async` — the synchronous,
 pure, replay-stable `run_eval` is exactly what gives the harness its
 byte-identical-replay property.
 
 The production selector integrates via a **record-then-score adapter**
-(`agentinvest_evals/record_then_score.py`, built): run the real `.plan()` selector once over the set,
+(`agentinvest_evals/record_then_score.py`): run the real `.plan()` selector once over the set,
 **record its per-query selections as a fixed transcript** (a `query -> tool_id`
 record, captured from the production durable run), then **score that transcript
 through this same harness** — the same scoring code, the same golden set, the same
@@ -182,12 +181,11 @@ code**, fed by a recorded transcript for the async production selector.
 (The synchronous-contract reuse is verified in code for *deterministic* selectors:
 `test_selector_interface_is_satisfiable_by_an_alternate` runs a different
 synchronous mechanism through the same runner. That test does NOT exercise the
-async/durable path — that fit is the record-then-score adapter, built with the
-production selector.)
+async/durable path — that fit is the record-then-score adapter.)
 
-## The gate-E gap metric — the make-or-break instrument
+## The gap metric — the make-or-break instrument
 
-`pnpm evals -- --gap` runs the **gate-E gap metric** over the cross-office set.
+`pnpm evals -- --gap` runs the **gap metric** over the cross-office set.
 In one run, the runner partitions the cases by their `office_arm` tag and computes:
 
 - **within-office accuracy** — selection accuracy on the **control** cases (the
@@ -196,8 +194,8 @@ In one run, the runner partitions the cases by their `office_arm` tag and comput
   confusers straddle the front-office ↔ middle-office boundary);
 - the **gap** = within-office − cross-office (the primary split signal — the
   cross-office degradation the ~5-per-office split specifically fixes);
-- the **two-part trigger** (gate-E's declared rule): *split-indicated* if **gap > 5pp**
-  (primary) **OR** **cross-office < 90%** (backstop).
+- the **two-part trigger**: *split-indicated* if **gap > 5pp** (primary) **OR**
+  **cross-office < 90%** (backstop).
 
 The gap is measured **apples-to-apples in one run**: the same selector ranks over
 the same single catalogue for both arms; the only difference is whether the
@@ -241,10 +239,10 @@ accuracies + the gap + the two-part trigger, and **fires correctly**. The
 **baseline selector's within / cross / gap numbers are a harness-validation
 datapoint, NOT a verdict on whether to split the architecture.** Specifically:
 
-- gate-E's **"within-office < 95% ⇒ the catalogue / tool-RAG is broken"** applies
+- the interpretation **"within-office < 95% ⇒ the catalogue / tool-RAG is broken"** applies
   to **the real (production) selector**, not to a lexical baseline — a lexical baseline
   below 95% within-office is *expected* and says nothing about the catalogue;
-- gate-E's **"gap > 5pp ⇒ split the architecture"** applies to the **real
+- the interpretation **"gap > 5pp ⇒ split the architecture"** applies to the **real
   selector**, not the baseline — a baseline `SPLIT-INDICATED` does **not** mean
   "the single-orchestrator bet is lost" or "cross-office risk confirmed."
 
@@ -259,12 +257,12 @@ arms; non-zero on a malformed / one-sided / single-arm set or a replay failure).
 The real-selector gate decides the exit semantics of a split-indicated verdict
 when the production selector runs through the metric.
 
-If gate-E ever does fire for the real selector, the upgrade is **~5 specialist
+If the trigger ever does fire for the real selector, the upgrade is **~5 specialist
 *selectors* behind a router** (the model's office tags) — never "agents" — the
 escalation path named in the project's stack-and-topology decision record,
 built then, not here.
 
-## Author ≠ blesser (three-role eval governance)
+## Author ≠ blesser (independent-bless eval governance)
 
 Each eval set/card records two **distinct** roles:
 
@@ -275,14 +273,13 @@ Each eval set/card records two **distinct** roles:
 A single-actor author-and-bless is **visible by construction**: the card carries
 both fields, and the runner prints a `GOVERNANCE WARNING` when `author ==
 blesser`. Each set is authored by one actor and blessed by a **different,
-independent reviewer in fresh context** (three-role separation): the reviewer
-reads the set without the author's narration, independently certifies
-adversariality + labelling against the source specs, and is recorded as the
-blesser in the card only once that independent review is clean (an unblessed set
-carries `blesser: UNBLESSED` until then). Authoring-and-blessing a set in one
-actor's context is the
-exact single-actor trust collapse the three-role discipline forbids — so the
-substrate makes the absence of a blesser loud, not silent.
+independent reviewer in fresh context**: the reviewer reads the set without the
+author's narration, independently certifies adversariality + labelling against the
+source specs, and is recorded as the blesser in the card only once that
+independent review is clean (an unblessed set carries `blesser: UNBLESSED` until
+then). Authoring-and-blessing a set in one actor's context is the exact
+single-actor trust collapse the discipline forbids — so the substrate makes the
+absence of a blesser loud, not silent.
 
 ## The intra-domain eval
 
@@ -291,7 +288,7 @@ substrate makes the absence of a blesser loud, not silent.
 (time-weighted / money-weighted / strike-period-linking / gross-vs-net). The tool
 differentiae are **derived from the SD-09.1 Service Operation descriptions** (the
 oracle: `model/service-domains/BD-09-performance-and-analytics/SD-09.1-performance-measurement.md`),
-not asserted. Bar: **gate-E within-office ≥ 95%** (the declared write-time bar). Each of
+not asserted. Bar: **within-office ≥ 95%** (the declared write-time bar). Each of
 the four focus tools appears as both a correct answer and a confuser (the
 two-sidedness guard rejects a one-sided toy set). The composite / currency /
 reconcile Service Operations sit in the catalogue as additional tools so selection
@@ -299,10 +296,10 @@ is realistic.
 
 ## The cross-office torture eval + gap metric
 
-`sets/cross-office-front-vs-middle.{json,card.md}` — the make-or-break gate-E set.
+`sets/cross-office-front-vs-middle.{json,card.md}` — the make-or-break gap set.
 Cross-office torture pairs spanning the front-office ↔ middle-office boundary, plus
 a within-office control arm, in one office-arm-tagged set so the gap is computed
-apples-to-apples (see "The gate-E gap metric" above for the families and the
+apples-to-apples (see "The gap metric" above for the families and the
 honest boundary). The differentiae are **derived from the BD-05/06/07/08/10 SD
 specs** (the oracle named in the card), not asserted. Run with `pnpm evals --
 --gap`. Each cross-office case's confusers genuinely straddle the office boundary
@@ -322,9 +319,9 @@ the architecture must split (the honest boundary).
   record-then-score adapter is built (`record_then_score.py`) and recorded
   transcripts of the real planner ship under `transcripts/` — but the baseline
   numbers measured by the harness-validation selector remain harness validation,
-  and a gate-E verdict on the production selector is taken only when that gate is
-  formally run, not implied by the transcripts' presence here.
-- The **actual ~5-per-office specialist split** — gate-E *fires* the split as a
+  and an architecture verdict on the production selector is taken only when that
+  gate is formally run, not implied by the transcripts' presence here.
+- The **actual ~5-per-office specialist split** — the metric *fires* the split as a
   verdict (for the real selector); **building** the split is the escalation path
   named in the project's stack-and-topology decision record, not this work.
 - The `reference/` **CI pipeline** that runs the harness as a gate — a later item.

@@ -7,12 +7,12 @@ journaled durable step. It is the ``bd12_recon_service.py`` analogue — same ``
 ``list_capabilities`` envelope shape — so the MCP/OpenAPI ingress and the orchestrator reach it
 identically.
 
-Service, not agent (the load-bearing topology point — ADR-0054). The per-SD layer is a **model-free
+Service, not agent (the load-bearing topology point). The per-SD layer is a **model-free
 dispatch / tool-hosting boundary** that carries **no reasoning loop**. It routes a *named* SO to its
 resolution tool; it does **not** decide which SO to call (that is the orchestrating ``.plan()``
 loop). And it adds **NO LLM** — the resolution decision is the deterministic three-tier cascade
-(``entity_resolution.cascade``); the probabilistic / LLM-proposer tier is a deliberately-deferred
-later cycle. The of-record resolve path imports no model (the module-graph spine assertion proves
+(``entity_resolution.cascade``); the probabilistic / LLM-proposer tier is deliberately out of scope
+here. The of-record resolve path imports no model (the module-graph spine assertion proves
 the import closure is model-free).
 
 THE THREE SOs:
@@ -271,7 +271,7 @@ def run_resolution(
     distinct resolved entity_id (clustering the resolved records by their matched master), and
     routes
     every ``review`` decision to the review-queue items. A ``new`` decision is NOT written to the
-    golden store in cycle-1 (a net-new golden key is a curated steward decision); it is surfaced in
+    golden store (a net-new golden key is a curated steward decision); it is surfaced in
     the per-record results and counted, but neither golden-written nor (unless ambiguous) queued.
     """
     by_id = {m.entity_id: m for m in masters}

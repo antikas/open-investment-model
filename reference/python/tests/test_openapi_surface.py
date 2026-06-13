@@ -8,7 +8,7 @@ Two tiers:
   ``/docs`` + ``/openapi.json`` surface serves;
 - **integration** (skipped unless the shared Restate admin is reachable AND bd09 is registered):
   fetches the *live* auto-generated spec from Restate and validates it 3.1 + asserts the surface.
-  This is the same code the report's live evidence drives; the unit tier locks it for CI.
+  This is the same code the live evidence drives; the unit tier locks it for CI.
 
 The spec is Restate-generated from the handler signatures — these tests confirm the helper fetches
 and validates it, never that a hand-written spec passes (the SSOT discipline).
@@ -33,7 +33,7 @@ from agentinvest_tools.openapi_surface import (
 
 # A captured fixture of the real auto-generated bd09 OpenAPI 3.1 spec shape (Restate 1.6.2). The
 # execute_soRequest schema is the *typed* envelope (object naming soId/args) that the Pydantic
-# ExecuteSoInput now produces — the OIM-113 envelope-typing carry-forward at the surface. Trimmed to
+# ExecuteSoInput produces — the envelope-typing carry-forward at the surface. Trimmed to
 # the load-bearing parts; a genuine OpenAPI 3.1 document.
 _CAPTURED_SPEC: dict[str, Any] = {
     "openapi": "3.1.0",
@@ -158,7 +158,7 @@ async def test_docs_app_serves_openapi_json_and_swagger_ui(
     assert b"integrity=" in captured["body"]
 
 
-# --- OIM-141: well-formed JSON error responses + the programmatic served check -----------------
+# --- well-formed JSON error responses + the programmatic served check --------------------------
 
 
 @pytest.mark.anyio
@@ -167,8 +167,8 @@ async def test_docs_app_unknown_path_is_a_structured_json_404(
 ) -> None:
     """An unknown path returns a well-formed STRUCTURED JSON 404 (not bare text/plain).
 
-    OIM-141 IN #3: ``make_docs_app`` previously returned a bare ``text/plain`` "not found".
-    A programmatic consumer (and the curl smoke) needs a machine-parseable error envelope —
+    ``make_docs_app`` previously returned a bare ``text/plain`` "not found". A programmatic
+    consumer (and the curl smoke) needs a machine-parseable error envelope —
     ``{"error": "not_found", "detail": "<path>"}`` with ``application/json`` and status 404.
     """
     import json as _json
@@ -238,12 +238,12 @@ async def test_docs_app_200_paths_unregressed_by_the_json_404(
 async def test_swagger_ui_served_with_sri_pinned_assets(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The programmatic Swagger-UI-served check (OIM-141 IN #4) — the autonomous proxy.
+    """The programmatic Swagger-UI-served check — the autonomous proxy.
 
     Over the fixture path (no live server): ``/docs`` serves 200 HTML carrying the SRI-pinned
     Swagger asset references (a pinned version + an ``integrity=`` sha384 on BOTH the CSS and the
     JS, plus ``crossorigin``), and ``/openapi.json`` serves the validated 3.1 spec with the typed
-    envelope present. The interactive in-browser click-through stays DEFERRED (owner).
+    envelope present. The interactive in-browser click-through is checked separately.
     """
     import json as _json
 
@@ -286,7 +286,7 @@ async def test_swagger_ui_served_with_sri_pinned_assets(
     assert summary["request_schema_typed"] is True
 
 
-# --- OIM-189: the /openapi.json upstream fetch is guarded → a well-formed 503 (not a 500) ------
+# --- the /openapi.json upstream fetch is guarded → a well-formed 503 (not a 500) --------------
 #
 # ``make_docs_app``'s ``/openapi.json`` branch calls ``fetch_service_openapi`` (which
 # ``raise_for_status()``es), so an admin-down/unreachable/timeout/5xx (or a malformed spec body)
@@ -516,9 +516,9 @@ async def test_docs_app_admin_up_unregressed_by_the_503_guard(
     assert _json.loads(captured["body"]) == {"error": "not_found", "detail": "/no-such-path"}
 
 
-# --- the emitter-quirk normalisation is scoped (P-MINOR-1, cycle-1 pre-mortem) -----------------
+# --- the emitter-quirk normalisation is scoped -------------------------------------------------
 #
-# The earlier normalisation recursively dropped EVERY null-valued dict key across the spec, which
+# A whole-spec recursive normalisation would drop EVERY null-valued dict key across the spec, which
 # would silently corrupt a real tool schema the moment a tool gains an optional parameter: an
 # ``Optional[str] = Field(default=None)`` emits ``"default": null`` (the default would vanish) and a
 # ``const: null`` would invert. ``normalise_emitter_quirks`` is now path-scoped to Restate's

@@ -8,10 +8,9 @@ One emitter per view:
   external destination BD (collapsed onto the BD box).
 - `entity_erd_dot` — entity nodes grouped by pack with FK edges.
 
-OIM-54 cycle-3 B-1 (P2-3): cross-BD edges now branch on `edge.kind`. The
-two BD-aggregate kinds (`narrative-bd-input`, `narrative-bd-output` —
-the 158 single-edge aggregate references added in cycle-2 B-4) render
-distinctly from the 1,148 structured / SD-narrative edges. BD-aggregate
+Cross-BD edges branch on `edge.kind`. The two BD-aggregate kinds
+(`narrative-bd-input`, `narrative-bd-output` — the single-edge aggregate
+references) render distinctly from the structured / SD-narrative edges. BD-aggregate
 edges use `style="dashed", color="#808080", penwidth=0.8` plus a
 tooltip naming the shape; structured edges retain the default style.
 A practitioner reading the rendered SVG can now tell "this BD has
@@ -111,16 +110,16 @@ def landscape_dot(sd_model: ServiceDomainModel, bundle: GraphBundle) -> str:
 
     # Cross-BD arrows — one per unique (src_bd, tgt_bd) pair.
     #
-    # OIM-54 cycle-3 B-1 (P2-3 closure): branch on edge.kind so BD-narrative
-    # aggregate-function-references render distinctly from structured /
-    # SD-narrative edges. A pair carries one of three shapes:
+    # Branch on edge.kind so BD-narrative aggregate-function-references
+    # render distinctly from structured / SD-narrative edges. A pair
+    # carries one of three shapes:
     #
     # - "structured" — at least one consumes-sd / produces-sd / narrative-input
     #   / narrative-output edge connects an SD in src_bd to an SD in tgt_bd.
     #   The reader interprets this as "this BD has structured / SD-specific
     #   relationships into that one". Renders solid, default colour.
     # - "narrative-bd" — only narrative-bd-input / narrative-bd-output edges
-    #   connect src_bd and tgt_bd (the cycle-2 B-4 aggregate-function-reference
+    #   connect src_bd and tgt_bd (the aggregate-function-reference
     #   form). The reader interprets this as "this BD's narrative references
     #   that one as aggregate function context, no SD-specific dependency".
     #   Renders dashed, lighter (gray60), thinner (penwidth=0.8).
@@ -225,7 +224,7 @@ def bd_detail_dot(
             lines.append(f'  {src} -> {tgt} [ltail="{ltail}", lhead="{lhead}"];')
 
     # Cross-BD edges — collapsed to one node per destination BD. Edges may
-    # name a BD directly (the OIM-54 cycle-2 B-4 aggregate-function-reference
+    # name a BD directly (the aggregate-function-reference
     # form: narrative-bd-input / narrative-bd-output) or an SD in another BD
     # (the structured / SD-narrative forms). Both routes land on the same
     # collapsed BD external node.
@@ -236,12 +235,12 @@ def bd_detail_dot(
             return node_id
         return None
 
-    # OIM-54 cycle-3 B-1 (P2-3 closure): track per-(ext-BD, source-SD) edge
-    # kinds so the collapsed cross-BD arrow can render the BD-narrative
-    # aggregate-function-reference shape distinctly from the structured /
-    # SD-narrative shape. _BD_NARRATIVE_KINDS edges render dashed + gray60 +
-    # penwidth 0.8; structured / SD-narrative edges render solid + default
-    # (the cycle-1+2 visual surface for "internal cross-BD" is preserved).
+    # Track per-(ext-BD, source-SD) edge kinds so the collapsed cross-BD
+    # arrow can render the BD-narrative aggregate-function-reference shape
+    # distinctly from the structured / SD-narrative shape. _BD_NARRATIVE_KINDS
+    # edges render dashed + gray60 + penwidth 0.8; structured / SD-narrative
+    # edges render solid + default (the visual surface for "internal cross-BD"
+    # is preserved).
     _BD_NARRATIVE_KINDS = frozenset({"narrative-bd-input", "narrative-bd-output"})
 
     other_bd_targets: dict[str, list[tuple[str, str]]] = {}

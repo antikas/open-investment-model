@@ -4,8 +4,8 @@
  * Two proofs against the PRODUCTION `InvestmentOperation` shell (the one bound
  * into the endpoint), not a probe:
  *
- *  A. The production VO is invocable and journals a plan (the `.plan()` step,
- *     OIM-130). Invoke `investmentOperation/<id>/execute`; assert it returns
+ *  A. The production VO is invocable and journals a plan (the `.plan()` step).
+ *     Invoke `investmentOperation/<id>/execute`; assert it returns
  *     status=completed with a journaled `plan` (>=1 step), then read
  *     `investmentOperation/<id>/status` back from the virtual object's state.
  *     NOTE — proof A now exercises the real plan step, so it needs the Python

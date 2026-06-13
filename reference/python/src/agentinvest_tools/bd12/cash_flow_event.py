@@ -3,7 +3,7 @@
 SD-12.1 IBOR owns E-06 Cash Flow Event (model/entities/core/E-06-cash-flow-event.md: "the granular
 event and cash records the book is built from"). This tool reads the dated cash movements — the
 coupon / dividend / fee / contribution / distribution / principal legs — at an as-of date, for a
-portfolio. Reconciliation's cash leg (OIM-162) consumes this read: the IBOR cash-flow set is one
+portfolio. Reconciliation's cash leg consumes this read: the IBOR cash-flow set is one
 side of the cash reconciliation against the external comparator feed's cash statement.
 
 "As-of" for a cash-flow read means the events whose ``cash_flow_date`` is on or before the as-of
@@ -12,7 +12,7 @@ tool types, orders and summarises the rows.
 
 Pure and deterministic: no I/O, no clock, no RNG.
 
-Honest boundary: a correct read over the OIM-160 **synthetic** internal book, not a production
+Honest boundary: a correct read over a **synthetic** internal book, not a production
 cash-flow feed.
 """
 

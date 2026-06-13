@@ -6,10 +6,10 @@
  * instance for both
  * projects; handlers are namespaced by service name so there is no collision).
  *
- * P-R1 (OIM-101): the substrate is now booted by OpenIM's OWN launcher
+ * The substrate is booted by OpenIM's OWN launcher
  * (`reference/scripts/run-restate-server.mjs`, `pnpm dev:restate` from
  * `reference/`), pinned by OpenIM's own `install-restate.mjs`. A fresh OpenIM
- * checkout no longer reads the sibling project's source files to bring its
+ * checkout does not read the sibling project's source files to bring its
  * substrate
  * up. The error messages below point at the OpenIM-owned launcher.
  *
@@ -21,16 +21,16 @@
  *    by Restate-in-WSL2 over a path that depends on the WSL2 NETWORKING MODE:
  *      · under default **NAT** networking, at the WSL2 default-gateway IP (the
  *        Windows host as seen from inside the VM), NOT `localhost`. We discover
- *        that gateway IP via the running distro (P-R4: discovered, with an
+ *        that gateway IP via the running distro (discovered, with an
  *        explicit override, never a bare hardcode).
  *      · under **mirrored** networking, WSL2 shares the host loopback, so the
- *        Windows endpoint is reached at the host loopback `127.0.0.1` (OIM-108;
- *        pinned IPv4, not dual-stack `localhost`, to match the 0.0.0.0 bind).
+ *        Windows endpoint is reached at the host loopback `127.0.0.1` (pinned
+ *        IPv4, not dual-stack `localhost`, to match the 0.0.0.0 bind).
  *    `resolveDeployUrl` detects the mode and picks the right form — defaulting
  *    SAFELY to the NAT/gateway-IP path on ANY detection uncertainty, so current
  *    NAT dev is unchanged and a loopback-under-NAT (which would break the
  *    registration) is never returned.
- *  - A handler endpoint running INSIDE WSL2 (the Python endpoint, OIM-101) is
+ *  - A handler endpoint running INSIDE WSL2 (the Python endpoint) is
  *    reached by Restate-in-WSL2 over `localhost` (same network namespace).
  *  - On Mac/Linux there is no WSL2 layer; `localhost` is correct throughout.
  *
@@ -38,7 +38,7 @@
  *  - RESTATE_ADMIN_URL          (default http://localhost:9070)
  *  - RESTATE_INGRESS_URL        (default http://localhost:8080)
  *  - AGENTINVEST_ENDPOINT_PORT  (default 9090 — the TS endpoint; distinct from the sibling project's 9080)
- *  - AGENTINVEST_PY_ENDPOINT_PORT (default 9091 — the Python endpoint, OIM-101 P-R6)
+ *  - AGENTINVEST_PY_ENDPOINT_PORT (default 9091 — the Python endpoint)
  *  - AGENTINVEST_ENDPOINT_DEPLOY_URL  (explicit override; skips WSL2 discovery + mode detection)
  *  - AGENTINVEST_WSL_NETWORKING (mirrored|nat — force the networking mode; skips wslinfo detection)
  *  - RESTATE_WSL_DISTRO         (explicit distro override; Windows only)
@@ -51,7 +51,7 @@ export const ADMIN_URL = process.env.RESTATE_ADMIN_URL ?? 'http://localhost:9070
 export const INGRESS_URL = process.env.RESTATE_INGRESS_URL ?? 'http://localhost:8080';
 
 /**
- * The `reference/` workspace root, resolved DYNAMICALLY (OIM-107, F-2) from this
+ * The `reference/` workspace root, resolved DYNAMICALLY from this
  * module's own location — never a hardcoded absolute checkout path, so the
  * hint is correct for ANY checkout location (a contributor clone, a CI runner, a
  * differently-lettered drive). Override with REFERENCE_ROOT.
@@ -71,16 +71,16 @@ export const REFERENCE_ROOT =
 export const ENDPOINT_PORT = Number(process.env.AGENTINVEST_ENDPOINT_PORT ?? 9090);
 
 /**
- * The Python handler endpoint port (OIM-101, P-R6). Distinct from the TS
+ * The Python handler endpoint port. Distinct from the TS
  * endpoint (9090) so the TS and Python deployments are two separate
  * registrations against the same Restate, each on its own port.
  */
 export const PY_ENDPOINT_PORT = Number(process.env.AGENTINVEST_PY_ENDPOINT_PORT ?? 9091);
 
 /**
- * The OpenIM-owned launch command, for error messages (P-R1: OpenIM's own, not
+ * The OpenIM-owned launch command, for error messages (OpenIM's own, not
  * a sibling's).
- * The path is resolved dynamically from REFERENCE_ROOT (OIM-107, F-2), so the
+ * The path is resolved dynamically from REFERENCE_ROOT, so the
  * hint is correct for any checkout location, never a hardcoded absolute path.
  */
 export const LAUNCH_HINT = `(cd ${REFERENCE_ROOT} && pnpm dev:restate)`;
@@ -91,7 +91,7 @@ export function isWindowsWsl2Host(): boolean {
 }
 
 /**
- * Discover the WSL2 distro Restate runs in (P-R4: discovery + explicit
+ * Discover the WSL2 distro Restate runs in (discovery + explicit
  * override, never a bare hardcode).
  *
  * Order: RESTATE_WSL_DISTRO override → the first distro `wsl -l -q` reports as
@@ -130,7 +130,7 @@ export function resolveWslDistro(): string {
 export type WslNetworkingMode = 'mirrored' | 'nat' | 'unknown';
 
 /**
- * Detect the WSL2 networking mode (OIM-108). Order:
+ * Detect the WSL2 networking mode. Order:
  *  1. The `AGENTINVEST_WSL_NETWORKING` env override (`mirrored`|`nat`) — the
  *     escape hatch + the test seam; any other value is ignored and we probe.
  *  2. `wslinfo --networking-mode` in the running distro. An EXACT `mirrored` or
@@ -175,7 +175,7 @@ export function resolveWslNetworkingMode(
 /**
  * Discover the WSL2 default-gateway IP (= the Windows host, as seen from inside
  * the WSL2 VM) — the reach path under NAT networking. Uses the
- * discovered/overridden distro (P-R4). Throws if the default route cannot be
+ * discovered/overridden distro. Throws if the default route cannot be
  * parsed (a genuinely-broken WSL2 network is a fail-loud condition, as before).
  *
  * @param getDistro  optional lazy distro provider, so a caller can share a
@@ -198,7 +198,7 @@ function resolveWslGatewayUrl(port: number, getDistro: () => string = resolveWsl
  * The URL Restate (inside WSL2 on Windows) should use to reach a handler
  * endpoint running on the Windows host. On Mac/Linux this is plain localhost.
  *
- * On Windows the form depends on the WSL2 networking mode (OIM-108):
+ * On Windows the form depends on the WSL2 networking mode:
  *  - **mirrored** (detected unambiguously) → `http://127.0.0.1:${port}` (WSL2
  *    shares the host loopback under mirrored networking). Pinned to the IPv4
  *    127.0.0.1, NOT dual-stack `localhost`, because the TS endpoint binds
@@ -249,7 +249,7 @@ export function resolveDeployUrl(port: number = ENDPOINT_PORT): string {
 
 /**
  * The URL Restate-in-WSL2 should use to reach a handler endpoint running INSIDE
- * WSL2 (the Python endpoint, OIM-101). Same network namespace → plain localhost
+ * WSL2 (the Python endpoint). Same network namespace → plain localhost
  * regardless of host OS.
  *
  * @param port  the in-WSL2 endpoint port (defaults to the Python endpoint port).
@@ -375,7 +375,7 @@ export async function registerDeployment(uri: string): Promise<string> {
 }
 
 /**
- * Deregister a deployment by id (OIM-107, P-R1 fold). A short-lived endpoint
+ * Deregister a deployment by id. A short-lived endpoint
  * (the cross-language smoke, a one-shot CLI proof) must deregister on teardown
  * so the SHARED Restate journal — used by OpenIM + any sibling project + every
  * smoke run —
@@ -400,7 +400,7 @@ export async function deregisterDeployment(id: string): Promise<void> {
 }
 
 /**
- * Prune deployments whose endpoint URI no longer answers (OIM-107, P-R1 fold).
+ * Prune deployments whose endpoint URI no longer answers.
  * Walks the admin /deployments list, probes each endpoint's `/health` (or its
  * discovery URI), and force-deletes the ones that do not respond — the
  * dead-port-deployment orphans the shared journal accumulates across runs.

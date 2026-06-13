@@ -1,4 +1,4 @@
-"""The append-only E-24 break store — engine-owned, insert-only, immutable (OIM-162 cycle-1).
+"""The append-only E-24 break store — engine-owned, insert-only, immutable.
 
 The first persisted WRITE in agentINVEST — but it is an **append-only, insert-only, immutable
 break-event store** (Kleppmann/Helland log-append: "accountants don't use erasers"), NOT a
@@ -9,8 +9,8 @@ state-mutation of a book of record. Appending a *finding* is not mutating the *b
 - is **insert-only** — there is NO update method, NO ``status``-transition method, NO
 correcting-entry
   write, NO delete. The break-lifecycle update (``open`` → ``investigated`` → ``resolved``), the
-  correcting entry back to ABOR, and the breach gate are all **OIM-163** (the first state-mutation,
-  strictly gated) — none exists here. The API surface is ``append_breaks`` + ``read_breaks`` +
+  correcting entry back to ABOR, and the breach gate are the first state-mutation (strictly gated)
+  — none exists here. The API surface is ``append_breaks`` + ``read_breaks`` +
   ``count_breaks`` only;
 - is **ENGINE-OWNED and SEPARATE from the dbt canonical store** — it lives in its OWN duckdb file
   (resolved from ``AGENTINVEST_RECON_STORE_PATH``, else a checkout-keyed default beside, but
@@ -23,7 +23,7 @@ write path is an INSERT. There is no UPDATE / DELETE code in this module — the
 is proven by the absence of a mutation path AND asserted in the tests (no update / no status
 transition / no correcting-entry / no book-mutation method exists).
 
-SYNTHETIC, FINDINGS-ONLY. The breaks persisted are findings over the OIM-160 synthetic data — never
+SYNTHETIC, FINDINGS-ONLY. The breaks persisted are findings over synthetic data — never
 a production reconciliation, never a resolved/gated break.
 """
 
@@ -175,7 +175,7 @@ def append_breaks(
     There is NO update path: a break, once appended, is never modified (the immutable-as-event
     property). Returns the appended break ids (in finding order).
 
-    The ``status`` transition / resolution / correcting-entry are OIM-163 (behind the breach gate) —
+    The ``status`` transition / resolution / correcting-entry live behind the breach gate —
     this method writes a NEW open break only; it never updates an existing one.
     """
     path = store_path or resolve_break_store_path()

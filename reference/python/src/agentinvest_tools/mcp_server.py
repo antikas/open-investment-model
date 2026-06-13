@@ -1,13 +1,12 @@
 """The agentINVEST MCP server — the agent-to-agent face of the per-BD tool catalogues.
 
 A thin MCP wrapper that exposes the per-BD Service-Operation tool catalogues (``bd09`` performance +
-``bd12`` book-of-record read, OIM-161) to an *external* MCP client (another agent, the MCP
+``bd12`` book-of-record read) to an *external* MCP client (another agent, the MCP
 inspector, a programmatic client) over the MCP ``stdio`` transport. It holds **no tool logic**: it
 loads each service's catalogue and dispatches each tool call to the SO's OWNING Restate service over
 the ingress — the journaled, terminal-error-classified path — so a tool call inherits the durable
-substrate's journal/replay and its deterministic-error-is-terminal classification. Adding ``bd12``
-is additive: the ``bd09`` listing + dispatch is byte-identical; the ``bd12`` read tools are appended
-and routed by the live name→service map.
+substrate's journal/replay and its deterministic-error-is-terminal classification. The ``bd12`` read
+tools are appended to the ``bd09`` listing + dispatch and routed by the live name→service map.
 
 Two transforms, both generated from the catalogue (the single source of truth — never hand-written):
 
@@ -95,11 +94,8 @@ BD12_RECON_SERVICE_NAME = "bd12Recon"
 ENTITY_RESOLUTION_SERVICE_NAME = "entityResolution"
 # The per-BD model-free dispatch services the MCP face exposes. Each hosts the SAME
 # execute_so / list_capabilities envelope, so the server loads each catalogue and routes each tool
-# call (by its SO name) to its owning service. bd09 (performance) + bd12 (book-of-record read,
-# OIM-161) + bd12Recon (SD-12.10 reconcile, OIM-162) + entityResolution (SD-13.2 entity resolution,
-# OIM-199). Additive: bd09's + bd12's + bd12Recon's listing + dispatch are byte-identical to before
-# —
-# entityResolution is appended.
+# call (by its SO name) to its owning service. bd09 (performance) + bd12 (book-of-record read) +
+# bd12Recon (SD-12.10 reconcile) + entityResolution (SD-13.2 entity resolution).
 SERVICE_NAMES = (
     BD09_SERVICE_NAME,
     BD12_SERVICE_NAME,
@@ -362,7 +358,7 @@ async def list_tools_from_catalogue(client: httpx.AsyncClient) -> list[Tool]:
     """Generate the MCP tool descriptors live from the per-BD catalogues (the SSOT transform).
 
     Aggregates the catalogues across ``SERVICE_NAMES`` (bd09 + bd12) — the bd09 descriptors first,
-    byte-for-byte as before, then the bd12 read tools appended (OIM-161, additive). Module-level
+    then the bd12 read tools appended. Module-level
     (not buried in the server closure) so the catalogue->descriptors transform is directly testable
     on the same path the server uses. Emits one structured ``list_tools`` log line (ok/transient)
     and lets a transient catalogue-load failure propagate as a clean

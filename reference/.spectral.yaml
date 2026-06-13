@@ -1,4 +1,4 @@
-# Spectral ruleset for the agentINVEST bd09 OpenAPI surface (OIM-141).
+# Spectral ruleset for the agentINVEST bd09 OpenAPI surface.
 #
 # WHAT THIS LINTS. Restate auto-generates the bd09 OpenAPI 3.1 spec from the
 # handler signatures (the Pydantic ExecuteSoInput/Output models). `openapi-spec-validator`

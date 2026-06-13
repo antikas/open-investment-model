@@ -1,8 +1,8 @@
 /**
- * Unit proof of the GATHER network branch (OIM-151 part 3 / OIM-190 hardening tail) — the half that
- * was previously unproven. Only the pure `extractAuditRecords` had a test; the two best-effort
+ * Unit proof of the GATHER network branch — the two best-effort
  * NETWORK calls (`enumerateOperationKeys` over the admin `/query`, `readOperationState` over the
- * ingress `status`) and the `gatherAuditRecords` end-to-end fold were untested.
+ * ingress `status`) and the `gatherAuditRecords` end-to-end fold, alongside the pure
+ * `extractAuditRecords`.
  *
  * These tests MOCK `globalThis.fetch` (restored after each — no global leak) and route by URL so the
  * parse path and EVERY best-effort-degrade path is pinned WITHOUT a live server:

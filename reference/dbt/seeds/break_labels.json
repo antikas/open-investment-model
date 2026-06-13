@@ -275,7 +275,7 @@
       "difference_amount": "366938.99",
       "difference_qty": "",
       "materiality": "medium",
-      "description": "IBOR vs ABOR market value for POS-0019 diverges by 366938.99 with NO timing, accrual or cost-basis class to explain it — the of-record engine classification lands `unexplained` (true cause `pricing`, the same stale-price corruption as the A/B case BRK-0024 on a second surface; the rule-discovery corpus for OIM-162 cycle-2)"
+      "description": "IBOR vs ABOR market value for POS-0019 diverges by 366938.99 with NO timing, accrual or cost-basis class to explain it — the of-record engine classification lands `unexplained` (true cause `pricing`, the same stale-price corruption as the A/B case BRK-0024 on a second surface; the rule-discovery corpus)"
     },
     {
       "break_id": "BRK-0026",
@@ -286,7 +286,7 @@
       "difference_amount": "",
       "difference_qty": "1850",
       "materiality": "low",
-      "description": "IBOR vs ABOR QUANTITY for POS-0035 diverges by 1850 units with NO value impact and NO in-flight trade (so no timing class) and no accrual/cost-basis class — the engine lands `unexplained` (true cause `data_error`, a quantity corruption with no rule signal; the second rule-unreachable break for OIM-162 cycle-2)"
+      "description": "IBOR vs ABOR QUANTITY for POS-0035 diverges by 1850 units with NO value impact and NO in-flight trade (so no timing class) and no accrual/cost-basis class — the engine lands `unexplained` (true cause `data_error`, a quantity corruption with no rule signal; the second rule-unreachable break)"
     },
     {
       "break_id": "BRK-0027",
@@ -319,7 +319,7 @@
       "difference_amount": "125922.72",
       "difference_qty": "",
       "materiality": "medium",
-      "description": "the administrator's fund-level NAV for PF-0003 diverges from the internally-derivable NAV (Sigma the ABOR marks + accrued income, the canonical NAV identity) by 125922.72 (~12 bp, beyond the 1 bp band) — a shadow-NAV divergence case (the OIM-164 SD-12.16 oversight input; NOT an OIM-162 reconcile surface)"
+      "description": "the administrator's fund-level NAV for PF-0003 diverges from the internally-derivable NAV (Sigma the ABOR marks + accrued income, the canonical NAV identity) by 125922.72 (~12 bp, beyond the 1 bp band) — a shadow-NAV divergence case (the SD-12.16 oversight input; NOT a reconcile surface)"
     }
   ]
 }

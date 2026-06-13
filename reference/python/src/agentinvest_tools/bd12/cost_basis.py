@@ -2,10 +2,10 @@
 
 SD-12.2 ABOR's *cost-basis and lot accounting* Service Operation: the cost basis of each position
 (and, where required, tax-lot detail), so realised and unrealised gain is correctly measured. The
-ABOR cost basis is one of the three OIM-160 divergence classes — for some holdings the accounting
+ABOR cost basis is one of the three divergence classes — for some holdings the accounting
 book carries a cost basis that differs from the IBOR book's (an accounting reclassification /
-restatement the front-office book has not applied). Exposing this read gives OIM-162 a typed view
-of the cost-basis the two books differ by, and the unrealised gain the ABOR book measures.
+restatement the front-office book has not applied). Exposing this read gives the reconciliation a
+typed view of the cost-basis the two books differ by, and the unrealised gain the ABOR book measures.
 
 The v0.1 grain is the position-level cost basis (E-04 ``cost_basis_usd``); lot-level detail is an
 E-04 open extension (model/entities/core/E-04-holding-position.md "Lot-level detail for tax-lot
@@ -16,7 +16,7 @@ Pure and deterministic: the per-position cost basis + market value are read by t
 layer from the ABOR partition at the as-of and passed in; this tool types, orders and totals them,
 and derives the unrealised gain. No I/O, no clock, no RNG.
 
-Honest boundary: a correct read over the OIM-160 **synthetic** internal accounting book, not a
+Honest boundary: a correct read over a **synthetic** internal accounting book, not a
 production cost-basis / tax-lot ledger.
 """
 

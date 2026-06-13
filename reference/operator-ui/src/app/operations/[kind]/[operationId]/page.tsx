@@ -1,7 +1,7 @@
 /**
  * One operation's AUDIT TRAIL — read-only. Renders the recorded state of an operation
  * or NAV strike: the lifecycle status, the plan + resolved args + step results +
- * aggregate + gate decision (the OIM-134 `operation-closed` audit record), or the NAV
+ * aggregate + gate decision (the `operation-closed` audit record), or the NAV
  * strike's step checkpoints + publish record. The raw record is shown verbatim so the
  * operator reads exactly what was journaled. No mutation.
  */

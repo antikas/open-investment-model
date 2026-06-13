@@ -1,6 +1,6 @@
 """Golden-output tests for the OpenIM Hybrid D generator parsers.
 
-Each test exercises one of the seven shapes named in OIM-54 brief criterion (n):
+Each test exercises one of the seven markdown shapes the parsers handle:
 
 1. a sample BD README
 2. a sample SD file with SOs
@@ -236,12 +236,11 @@ class TestStrictParser(unittest.TestCase):
                              ["First op", "Second op"])
 
     def test_unknown_h2_raises(self) -> None:
-        """OIM-54 cycle-2 A-1 — an unknown H2 heading raises ParseError.
+        """An unknown H2 heading raises ParseError.
 
-        Closes the strict-parser false-integrity claim: the README, ADR-0045
-        §1, and cycle-1 brief criterion (c) all claimed strictness; the
-        parser's `_extract_section` returned None for unknown headings,
-        treating them as benign. This test asserts the strict-mode fix.
+        Guards the strict-parser contract: an `_extract_section` that
+        returned None for unknown headings would treat them as benign,
+        a false-integrity claim. This test asserts strict-mode rejection.
         """
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "SD-99.7-bogus.md"
@@ -259,7 +258,7 @@ class TestStrictParser(unittest.TestCase):
 
 
 class TestSubstantiveCoverage(unittest.TestCase):
-    """OIM-54 cycle-2 A-2 / A-3 — substantive coverage beyond filenames.
+    """Substantive coverage beyond filenames.
 
     The validator's `check_diagram_render_coverage` and the generator's
     `_substantive_coverage_gaps` check that each SD page contains its
@@ -310,17 +309,16 @@ class TestSubstantiveCoverage(unittest.TestCase):
 
 
 class TestBDNarrativeEdgeStyle(unittest.TestCase):
-    """OIM-54 cycle-3 B-1 (P2-3 closure) — narrative-bd-* edges render
-    with a distinct Graphviz style from structured / SD-narrative edges.
+    """narrative-bd-* edges render with a distinct Graphviz style from
+    structured / SD-narrative edges.
 
-    The cycle-2 B-4 fix replaced BD fan-out (one edge per member SD per
-    narrative BD reference) with a single aggregate edge from the BD
-    landing node, carrying the new `narrative-bd-input` /
-    `narrative-bd-output` edge kind. The cycle-2 P2-3 audit caught that
-    the renderer never inspected `edge.kind` — the data half landed but
-    the visual half did not. This test asserts the renderer now branches:
-    the BD-narrative aggregate edges render dashed + gray + thinner; the
-    structured / SD-narrative cross-BD edges render solid (the default).
+    A BD narrative reference produces a single aggregate edge from the BD
+    landing node, carrying the `narrative-bd-input` / `narrative-bd-output`
+    edge kind (rather than a fan-out edge per member SD). The renderer must
+    inspect `edge.kind` so the visual half tracks the data half. This test
+    asserts the renderer branches: the BD-narrative aggregate edges render
+    dashed + gray + thinner; the structured / SD-narrative cross-BD edges
+    render solid (the default).
     """
 
     def test_landscape_renders_distinct_bd_narrative_style(self) -> None:
@@ -390,17 +388,15 @@ class TestBDNarrativeEdgeStyle(unittest.TestCase):
 
 
 class TestStructuralCoverage(unittest.TestCase):
-    """OIM-54 cycle-3 E-1 (P2-2 closure) — substantive-coverage check uses
-    structural matching, not substring matching, for SO list items on SD
-    pages.
+    """The substantive-coverage check uses structural matching, not
+    substring matching, for SO list items on SD pages.
 
-    The cycle-2 P2-2 audit caught that the existing check used
-    `escaped not in page` substring matching, so an SO name typo'd in
-    source (and consequently rendered with the same typo) would still
-    substring-match itself; or an SO name appearing elsewhere on the
+    A plain `escaped not in page` substring check is unsafe: an SO name
+    typo'd in source (and consequently rendered with the same typo) would
+    still substring-match itself; or an SO name appearing elsewhere on the
     page (a heading, a cross-reference) would mask an empty operations
-    list. The cycle-3 fix anchors the check to the `<ul>` / `<li>`
-    structure under the `Service Operations` heading.
+    list. The check anchors instead to the `<ul>` / `<li>` structure under
+    the `Service Operations` heading.
     """
 
     def test_typoed_so_name_fails_structural_check(self) -> None:

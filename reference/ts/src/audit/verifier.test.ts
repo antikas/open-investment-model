@@ -1,5 +1,5 @@
 /**
- * Unit proof of the VERIFIER (OIM-151) — the tamper detector. The load-bearing audit-gate test.
+ * Unit proof of the VERIFIER — the tamper detector. The load-bearing audit-gate test.
  *
  * Pins: the verifier PASSES a clean chain, and DETECTS every tamper class — modified field, inserted
  * line, deleted line, reordered pair, broken link, forged tip — each naming the first-broken seq,
@@ -166,12 +166,12 @@ describe('verifyChain — revert-sensitivity anchors', () => {
 });
 
 /**
- * The no-manifest warning (OIM-190 part 2) — the honest v0.1 limit. Without a manifest the tip-anchor
+ * The no-manifest warning — the honest v0.1 limit. Without a manifest the tip-anchor
  * check cannot run, so a tip-append/truncation (the chain still self-recomputes) is undetectable. The
  * manifest-less verify still passes for in-chain tampers, but it must WARN that the tip class went
  * unchecked. REVERT-SENSITIVE: remove the warning push and the manifest-less assertions go RED.
  */
-describe('verifyChain — no-manifest tip-anchor warning (OIM-190)', () => {
+describe('verifyChain — no-manifest tip-anchor warning', () => {
   it('a manifest-less verify of an intact chain is ok BUT carries the tip-anchor warning', () => {
     const r = verifyChain(cleanChain()); // no manifest
     expect(r.ok).toBe(true); // in-chain intact → still ok

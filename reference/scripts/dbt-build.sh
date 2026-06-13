@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# dbt-build.sh (OIM-102) — run the canonical-data dbt pipeline in the WSL2/local
+# dbt-build.sh — run the canonical-data dbt pipeline in the WSL2/local
 # uv env. Invoked by scripts/dbt-build.mjs (which handles the Windows->WSL2
 # hop and forwards dbt args). Kept as a real script file so the command survives
 # the Node -> wsl -> bash boundary without quote mangling.
 #
 # Env in (set by dbt-build.mjs, with defaults here for direct invocation):
 #   REFERENCE_ROOT_WSL      absolute WSL2/local path to reference/ (default: derived)
-#   AGENTINVEST_DUCKDB_PATH the duckdb FILE path on ext4 (P-R2); when unset,
+#   AGENTINVEST_DUCKDB_PATH the duckdb FILE path on ext4; when unset,
 #                           defaulted to a checkout-keyed ext4 path (see below)
 # Args: forwarded to `dbt` (default: build).
 set -euo pipefail
@@ -21,16 +21,16 @@ fi
 PYTHON_DIR="$REFERENCE_ROOT_WSL/python"
 DBT_DIR="$REFERENCE_ROOT_WSL/dbt"
 
-# The uv project environment lands on WSL2-native ext4 (P-R1/OIM-107), NOT the
+# The uv project environment lands on WSL2-native ext4, NOT the
 # 9p /mnt/d repo mount. The Python+dbt SOURCE stays in the repo (9p) and is read
 # at parse; the heavy site-packages import I/O (dbt-core + the duckdb adapter +
 # ~485 macros) runs from ext4 — the cold `dbt --version` drops from ~22s (9p) to
 # ~4s (ext4), under the <30s clean-checkout budget.
 #
-# The path is keyed on THIS checkout's repo root (OIM-110, P-MAJOR-2 fix): two
+# The path is keyed on THIS checkout's repo root: two
 # checkouts/worktrees get distinct venvs, so a concurrent checkout / CI run cannot
 # share-and-clobber one venv. Still on ext4 under the same agentinvest parent —
-# the OIM-107 perf win is preserved. An explicit UV_PROJECT_ENVIRONMENT (set by
+# the perf win is preserved. An explicit UV_PROJECT_ENVIRONMENT (set by
 # the caller, e.g. a native-Linux CI runner) still wins. See lib/agentinvest-venv-path.sh.
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
 # shellcheck source=lib/agentinvest-venv-path.sh
@@ -38,13 +38,12 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
 REPO_ROOT_WSL="$(cd "$REFERENCE_ROOT_WSL/.." && pwd)"
 agentinvest_set_venv_env "$REPO_ROOT_WSL"
 
-# The duckdb database file on WSL2-native ext4 (P-R2) — NOT the 9p /mnt/d mount.
-# Keyed on THIS checkout's repo root (OIM-110 cycle-2, completing the P-MAJOR-2
-# entry condition): two checkouts/worktrees get distinct duckdb files, so a
-# concurrent checkout / CI run cannot collide on duckdb's single-writer file lock
-# (the same shared-state class the venv keying above closes; the SAME repo-root
-# token keys both). Still on ext4 under the same agentinvest parent — the P-R2
-# placement is preserved. An explicit AGENTINVEST_DUCKDB_PATH still wins. See
+# The duckdb database file on WSL2-native ext4 — NOT the 9p /mnt/d mount.
+# Keyed on THIS checkout's repo root: two checkouts/worktrees get distinct duckdb
+# files, so a concurrent checkout / CI run cannot collide on duckdb's single-writer
+# file lock (the same shared-state class the venv keying above closes; the SAME
+# repo-root token keys both). Still on ext4 under the same agentinvest parent — the
+# ext4 placement is preserved. An explicit AGENTINVEST_DUCKDB_PATH still wins. See
 # lib/agentinvest-venv-path.sh.
 agentinvest_set_duckdb_env "$REPO_ROOT_WSL"
 
@@ -57,7 +56,7 @@ if [ "${#DBT_ARGS[@]}" -eq 0 ]; then
 fi
 
 cd "$PYTHON_DIR"
-# Mask-immunity (OIM-181, from OIM-115 P-NOTE-1): in this WSL2 launch env `uv run`
+# Mask-immunity: in this WSL2 launch env `uv run`
 # intermittently masks a non-zero child exit to 0 (invocation-form-dependent —
 # `bash -lc '… && uv run …'` masks because the `&&` stops `uv run` being the
 # exec'd leaf), so the `uv run` exit code is NOT a trustworthy success oracle for a
@@ -67,11 +66,10 @@ cd "$PYTHON_DIR"
 # canonical, mask-immune line dbt prints to stdout (`Completed successfully` on a
 # clean build; `Completed with N error(s)` / a `*** Error` / `Database Error` /
 # `Compilation Error` / a non-zero `ERROR=` in the `Done.` summary on a failure).
-# uv can mask the exit code but it cannot eat dbt's stdout. The dbt models + the
-# build itself are unchanged (PASS=193); only the success-signal plumbing is made
-# mask-immune. Pin uv's project dir explicitly (--directory "$PYTHON_DIR"), not
-# just the cwd above, so a glitched invocation can NEVER fall back to the repo-root
-# cwd and write a stray pyproject.toml/uv.lock there (OIM-107 leak-guard).
+# uv can mask the exit code but it cannot eat dbt's stdout; only the success-signal
+# plumbing is made mask-immune. Pin uv's project dir explicitly (--directory
+# "$PYTHON_DIR"), not just the cwd above, so a glitched invocation can NEVER fall
+# back to the repo-root cwd and write a stray pyproject.toml/uv.lock there (leak-guard).
 #
 # Capture BOTH dbt streams (2>&1): dbt prints the clean-completion line + the
 # `Done.` summary to stdout, but a Compilation/Database Error banner to stderr — we
@@ -80,7 +78,7 @@ cd "$PYTHON_DIR"
 # which can block in a detached/CI context even when a pty exists), so the operator
 # still sees the full live dbt log, while a copy is captured for the parse.
 #
-# CRITICAL (the OIM-181 fix): the capture is wrapped so `set -e` can NEVER abort the
+# CRITICAL: the capture is wrapped so `set -e` can NEVER abort the
 # script on the assignment line. If `uv run` exits non-zero, a bare
 # `VAR="$(uv run … )"` under `set -e` dies on the assignment with `uv run`'s OWN
 # (maskable, untrustworthy) exit code BEFORE the parse runs — re-coupling the gate

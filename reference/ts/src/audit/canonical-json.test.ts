@@ -1,5 +1,5 @@
 /**
- * Unit proof of the deterministic canonical JSON (OIM-151) — the reproducibility floor under the
+ * Unit proof of the deterministic canonical JSON — the reproducibility floor under the
  * hash chain. Pins: stable (sorted) key order at every depth; key-order INVARIANCE (two
  * differently-constructed equal objects canonicalise identically); array order preserved; the JSON
  * round-trip; the non-finite-number guard.

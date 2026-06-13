@@ -29,6 +29,10 @@ export default async function CanonicalPage({
   const selectedName = requested && tables.some((t) => t.name === requested) ? requested : null;
   const sample = selectedName ? await sampleCanonicalTable(selectedName) : null;
 
+  const canonical = tables
+    .filter((t) => t.layer === 'canonical')
+    .map((t) => ({ ...t, label: entityModelLabel(t.table) }));
+  const bitemporal = tables.filter((t) => t.layer === 'bitemporal');
   const marts = tables.filter((t) => t.layer === 'mart');
   const staging = tables.filter((t) => t.layer === 'staging');
 
@@ -36,7 +40,7 @@ export default async function CanonicalPage({
     <div>
       <PageHeader
         title="Canonical data"
-        subtitle="The canonical layer — the published marts and the realised staging entities. Read-only."
+        subtitle="The canonical layer: the realised entity model, the bi-temporal as-of views, the computed marts, and the comparator feeds. Read-only."
       />
 
       {!available && (
@@ -55,8 +59,10 @@ export default async function CanonicalPage({
       {tables.length > 0 && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_1fr]">
           <aside className="space-y-5">
+            <TableGroup title="canonical entities" tables={canonical} selectedName={selectedName} />
+            <TableGroup title="bi-temporal (as-of)" tables={bitemporal} selectedName={selectedName} />
             <TableGroup title="marts" tables={marts} selectedName={selectedName} />
-            <TableGroup title="staging entities" tables={staging} selectedName={selectedName} />
+            <TableGroup title="staging / feeds" tables={staging} selectedName={selectedName} />
           </aside>
 
           <section>
@@ -71,7 +77,17 @@ export default async function CanonicalPage({
             ) : (
               <div>
                 <div className="mb-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <h2 className="font-mono text-sm text-ink">{sample.name}</h2>
+                  {(() => {
+                    const lbl = entityModelLabel(sample.name.split('.').pop() ?? '');
+                    return lbl ? (
+                      <>
+                        <h2 className="text-sm text-ink">{lbl}</h2>
+                        <span className="font-mono text-xs text-ink-faint">{sample.name}</span>
+                      </>
+                    ) : (
+                      <h2 className="font-mono text-sm text-ink">{sample.name}</h2>
+                    );
+                  })()}
                   <span className="font-mono text-xs text-ink-faint tabular">
                     {sample.rowCount} row{sample.rowCount === 1 ? '' : 's'}
                   </span>
@@ -114,6 +130,19 @@ export default async function CanonicalPage({
   );
 }
 
+/**
+ * Map a realised canonical entity table (stg_eNN_*) to its model identity, e.g.
+ * "stg_e01_legal_entity" -> "E-01 Legal Entity". Returns null for non-entity tables (marts, feeds,
+ * bi-temporal), which keep their dbt name. Reader-facing only — the dbt object name stays the real
+ * handle (the canonical layer becomes an actual named layer in a later reworking of the data layer).
+ */
+function entityModelLabel(tableName: string): string | null {
+  const m = /^stg_e(\d{2})_(.+)$/.exec(tableName);
+  if (!m) return null;
+  const title = m[2].split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return `E-${m[1]} ${title}`;
+}
+
 /** A grouped list of inspectable tables — each a link that selects the table for the sample view. */
 function TableGroup({
   title,
@@ -121,7 +150,7 @@ function TableGroup({
   selectedName,
 }: {
   title: string;
-  tables: { name: string; table: string; rowCount: number }[];
+  tables: { name: string; table: string; rowCount: number; label?: string | null }[];
   selectedName: string | null;
 }) {
   if (tables.length === 0) return null;
@@ -140,8 +169,17 @@ function TableGroup({
                     active ? 'bg-surface-line/40 text-ink' : 'text-ink-dim hover:bg-surface-line/30 hover:text-ink'
                   }`}
                 >
-                  <span className="font-mono">{t.table}</span>
-                  <span className="font-mono text-xs text-ink-faint tabular">{t.rowCount}</span>
+                  <span className="min-w-0">
+                    {t.label ? (
+                      <>
+                        <span className="block truncate">{t.label}</span>
+                        <span className="block truncate font-mono text-[11px] text-ink-faint">{t.table}</span>
+                      </>
+                    ) : (
+                      <span className="font-mono">{t.table}</span>
+                    )}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-ink-faint tabular">{t.rowCount}</span>
                 </Link>
               </li>
             );

@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 /**
- * DEV-STATE CLEAR for the pending-approvals registry (OIM-142 cycle-2, deliverable #5).
+ * DEV-STATE CLEAR for the pending-approvals registry.
  *
- * The cycle-1 registry accumulated phantom `pending` entries (a decided/timed-out/CLI-
- * resolved approval left a permanent `pending` row, because only the UI's own resolve ever
- * marked the registry — P-MAJOR-1). The cycle-2 fold makes the gate mark the registry on
- * EVERY terminal path and the reader reconcile liveness, so NEW entries leave the queue
- * correctly. This script clears the PRE-FOLD dev-state debris already persisted in the
- * shared engine — the ~10 phantom `pending` VO entries P read live — so the queue starts
- * clean (and the reader's reconcile loop is not weighed down by a long-stale index).
+ * The gate marks the registry on EVERY terminal path and the reader reconciles liveness,
+ * so a live entry leaves the queue once it is decided, timed out, or resolved out-of-band.
+ * This script clears any stale dev-state debris already persisted in the shared engine —
+ * phantom `pending` VO entries left over from earlier runs — so the queue starts clean (and
+ * the reader's reconcile loop is not weighed down by a long-stale index).
  *
  * MECHANISM (read-only-then-clear, no app code): the Restate admin modify-state endpoint
  * `POST {admin}/services/approvalRegistry/state` with `{object_key, new_state:{}}` replaces

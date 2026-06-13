@@ -7,9 +7,9 @@
 -- Parity-aware SQL: `varchar` casts, plus `integer` for `asset_class`. The model
 -- file declares `asset_class` as `int (FK -> E-09)`, matching E-09's integer PK
 -- `asset_class_key`, so the join `stg_e02.asset_class = stg_e09.asset_class_key`
--- is `integer = integer` — valid on postgres (the OIM-111 mart join), not the
+-- is `integer = integer` — valid on postgres (the mart join), not the
 -- `varchar = integer` predicate postgres rejects. The `external_ids` map is raw
--- text in this flat sample layer (normalisation is OIM-110/111). No duckdb-only idiom.
+-- text in this flat sample layer (normalisation is a later step). No duckdb-only idiom.
 
 with source as (
     select * from {{ ref('raw_e02_instrument_asset') }}

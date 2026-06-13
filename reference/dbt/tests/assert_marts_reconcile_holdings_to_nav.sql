@@ -1,8 +1,7 @@
--- The cross-mart reconciliation invariant (build-gate A1): for every fund, the NAV
+-- The cross-mart reconciliation invariant: for every fund, the NAV
 -- mart's gross_market_value must equal Σ of the holdings mart's market_value_usd over
 -- that fund's holdings — to within |Δ| ≤ $0.01 absolute OR ≤ 1e-6 relative (whichever
--- is looser), the ratified A1 NAV-strike tolerance
--- (docs/design/agentinvest-build-gate-tolerances.md §A1). The test fails (returns rows)
+-- is looser), the ratified NAV-strike tolerance. The test fails (returns rows)
 -- for any fund outside the tolerance.
 --
 -- WHY THIS EXISTS. mart_fund_nav.gross_market_value sums the E-07 mark over the fund's

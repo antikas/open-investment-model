@@ -27,14 +27,14 @@
  *      line (the journaled step was replayed, not re-executed), and the UUID
  *      returned equals the one journaled before the crash.
  *
- * Shared-server-safe by construction (OIM-184): this proof spawns ONLY its OWN TS
+ * Shared-server-safe by construction: this proof spawns ONLY its OWN TS
  * `crashReplayProbe` endpoint and, on teardown, prunes ONLY `crashReplayProbe`
  * deployments (by service name — see pruneCrashProbeDeployments). It NEVER spawns the
  * shared Python endpoint (:9091 — bd09/agentinvestPlanner/navData/pyTools) and NEVER
  * prunes/kills it. There is therefore NO shared-deployment teardown to gate, so no
- * `pySpawnedByUs` flag is needed here (the gate the OIM-184 sweep adds to the proofs
- * that DO spawn/reuse the shared Python endpoint). Do NOT add one — it would be a
- * divergent no-op. NEVER `wsl --shutdown`.
+ * `pySpawnedByUs` flag is needed here (the gate the proofs that DO spawn/reuse the
+ * shared Python endpoint carry). Do NOT add one — it would be a divergent no-op.
+ * NEVER `wsl --shutdown`.
  *
  * Run (from reference/, substrate up via `pnpm dev:restate`):
  *   node scripts/crash-replay-proof.mjs   (or: pnpm crash-replay)

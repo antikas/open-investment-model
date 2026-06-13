@@ -11,7 +11,7 @@ Pure and deterministic: the settled position market value, the realised cash flo
 unsettled-trade legs are read by the data-access layer at the as-of and passed in; this tool sums
 them into the projected cash + exposure. No I/O, no clock, no RNG.
 
-Honest boundary: a correct projection over the OIM-160 **synthetic** internal book, not a
+Honest boundary: a correct projection over a **synthetic** internal book, not a
 production cash projection and not a live-custodian read.
 """
 

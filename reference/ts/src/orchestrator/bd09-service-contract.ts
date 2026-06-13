@@ -14,16 +14,16 @@
  * `@bd09.handler(name="execute_so")`, so the on-the-wire path is
  * `/bd09/execute_so` and the typed handle keys it `execute_so` (snake_case, as
  * registered) — NOT a camelCased `executeSo`. The orchestrator therefore calls
- * `ctx.serviceClient(BD09_SERVICE).execute_so({ soId, args })`. (The cycle brief's
- * shorthand `.executeSo(...)` is the same call; the registered wire name is
+ * `ctx.serviceClient(BD09_SERVICE).execute_so({ soId, args })`. (A camelCased
+ * `.executeSo(...)` shorthand is the same logical call; the registered wire name is
  * `execute_so` and routing correctness requires matching it exactly — this handle
- * consumes the frozen-upstream service as-is, it does not rename it.)
+ * consumes the upstream service as-is, it does not rename it.)
  *
  * The service name is agentINVEST-scoped (`bd09`, the `agentinvestPlanner` /
  * `pyTools` naming discipline) so it does not collide with a same-named service
  * from a sibling project on the shared dev Restate.
  *
- * Topology (ADR-0054): `bd09` is a model-free Restate *service* — the
+ * Topology: `bd09` is a model-free Restate *service* — the
  * per-Business-Domain dispatch / tool-hosting boundary. The SOs it dispatches are
  * *tools*. It carries NO reasoning loop: it routes a NAMED `soId` to its tool, it
  * does not decide which tool to call (that decision is the one `.plan()` loop, at
@@ -34,7 +34,7 @@
  * is the authority; this file mirrors its shape as TS types for the caller. bd09's
  * `execute_so` validates `args` against the tool's own `extra="forbid"` Pydantic
  * input and classifies every deterministic failure (unknown soId, bad/missing/extra
- * arg, compute failure) as a Restate `TerminalError` (OIM-113 — no retry storm),
+ * arg, compute failure) as a Restate `TerminalError` (no retry storm),
  * which the dispatch step captures as a clean step-failure.
  */
 import type { Context, ServiceDefinition } from '@restatedev/restate-sdk';

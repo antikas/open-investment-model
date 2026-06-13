@@ -1,5 +1,5 @@
 /**
- * Typed cross-language RPC contract for the `agentinvestPlanner` planner (OIM-130).
+ * Typed cross-language RPC contract for the `agentinvestPlanner` planner.
  *
  * The TS↔Python seam for the ONE reasoning loop: the orchestrator's seam-1
  * `.plan()` step calls the Python `agentinvestPlanner.planTask` handler over
@@ -13,7 +13,7 @@
  * `pyTools` naming discipline) so it does not collide with a same-named service
  * from a sibling project on the shared dev Restate.
  *
- * Topology (ADR-0054): `agentinvestPlanner` is a model-free Restate *service* — the
+ * Topology: `agentinvestPlanner` is a model-free Restate *service* — the
  * hosting/dispatch boundary the single reasoning loop runs in. The SOs it plans
  * over are *tools* in a typed catalogue. There is ONE loop, here. The plan it
  * returns is GENERATED, not executed (dispatch is a later step) — a valid plan is
@@ -65,8 +65,8 @@ export interface PlanStep {
 /**
  * A returned, validated plan (mirror of the Python `PlanSchema`). The plan is
  * GENERATED, not executed: a valid plan is a structure + tool-selection claim,
- * not an outcome. `riskScore` is declared for the future approval gate (OIM-132),
- * NOT exercised this cycle.
+ * not an outcome. `riskScore` is declared for the approval gate, NOT exercised
+ * by the planner itself.
  */
 export interface Plan {
   /** The ordered tool-call steps the planner proposes (at least one). */

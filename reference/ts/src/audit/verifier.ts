@@ -1,5 +1,5 @@
 /**
- * The VERIFIER — recompute the audit hash chain and DETECT tampering (OIM-151 part 4).
+ * The VERIFIER — recompute the audit hash chain and DETECT tampering.
  *
  * Reads a JSON-L export (one `ChainEntry` per line) + optionally its manifest, recomputes the chain
  * from each line's `record` using the SAME fold the chainer used (`recomputeChain`, one hash SSOT),

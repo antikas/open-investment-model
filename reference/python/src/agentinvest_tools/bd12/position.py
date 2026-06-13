@@ -7,13 +7,13 @@ Holding / Position entity, which is key-partitioned by ``book`` (``(position_id,
 identity). The same logical holding carries an IBOR row and an ABOR row that genuinely diverge
 (model/entities/core/E-04-holding-position.md), so the ``book`` discriminator is a required input,
 not an afterthought: the IBOR read and the ABOR read of the same portfolio return different
-quantities, market values, cost bases and accruals on the OIM-160 dual book.
+quantities, market values, cost bases and accruals on the dual book.
 
 Pure and deterministic: the rows are read by the book-of-record data-access layer
 (``book_of_record_data``) at the requested as-of and passed in; this tool only types,
 orders and totals them. No I/O, no clock, no RNG — the output is a function of the input alone.
 
-Honest boundary: this is a *correct read* over the OIM-160 **synthetic** internal dual book (the
+Honest boundary: this is a *correct read* over a **synthetic** internal dual book (the
 dbt canonical layer), never a production book-of-record service and never a read against a live
 custodian. A green read proves the typed per-book read + the as-of plumbing, not a fiduciary
 position.
@@ -38,7 +38,7 @@ class PositionRow(BaseModel):
     Column-faithful to the E-04 attribute schema (the position grain the data-access layer reads
     from the canonical ``int_position_valuation`` / ``stg_e04_holding_position``).
     ``accrued_income_usd`` is carried because it is an ABOR-book attribute (null on the IBOR book)
-    and is one of the three OIM-160 divergence classes; ``quantity`` and ``market_value_usd`` carry
+    and is one of the three divergence classes; ``quantity`` and ``market_value_usd`` carry
     the TD/SD-timing divergence; ``cost_basis_usd`` the cost-basis divergence.
     """
 
@@ -108,9 +108,10 @@ def read_position(inp: ReadPositionInput) -> ReadPositionOutput:
     layer at the requested as-of; this tool does not query — it shapes the typed result.
 
     The book-divergence is structural: the IBOR read of a portfolio and the ABOR read of the same
-    portfolio at the same as-of return different totals on the OIM-160 dual book (the TD/SD-timing,
+    portfolio at the same as-of return different totals on the dual book (the TD/SD-timing,
     accrual and cost-basis classes), because the data-access layer reads the ``book``-specific E-04
-    partition. This tool does not reconcile the two — that is a later cycle; it exposes each book.
+    partition. This tool does not reconcile the two — that is the reconciliation engine's job; it
+    exposes each book.
     """
     ordered = tuple(sorted(inp.rows, key=lambda r: r.position_id))
     total_mv = sum((r.market_value_usd for r in ordered), Decimal(0))

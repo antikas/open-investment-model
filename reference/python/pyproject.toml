@@ -1,7 +1,7 @@
 [project]
 name = "agentinvest-tools"
 version = "0.0.0"
-description = "agentINVEST Python tool + data layer (ADR-0054 polyglot split). The financial-data ecosystem side — typed Restate tool services invoked over the shared substrate by the TS orchestrator. The dbt canonical data layer (OIM-102) and the typed per-Service-Operation tool surface (OIM-103+) build on this workspace."
+description = "agentINVEST Python tool + data layer (the polyglot split). The financial-data ecosystem side — typed Restate tool services invoked over the shared substrate by the TS orchestrator. The dbt canonical data layer and the typed per-Service-Operation tool surface build on this workspace."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,8 +12,8 @@ dependencies = [
     "restate-sdk==0.18.1",
     # Pure-Python ASGI server the SDK serves its endpoint through.
     "hypercorn>=0.17",
-    # Pydantic v2 — the typed canonical-model schemas (OIM-103, the seed of the
-    # @agentinvest/canonical-model package OIM-180). Shared across the tools, the
+    # Pydantic v2 — the typed canonical-model schemas (the seed of the
+    # @agentinvest/canonical-model package). Shared across the tools, the
     # orchestrator and the data layer; hence a base dependency, not a dev/dbt one.
     "pydantic>=2.9",
     # The MCP SDK — the agent-to-agent ingress surface (the MCP server exposes the
@@ -23,10 +23,10 @@ dependencies = [
     # bd09 Restate handler over the ingress (a runtime dep, not test-only).
     "httpx>=0.27",
     # The Anthropic SDK — the agentinvestPlanner service's one frontier-LLM .plan() call
-    # (Sonnet 4.6 structured output via forced tool-use). OIM-130, ADR-0054 v0.1.
+    # (Sonnet 4.6 structured output via forced tool-use).
     "anthropic>=0.40",
     # python-dotenv — loads ANTHROPIC_API_KEY from the gitignored reference/.env
-    # (never hard-coded / committed). OIM-130.
+    # (never hard-coded / committed).
     "python-dotenv>=1.0",
 ]
 
@@ -38,8 +38,8 @@ dev = [
     # OpenAPI 3.1 validation of Restate's auto-generated bd09 surface (verify-only).
     "openapi-spec-validator>=0.7",
 ]
-# The dbt canonical-data layer (OIM-102). dbt-duckdb is the dev adapter
-# (in-process); dbt-postgres documents the dev->prod path per ADR-0054 and
+# The dbt canonical-data layer. dbt-duckdb is the dev adapter
+# (in-process); dbt-postgres documents the dev->prod path and
 # installs cleanly in dev too (it is a thin libpq-binding adapter — no server
 # needed to install, only to connect, and the prod profile target need not
 # connect). Kept in a dedicated group so the lean tool runtime is not bloated
@@ -69,6 +69,9 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+# Line-length is not lint-enforced: docstrings/comments here are intentionally
+# dense and prose does not reflow. `ruff format` still wraps real code to line-length.
+ignore = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

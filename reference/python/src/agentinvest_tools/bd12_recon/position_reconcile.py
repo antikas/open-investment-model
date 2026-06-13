@@ -2,8 +2,8 @@
 
 The SD-12.10 *position reconciliation* Service Operation: reconcile holdings between the firm's
 internal book and the custodian's, instrument by instrument, at the matching key ``position_id``
-(OIM-160 built one custodian row per holding, so the comparator is position_id-aligned). Emits
-E-24-shaped position-break findings with a deterministic of-record cause.
+(the synthetic feed carries one custodian row per holding, so the comparator is position_id-aligned).
+Emits E-24-shaped position-break findings with a deterministic of-record cause.
 
 THE DUAL-INDEPENDENT-PIPELINE (the load-bearing safety property). The reconcile is computed TWO
 independent ways and any meta-disagreement is SURFACED — never silently reconciled:
@@ -25,7 +25,7 @@ surfaces the disagreement instead (Helland: managed uncertainty per partner).
 
 THE DETERMINISTIC CLASSIFIER (of-record, no LLM):
 - ``timing``     — the quantity lag is exactly a known in-flight E-05 trade (TD-booked, not yet
-                   SD-settled — read via the OIM-161 pending-activity tool). Not a false hard break.
+                   SD-settled — read via the pending-activity tool). Not a false hard break.
 - ``data_error`` — a quantity difference NOT explained by any in-flight trade (a real share
 miscount).
 - ``fx`` / ``pricing`` — a qty-agree value difference beyond the 1 bp band: ``fx`` if its ratio is
@@ -38,9 +38,9 @@ Pure and deterministic: the internal rows, the custodian rows and the in-flight 
 the data-access layers and passed in; this tool reconciles, classifies and surfaces. No I/O, no
 clock, no RNG — the output is a function of the input alone.
 
-Honest boundary: a reconcile over the OIM-160 **synthetic** internal book vs a **synthetic**
+Honest boundary: a reconcile over a **synthetic** internal book vs a **synthetic**
 custodian feed, FINDINGS-ONLY — never a production reconciliation against a live custodian, never a
-resolved/gated correcting entry (that is OIM-163).
+resolved/gated correcting entry.
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ class InFlightTrade(BaseModel):
     """One in-flight (agreed-but-unsettled) E-05 trade — the timing-explanation evidence.
 
     A trade booked trade-date internally but not yet settlement-date by the custodian: the internal
-    book carries it, the custodian does not yet. Read via the OIM-161 pending-activity tool. Its
+    book carries it, the custodian does not yet. Read via the pending-activity tool. Its
     signed ``quantity`` explains a TD/SD quantity lag (a ``timing`` break, not a false hard break).
     """
 

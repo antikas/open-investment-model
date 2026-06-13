@@ -11,13 +11,13 @@
 -- multi-mark trajectory). The bi-temporal GRAIN is declared here:
 --   grain = (valuation_id) primary key; as-of axis = valuation_date.
 --
--- ** MATERIALISATION IS AN OIM-110 COORDINATION POINT — NOT PICKED HERE. **
+-- ** MATERIALISATION IS A COORDINATION POINT — NOT PICKED HERE. **
 -- This staging model is a view (the staging default), NOT a dbt snapshot or an
 -- incremental model. Whether the as-of/append-only entities materialise as dbt
 -- snapshots (SCD-2), incremental appends, or views over an append-only seed is
--- the OIM-110 bi-temporal-materialisation decision (OIM-102 P-R4 carry-forward).
--- This cycle DECLARES the grain (the columns + this note) and seeds flat; it does
--- NOT silently inherit OIM-102's flat drop-recreate as the forever strategy.
+-- the bi-temporal-materialisation decision. This staging layer DECLARES the grain
+-- (the columns + this note) and seeds flat; it does NOT silently inherit a flat
+-- drop-recreate as the forever strategy.
 --
 -- Parity-aware SQL: `decimal(18,2)` for `value_usd` (NOT `double`);
 -- `double precision` for `confidence_score` (the model's only `float` column —

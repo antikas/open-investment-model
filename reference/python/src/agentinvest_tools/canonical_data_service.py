@@ -6,7 +6,7 @@ through this thin cross-language seam: the UI calls ``canonicalData/listTables``
 ``canonicalData/sampleTable`` over the Restate ingress, and these handlers read the canonical
 store via the duckdb read utilities (``agentinvest_demo.canonical_inspect``).
 
-Topology (ADR-0054): ``canonicalData`` is a model-free Restate *service* — a namespace + dispatch
+Topology: ``canonicalData`` is a model-free Restate *service* — a namespace + dispatch
 boundary in the Python tool+data layer — NOT an "agent". It carries no reasoning loop (the single
 orchestrating loop is the planner's ``.plan()``). It is a pure read tool, the sibling of
 ``navData`` (the NAV-strike marts read).
@@ -23,7 +23,7 @@ READ-ONLY + NO INJECTION SURFACE (the load-bearing property, mirrored from the r
 The reads are wrapped in ``ctx.run`` so each is a journaled durable step (replay reads the result
 back, the store is not re-queried). The request types are Pydantic models with ``extra="forbid"``,
 validated in the HANDLER body (the ``navData`` precedent), so an off-contract key is a clean 400 —
-the same reject-unknown-keys hardening (OIM-185). SYNTHETIC data: the canonical layer is the
+the same reject-unknown-keys hardening. SYNTHETIC data: the canonical layer is the
 synthetic seed, not production data.
 """
 

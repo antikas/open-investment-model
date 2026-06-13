@@ -3,8 +3,7 @@
 The planner's contract: a task plus a candidate tool catalogue in, a
 ``PlanSchema``-validated plan out. The plan is a list of ``steps`` (each naming
 the ``soId`` of a catalogue tool plus its ``args``) and a ``riskScore`` (a float
-for the future high-stakes approval gate — declared here, **not exercised** in
-this cycle).
+for the future high-stakes approval gate — declared here, **not exercised** yet).
 
 This is the SSOT for the plan shape. The Python ``agentinvestPlanner`` validates the
 model's response against it; the TS orchestrator parses the returned plan against
@@ -29,7 +28,7 @@ class PlanStep(BaseModel):
     catalogue the planner was given (e.g. ``"SO-09-01"`` or, in the eval path, a
     catalogue ``tool_id`` such as ``"SO-09-01-twr"``). ``args`` is the tool's
     input as a plain object — it is NOT validated against the tool's own input
-    model here (that is the dispatch step's job, OIM-131); at the planning step a
+    model here (that is the dispatch step's job); at the planning step a
     step is a *tool-selection + argument-intent* claim, not a checked tool call.
     ``rationale`` is the planner's short justification for choosing this tool —
     optional, captured for the audit trail and the future approval gate.
@@ -55,8 +54,8 @@ class PlanSchema(BaseModel):
 
     ``steps`` is the ordered list of tool calls the planner proposes for the task
     (at least one). ``riskScore`` is a float in [0, 1] flagging how high-stakes the
-    plan is, for the future OIM-132 approval gate — it is **declared, not
-    exercised** in this cycle (nothing reads it to gate anything yet). ``summary``
+    plan is, for the future approval gate — it is **declared, not exercised** yet
+    (nothing reads it to gate anything yet). ``summary``
     is a one-line natural-language description of the plan, captured for the audit
     trail and the operator surface.
 
@@ -75,7 +74,7 @@ class PlanSchema(BaseModel):
         le=1.0,
         description=(
             "How high-stakes the plan is, in [0,1], for the future approval gate. "
-            "Declared here; NOT exercised this cycle."
+            "Declared here; NOT exercised yet."
         ),
     )
     summary: str | None = Field(

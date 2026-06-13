@@ -1,7 +1,7 @@
 -- The comparator feed agrees with the internal book EXCEPT on the labelled breaks —
 -- the oracle-correspondence guard (the zero-missed-breaks ground truth must be exact).
 --
--- The labels manifest (break_labels) is the oracle the OIM-165 eval scores the OIM-162
+-- The labels manifest (break_labels) is the oracle a reconciliation eval scores the
 -- engine against. For that to be a valid oracle, the INJECTED breaks in the feed and the
 -- LABELLED breaks in the manifest must correspond EXACTLY — no break in the feed missing
 -- a label (an unlabelled break the eval would wrongly score as a false positive), no label
@@ -30,7 +30,7 @@ with feed_position_breaks as (
 
 labelled_position_breaks as (
     -- the position_ids the manifest labels as a custodian-side position break. The
-    -- A/B-disagreement (OIM-197) is a position label whose expected_side is INTERNAL (the
+    -- A/B-disagreement is a position label whose expected_side is INTERNAL (the
     -- custodian ties the book; the break is the internal book-vs-mark gap) — it carries NO
     -- custodian break_note, so it is correctly excluded from the custodian-side set equality.
     select distinct record_ref as position_id
@@ -54,7 +54,7 @@ phantom_label as (
 
 -- (B) the manifest count must equal the injected-break count. The injected breaks are:
 --     the distinct break-flagged custodian holdings (custodian-side position breaks) + the
---     transaction breaks (missing + extra) + the cash break(s) + the OIM-197 surfaces (the
+--     transaction breaks (missing + extra) + the cash break(s) + the additional surfaces (the
 --     position-INTERNAL A/B-disagreement, the ibor_abor rule-unreachable breaks, the nav
 --     shadow-divergence). We re-derive the total from the manifest's class counts and confirm
 --     (i) the custodian-side position labels equal the feed's flagged holdings, and (ii) the

@@ -4,7 +4,7 @@ SD-12.1 IBOR owns E-05 Transaction (model/entities/core/E-05-transaction.md: "tr
 the book of record"); its *transaction posting* Service Operation applies each event to the book.
 This tool reads the E-05 records the IBOR book is built from — the trade / subscription /
 capital-call / income events — at an as-of date, for a portfolio. Reconciliation's
-transaction-matching leg (OIM-162) consumes this read: the IBOR transaction set is one side of the
+transaction-matching leg consumes this read: the IBOR transaction set is one side of the
 match against the external comparator feed.
 
 "As-of" for an event read means the events whose ``trade_date`` is on or before the as-of (the book
@@ -13,7 +13,7 @@ this tool types, orders and summarises the rows.
 
 Pure and deterministic: no I/O, no clock, no RNG.
 
-Honest boundary: a correct read over the OIM-160 **synthetic** internal book, not a production
+Honest boundary: a correct read over a **synthetic** internal book, not a production
 transaction feed.
 """
 

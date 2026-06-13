@@ -11,9 +11,9 @@
 -- composite (position_id, book) uniqueness, not position_id alone.
 --
 -- Parity-aware SQL: `decimal(18,2)` for the money/quantity columns (NOT duckdb's
--- `double` — the OIM-102 sample used `double`, a duckdb-only idiom the postgres
--- prod target can't render; noted for the OIM-153 register). `decimal`/`numeric`
--- render on both backends. `varchar`/`date` casts are portable. No duckdb-only
+-- `double`, a duckdb-only idiom the postgres prod target can't render).
+-- `decimal`/`numeric` render on both backends. `varchar`/`date` casts are
+-- portable. No duckdb-only
 -- idiom remains in this model.
 
 with source as (

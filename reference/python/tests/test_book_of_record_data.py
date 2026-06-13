@@ -1,7 +1,7 @@
-"""The book-of-record data-access layer — reads the OIM-160 canonical dual book, READ-ONLY.
+"""The book-of-record data-access layer — reads the canonical dual book, READ-ONLY.
 
 These tests prove the data-access layer (``agentinvest_demo.book_of_record_data``) genuinely reads
-the OIM-160 canonical dual book (not inlined fixtures), per book, honouring the as-of, and is
+the canonical dual book (not inlined fixtures), per book, honouring the as-of, and is
 read-only. They are store-gated (skip cleanly when the canonical store is not provisioned), the
 ``test_nav_marts_read`` precedent. The validation-of-arguments path (an unknown book) needs no
 store.

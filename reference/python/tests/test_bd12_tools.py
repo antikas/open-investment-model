@@ -3,11 +3,11 @@
 These tests drive the PURE ``bd12`` tools (no I/O): given typed rows in, each tool types, orders and
 totals deterministically. They prove the contract the dispatch service relies on — same input →
 same output, stable ordering, correct totals — without touching the canonical store (that is the
-``test_bd12_service`` integration level, which reads the OIM-160 fixtures). The ``bd09`` pure-tool
+``test_bd12_service`` integration level, which reads the canonical fixtures). The ``bd09`` pure-tool
 test pattern (``test_bd09_total_return`` et al.): determinism + a worked shaping example.
 
-Honest boundary: a green pure-tool test proves the typed shaping; the read of the OIM-160 dual book
-and the IBOR-vs-ABOR divergence are proven at the service level over the canonical fixtures.
+Honest boundary: a green pure-tool test proves the typed shaping; the read of the canonical dual
+book and the IBOR-vs-ABOR divergence are proven at the service level over the canonical fixtures.
 """
 
 from __future__ import annotations

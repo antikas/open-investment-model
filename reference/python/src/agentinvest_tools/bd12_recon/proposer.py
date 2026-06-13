@@ -1,4 +1,4 @@
-"""The propose-only LLM cause classifier over the ``unexplained`` residue (OIM-162 cycle-2).
+"""The propose-only LLM cause classifier over the ``unexplained`` residue.
 
 A typed tool that takes an ``unexplained`` E-24 break + its deterministically-assembled
 observable-evidence bundle and returns a **PROPOSAL** — a ``proposed_cause`` (an E-24 vocabulary
@@ -11,8 +11,8 @@ This tool NEVER writes the of-record ``cause_classification`` — its output is 
 append-only in the proposal store (``proposal_store.py``), the LLM's ENTIRE writable universe. The
 of-record cause stays the deterministic ``unexplained`` value; no LLM output enters the break store,
 the canonical layer, or any state the system acts on. Describing this tool as "classifying breaks"
-is WRONG — it proposes; the deterministic rules classify. (ADR-0054 + the deterministic-spine:
-no LLM in the knowledge-claim path.)
+is WRONG — it proposes; the deterministic rules classify. (The deterministic spine: no LLM in the
+knowledge-claim path.)
 
 THE LLM SEAM (the ``agentinvest_orchestrator/planner.py`` precedent — Anthropic). One structured-
 output Anthropic call constrained to emit a ``CauseProposalSchema``-shaped object via the Anthropic
@@ -22,7 +22,7 @@ schema's JSON schema). A malformed/unparseable response is a typed ``ProposerDet
 ``ANTHROPIC_API_KEY``
 loads from ``reference/.env`` via the planner's ``load_api_key`` (never hard-coded, logged, or
 committed). ``client`` is INJECTABLE so CI runs against a deterministic stub/recorded fixture — NO
-live model call in the gate; the one live smoke is proven separately (the cycle report).
+live model call in the gate; the one live smoke is proven separately.
 
 THE LABEL NEVER REACHES THE MODEL. The prompt is built from the evidence bundle ONLY (the neutral
 observable evidence — ``evidence_bundle.py`` forbids the label). The model never sees
@@ -31,11 +31,10 @@ observable evidence — ``evidence_bundle.py`` forbids the label). The model nev
 deterministic rule sees. So a rule DERIVED from a correct proposal's rationale is label-independent
 by construction (proven by test).
 
-THE HONEST BOUNDARY (this cycle). One flywheel turn over a SYNTHETIC corpus, with the human gate
-exercised AS THIS CYCLE'S OWN review (this brief + its blind audit) — NOT a production review
-workflow, NOT continuous learning, NOT model training. A proposal that is correct-against-label AND
-yields a derivable label-independent rule is PROMOTED by this cycle's own audited code change (the
-narrowed ``classify_value_diffs``); anything no honest rule reaches stays ``unexplained``.
+THE HONEST BOUNDARY. One flywheel turn over a SYNTHETIC corpus, with a human gate — NOT a production
+review workflow, NOT continuous learning, NOT model training. A proposal that is correct-against-label
+AND yields a derivable label-independent rule is PROMOTED into a deterministic rule (in
+``classify_value_diffs``); anything no honest rule reaches stays ``unexplained``.
 """
 
 from __future__ import annotations
@@ -47,7 +46,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-# The model id — reuse the planner's ratified frontier model default (ADR-0054 v0.1 frontier-only).
+# The model id — reuse the planner's ratified frontier model default.
 # Overridable via env for a future model bump (the planner's PLANNER_MODEL convention).
 from agentinvest_orchestrator.planner import PLANNER_MODEL as PROPOSER_MODEL
 from agentinvest_tools.bd12_recon.evidence_bundle import EvidenceBundle

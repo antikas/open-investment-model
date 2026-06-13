@@ -90,9 +90,9 @@ function fakeCtx(opts: FakeCtxOptions): FakeCtxCapture {
       return value;
     },
     sleep: async () => {},
-    // The additive OIM-142 pending-approvals registry sends (made by the reused gate)
+    // The additive pending-approvals registry sends (made by the reused gate)
     // are FIRE-AND-FORGET — no-op stubs keep the workflow's control flow unchanged. The
-    // cycle-2 terminal-path `resolve` mark is the same additive pattern (it leaves the
+    // terminal-path `resolve` mark is the same additive pattern (it leaves the
     // pending queue on every resolution path; it does not gate the workflow).
     objectSendClient: () => ({ register: () => {}, resolve: () => {} }),
     date: { now: async () => 1_700_000_000_000 },

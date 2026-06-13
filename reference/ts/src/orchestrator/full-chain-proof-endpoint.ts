@@ -1,9 +1,9 @@
 /**
- * Full-chain proof endpoint (OIM-134) — hosts the REAL `investmentOperation` virtual object (the
+ * Full-chain proof endpoint — hosts the REAL `investmentOperation` virtual object (the
  * production orchestrator bound into `endpoint.ts`), NOT a probe. This is the endpoint the
- * A-Phase-4 closure demo + the full-chain crash-replay run against, so the whole
+ * full-chain demo + the full-chain crash-replay run against, so the whole
  * plan → resolve → dispatch → approve → aggregate → close chain is exercised on the PRODUCTION VO
- * (the OIM-104 P9 bar — never a substituted probe).
+ * — never a substituted probe.
  *
  * NO fixture plan (NO `AGENTINVEST_DISPATCH_FIXTURE_PLAN`): seam 1 calls the REAL Sonnet planner,
  * which selects the tools; the RESOLVE step resolves the abstract args against the marts; dispatch

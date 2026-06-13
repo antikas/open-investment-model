@@ -8,8 +8,8 @@ Two surfaces:
    to. SKIPS cleanly if the canonical store is not provisioned (duckdb missing or the marts
    unbuilt) — the same skip-guard ``marts.py``'s integration reads use, so the unit suite runs
    without the data toolchain.
-2. The PAST-AS-OF BOUND (OIM-111 carry-forward) — a non-null ``nav_knowledge_date`` is REFUSED
-   (a ``MartsUnavailableError``), so the workflow can never silently strike an unsound past
+2. The PAST-AS-OF BOUND — a non-null ``nav_knowledge_date`` is REFUSED (a
+   ``MartsUnavailableError``), so the workflow can never silently strike an unsound past
    NAV on the latest-holdings path. This needs no store (the refusal is checked before any read).
 
 Honest boundary: a green identity here proves the data-layer arithmetic, NOT a struck
@@ -91,9 +91,9 @@ def test_holdings_gross_reconciles_to_nav_mart_gross_for_every_fund() -> None:
     """The GENUINE cross-mart reconcile: Σ holdings mart gross == mart_fund_nav.gross_market_value.
 
     ``read_fund_holdings_gross`` rolls the fund's gross up from the HOLDINGS mart — an INDEPENDENT
-    mart and SQL path from ``mart_fund_nav``'s gross. The two must tie (the OIM-111
+    mart and SQL path from ``mart_fund_nav``'s gross. The two must tie (the
     ``assert_marts_reconcile_holdings_to_nav`` invariant). This is the FALSIFIABLE check the
-    workflow's roll-up runs, NOT the within-row X==X re-read the cycle-1 audit found.
+    workflow's roll-up runs, NOT a within-row X==X re-read.
     """
     fund_ids = list_fund_ids()
     assert fund_ids, "expected at least one fund"

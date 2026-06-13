@@ -14,8 +14,6 @@ Exit codes:
          has a corresponding rendered page and substantive coverage holds
          (each SD page lists every declared Service Operation by name)
     1  — generator error (parser raised, Graphviz failure, coverage gap)
-
-Per ADR-0045 (Hybrid D adoption; LikeC4 retirement).
 """
 from __future__ import annotations
 
@@ -79,14 +77,12 @@ def _substantive_coverage_gaps(
 ) -> list[str]:
     """Walk emitted pages and verify substantive content beyond filenames.
 
-    Closes OIM-54 cycle-1 P-5 (filename-only coverage) and G-1 (SO coverage
-    claim unbacked). Each check returns a defect line if a declared element
-    is structurally absent from its expected page.
+    Each check returns a defect line if a declared element is structurally
+    absent from its expected page.
 
-    OIM-54 cycle-3 E-1 (P2-2 closure): the SO and link checks now match
-    structurally, not by substring. The cycle-2 substring matching could
-    pass a typo'd SO name (the typo substring-matched itself) or an SO
-    name appearing in unrelated prose while the operations list was
+    The SO and link checks match structurally, not by substring. Substring
+    matching could pass a typo'd SO name (the typo substring-matches itself)
+    or an SO name appearing in unrelated prose while the operations list was
     empty. The structural check anchors to `<li>` elements inside the
     operations list (for SO names) and to `<a href=...>` attribute
     values (for FK / member-SD / BD-landing links) using stdlib
@@ -94,8 +90,7 @@ def _substantive_coverage_gaps(
 
     Checks:
       (i)   Each SD page contains every declared Service Operation as
-            an `<li>` element (closes G-1 / A-2 — SO coverage, plus
-            cycle-3 P2-2 structural anchoring).
+            an `<li>` element.
       (ii)  Each entity page contains an `<a href=...>` to every FK target.
       (iii) Each BD page contains an `<a href=...>` to every member SD.
       (iv)  The landscape page contains an `<a href=...>` to every BD landing.
@@ -228,8 +223,8 @@ def _li_carries_so_name(li_texts: list[str], name: str, escaped: str) -> bool:
 
     Templates render SOs as `<li>{name}</li>` or `<li>{name} — purpose</li>`
     or `<li>{name}: purpose</li>`. Accept any of these — but reject the
-    case where the name appears only inside unrelated prose (the cycle-3
-    P2-2 false-negative the cycle-2 substring check failed to catch).
+    case where the name appears only inside unrelated prose (the
+    false-negative a plain substring check fails to catch).
     """
     for li in li_texts:
         stripped = li.strip()
@@ -355,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  note: {len(extra)} extra HTML files present (kept).")
 
     # Substantive coverage — every declared SO appears on its SD page; every
-    # FK / member-SD / BD link resolves. Closes OIM-54 cycle-1 P-5 + G-1.
+    # FK / member-SD / BD link resolves.
     gaps = _substantive_coverage_gaps(out, sd_model, entity_model)
     if gaps:
         _err(f"substantive coverage failed — {len(gaps)} gap(s):")

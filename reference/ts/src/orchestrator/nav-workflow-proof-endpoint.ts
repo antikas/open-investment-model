@@ -3,7 +3,7 @@
  * workflow, also bound into `endpoint.ts`), NOT a probe. This is the endpoint the NAV-strike
  * proofs run against, so the multi-step journaled strike, the gate-at-publish, the §A1
  * reconciliation and the crash-mid-step recovery (incl. publish-exactly-once) are all proven
- * on the PRODUCTION workflow (the OIM-104 discipline — never a substituted probe).
+ * on the PRODUCTION workflow — never a substituted probe.
  *
  * It binds ONLY the workflow (the `navData` marts-read service is hosted by the Python
  * endpoint, registered separately by the proof controller). On a Windows/WSL2 host the bind
@@ -32,7 +32,7 @@ const READY_FILE = process.env.NAV_PROOF_READY_FILE;
 
 async function main(): Promise<void> {
   // Bind the additive pending-approvals registry beside the workflow so the gate's
-  // fire-and-forget registry send (OIM-142) is deliverable in the proof too (the
+  // fire-and-forget registry send is deliverable in the proof too (the
   // gate's own pause/resolve/timeout behaviour is unchanged either way).
   const e = restateEndpoint().bind(navCalculation).bind(approvalRegistry).bind(approvalRegistryReader);
   const bind = isWindowsWsl2Host() ? '0.0.0.0' : '127.0.0.1';

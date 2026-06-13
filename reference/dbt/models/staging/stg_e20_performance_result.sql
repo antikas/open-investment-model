@@ -10,8 +10,8 @@
 -- GRAIN is declared:
 --   grain = (performance_result_id) primary key; as-of period = (period_start, period_end).
 --
--- ** MATERIALISATION IS AN OIM-110 COORDINATION POINT — NOT PICKED HERE. ** A flat
--- staging view, NOT a snapshot/incremental model; the strategy is OIM-110's.
+-- ** MATERIALISATION IS A COORDINATION POINT — NOT PICKED HERE. ** A flat
+-- staging view, NOT a snapshot/incremental model; the strategy is deferred.
 --
 -- Parity-aware SQL: `decimal(18,8)` for the `return_value` rate (a return is a
 -- rate, so more fractional precision than money — NOT `double`); `double precision`

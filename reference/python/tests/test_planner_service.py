@@ -2,8 +2,8 @@
 
 These tests drive the ``planTask`` HANDLER through a faithful fake ``restate.Context`` — the same
 service boundary the ``investmentOperation`` virtual object invokes at seam 1 via
-``ctx.serviceClient(agentinvestPlanner).planTask(...)``. The load-bearing addition (OIM-186): the
-unknown-key reject is now a clean ``TerminalError`` (400), matching the five other registered
+``ctx.serviceClient(agentinvestPlanner).planTask(...)``. The load-bearing property: the
+unknown-key reject is a clean ``TerminalError`` (400), matching the five other registered
 request handlers (navData ×2, argResolver, pyTools, bd09.execute_so) rather than the status-less
 500 the SDK default serde produced.
 
@@ -159,11 +159,11 @@ def test_malformed_or_non_utf8_body_is_terminal_400_on_the_wire(
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple did NOT catch it → a
-# status-less 500. The cycle-2 fold catches the WHOLE parse-failure class (``except Exception``) →
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple would not catch it (→ a
+# status-less 500). Catching the WHOLE parse-failure class (``except Exception``) →
 # the serde returns the raw text as a non-dict ``str`` the handler 400s. REVERT-SENSITIVE.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
@@ -191,7 +191,7 @@ def test_deterministic_failure_stays_422_unregressed(monkeypatch: pytest.MonkeyP
 
     The request-shape guard (400) must not swallow or downgrade the planner's own deterministic
     classification (422). A valid request whose planner raises ``PlannerDeterministicError`` is a
-    terminal 422, exactly as before this fold.
+    terminal 422.
     """
 
     def _fake_plan_task_raises(task: str, descriptors: Any, *args: Any) -> PlanSchema:

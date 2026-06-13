@@ -1,4 +1,4 @@
-"""agentINVEST orchestrator-side services — the ``agentinvestPlanner`` planner (OIM-130).
+"""agentINVEST orchestrator-side services — the ``agentinvestPlanner`` planner.
 
 This package hosts the **single reasoning loop** of agentINVEST: the planning
 step (``.plan()``). It is a *model-free Restate service* (``agentinvestPlanner``,
@@ -7,15 +7,15 @@ sibling on the service axis to the ``bd09`` tool-hosting service in
 plus a candidate **tool catalogue** and returns a **schema-validated plan**
 (``PlanSchema``) by making one real Anthropic call.
 
-Vocabulary (load-bearing, ADR-0054). ``agentinvestPlanner`` is a **service**, not
-an "agent": it is the hosting/dispatch boundary the orchestrator's one loop runs in.
+Vocabulary (load-bearing). ``agentinvestPlanner`` is a **service**, not an
+"agent": it is the hosting/dispatch boundary the orchestrator's one loop runs in.
 The Service Operations it plans over are **tools** in a typed **tool catalogue**.
 ``planTask`` is **the** single reasoning loop — there is no fleet, no per-domain
 agent, no second loop. The plan it returns is **generated, not executed**:
-dispatch (running the plan's steps) is a separate, later step (OIM-131). A valid
-plan is a *structure + tool-selection* claim, not an outcome.
+dispatch (running the plan's steps) is a separate, later step. A valid plan is a
+*structure + tool-selection* claim, not an outcome.
 
-Honest boundary (ADR-0054 v0.1 frontier-only):
+Honest boundary (frontier-only):
 
 - **Frontier-only.** One frontier model (Anthropic Sonnet 4.6) drives the loop.
   No fine-tuning, no specialist fleet, no office-split. The office-split is the

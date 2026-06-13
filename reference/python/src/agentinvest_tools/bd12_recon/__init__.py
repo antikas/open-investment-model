@@ -1,8 +1,8 @@
-"""BD-12 SD-12.10 reconciliation engine — the dual-independent-pipeline reconcile (OIM-162 cycle-1).
+"""BD-12 SD-12.10 reconciliation engine — the dual-independent-pipeline reconcile.
 
 The deterministic reconciliation engine: the four SD-12.10 reconcile tools (position · cash ·
-transaction-matching · IBOR/ABOR) that consume the OIM-161 internal book read surface + the OIM-160
-external comparator feed and emit **E-24 Reconciliation Break** findings with a deterministic
+transaction-matching · IBOR/ABOR) that consume the internal book read surface + the external
+comparator feed and emit **E-24 Reconciliation Break** findings with a deterministic
 of-record cause, persisted append-only to an engine-owned break store. The ``bd12`` read precedent:
 one pure, deterministic, Pydantic-in/out tool per Service Operation.
 
@@ -19,12 +19,13 @@ THE LOAD-BEARING PROPERTIES:
 1. **The dual-independent-pipeline** — each reconcile computes its result two independent ways and
    surfaces any meta-disagreement (never silently reconciles).
 2. **Deterministic of-record cause-classification → ``unexplained`` on a miss** — rules over neutral
-   observable evidence, NO LLM (the propose-only LLM over the ``unexplained`` residue is cycle-2).
+   observable evidence, NO LLM (the propose-only LLM operates over the ``unexplained`` residue,
+   downstream of the rules).
 3. **Append-only, insert-only, immutable break persistence** — breaks are appended at ``status =
-   open``; there is no update / no status-transition / no correcting-entry path (those are OIM-163,
-   behind the breach gate).
+   open``; there is no update / no status-transition / no correcting-entry path (those live behind
+   the breach gate).
 
-Honest boundary: these are reconciles over the OIM-160 **synthetic** data (the real internal dual
+Honest boundary: these are reconciles over **synthetic** data (the real internal dual
 book vs a synthetic custodian/admin feed with labelled breaks), FINDINGS-ONLY — never a production
 reconciliation against a live custodian, never a resolved/gated correcting entry.
 """

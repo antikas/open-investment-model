@@ -7,7 +7,7 @@
 -- auto-resolved set, with the genuinely-ambiguous correctly quarantined.
 --
 -- The labels are derived from the INJECTION INTENT used to build raw_entity_resolution_feed.csv
--- (never read back from the feed strings) — the OIM-160 oracle-integrity discipline. The same
+-- (never read back from the feed strings) — the oracle-integrity discipline. The same
 -- manifest is emitted as entity_resolution_labels.json (the form the engine / eval read); this view
 -- is the dbt-/analyst-readable form. NOT a canonical entity — it labels the feed, out of the
 -- schema-drift scope.

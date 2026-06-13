@@ -11,10 +11,9 @@ The capability graph carries:
   a specific SD (deduplicated)
 - BD-level narrative references (an Inputs/Outputs sentence naming a
   whole BD as aggregate-function-reference shorthand) produce ONE edge
-  from the BD landing node, not a fan-out into every member SD. The
-  fan-out shape was identified as a bug in OIM-54 cycle-1 P-4 (87% of
-  edges were artefacts; readers cannot distinguish artefact from
-  declaration). The aggregate-function-reference is preserved as a single
+  from the BD landing node, not a fan-out into every member SD. A
+  fan-out shape makes most edges artefacts (readers cannot distinguish
+  artefact from declaration). The aggregate-function-reference is preserved as a single
   edge with the distinct `narrative-bd-input` / `narrative-bd-output`
   kind so the renderer can style it (dashed, lighter) and the reader can
   read "this SD takes aggregate input from BD-XX" rather than "this SD
@@ -45,8 +44,8 @@ class CapabilityEdge:
                       # "narrative-input" / "narrative-output" /
                       # "narrative-bd-input" / "narrative-bd-output"
                       # (BD-kinds are aggregate-function-references — a
-                      # single edge from the BD landing node per OIM-54
-                      # cycle-2 B-4 fix, not fan-out per member SD)
+                      # single edge from the BD landing node, not fan-out
+                      # per member SD)
 
 
 @dataclass
@@ -127,9 +126,9 @@ def build_capability_graph(
                 add(ref, sd.id, "narrative-input")
             elif ref.startswith("BD-") and ref in bd_ids and ref != sd.bd_id:
                 # Aggregate-function-reference: one edge from the BD node,
-                # NOT fan-out per member SD. See module docstring + OIM-54
-                # cycle-2 B-4 (the fan-out fix). Same-BD self-references
-                # (an SD that names its own BD as input) are dropped.
+                # NOT fan-out per member SD. See module docstring.
+                # Same-BD self-references (an SD that names its own BD as
+                # input) are dropped.
                 add(ref, sd.id, "narrative-bd-input")
         for ref in sd.downstream_sds:
             if ref.startswith("SD-") and ref in sd_ids and ref != sd.id:

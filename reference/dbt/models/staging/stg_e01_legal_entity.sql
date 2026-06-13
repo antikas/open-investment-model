@@ -9,7 +9,7 @@
 -- Parity-aware SQL: casts use `varchar` / `date` only (both duckdb and the
 -- dbt-postgres prod target render these). No duckdb-only idiom. The `known_aliases`
 -- array and `external_ids` map are kept as their raw text in this flat sample
--- staging layer (the normalised list/map shaping is OIM-110/111 — the seed carries
+-- staging layer (the normalised list/map shaping is a later step — the seed carries
 -- them as `;`-joined / JSON text so the column EXISTS at the right grain now).
 
 with source as (

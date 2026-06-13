@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SUPERSEDED by scripts/plan-crash-proof.mjs (OIM-130). The production VO's
+ * SUPERSEDED by scripts/plan-crash-proof.mjs. The production VO's
  * `execute` no longer journals a bare stub step — the planning step (the real
  * `.plan()` call) now lands at seam 1, so this script's `journaled stub step-id=`
  * witness is gone. The journaled-exactly-once crash-replay of the PRODUCTION VO is
@@ -8,11 +8,11 @@
  * `investmentOperation` in the between-plan-and-terminal-write window and asserts
  * the LLM-call-count stays at 1 across the crash (replay reads the journaled plan,
  * the model is NOT re-invoked). The `pnpm shell-crash` script now runs plan-crash.
- * This file is retained for git history; it is NOT a live floor. Nothing references it:
- * package.json's `shell-crash` points at scripts/plan-crash-proof.mjs (verified OIM-184);
- * the only remaining mentions are historical docs.
+ * This file is retained for git history; it is NOT a live entry point. Nothing references it:
+ * package.json's `shell-crash` points at scripts/plan-crash-proof.mjs; the only remaining
+ * mentions are historical docs.
  *
- * Shared-server-safe by construction (OIM-184): even though it is dead, this proof was
+ * Shared-server-safe by construction: even though it is dead, this proof was
  * NEVER shared-deployment-stripping — it spawns ONLY its OWN TS `investmentOperation`
  * endpoint (shell-crash-endpoint.ts) and prunes ONLY `investmentOperation` deployments on
  * its OWN port (:9096 — see pruneShellDeployments). It NEVER spawns or prunes the shared
@@ -21,12 +21,12 @@
  * code + the historical doc references for no shared-server-hygiene gain; a future run
  * tripping on it cannot strip the shared server. NEVER `wsl --shutdown`.
  *
- * --- original header (OIM-104, the stub-step crash proof) ---
+ * --- original header (the stub-step crash proof) ---
  *
- * PRODUCTION-shell real-process-crash replay proof (closes P-CRASH-1).
+ * PRODUCTION-shell real-process-crash replay proof.
  *
- * cycle-1's `crash-replay-proof.mjs` SIGKILLed a separate single-step
- * `crashReplayProbe`. This proof SIGKILLs the REAL production
+ * Where `crash-replay-proof.mjs` SIGKILLs a separate single-step
+ * `crashReplayProbe`, this proof SIGKILLs the REAL production
  * `investmentOperation.execute` (gate → set(running) → run(stub-step) →
  * set(completed)) in the fiduciary-relevant window the pre-mortem named:
  * between the journaled stub step and the terminal `ctx.set('state','completed')`.

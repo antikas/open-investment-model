@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * PRODUCTION-VO journaled-EXACTLY-ONCE crash-replay proof for the .plan() step
- * (OIM-130; extends the OIM-104 P9 production-shell crash pattern).
+ * (the same production-shell crash pattern as the dispatch/full-chain proofs).
  *
  * This proves the load-bearing fiduciary-determinism property of the planning
  * step: the LLM's non-deterministic plan is journaled EXACTLY ONCE on the
@@ -11,7 +11,7 @@
  * across the whole crash-and-restart. A second line would mean replay re-called
  * the model — the determinism property broken.
  *
- * This is the OIM-104 P9 bar: the REAL `investmentOperation`, not a probe.
+ * Run against the REAL `investmentOperation`, not a probe.
  *
  * Mechanism (extends shell-crash-proof.mjs):
  *   1. Start the PYTHON endpoint (binds agentinvestPlanner + bd09), with
@@ -19,7 +19,7 @@
  *      each real model call. (One Python endpoint stays up across the whole proof —
  *      we crash the TS VO, not the planner; the planner records the ONE call the
  *      pre-crash plan step made.)
- *      Reuse-safe teardown (OIM-184): the SHARED Python deployment (:9091 — carrying
+ *      Reuse-safe teardown: the SHARED Python deployment (:9091 — carrying
  *      bd09/agentinvestPlanner/navData/pyTools) is torn down ONLY if THIS run spawned
  *      it (pySpawnedByUs). If reused, it is LEFT REGISTERED — never strip a shared
  *      resource (other local projects sharing the dev substrate + concurrent OpenIM
@@ -269,7 +269,7 @@ let pyChild = null;
 // pyTools on :9091)? Only true if we started it; false if we REUSED an already-
 // running shared endpoint. Gates ALL Python-side teardown: we only ever tear down
 // what we started. Reusing and then stripping the shared deployment would disrupt
-// other local projects sharing the dev substrate + concurrent OpenIM work (OIM-184).
+// other local projects sharing the dev substrate + concurrent OpenIM work.
 // The TS proof endpoint we always spawn, so it is always cleaned up; only the shared
 // Python deployment is left intact when reused.
 let pySpawnedByUs = false;
@@ -286,7 +286,7 @@ async function main() {
 
   // ── 1. Python endpoint up (agentinvestPlanner + bd09), call-log armed ─────
   // Reuse the running shared planner if already registered (the shared :9091); only
-  // spawn our own if not (OIM-184 reuse-safety — never strip a shared deployment we
+  // spawn our own if not (reuse-safety — never strip a shared deployment we
   // did not spawn). On a REUSE run the running planner records to a different
   // call-log, so the at-plan precondition below surfaces that clearly.
   if (await awaitPlannerRegistered(2)) {
@@ -437,7 +437,7 @@ async function main() {
 
   log('');
   if (ok) {
-    log('PRODUCTION-VO JOURNALED-EXACTLY-ONCE CRASH-REPLAY PROVEN (.plan() — OIM-130 P9):');
+    log('PRODUCTION-VO JOURNALED-EXACTLY-ONCE CRASH-REPLAY PROVEN (.plan()):');
     log('  - the REAL investmentOperation was SIGKILLed mid-execute, between its journaled .plan() RPC and the terminal write');
     log('  - Restate RESUMED the SAME invocation from the journal on a fresh process (Replaying invocation, new pid)');
     log('  - the LLM-call-count stayed at 1 across the crash+restart — replay READ THE JOURNALED PLAN BACK, it did NOT re-invoke the model');

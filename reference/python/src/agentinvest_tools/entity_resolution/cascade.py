@@ -1,4 +1,4 @@
-"""The deterministic three-tier entity-resolution cascade (OIM-199 cycle-1).
+"""The deterministic three-tier entity-resolution cascade.
 
 The of-record resolve path: given an inbound legal-entity feed record and the standing E-01 / E-13 /
 E-14 reference data, decide — deterministically and explainably — whether the record is an existing
@@ -27,7 +27,7 @@ THE THREE TIERS (the model's ``## Resolution`` cascade, made runnable):
 THE DETERMINISTIC SPINE (the load-bearing invariant). Every decision is a pure function of the
 record + the reference data — NO LLM, no learned scorer, no fuzzy edit-distance. The of-record match
 bar is EXACTNESS after a declared, auditable normalisation. The probabilistic / LLM-proposer tier (a
-model proposing a candidate for review) is a deliberately-deferred later cycle: this module imports
+model proposing a candidate for review) is deliberately out of scope here: this module imports
 NONE of it, and the module-graph spine assertion (``test_entity_resolution_cascade``) proves the
 resolve path's transitive import closure contains no model/proposer/anthropic module.
 
@@ -37,7 +37,7 @@ evidence (name / lei / domicile / parent hint / external id) only — never from
 (``resolve_record`` takes a feed record + reference data; it has no label parameter) and
 behaviourally (the eval shuffles / perturbs the oracle and the cascade's decisions do not change).
 
-SYNTHETIC, DETERMINISTIC. The cascade runs over the OIM-199 synthetic resolution oracle; a green
+SYNTHETIC, DETERMINISTIC. The cascade runs over a synthetic resolution oracle; a green
 resolution proves the deterministic cascade + golden-record survivorship + the review-queue
 quarantine, NOT a production entity-resolution run against live custodian/administrator feeds.
 """

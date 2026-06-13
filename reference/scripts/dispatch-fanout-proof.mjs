@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 /**
- * PRODUCTION-VO PARALLEL FAN-OUT latency proof for the DISPATCH step (seam 2, OIM-131).
+ * PRODUCTION-VO PARALLEL FAN-OUT latency proof for the DISPATCH step (seam 2).
  *
- * Discharges the OIM-104 carry-forward: "Intra-handler outbound fan-out (one
- * handler making N parallel `ctx.serviceClient` calls — what OIM-131 needs) …
- * inherited-by-primitive / NOT yet demonstrated … to be proven at OIM-131's gate."
- * This is that proof — on the REAL `investmentOperation` VO, not a probe (the
- * OIM-104 P9 bar).
+ * Proves intra-handler outbound fan-out: one handler making N parallel
+ * `ctx.serviceClient` calls — on the REAL `investmentOperation` VO, not a probe.
  *
  * What it proves: dispatching N independent plan steps to `bd09.execute_so` from one
  * handler IN PARALLEL (the production `Promise.allSettled` fan-out) completes in
@@ -204,8 +201,7 @@ let pyChild = null;
 // :9091)? Only true if we started it; false on reuse. The TS proof endpoints are
 // always this-run-spawned (always killed); the shared Python endpoint is killed ONLY
 // if we spawned it — reusing then killing it would strip the shared deployment that
-// other local projects sharing the dev substrate + concurrent OpenIM work depend on
-// (OIM-131 cycle-2 fold).
+// other local projects sharing the dev substrate + concurrent OpenIM work depend on.
 let pySpawnedByUs = false;
 let serialChild = null;
 let parallelChild = null;
@@ -263,7 +259,7 @@ async function main() {
 
   // Warm bd09 (cold-path import/registration) on the serial endpoint BEFORE timing,
   // so neither timed run pays the one-off cold cost (the fan-out win is a steady-
-  // state property, the OIM-115/phase2-demo warm-vs-cold discipline).
+  // state property, the same warm-vs-cold discipline as phase2-demo).
   log('warming bd09 (one untimed execute) so the timed runs are steady-state...');
   await timedExecute(`fanout-warm-${Date.now()}`, fixturePlan);
 
@@ -319,7 +315,7 @@ async function main() {
   const ok = bothCompleted && fastEnough;
   log('');
   if (ok) {
-    log('PRODUCTION-VO PARALLEL FAN-OUT PROVEN (OIM-104 carry-forward discharged):');
+    log('PRODUCTION-VO PARALLEL FAN-OUT PROVEN:');
     log(`  - the REAL investmentOperation dispatched ${N_STEPS} independent steps to bd09.execute_so from one handler`);
     log('  - the parallel Promise.allSettled fan-out completed in ~max(step), the serial baseline in ~sum(step)');
     log(`  - measured latency improvement: ${serial.elapsedMs}ms serial -> ${parallel.elapsedMs}ms parallel (${speedup.toFixed(2)}x)`);

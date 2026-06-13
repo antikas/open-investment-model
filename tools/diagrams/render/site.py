@@ -22,9 +22,8 @@ class RenderError(RuntimeError):
 
 # svg-pan-zoom 3.6.2 — MIT — vendored into the repo at
 # tools/diagrams/render/static/svg-pan-zoom.min.js. Vendoring (rather than
-# fetching at build time) closes the OIM-54 cycle-1 P-3 finding: silent
-# CDN fetch + SSL bypass + placeholder fallback is a supply-chain smell
-# the 2026-05-21 D2 review forbade. Source and SHA-256 are recorded in
+# fetching at build time) avoids a supply-chain smell: a silent CDN fetch
+# + SSL bypass + placeholder fallback. Source and SHA-256 are recorded in
 # tools/diagrams/README.md §Dependencies.
 _VENDORED_PANZOOM = Path(__file__).parent / "static" / "svg-pan-zoom.min.js"
 

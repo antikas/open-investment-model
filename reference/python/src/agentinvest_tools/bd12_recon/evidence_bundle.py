@@ -1,4 +1,4 @@
-"""The deterministic evidence-bundle assembler for an ``unexplained`` break (OIM-162 cycle-2).
+"""The deterministic evidence-bundle assembler for an ``unexplained`` break.
 
 The propose-only LLM classifier (``proposer.py``) never sees a break in isolation: it sees the break
 plus a deterministically-assembled **observable-evidence bundle** — the two records, the diffs, the
@@ -8,7 +8,7 @@ bundle from the SAME observable evidence the deterministic engine classifies fro
 THE LABEL IS A FORBIDDEN INPUT (the load-bearing trust property). The custodian feed carries a
 ``break_note`` answer-key column and the seeds carry a ``break_labels`` manifest
 (``stg_break_labels``)
-— BOTH are the OIM-160/197 oracle (the score key), NOT engine inputs. The bundle assembler reads
+— BOTH are the oracle (the score key), NOT engine inputs. The bundle assembler reads
 ONLY
 the neutral observable evidence (``comparator_feed_data`` + ``book_of_record_data``, neither of
 which
@@ -16,8 +16,8 @@ projects ``break_note``); it NEVER reads ``stg_break_labels`` and NEVER reads ``
 is
 asserted STRUCTURALLY — the module imports neither the labels reader nor any labels table — AND by
 test (``test_bundle_never_touches_the_oracle_label``). A bundle that carried the label would let the
-LLM (and any rule derived from its rationale) read the answer key — the OIM-160 oracle-corruption
-defect class at the proposal layer. The assembler refuses it by construction.
+LLM (and any rule derived from its rationale) read the answer key — an oracle-corruption defect at
+the proposal layer. The assembler refuses it by construction.
 
 WHY A BUNDLE (the deterministic spine). The deterministic spine keeps the LLM out of the
 knowledge-claim path: the of-record ``cause_classification`` is the deterministic rule's value
@@ -27,7 +27,7 @@ proposal is grounded in — so a regulator can replay "what did the model see?" 
 is a pure function of the observable feed (no label, no clock, no RNG), and its ``snapshot_ref``
 is a content hash a reviewer can recompute.
 
-SYNTHETIC, FINDINGS-ONLY. The bundle is assembled over the OIM-160/197 synthetic feed; it is the
+SYNTHETIC, FINDINGS-ONLY. The bundle is assembled over the synthetic feed; it is the
 evidence for a PROPOSAL (never an of-record action), never a production reconciliation.
 """
 

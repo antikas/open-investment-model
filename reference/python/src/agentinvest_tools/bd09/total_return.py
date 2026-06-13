@@ -15,7 +15,7 @@ where ``w_i = (period_days - day_of_flow_i) / period_days`` is the fraction of t
 flow ``CF_i`` was in the portfolio (a flow on day 0 carries full weight 1; a flow on the last
 day carries ~0). Flows are signed: a contribution is positive, a withdrawal negative.
 
-External oracle (build-gate §A2): matched in the test suite to the published worked example in
+External oracle: matched in the test suite to the published worked example in
 the Wikipedia "Modified Dietz method" article (A=100, B=300, F=+50 at mid-period weight 0.5 →
 gain 150 / average capital 125 = 120%) to <= 1 bp absolute, and cross-checked against the
 Corporate Finance Institute worked example. The external published figure is the proof; a

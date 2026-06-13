@@ -1,5 +1,5 @@
 /**
- * OIM-151 FIXTURE export proof — the full file-level pipeline (chain → write JSON-L + manifest →
+ * FIXTURE export proof — the full file-level pipeline (chain → write JSON-L + manifest →
  * verify green → tamper → verify RED) over a deterministic FIXTURE record set, exercising the REAL
  * production modules (`writeJsonlExport`, `verifyExportFile`) and the REAL CLI exit semantics.
  *

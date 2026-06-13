@@ -1,6 +1,6 @@
 """The committed captured-fixture OpenAPI spec is the genuine Restate emitter shape.
 
-OIM-141: ``scripts/openapi-lint.mjs`` lints ``python/tests/fixtures/bd09-openapi.captured.json``
+``scripts/openapi-lint.mjs`` lints ``python/tests/fixtures/bd09-openapi.captured.json``
 as the deterministic, server-free CI gate. That fixture is the NORMALISED live bd09 spec captured
 from the real Restate service — NOT a hand-trimmed spec that could hide a defect the live spec has.
 These tests lock that property: the committed fixture must stay a genuine OpenAPI 3.1 document, must

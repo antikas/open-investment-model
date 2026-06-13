@@ -1,8 +1,7 @@
-"""Synthetic-integration smoke for the BD-09 tools over the OIM-110 seed.
+"""Synthetic-integration smoke for the BD-09 tools over the seed.
 
-Feeds the tools **real seeded synthetic data** (the OIM-110 E-07 valuation series and E-04
-holdings the OIM-111 marts are built on) and confirms they run and tie, on the paths the seed
-supports:
+Feeds the tools **real seeded synthetic data** (the E-07 valuation series and E-04 holdings the
+marts are built on) and confirms they run and tie, on the paths the seed supports:
 
 - **SO-09-02 TWR** over a seeded valuation series with **no external flows** — each quarter's
   sub-period return is ``(mark_t - mark_{t-1}) / mark_{t-1}``; the tool links them. The series is
@@ -16,17 +15,17 @@ supports:
   weights from market value, segment returns over the valuation series, contributions tie to the
   weighted total.
 
-The **E-06 cash-flow series is NOT seeded** (OIM-110 seeded ten entities; E-06 is not among
+The **E-06 cash-flow series is NOT seeded** (the seed carries ten entities; E-06 is not among
 them), so the flow-dependent tools — SO-09-01 Modified Dietz and SO-09-03 MWR/IRR — have **no
 synthetic-integration path here**: they are oracle-tested on the published worked example
-(typed flow inputs) and the E-06-seed gap is a carry-forward, surfaced not faked.
+(typed flow inputs) and the E-06-seed gap is surfaced, not faked.
 
 Honest boundary: a green smoke over this synthetic seed proves the tools *integrate* with the
-canonical data shape; it is NOT a GIPS-verified production return (the §A2 published-oracle
-match — in the per-tool test modules — is what proves the formula).
+canonical data shape; it is NOT a GIPS-verified production return (the published-oracle match —
+in the per-tool test modules — is what proves the formula).
 
 The reader is a thin CSV reader (no dbt/duckdb dependency) so the smoke stays a pure unit test;
-the seed CSVs are the same files the dbt marts ``ref`` and the OIM-111 reconciliation proved.
+the seed CSVs are the same files the dbt marts ``ref`` and the reconciliation proved.
 """
 
 from __future__ import annotations
@@ -46,8 +45,8 @@ from agentinvest_tools.bd09.time_weighted_return import (
     so_09_02_compute_time_weighted_return,
 )
 
-# The OIM-110 seed the OIM-111 marts read (reference/dbt/seeds/*.csv). From tests/ that is two
-# levels up to reference/ then dbt/seeds (the dbt project is a sibling of python/, not under it).
+# The seed the marts read (reference/dbt/seeds/*.csv). From tests/ that is two levels up to
+# reference/ then dbt/seeds (the dbt project is a sibling of python/, not under it).
 _SEEDS_DIR = Path(__file__).resolve().parents[2] / "dbt" / "seeds"
 
 
@@ -58,7 +57,7 @@ def _valuation_series(position_id: str) -> list[tuple[str, Decimal]]:
     revises an earlier mark of the same as-of date). For a time-ordered sub-period series we
     select **one value per distinct valuation_date** — the latest-recorded mark for that date —
     so consecutive pairs are genuine, distinct-date sub-periods rather than same-date re-marks
-    linked as if they were time steps (the duplicate-date trap the pre-mortem flagged).
+    linked as if they were time steps (the duplicate-date trap).
     """
     latest_by_date: dict[str, tuple[str, Decimal]] = {}
     with (_SEEDS_DIR / "raw_e07_valuation.csv").open(encoding="utf-8") as fh:

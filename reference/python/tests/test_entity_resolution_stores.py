@@ -1,8 +1,7 @@
-"""The append-only resolution stores — insert-only, immutable (OIM-199, the break-store test
-pattern).
+"""The append-only resolution stores — insert-only, immutable (the break-store test pattern).
 
 Proves the two engine-owned resolution stores (review-queue + golden-record) are append-only
-insert-only (the OIM-162 break/proposal-store discipline, replicated): a record is captured at its
+insert-only (the break/proposal-store discipline, replicated): a record is captured at its
 status grain, an idempotent re-append does not double-insert, and there is NO update / NO
 status-transition / NO delete path — asserted behaviourally (a re-append is idempotent) and
 structurally (each module exposes only append + read paths; the executed SQL is INSERT + SELECT +

@@ -5,27 +5,27 @@ tool (``soId``) and ABSTRACT args (``fund``, ``period``, a sector/asset-class ax
 planner cannot know the concrete begin/end NAV or the per-segment weights, those live in the
 canonical marts. The DISPATCH step needs the tools' CONCRETE inputs (SO-09-01's begin/end NAV
 + flows; SO-09-05's per-segment weights+returns). This service is the cross-language seam that
-bridges the two: given a fund + a window it READS the OIM-111 marts and DERIVES the concrete
+bridges the two: given a fund + a window it READS the marts and DERIVES the concrete
 inputs both BD-09 return tools need.
 
-REUSE, NOT RE-IMPLEMENTATION (the SSOT point). The derivation is OIM-115's: the demo's
+REUSE, NOT RE-IMPLEMENTATION (the SSOT point). The derivation is the demo's:
 ``read_fund_window`` (the single marts join → the per-segment + fund begin/end NAV, cross-checked
-against ``mart_fund_nav``) and the demo's ``_total_return_args`` / ``_breakdown_args`` (the
+against ``mart_fund_nav``) and ``_total_return_args`` / ``_breakdown_args`` (the
 ``FundWindowData`` → the SO-09-01 / SO-09-05 input dicts). This service IMPORTS those functions
 from ``agentinvest_demo`` — it does not re-implement the marts read or the input derivation. The
-OIM-115 demo resolved the args BY HAND in an explicit two-step script; this service is that same
+demo resolved the args BY HAND in an explicit two-step script; this service is that same
 derivation moved into the orchestrator's flow so the chain runs AUTONOMOUSLY (the planner decides
 the tools; this resolves their args; dispatch runs them).
 
-Topology (ADR-0054): ``argResolver`` is a model-free Restate *service* — a data tool boundary in
+Topology: ``argResolver`` is a model-free Restate *service* — a data tool boundary in
 the Python tool+data layer. It carries NO reasoning loop. It is sibling to ``navData`` (the
 NAV-strike workflow's marts-read seam) and ``bd09`` (the dispatch service) on the service axis.
 
 HONESTLY BOUNDED TO THE BD-09 RETURN TOOLS (v0.1). The resolver knows how to derive the inputs
-for SO-09-01 (total return) and SO-09-05 (contribution breakdown) — the OIM-115 demo's two tools.
+for SO-09-01 (total return) and SO-09-05 (contribution breakdown) — the demo's two tools.
 A request for any other ``soId`` is a clean ``TerminalError`` (a deterministic "I cannot resolve
 this tool's args" — the orchestrator surfaces it as a CLEAN STEP FAILURE, never fabricated inputs).
-A general resolver for the ~900-tool catalogue is forward (OIM-120+). NEVER fabricate inputs: if
+A general resolver for the ~900-tool catalogue is future work. NEVER fabricate inputs: if
 the marts cannot resolve a step (an unknown tool, a missing fund, an unbuilt store) the resolver
 fails LOUD — no fake data driving a real-looking attribution.
 
@@ -45,7 +45,7 @@ import restate
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from restate.exceptions import TerminalError
 
-# REUSE OIM-115's derivation — the marts read AND the FundWindowData → tool-input mappings. These
+# REUSE the demo's derivation — the marts read AND the FundWindowData → tool-input mappings. These
 # are the demo's by-hand resolution functions; this service moves them into the orchestrator flow.
 from agentinvest_demo.marts import (
     DEFAULT_BEGIN_DATE,
@@ -58,19 +58,18 @@ from agentinvest_tools.request_serde import PassThroughJsonSerde
 
 ARG_RESOLVER_SERVICE_NAME = "argResolver"
 
-# The BD-09 return tools this v0.1 resolver knows how to resolve (the OIM-115 demo's two tools).
+# The BD-09 return tools this v0.1 resolver knows how to resolve (the demo's two tools).
 # Mapped to the demo's derivation function that produces each tool's concrete input dict from the
 # shared FundWindowData. Any soId NOT in this map is a clean "cannot resolve" terminal failure —
-# the honest v0.1 bound (a general ~900-tool resolver is forward), never a fabricated input.
+# the honest v0.1 bound (a general ~900-tool resolver is future work), never a fabricated input.
 _RESOLVABLE_SO_IDS = ("SO-09-01", "SO-09-05")
 
-# The BD-12 book-of-record READ tools this resolver knows how to resolve (OIM-161, added
-# INCREMENTALLY — the standing decision). Unlike the BD-09 return tools, the BD-12 read args are
-# ABSTRACT by design — the bd12 service reads the canonical rows itself — so the resolver derives
-# the read request ({book, portfolio_id, as_of_date}) from the plan step WITHOUT a marts read: book
-# is implied by the SO (the SD-12.1 IBOR SOs read 'ibor'; the SD-12.2 ABOR SOs read 'abor'; the two
-# entity reads default to 'ibor', the owning book), the portfolio comes from the plan, the as-of
-# defaults to the canonical book date. This stays additive to the BD-09 derivation above.
+# The BD-12 book-of-record READ tools this resolver knows how to resolve. Unlike the BD-09 return
+# tools, the BD-12 read args are ABSTRACT by design — the bd12 service reads the canonical rows
+# itself — so the resolver derives the read request ({book, portfolio_id, as_of_date}) from the plan
+# step WITHOUT a marts read: book is implied by the SO (the SD-12.1 IBOR SOs read 'ibor'; the
+# SD-12.2 ABOR SOs read 'abor'; the two entity reads default to 'ibor', the owning book), the
+# portfolio comes from the plan, the as-of defaults to the canonical book date.
 _BD12_DEFAULT_AS_OF = "2026-03-31"
 _BD12_IBOR_SO_IDS = ("SO-12.1-01", "SO-12.1-02", "SO-12.1-03", "SO-12.1-04", "SO-12.1-05")
 _BD12_ABOR_SO_IDS = ("SO-12.2-01", "SO-12.2-02", "SO-12.2-03", "SO-12.2-04")
@@ -79,18 +78,17 @@ _BD12_RESOLVABLE_SO_IDS = _BD12_IBOR_SO_IDS + _BD12_ABOR_SO_IDS
 # date, not a portfolio); every other BD-12 read needs a portfolio.
 _BD12_NO_PORTFOLIO_SO_IDS = ("SO-12.2-04",)
 
-# The SD-12.10 RECONCILE tools (OIM-162, added INCREMENTALLY — the standing decision). The
-# reconcile args are abstract by design (an as-of snapshot over the firm-wide internal book +
-# comparator feed), and the reconcile is firm-wide (NOT portfolio-scoped — the comparator is a
-# firm-wide feed), so the resolver derives the reconcile request ({as_of_date}) from the plan step
-# WITHOUT a marts read and WITHOUT a portfolio. The as-of defaults to the canonical book date.
-# Additive to the BD-09/BD-12 resolution above.
+# The SD-12.10 RECONCILE tools. The reconcile args are abstract by design (an as-of snapshot over
+# the firm-wide internal book + comparator feed), and the reconcile is firm-wide (NOT
+# portfolio-scoped — the comparator is a firm-wide feed), so the resolver derives the reconcile
+# request ({as_of_date}) from the plan step WITHOUT a marts read and WITHOUT a portfolio. The as-of
+# defaults to the canonical book date.
 _BD12_RECON_SO_IDS = ("SO-12.10-01", "SO-12.10-02", "SO-12.10-03", "SO-12.10-04")
 
-# The SD-12.10 PROPOSE-ONLY cause-proposer (OIM-162 cycle-2, added INCREMENTALLY + additively). Its
-# args are abstract ({as_of_date, capture}) — the bd12Recon service gathers the `unexplained`
-# residue itself — so the resolver derives only the run scope, like the reconcile resolver. Kept
-# separate from `_BD12_RECON_SO_IDS` so the reconcile resolver (the four SOs) is byte-unperturbed.
+# The SD-12.10 PROPOSE-ONLY cause-proposer. Its args are abstract ({as_of_date, capture}) — the
+# bd12Recon service gathers the `unexplained` residue itself — so the resolver derives only the run
+# scope, like the reconcile resolver. Kept separate from `_BD12_RECON_SO_IDS` so the reconcile
+# resolver (the four SOs) stays distinct.
 _BD12_PROPOSER_SO_ID = "SO-12.10-05"
 
 
@@ -99,14 +97,14 @@ class ResolveStepArgsRequest(BaseModel):
 
     ``soId`` is the tool the plan step selected; ``fundId`` / ``beginDate`` / ``endDate`` are the
     plan's abstract window args (the fund + the period the attribution is over). ``beginDate`` /
-    ``endDate`` default to the OIM-115 demo's one-year window when omitted, so a plan that names a
+    ``endDate`` default to the demo's one-year window when omitted, so a plan that names a
     fund but not an explicit window resolves over the canonical window. ``fundId`` is required.
 
     A **Pydantic model** with ``extra="forbid"`` (not a bare ``TypedDict``): an UNRECOGNISED
     request key is a clean ``TerminalError`` (400) at the handler, never silently ignored — the
     same fiduciary-surface reject-unknown-keys hardening as the ``navData`` request contracts. The
-    valid keys are unchanged (the existing v0.1-bound refusal and the missing-fund refusal still
-    fire as 422). ``soId`` / ``fundId`` default to empty so the existing in-handler refusals own
+    v0.1-bound refusal and the missing-fund refusal fire as 422. ``soId`` / ``fundId`` default to
+    empty so the existing in-handler refusals own
     those messages; ``beginDate`` / ``endDate`` default to ``None`` so the canonical-window
     default still applies.
     """
@@ -117,9 +115,9 @@ class ResolveStepArgsRequest(BaseModel):
     fundId: str = Field(default="", description="The fund the attribution is over (BD-09 tools).")
     beginDate: str | None = Field(default=None, description="Window start (defaults to canonical).")
     endDate: str | None = Field(default=None, description="Window end (defaults to canonical).")
-    # The BD-12 book-of-record read args (OIM-161, additive). ``portfolioId`` is the portfolio the
+    # The BD-12 book-of-record read args. ``portfolioId`` is the portfolio the
     # read is over; ``book`` overrides the SO-implied book; ``asOfDate`` overrides the canonical
-    # book date. All optional so the BD-09 path is byte-unchanged — read only for a BD-12 SO.
+    # book date. All optional — read only for a BD-12 SO.
     portfolioId: str = Field(default="", description="The portfolio the BD-12 read is over.")
     book: str | None = Field(default=None, description="Override the SO-implied book (ibor/abor).")
     asOfDate: str | None = Field(default=None, description="Override the canonical as-of date.")
@@ -132,7 +130,7 @@ class ResolveStepArgsResult(TypedDict):
     ``soId``), derived from the marts. ``fundId`` / ``fundName`` / ``beginDate`` / ``endDate`` /
     ``periodDays`` echo the resolved window so the orchestrator + the aggregate can carry it. The
     money figures inside ``args`` are exact decimal STRINGS (no float drift across the boundary —
-    the OIM-115 derivation already serialises them as strings).
+    the derivation already serialises them as strings).
     """
 
     soId: str
@@ -181,17 +179,17 @@ async def resolve_step_args(
 ) -> ResolveStepArgsResult:
     """Resolve one plan step's abstract window args into the tool's concrete inputs from the marts.
 
-    Reads the OIM-111 marts via the OIM-115 derivation (``read_fund_window``) and derives the
+    Reads the marts via the derivation (``read_fund_window``) and derives the
     concrete input dict for the step's ``soId`` (SO-09-01 begin/end NAV via ``_total_return_args``;
     SO-09-05 per-segment weights+returns via ``_breakdown_args`` — both REUSED from the demo). The
     read is wrapped in ``ctx.run`` so the resolution is a journaled durable step (replay reads it
     back, the store is not re-queried).
 
-    Clean failures, never fabricated inputs (the honest v0.1 bound + the OIM-131 partial-failure
+    Clean failures, never fabricated inputs (the honest v0.1 bound + the partial-failure
     discipline):
       - an ``soId`` the v0.1 resolver does not know how to resolve (anything but SO-09-01/05) is a
         ``TerminalError`` (422) — the orchestrator surfaces it as a CLEAN step failure (a general
-        resolver is forward), NOT a guessed input;
+        resolver is future work), NOT a guessed input;
       - a missing fund / an unbuilt store / a window with no data is a ``MartsUnavailableError`` →
         a ``TerminalError`` (422), surfaced cleanly. The chain fails LOUD rather than dispatch a
         tool on fabricated data.
@@ -208,7 +206,7 @@ async def resolve_step_args(
 
     if so_id not in _RESOLVABLE_SO_IDS:
         # The v0.1 honest bound: the resolver derives inputs only for the BD-09 return tools the
-        # OIM-115 derivation covers. An unknown/unresolvable tool is a deterministic terminal
+        # demo's derivation covers. An unknown/unresolvable tool is a deterministic terminal
         # failure (no retry storm) — the orchestrator surfaces it cleanly, never fabricating args.
         raise TerminalError(
             f"argResolver cannot resolve args for {so_id!r}: this resolver derives inputs only "
@@ -227,7 +225,7 @@ async def resolve_step_args(
 
     def _resolve() -> ResolveStepArgsResult:
         try:
-            # REUSE: the OIM-115 marts join → the per-segment + fund begin/end NAV (cross-checked
+            # REUSE: the demo's marts join → the per-segment + fund begin/end NAV (cross-checked
             # against mart_fund_nav). NOT re-implemented here.
             data = read_fund_window(fund_id=fund_id, begin_date=begin_date, end_date=end_date)
         except MartsUnavailableError as exc:
@@ -238,7 +236,7 @@ async def resolve_step_args(
             # A bad window (end <= begin) — deterministic, terminal.
             raise TerminalError(f"argResolver: {exc}", status_code=422) from exc
 
-        # REUSE: the OIM-115 demo's FundWindowData → tool-input derivations. SO-09-01 takes the
+        # REUSE: the demo's FundWindowData → tool-input derivations. SO-09-01 takes the
         # fund begin/end NAV + period + (empty) flows; SO-09-05 takes the per-segment weights +
         # returns. The orchestrator dispatches these concrete dicts to bd09.execute_so.
         if so_id == "SO-09-01":
@@ -262,7 +260,7 @@ async def resolve_step_args(
     return await ctx.run(f"resolve-{so_id}-{fund_id}", _resolve)
 
 
-# --- BD-12 book-of-record read resolution (OIM-161, incremental + additive)
+# --- BD-12 book-of-record read resolution
 # ------------------------
 
 
@@ -360,7 +358,7 @@ async def resolve_bd12_step_args(
     return await ctx.run(f"resolve-bd12-{so_id}-{portfolio_id or 'book'}", _resolve)
 
 
-# --- SD-12.10 reconcile resolution (OIM-162, incremental + additive) ------------------------------
+# --- SD-12.10 reconcile resolution ------------------------------
 
 
 class ResolveReconStepArgsResult(TypedDict):
@@ -424,7 +422,7 @@ async def resolve_recon_step_args(
     return await ctx.run(f"resolve-recon-{so_id}", _resolve)
 
 
-# --- SD-12.10 propose-only cause-proposer resolution (OIM-162 cycle-2, incremental + additive) ---
+# --- SD-12.10 propose-only cause-proposer resolution ---
 
 
 class ResolveProposerStepArgsResult(TypedDict):
@@ -448,9 +446,9 @@ async def resolve_proposer_step_args(
 ) -> ResolveProposerStepArgsResult:
     """Resolve the SD-12.10 propose-only cause-proposer step into its args (SO-12.10-05).
 
-    The incremental, ADDITIVE resolution for the cycle-2 proposer (the reconcile resolver above is
-    byte-unperturbed). The proposer args are abstract by design — the bd12Recon service gathers the
-    `unexplained` residue + assembles the bundles itself — so this resolver derives the run SCOPE
+    The resolution for the propose-only proposer. The proposer args are abstract by design — the
+    bd12Recon service gathers the `unexplained` residue + assembles the bundles itself — so this
+    resolver derives the run SCOPE
     ({as_of_date, capture}) WITHOUT a marts read and WITHOUT a portfolio. The as-of defaults to the
     canonical book date; ``capture`` defaults to true (the flywheel captures every proposal).
 

@@ -1,5 +1,5 @@
 /**
- * JSON-L export of the audit hash chain to a LOCAL file + a chain-tip manifest (OIM-151 part 2).
+ * JSON-L export of the audit hash chain to a LOCAL file + a chain-tip manifest.
  *
  * Writes the chained entries (`hash-chain.ts`) as JSON-L — one JSON object per line — to a
  * configurable LOCAL directory (`AGENTINVEST_AUDIT_EXPORT_DIR`, default a repo-tmp path), plus a

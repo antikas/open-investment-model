@@ -1,31 +1,31 @@
 ---
-eval_id: cross-office-front-vs-middle-gate-e-gap
-measures: the gate-E gap metric -- within-office vs cross-office tool-selection accuracy, the gap, and the two-part split trigger -- over front-office vs middle-office near-duplicate operations
-metric: gate-E gap = within-office accuracy - cross-office accuracy; two-part trigger (gap > 5pp primary OR cross-office < 90% backstop)
+eval_id: cross-office-front-vs-middle-gap
+measures: the gap metric -- within-office vs cross-office tool-selection accuracy, the gap, and the two-part split trigger -- over front-office vs middle-office near-duplicate operations
+metric: gap = within-office accuracy - cross-office accuracy; two-part trigger (gap > 5pp primary OR cross-office < 90% backstop)
 bar: 0.95
 oracle: model/service-domains/BD-05-portfolio-management/SD-05.2-portfolio-management-and-monitoring.md, BD-06-trading-and-execution/SD-06.2-trade-execution.md + SD-06.6-derivatives-and-otc-trade-management.md, BD-07-investment-risk/SD-07.4-concentration-and-exposure-risk.md + SD-07.7-investment-risk-reporting-and-limits-governance.md, BD-08-valuation-and-pricing/SD-08.1-security-pricing.md + SD-08.2-independent-mark-to-model-valuation.md + SD-08.3-private-asset-valuation.md + SD-08.6-independent-price-verification-and-price-challenge.md, BD-10-investment-compliance-and-guideline-monitoring/SD-10.1-investment-guideline-monitoring.md, and BD-09 SD-09.1 for the reused within-office return family (the differentiae are derived from these SD specs, not asserted)
-author: openim-builder (the doing-agent that built this eval set)
-blesser: blind audit (the F functional auditor; re-confirmed by a follow-up F+P after the within-office control was made difficulty-fair) — blessed 2026-05-31; author ≠ blesser satisfied
+author: set authors
+blesser: independent review (blessed 2026-05-31; author != blesser satisfied)
 set_ref: cross-office-front-vs-middle.json
 focus_tool_ids: [FO-mark-desk, MO-ipv, FO-monitor-mandate, MO-risk-limit, MO-mark-to-model, MO-price-source, MO-private-mark, MO-concentration-limit, MO-compliance-engine]
-notes: Tranche-0, gate-E (build-gate annex E). The selector measured here is a declared deterministic baseline (token-overlap) -- the gap NUMBERS are a harness-validation datapoint, NOT a verdict on whether to split the architecture (goal (f)). The gate-E split interpretation is reserved for the real selector run through this metric via record-then-score.
+notes: The selector measured here is a declared deterministic baseline (token-overlap) -- the gap NUMBERS are a harness-validation datapoint, NOT a verdict on whether to split the architecture. The split interpretation is reserved for the real selector run through this metric via record-then-score.
 ---
 
-# Eval card — cross-office (front vs middle) tool-RAG torture set + the gate-E gap metric
+# Eval card — cross-office (front vs middle) tool-RAG torture set + the gap metric
 
 ## What this eval measures
 
-The **gate-E gap metric** (build-gate annex §E) over front-office ↔ middle-office
+The **gap metric** over front-office ↔ middle-office
 near-duplicate operations. In one office-arm-tagged run, the harness computes:
 
 - **within-office accuracy** — selection accuracy on the **control** cases (the
   near-duplicate confusers all sit inside one office);
 - **cross-office accuracy** — selection accuracy on the **torture** cases (the
   near-duplicate confusers straddle the front-office ↔ middle-office boundary);
-- the **gap** = within-office − cross-office (the §E primary signal — the
+- the **gap** = within-office − cross-office (the primary signal — the
   degradation the ~5-per-office split specifically fixes);
 - the **two-part trigger**: *split-indicated* if **gap > 5pp** (primary) **OR**
-  **cross-office < 90%** (backstop), per §E.
+  **cross-office < 90%** (backstop).
 
 The gap is measured **apples-to-apples in one run**: the same selector ranks over
 the same single tool catalogue for both arms; the only difference between the arms
@@ -48,7 +48,7 @@ matched control gives a fair gap of 22.5pp.)
 
 ## The cross-office torture families (and why they are genuinely adversarial)
 
-Authored from the SD specs (the oracle). Two families, both named by the roadmap:
+Authored from the SD specs (the oracle). Two families:
 
 **Family 1 — front-office mark vs middle-office independent mark / IPV.** The
 front-office desk mark (`FO-mark-desk`, BD-06: the trader's own valuation to run
@@ -85,8 +85,8 @@ of** the BD-09 SD-09.1 return cases verbatim (TWR / MWR / period-linking /
 gross-net, all middle office — including the BD-09 baseline's three hard misses, so the
 control is difficulty-matched, not easier than the cross arm) and adds a
 within-middle-office BD-08 valuation family (`MO-price-source` /
-`MO-mark-to-model` / `MO-ipv` / `MO-private-mark`) — the roadmap's third confuser
-family, *within* one office.
+`MO-mark-to-model` / `MO-ipv` / `MO-private-mark`) — a third confuser family,
+*within* one office.
 
 ## Two honest qualifications on the baseline's misses and resolution
 
@@ -114,41 +114,38 @@ cross-office cases, cross-office accuracy can only take values in {0, 12.5, 25, 
 87.5, 100}%. The 90% backstop sits **between** 87.5% (7/8) and 100% (8/8), so it
 cannot be hit *exactly* at its boundary — it effectively means "≤ 7/8 cross-office
 correct," a one-miss-tolerance gate. Each cross-office case is worth 12.5pp of the
-gap. This is fine for a Tranche-0 baseline-validation run (the gap-primary limb is
+gap. This is fine for a baseline-validation run (the gap-primary limb is
 doing the work; the backstop is the degenerate-uniformly-hard-set guard), but
 **densifying the cross-office arm to ≥ ~16–20 cases is a forward improvement**
 before the real selector is scored through this metric, so the 90% backstop
-and the 5pp gap are both finely resolvable. (Not done this fold: adding cases
-would change the headline number and require a re-bless; a doc qualification is
-sufficient here.)
+and the 5pp gap are both finely resolvable. (Adding cases would change the
+headline number and require a re-bless; a doc qualification is sufficient here.)
 
 **Read the gap, not the absolute numbers, as the signal — but only for the real
-selector.** Per §E the gap is the cleaner signal because it is robust to a
+selector.** The gap is the cleaner signal because it is robust to a
 uniformly-hard catalogue: a lexical baseline is weak on near-duplicates in *both*
 arms, so its within-office and cross-office numbers are both low. The metric's job
 is to surface whether the cross-office arm degrades *relative to* the within-office
 control. Whether that degradation means "split the architecture" is a question
 about the **production** selector, not this baseline (see the honest boundary).
 
-## Author ≠ blesser (the §G three-role eval governance)
+## Author ≠ blesser (independent-bless eval governance)
 
-- **author:** `openim-builder` (the doing-agent) authored this set
-  and card and derived the confuser differentiae from the BD-05/06/07/08/10 SD
-  specs.
-- **blesser:** the **blind audit** (a different agent, fresh context), blessed
-  2026-05-31. Per the three-role separation discipline the doing-agent did **not**
-  self-bless. The F (functional) blind audit read this set blind,
+- **author:** the set authors derived the confuser differentiae from the
+  BD-05/06/07/08/10 SD specs.
+- **blesser:** an **independent reviewer** (a different actor, fresh context),
+  blessed 2026-05-31. Per the independent-bless discipline the authors did **not**
+  self-bless. The independent review read this set blind,
   independently re-derived its fidelity to the SD specs, confirmed the cross-office
   confusers genuinely span the front↔middle boundary (SD-08.6 names IPV's target as
   "the front-office or model marks" verbatim; not a toy set), and certified it; a
-  follow-up F+P re-audit re-confirmed after the within-office control was made
-  difficulty-fair (reusing the genuinely-hard BD-09 cases). Author
-  (`openim-builder`) ≠ blesser (the audit) is genuinely satisfied — distinct
-  agents, fresh context, structural separation. The runner still prints a
-  `GOVERNANCE WARNING` when `author == blesser`; the `single_actor_authored_and_blessed()`
-  guard remains live for future sets.
+  follow-up re-review re-confirmed after the within-office control was made
+  difficulty-fair (reusing the genuinely-hard BD-09 cases). Author ≠ blesser is
+  genuinely satisfied — distinct actors, fresh context, structural separation. The
+  runner still prints a `GOVERNANCE WARNING` when `author == blesser`; the
+  `single_actor_authored_and_blessed()` guard remains live for future sets.
 
-## The honest boundary (goal (f)) — load-bearing
+## The honest boundary — load-bearing
 
 The thing **proven** here is the **gap metric**: that it computes within-office
 accuracy, cross-office accuracy, the gap, and the two-part trigger (gap > 5pp
@@ -158,11 +155,11 @@ deliverable.
 The **baseline selector's within / cross / gap numbers are a harness-validation
 datapoint — NOT a verdict on whether to split the architecture.** In particular:
 
-- Gate-E's interpretation **"within-office < 95% ⇒ the catalogue / tool-RAG is
+- the interpretation **"within-office < 95% ⇒ the catalogue / tool-RAG is
   broken"** applies to **the real selector**, not to a lexical baseline. A
   lexical baseline scoring below 95% within-office is **expected** (the BD-09
   baseline's was 81.25%) and says **nothing** about the catalogue.
-- Gate-E's interpretation **"gap > 5pp ⇒ split the architecture"** applies to the
+- the interpretation **"gap > 5pp ⇒ split the architecture"** applies to the
   **real selector**, not the baseline. A baseline `SPLIT-INDICATED` does **not**
   mean "the single-orchestrator bet is lost" / "cross-office risk confirmed."
 
@@ -179,6 +176,6 @@ per-query selections as a fixed transcript, score that through this same metric)
 exit non-zero on a baseline `SPLIT-INDICATED`; it guards only the harness's own
 integrity (that the gap metric computed cleanly over both arms).
 
-If gate-E ever does fire for the real selector, the upgrade is **~5 specialist
+If the trigger ever does fire for the real selector, the upgrade is **~5 specialist
 *selectors* behind a router** (the model's office tags), never "agents" — the
 later escalation, built then, not here.

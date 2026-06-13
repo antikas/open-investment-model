@@ -7,7 +7,7 @@
 -- THIS IS THE SYNTHETIC DATA LAYER, NOT A STRUCK PRODUCTION NAV. A green NAV
 -- invariant over this mart proves the data-layer arithmetic and the as-of plumbing —
 -- it is NOT a fiduciary NAV strike. The production strike (matched to an independent
--- shadow pipeline + a GIPS/CFA worked-example oracle, to the build-gate tolerance,
+-- shadow pipeline + a GIPS/CFA worked-example oracle, to a ratified tolerance,
 -- behind a human approval gate) is a later, oracle-anchored piece of work. Treat a
 -- green invariant here as the data foundation, never as a published NAV.
 --
@@ -25,7 +25,7 @@
 --     pre-revision value, so the as-of NAV differs from current where a mark was
 --     restated.
 --
--- THE E-04 LATEST-ONLY LIMITATION (OIM-110 carry-forward) — A LANDMINE, NOT A BOUNDED
+-- THE E-04 LATEST-ONLY LIMITATION — A LANDMINE, NOT A BOUNDED
 -- APPROXIMATION. E-04 carries the holding STATE at the latest period-end only — there
 -- is no holding history. So a past-as-of NAV is computed as LATEST HOLDINGS × AS-OF
 -- VALUATIONS: the valuation axis is genuinely as-of (the bi-temporal mark history is
@@ -40,9 +40,9 @@
 --     past NAV can be wrong by an entire position's value.
 -- THEREFORE: DO NOT strike a production past NAV on this latest-holdings path. A correct
 -- past-as-of NAV needs an AS-OF HOLDINGS (holding-history) view that reconstructs the
--- position set as it stood on the knowledge date. The NAV-strike workflow (OIM-133) must
+-- position set as it stood on the knowledge date. The NAV-strike workflow must
 -- NOT strike a past NAV against a real multi-date holding set on this path; a holding
--- time-series view is the prerequisite (a note for the tools, OIM-112). The default
+-- time-series view is the prerequisite. The default
 -- CURRENT strike is unaffected — only the past-as-of path carries this limitation.
 --
 -- ACCRUALS + FEES. accrued_income sums the abor accrued income (E-04). fees is 0: the
@@ -52,14 +52,14 @@
 -- term carries it with no reshape. (Stating fees = 0 honestly, rather than omitting
 -- the term, keeps the NAV = Σ + accruals − fees identity explicit and testable.)
 --
--- MANAGER_MARK PROVENANCE (OIM-72 carry-forward). This seed's marks are all
+-- MANAGER_MARK PROVENANCE. This seed's marks are all
 -- holding-level marks the institution CONSUMES as an investor (manager_mark /
 -- appraisal / observable_price / mark_to_model) — there are no operated-vehicle
 -- struck NAVs (SD-12.9) mixed in, so the SD-08.3-consumed-mark vs SD-12.9-struck-NAV
 -- distinction does not bite on this data and is NOT inferred from `method`. The mart
 -- carries the producing method/source per position in mart_portfolio_holdings; were a
 -- struck-NAV source seeded, the producing-SD provenance (not `method`) would
--- distinguish it. See the report.
+-- distinguish it.
 
 {% set nav_knowledge_date = var('nav_knowledge_date', none) %}
 

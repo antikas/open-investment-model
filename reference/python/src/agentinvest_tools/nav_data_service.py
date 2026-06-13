@@ -7,7 +7,7 @@ the TS workflow calls ``navData/getFundNavComponents({fundId})`` over Restate, a
 handler reads the components from ``mart_fund_nav`` (the §A1 NAV identity SSOT) and returns
 them as exact decimal STRINGS (no float drift across the boundary).
 
-Topology (ADR-0054): ``navData`` is a model-free Restate *service* — a namespace + dispatch
+Topology: ``navData`` is a model-free Restate *service* — a namespace + dispatch
 boundary in the Python tool+data layer — NOT an "agent". It carries no reasoning loop. The
 single orchestrating loop is the planner's ``.plan()``; the NAV strike is a durable
 *workflow* (a reusable orchestration), and this service is the data tool it reads.
@@ -42,7 +42,7 @@ class FundNavComponentsRequest(BaseModel):
     """Wire shape of the request — the fund to strike, optionally as-of a knowledge date.
 
     ``fundId`` is required; ``navKnowledgeDate`` is optional. A non-null ``navKnowledgeDate``
-    is REFUSED on the wire (the OIM-111 bound): the latest-holdings path cannot soundly strike
+    is REFUSED on the wire (the latest-holdings bound): the latest-holdings path cannot soundly strike
     a PAST as-of NAV, so the handler forwards the date to the read and the refusal fires as a
     clean ``TerminalError`` (422) — never a silently-struck current NAV under a past-date
     request.
@@ -154,10 +154,10 @@ async def get_fund_nav_components(
     REFUSED past-as-of date is a ``TerminalError`` (a deterministic data condition — no
     retry-storm), surfaced cleanly to the workflow so it aborts rather than retries.
 
-    ``navKnowledgeDate`` IS forwarded to the read (the OIM-133 cycle-2 wire fix): a non-null
-    value drives the OIM-111 refusal (a past-as-of strike on the latest-holdings path is
-    UNSOUND) → a clean 422 on the wire, matching the contract's honest boundary. Before the
-    fix the field was dropped here and a past date silently returned the CURRENT NAV.
+    ``navKnowledgeDate`` IS forwarded to the read: a non-null value drives the latest-holdings
+    refusal (a past-as-of strike on the latest-holdings path is UNSOUND) → a clean 422 on the
+    wire, matching the contract's honest boundary. The field must be forwarded, not dropped —
+    dropping it would let a past date silently return the CURRENT NAV.
 
     An UNRECOGNISED request key is a clean ``TerminalError`` (400) before the read (the
     reject-unknown-keys hardening): a caller mis-keying the request (e.g. snake_case

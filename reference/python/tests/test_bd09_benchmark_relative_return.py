@@ -2,7 +2,7 @@
 
 The active-return identities (arithmetic ``r_p - r_b``; geometric ``(1+r_p)/(1+r_b)-1``) are
 exact closed forms — the identity itself is the oracle (no toy number is invented), checked to
-<= 1 bp against hand-derived figures (build-gate §A2 hand-verifiable).
+<= 1 bp against hand-derived figures (hand-verifiable).
 """
 
 from __future__ import annotations

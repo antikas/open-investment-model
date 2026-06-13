@@ -1,7 +1,7 @@
-"""The deterministic three-tier cascade — the load-bearing characterisation + spine tests (OIM-199).
+"""The deterministic three-tier cascade — the load-bearing characterisation + spine tests.
 
 Drives the deterministic resolution cascade with constructed masters + feed records and proves the
-cycle's load-bearing properties:
+load-bearing properties:
 
 1. each TIER fires on its designed evidence (exact id -> name/alias key -> review);
 2. the genuinely-ambiguous cases (name-key collision, conflicting-domicile match, within-batch
@@ -266,9 +266,8 @@ _FORBIDDEN_IMPORT_SUBSTRINGS = (
 # The of-record resolve modules whose TRANSITIVE import closure must be model-free. This is the
 # WHOLE of-record closure: the cascade + normaliser + the two append-only stores AND
 # ``entity_resolution_service`` — which hosts ``run_resolution``, the resolve entrypoint the eval
-# and the live ingress actually execute as the of-record path (the F-2 fold: the spine must cover
-# the service entry, not just the cascade modules, so a model import added to the service would be
-# caught too).
+# and the live ingress actually execute as the of-record path. The spine must cover the service
+# entry, not just the cascade modules, so a model import added to the service would be caught too.
 _RESOLVE_OF_RECORD_MODULES = (
     "agentinvest_tools.entity_resolution.cascade",
     "agentinvest_tools.entity_resolution.normaliser",
@@ -283,10 +282,10 @@ def _walk_imports(module_name: str) -> tuple[set[str], list[tuple[str, str]]]:
 
     Static names are the fully-qualified modules reached by ``import`` / ``from ... import``.
     Dynamic-import call sites are ``importlib.import_module(<literal>)`` / ``__import__(<literal>)``
-    calls whose argument is a string literal (the F-3 fold: a string-keyed dynamic import is
-    invisible to a plain ``ast.Import`` walk, so a future dynamic LLM import could slip the guard —
-    this surfaces those call sites so the spine assertion can flag a forbidden one). Each dynamic
-    site is returned as ``(call_name, literal_arg)``.
+    calls whose argument is a string literal: a string-keyed dynamic import is invisible to a plain
+    ``ast.Import`` walk, so a future dynamic LLM import could slip the guard — this surfaces those
+    call sites so the spine assertion can flag a forbidden one. Each dynamic site is returned as
+    ``(call_name, literal_arg)``.
     """
     import ast
     import importlib.util
@@ -353,9 +352,9 @@ def test_resolve_of_record_path_imports_no_llm_or_proposer() -> None:
     asserts no ``anthropic`` / ``openai`` / ``proposer`` / ``proposal_store`` / ``llm`` module is
     reachable — via a STATIC import OR a string-keyed DYNAMIC import
     (``importlib.import_module`` / ``__import__``). The probabilistic / LLM-proposer tier is a
-    deliberately-deferred later cycle; if a future change wires a model into the resolve path —
-    statically or dynamically — this test fails loudly. (Where a model COULD write — nowhere this
-    cycle — the absence is enforced here, structurally.)
+    deliberately-deferred later stage; if a future change wires a model into the resolve path —
+    statically or dynamically — this test fails loudly. (Where a model COULD write — nowhere on the
+    of-record path — the absence is enforced here, structurally.)
     """
     closure, dynamic_sites = _resolve_closure()
     static_offenders = sorted(
@@ -365,9 +364,9 @@ def test_resolve_of_record_path_imports_no_llm_or_proposer() -> None:
         "the of-record resolve path must import no LLM/proposer/model module — "
         f"found (static): {static_offenders}"
     )
-    # F-3: a string-keyed dynamic import targeting a forbidden module would slip a plain import
-    # walk. Flag any dynamic-import call site in the closure whose literal argument hits a
-    # forbidden substring; assert none exist today (no LLM reachable via a dynamic import either).
+    # A string-keyed dynamic import targeting a forbidden module would slip a plain import walk.
+    # Flag any dynamic-import call site in the closure whose literal argument hits a forbidden
+    # substring; assert none exist today (no LLM reachable via a dynamic import either).
     dynamic_offenders = sorted(
         (mod, call, arg)
         for (mod, call, arg) in dynamic_sites
@@ -380,7 +379,7 @@ def test_resolve_of_record_path_imports_no_llm_or_proposer() -> None:
 
 
 def test_spine_walker_detects_a_dynamic_import_offender() -> None:
-    """The dynamic-import detector actually fires (F-3): a synthetic offender site is flagged.
+    """The dynamic-import detector actually fires: a synthetic offender site is flagged.
 
     Guards against a vacuous spine test — proves the dynamic-import branch of ``_walk_imports`` is
     real: a constructed ``importlib.import_module("anthropic")`` / ``__import__("openai")`` source

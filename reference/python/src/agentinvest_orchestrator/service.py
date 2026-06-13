@@ -12,11 +12,11 @@ The service name is agentINVEST-scoped (``agentinvestPlanner``, the ``bd09`` /
 ``pyTools`` naming discipline) so it does not collide with a same-named service
 from a sibling project on the shared dev Restate.
 
-Service, not agent (ADR-0054). ``agentinvestPlanner`` is a hosting/dispatch
-boundary; the reasoning is the ``.plan()`` call it makes. The SOs it plans over are
-tools. There is one loop, here.
+Service, not agent. ``agentinvestPlanner`` is a hosting/dispatch boundary; the
+reasoning is the ``.plan()`` call it makes. The SOs it plans over are tools. There
+is one loop, here.
 
-Error classification (the OIM-112/113 deterministic-error-is-terminal discipline).
+Error classification (the deterministic-error-is-terminal discipline).
 ``plan_task`` raises a typed pair: ``PlannerDeterministicError`` (a missing key, a
 malformed / schema-invalid response, a 4xx) and ``PlannerTransientError`` (429 /
 529 / timeout / connection). This handler maps the FIRST to a Restate
@@ -141,7 +141,7 @@ async def plan_task_handler(ctx: restate.Context, req: PlanTaskInput) -> dict[st
     Returns the ``PlanSchema`` as a plain JSON dict (the orchestrator parses it
     against a thin zod mirror; this service is the schema SSOT and returns an
     already-validated plan). The plan is GENERATED, not executed — dispatch is a
-    separate step (OIM-131).
+    separate step.
 
     Error classification: a ``PlannerDeterministicError`` (missing key, malformed /
     schema-invalid response, 4xx) becomes a Restate ``TerminalError`` (no retry
@@ -167,8 +167,8 @@ async def plan_task_handler(ctx: restate.Context, req: PlanTaskInput) -> dict[st
     else:
         # The orchestrator path: load the BD-09 (performance) + BD-12 (book-of-record read)
         # catalogues via the tool-RAG seam (load-all at the v0.1 surface — the seam, not real
-        # retrieval; see tool_catalogue). The BD-09 descriptors come first BYTE-FOR-BYTE (the W1
-        # NAV-strike path is unperturbed); the BD-12 read tools are appended (OIM-161, additive).
+        # retrieval; see tool_catalogue). The BD-09 descriptors come first BYTE-FOR-BYTE (the
+        # NAV-strike path is unperturbed); the BD-12 read tools are appended (additive).
         from agentinvest_orchestrator.tool_catalogue import load_tool_catalogue_from_services
 
         descriptors = load_tool_catalogue_from_services(request.task)

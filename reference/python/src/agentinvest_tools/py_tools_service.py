@@ -3,12 +3,12 @@
 This is the Python counterpart of the shared contract declared on the TS side in
 ``reference/ts/src/rpc/py-tools-contract.ts``. A TypeScript orchestrator handler
 invokes ``pyTools/computeSimpleReturn`` over Restate's typed RPC; the payload
-round-trips as a typed structure. This is the load-bearing OIM-101 proof — every
-later Python tool invoked from the TS orchestrator (OIM-103+) rides on it.
+round-trips as a typed structure. This is the load-bearing cross-language proof — every
+later Python tool invoked from the TS orchestrator rides on it.
 
-Topology (ADR-0054): ``pyTools`` is a model-free Restate *service* — a namespace
+Topology: ``pyTools`` is a model-free Restate *service* — a namespace
 + dispatch boundary in the Python tool+data layer — NOT an "agent". It carries no
-reasoning loop. The single orchestrating loop is OIM-104.
+reasoning loop. The single orchestrating loop lives in the TypeScript orchestrator.
 
 The handler is a thin typed wrapper over the pure ``sample.compute_simple_return``
 so the maths is unit-tested independently (tests/test_sample.py) and the service

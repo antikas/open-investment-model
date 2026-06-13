@@ -1,5 +1,5 @@
 /**
- * Unit proof of the normalised audit-record mapping + deterministic ordering (OIM-151) — the gather's
+ * Unit proof of the normalised audit-record mapping + deterministic ordering — the gather's
  * pure half. Pins: the two source record types normalise correctly (the source is carried verbatim);
  * a non-audit value is rejected (never fabricated); the chain order is a total order, reproducible.
  */

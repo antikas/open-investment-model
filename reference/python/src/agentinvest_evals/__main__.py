@@ -1,4 +1,4 @@
-"""Package entry: `python -m agentinvest_evals` runs the Tranche-0 eval harness.
+"""Package entry: `python -m agentinvest_evals` runs the eval harness.
 
 Delegates to `runner.main`, which runs the intra-domain eval with the declared
 deterministic baseline selector and exits non-zero on a bar miss (CI-gate-ready).

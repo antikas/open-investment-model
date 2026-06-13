@@ -1,8 +1,8 @@
-"""Tests for the Tranche-0 eval harness (OIM-105).
+"""Tests for the eval harness.
 
 Cover the three load-bearing properties:
 1. **Replay stability** — running the report twice is byte-identical (the
-   regression+replay property the brief requires the harness to prove).
+   regression+replay property the harness must prove).
 2. **The bar bites** — the CLI exits non-zero on a bar miss and zero on a pass
    (CI-gate-ready), and `RunResult.passed` follows the >= bar rule.
 3. **The toy-set guards fire** — a malformed set and a one-sided set both raise
@@ -10,14 +10,13 @@ Cover the three load-bearing properties:
 
 Plus a faithfulness check that the intra-domain set loads, is well-formed and
 two-sided, and that the Selector contract is satisfiable by a trivial alternate
-selector (the Clause-5 interface walk, in code).
+selector (the interface walk, in code).
 
-OIM-106 adds the gate-E gap metric tests, including (P-MAJOR-1) the boundary
-tests that pin the two trigger limbs as **float-robust**: an exact-5pp gap does
-not fire the primary, an exact-90% cross does not fire the backstop, just-over /
-just-under do fire, and — the load-bearing one — three mathematically-equal-but-
-float-different 5pp gap constructions give the SAME verdict (the bug the
-integer-percentage-point limbs fix).
+The gap metric tests include the boundary tests that pin the two trigger limbs as
+**float-robust**: an exact-5pp gap does not fire the primary, an exact-90% cross
+does not fire the backstop, just-over / just-under do fire, and — the load-bearing
+one — three mathematically-equal-but-float-different 5pp gap constructions give the
+SAME verdict (the bug the integer-percentage-point limbs fix).
 """
 
 from __future__ import annotations
@@ -169,7 +168,7 @@ def test_one_sided_set_raises() -> None:
         run_eval(one_sided, _toy_card(0.95), TokenOverlapBaselineSelector())
 
 
-# --- Faithfulness + the Clause-5 interface walk in code ----------------------
+# --- Faithfulness + the interface walk in code -------------------------------
 
 
 def test_intra_domain_set_is_wellformed_and_two_sided() -> None:
@@ -197,9 +196,9 @@ def test_card_makes_single_actor_visible() -> None:
 
 
 def test_selector_interface_is_satisfiable_by_an_alternate() -> None:
-    # The Clause-5 walk, in code: a DIFFERENT mechanism (here a trivial
+    # The interface walk, in code: a DIFFERENT mechanism (here a trivial
     # first-token-match selector — a stand-in for "any other selector", e.g.
-    # OIM-130's LLM one) satisfies the SAME `Selector` Protocol. The contract is
+    # the production LLM one) satisfies the SAME `Selector` Protocol. The contract is
     # (query, tools) -> tool_id with no coupling to the baseline's internals.
     class FirstTokenSelector:
         name = "first-token-stub"
@@ -231,14 +230,14 @@ def test_intra_domain_json_loads_cleanly() -> None:
     assert raw["set_id"] == eval_set.set_id
 
 
-# === OIM-106: the gate-E gap metric (the net-new runner/verdict work) =========
+# === The gap metric (the net-new runner/verdict work) ========================
 
 
 def _gap_card(focus: tuple[str, ...]) -> EvalCard:
     return EvalCard(
         eval_id="gap-toy",
         measures="toy gap",
-        metric="gate-E gap",
+        metric="gap",
         bar=0.95,
         oracle="hand-built",
         author="author-x",
@@ -281,7 +280,7 @@ def _two_arm_set(
 
 
 def test_office_arm_is_additive_default_within() -> None:
-    # An untagged case (the OIM-105 JSON shape) parses as within-office — additive.
+    # An untagged case (the intra-domain JSON shape) parses as within-office — additive.
     raw = {
         "set_id": "s",
         "description": "d",
@@ -298,7 +297,7 @@ def test_office_arm_is_additive_default_within() -> None:
     }
     s = EvalSet.from_dict(raw)
     assert s.cases[0].office_arm == WITHIN_OFFICE
-    # The OIM-105 intra-domain set (untagged) loads with every case within-office.
+    # The intra-domain set (untagged) loads with every case within-office.
     intra, _ = _load_intra_domain()
     assert all(c.office_arm == WITHIN_OFFICE for c in intra.cases)
 
@@ -355,7 +354,7 @@ def test_gap_backstop_limb_alone_fires() -> None:
 
 
 def test_gap_primary_boundary_exact_5pp_does_not_fire() -> None:
-    # P-MAJOR-1: the §E primary limb fires on a gap STRICTLY > 5pp; an EXACT 5pp
+    # The primary limb fires on a gap STRICTLY > 5pp; an EXACT 5pp
     # gap must NOT fire. The float-fragile `gap_pp > 5.0` got this wrong for some
     # constructions (e.g. 20/20 vs 19/20, where 1.0 − 0.95 = 5.000…004). The
     # integer-pp limb gets it right for every construction.
@@ -368,7 +367,7 @@ def test_gap_primary_boundary_exact_5pp_does_not_fire() -> None:
 
 
 def test_gap_primary_boundary_just_over_5pp_fires() -> None:
-    # P-MAJOR-1: a gap one increment over 5pp must fire the primary limb.
+    # A gap one increment over 5pp must fire the primary limb.
     # within 100/100 = 100%, cross 94/100 = 94% -> gap exactly 6pp (> 5pp).
     s = _two_arm_set(within_correct=100, within_total=100, cross_correct=94, cross_total=100)
     g = gap_metric(s, _gap_card(("T-A", "T-B")), TokenOverlapBaselineSelector())
@@ -378,7 +377,7 @@ def test_gap_primary_boundary_just_over_5pp_fires() -> None:
 
 
 def test_gap_backstop_boundary_exact_90pct_does_not_fire() -> None:
-    # P-MAJOR-1: the §E backstop fires on cross STRICTLY < 90%; an EXACT 90% cross
+    # The backstop fires on cross STRICTLY < 90%; an EXACT 90% cross
     # must NOT fire. within 10/10 = 100%, cross 9/10 = 90% -> backstop clear.
     s = _two_arm_set(within_correct=10, within_total=10, cross_correct=9, cross_total=10)
     g = gap_metric(s, _gap_card(("T-A", "T-B")), TokenOverlapBaselineSelector())
@@ -389,7 +388,7 @@ def test_gap_backstop_boundary_exact_90pct_does_not_fire() -> None:
 
 
 def test_gap_backstop_boundary_just_under_90pct_fires() -> None:
-    # P-MAJOR-1: cross one increment under 90% must fire the backstop.
+    # Cross one increment under 90% must fire the backstop.
     # within 10/10, cross 89/100 = 89% -> backstop fires.
     s = _two_arm_set(within_correct=10, within_total=10, cross_correct=89, cross_total=100)
     g = gap_metric(s, _gap_card(("T-A", "T-B")), TokenOverlapBaselineSelector())
@@ -397,7 +396,7 @@ def test_gap_backstop_boundary_just_under_90pct_fires() -> None:
 
 
 def test_gap_trigger_is_float_robust_equal_verdict_for_equal_gaps() -> None:
-    # P-MAJOR-1 — THE load-bearing test: three constructions of a mathematically
+    # THE load-bearing test: three constructions of a mathematically
     # EQUAL 5pp gap must give the SAME verdict. Under the old float `gap_pp > 5.0`,
     # 20/20-vs-19/20 (1.0−0.95=5.000…004) FIRED while 10/100-vs-5/100 (0.10−0.05=
     # 0.05) did NOT — different verdicts for the same gap. The integer-pp limb
@@ -493,7 +492,7 @@ def test_cross_office_set_is_wellformed_two_sided_and_two_armed() -> None:
 
 def test_cross_office_set_is_genuinely_adversarial_not_a_toy() -> None:
     # The baseline must NOT score 100% on the cross-office arm (a 100%-pass is the
-    # "100%-pass is suspect" toy failure, roadmap S6) and NOT 0% (impossibly hard);
+    # "100%-pass is suspect" toy failure) and NOT 0% (impossibly hard);
     # a genuinely adversarial set lands strictly in between.
     eval_set, card = _load_cross_office()
     g = gap_metric(eval_set, card, TokenOverlapBaselineSelector())
@@ -504,7 +503,7 @@ def test_cross_office_set_is_genuinely_adversarial_not_a_toy() -> None:
 
 
 def test_cli_gap_path_runs_and_default_path_unchanged(capsys: pytest.CaptureFixture[str]) -> None:
-    # The OIM-105 single-set default path still exits non-zero on its bar miss.
+    # The single-set default path still exits non-zero on its bar miss.
     rc_default = main([])
     capsys.readouterr()
     assert rc_default == 1  # intra-domain baseline FAILs the 95% bar (unchanged)
@@ -513,6 +512,6 @@ def test_cli_gap_path_runs_and_default_path_unchanged(capsys: pytest.CaptureFixt
     rc_gap = main(["--gap"])
     out = capsys.readouterr().out
     assert rc_gap == 0
-    assert "gate-E gap metric" in out
+    assert "gap metric" in out
     assert "SPLIT-INDICATED" in out  # the baseline result on this set
     assert "HONEST BOUNDARY" in out

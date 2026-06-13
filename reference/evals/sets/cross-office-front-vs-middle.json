@@ -1,6 +1,6 @@
 {
   "set_id": "cross-office-front-vs-middle",
-  "description": "Cross-office tool-RAG torture set + within-office control arm, in one office-arm-tagged set so the gate-E gap (within-office accuracy minus cross-office accuracy) is measured apples-to-apples in one run. The CROSS-OFFICE cases are adversarial near-duplicate operation pairs that span the front-office <-> middle-office boundary, authored from the SD specs (the differentiae are derived from BD-05/06/07/08/10 Service Operation descriptions, not asserted): (1) front-office desk/trader mark (BD-06) vs middle-office independent mark / IPV (SD-08.6) and the other middle-office valuation producers (SD-08.1 sourced price, SD-08.2 mark-to-model, SD-08.3 private-asset mark); (2) front-office portfolio mandate/guideline self-monitoring (SD-05.2, the manager's own oversight) vs middle-office independent risk-limit governance (SD-07.7), concentration-limit monitoring (SD-07.4) and the regulatory/mandate pre-trade compliance engine (SD-10.1). The WITHIN-OFFICE control arm is difficulty-matched to OIM-105 (P-MINOR-1): it reuses the OIM-105 BD-09 SD-09.1 intra-domain cases VERBATIM -- all 16, INCLUDING the three genuinely-hard cases the OIM-105 baseline misses (C05, C10, C13, which mis-pick SO-09-01-composite on the 'composite' bait) -- with their SO-09-01-composite / -currency / -reconcile confusers carried into the catalogue so they behave exactly as in OIM-105 (within-office accuracy reproduces OIM-105's 13/16 on the BD-09 cases, not an inflated 100%). It ADDS a BD-08 within-middle-office valuation family (quoted SD-08.1 / mark-to-model SD-08.2 / IPV SD-08.6 / private-mark SD-08.3) -- the roadmap's third confuser family, within one office. Each case carries an office_arm tag; the same selector ranks over the same single catalogue in both arms, so the only difference between the arms is whether the near-duplicate sits across the office boundary -- and because the control now carries OIM-105's hard misses, the gap measures cross-office degradation, not a set-difficulty difference.",
+  "description": "Cross-office tool-RAG torture set + within-office control arm, in one office-arm-tagged set so the gap (within-office accuracy minus cross-office accuracy) is measured apples-to-apples in one run. The CROSS-OFFICE cases are adversarial near-duplicate operation pairs that span the front-office <-> middle-office boundary, authored from the SD specs (the differentiae are derived from BD-05/06/07/08/10 Service Operation descriptions, not asserted): (1) front-office desk/trader mark (BD-06) vs middle-office independent mark / IPV (SD-08.6) and the other middle-office valuation producers (SD-08.1 sourced price, SD-08.2 mark-to-model, SD-08.3 private-asset mark); (2) front-office portfolio mandate/guideline self-monitoring (SD-05.2, the manager's own oversight) vs middle-office independent risk-limit governance (SD-07.7), concentration-limit monitoring (SD-07.4) and the regulatory/mandate pre-trade compliance engine (SD-10.1). The WITHIN-OFFICE control arm is difficulty-matched to the intra-domain set: it reuses the BD-09 SD-09.1 intra-domain cases VERBATIM -- all 16, INCLUDING the three genuinely-hard cases the intra-domain baseline misses (C05, C10, C13, which mis-pick SO-09-01-composite on the 'composite' bait) -- with their SO-09-01-composite / -currency / -reconcile confusers carried into the catalogue so they behave exactly as in the intra-domain set (within-office accuracy reproduces its 13/16 on the BD-09 cases, not an inflated 100%). It ADDS a BD-08 within-middle-office valuation family (quoted SD-08.1 / mark-to-model SD-08.2 / IPV SD-08.6 / private-mark SD-08.3) -- the roadmap's third confuser family, within one office. Each case carries an office_arm tag; the same selector ranks over the same single catalogue in both arms, so the only difference between the arms is whether the near-duplicate sits across the office boundary -- and because the control now carries the intra-domain set's hard misses, the gap measures cross-office degradation, not a set-difficulty difference.",
   "tools": [
     {
       "tool_id": "FO-mark-desk",
@@ -186,7 +186,7 @@
       "query": "I need the portfolio return that strips out the timing of client contributions so I can compare the manager against the benchmark and peers.",
       "expected_tool_id": "SO-09-01-twr",
       "confusers": ["SO-09-01-mwr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
-      "rationale": "Reused VERBATIM from the OIM-105 BD-09 SD-09.1 intra-domain set (all middle office) so the within-office control is difficulty-matched to OIM-105 (P-MINOR-1). Removing external cash-flow timing for benchmark/peer comparison is the defining purpose of TWR; MWR is the flow-sensitive opposite."
+      "rationale": "Reused VERBATIM from the BD-09 SD-09.1 intra-domain set (all middle office) so the within-office control is difficulty-matched to the intra-domain set. Removing external cash-flow timing for benchmark/peer comparison is the defining purpose of TWR; MWR is the flow-sensitive opposite."
     },
     {
       "case_id": "C02-mwr-investor-experience",
@@ -194,7 +194,7 @@
       "query": "What return did the client actually experience given the size and dates of the money they put in and took out? I want the IRR on the cash-flow series.",
       "expected_tool_id": "SO-09-01-mwr",
       "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). The investor's actual experienced return on the dated cash-flow series (IRR / dollar-weighted) is money-weighted return. TWR is the near-duplicate that deliberately removes exactly what MWR keeps."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). The investor's actual experienced return on the dated cash-flow series (IRR / dollar-weighted) is money-weighted return. TWR is the near-duplicate that deliberately removes exactly what MWR keeps."
     },
     {
       "case_id": "C03-period-linking-ytd",
@@ -202,7 +202,7 @@
       "query": "Take the monthly returns we already have and chain them into a year-to-date and since-inception figure.",
       "expected_tool_id": "SO-09-01-period-linking",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-composite"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Linking sub-period returns into YTD / since-inception is the strike-period-returns operation. TWR is the confuser because TWR also links sub-period returns -- but its job is the flow-timing removal, not the frequency compounding."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Linking sub-period returns into YTD / since-inception is the strike-period-returns operation. TWR is the confuser because TWR also links sub-period returns -- but its job is the flow-timing removal, not the frequency compounding."
     },
     {
       "case_id": "C04-gross-net-fee-drag",
@@ -210,7 +210,7 @@
       "query": "Give me the return before fees and the return after deducting management and performance fees, so I can show the client the fee drag.",
       "expected_tool_id": "SO-09-01-gross-net",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-reconcile"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Before-and-after-fee return and the fee drag is the gross-and-net operation. TWR/MWR are the confusers because either could be reported gross or net -- but the fee-deduction transform itself is this tool."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Before-and-after-fee return and the fee drag is the gross-and-net operation. TWR/MWR are the confusers because either could be reported gross or net -- but the fee-deduction transform itself is this tool."
     },
     {
       "case_id": "C05-twr-flow-neutral",
@@ -218,7 +218,7 @@
       "query": "Produce a return that is neutral to when the investor added or withdrew cash, for the composite presentation.",
       "expected_tool_id": "SO-09-01-twr",
       "confusers": ["SO-09-01-mwr", "SO-09-01-composite", "SO-09-01-period-linking"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office) -- one of OIM-105's three genuinely-hard misses (the baseline mis-picks SO-09-01-composite on the 'composite presentation' bait). Carried here, with its SO-09-01-composite confuser present in the catalogue, so the within-office control is difficulty-matched (P-MINOR-1). Flow-neutral return is TWR; 'composite' in the query is bait toward the composite tool; MWR is the flow-sensitive opposite."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office) -- one of its three genuinely-hard misses (the baseline mis-picks SO-09-01-composite on the 'composite presentation' bait). Carried here, with its SO-09-01-composite confuser present in the catalogue, so the within-office control is difficulty-matched. Flow-neutral return is TWR; 'composite' in the query is bait toward the composite tool; MWR is the flow-sensitive opposite."
     },
     {
       "case_id": "C06-mwr-private-irr",
@@ -226,7 +226,7 @@
       "query": "For the private-credit sleeve, compute the standard private-markets performance basis -- the rate that discounts the drawdowns and distributions to the current value.",
       "expected_tool_id": "SO-09-01-mwr",
       "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-currency"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). The standard private-markets basis discounting dated cash flows is money-weighted return per SD-09.1. TWR is the public-markets near-duplicate."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). The standard private-markets basis discounting dated cash flows is money-weighted return per SD-09.1. TWR is the public-markets near-duplicate."
     },
     {
       "case_id": "C07-period-linking-quarterly",
@@ -234,7 +234,7 @@
       "query": "Compound our daily returns up to a clean quarterly and since-inception number for the fund.",
       "expected_tool_id": "SO-09-01-period-linking",
       "confusers": ["SO-09-01-twr", "SO-09-01-gross-net", "SO-09-01-mwr"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Compounding daily into quarterly/since-inception across a horizon is strike-period-returns. TWR shares the linking mechanism but is identified by flow removal."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Compounding daily into quarterly/since-inception across a horizon is strike-period-returns. TWR shares the linking mechanism but is identified by flow removal."
     },
     {
       "case_id": "C08-gross-net-after-fee",
@@ -242,7 +242,7 @@
       "query": "Show the after-fee return the investor keeps once management fees, performance fees and expenses come out, alongside the pre-fee figure.",
       "expected_tool_id": "SO-09-01-gross-net",
       "confusers": ["SO-09-01-mwr", "SO-09-01-twr", "SO-09-01-period-linking"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Pre-fee and after-fee return is gross-and-net. The 'investor keeps' phrasing is bait toward MWR (the investor's experienced return)."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Pre-fee and after-fee return is gross-and-net. The 'investor keeps' phrasing is bait toward MWR (the investor's experienced return)."
     },
     {
       "case_id": "C09-twr-manager-skill",
@@ -250,7 +250,7 @@
       "query": "I want the figure that reflects the manager's investment decisions only, with the effect of cash-flow timing taken out, to rank our managers.",
       "expected_tool_id": "SO-09-01-twr",
       "confusers": ["SO-09-01-mwr", "SO-09-01-gross-net", "SO-09-01-reconcile"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Manager-skill return with cash-flow timing removed is TWR. MWR is the flow-sensitive confuser."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Manager-skill return with cash-flow timing removed is TWR. MWR is the flow-sensitive confuser."
     },
     {
       "case_id": "C10-mwr-dollar-weighted",
@@ -258,7 +258,7 @@
       "query": "Compute the dollar-weighted return that accounts for how much money was invested at each point in time.",
       "expected_tool_id": "SO-09-01-mwr",
       "confusers": ["SO-09-01-twr", "SO-09-01-composite", "SO-09-01-period-linking"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office) -- one of OIM-105's three genuinely-hard misses (the baseline mis-picks SO-09-01-composite). Carried here, confuser present in the catalogue, so the control is difficulty-matched (P-MINOR-1). Dollar-weighted, amount-and-timing-sensitive return is money-weighted return. TWR is the explicitly flow-insensitive near-duplicate."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office) -- one of its three genuinely-hard misses (the baseline mis-picks SO-09-01-composite). Carried here, confuser present in the catalogue, so the control is difficulty-matched. Dollar-weighted, amount-and-timing-sensitive return is money-weighted return. TWR is the explicitly flow-insensitive near-duplicate."
     },
     {
       "case_id": "C11-period-linking-cumulative",
@@ -266,7 +266,7 @@
       "query": "Chain the sub-period returns we computed into the cumulative figure at the chosen reporting frequency.",
       "expected_tool_id": "SO-09-01-period-linking",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-gross-net"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Chaining sub-period returns into a cumulative frequency figure is strike-period-returns. TWR also chains sub-period returns -- the deliberate confuser."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Chaining sub-period returns into a cumulative frequency figure is strike-period-returns. TWR also chains sub-period returns -- the deliberate confuser."
     },
     {
       "case_id": "C12-gross-net-expense-impact",
@@ -274,7 +274,7 @@
       "query": "What is the impact of fund expenses and fees on the return -- the gap between what the assets earned and what the investor received after costs?",
       "expected_tool_id": "SO-09-01-gross-net",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-currency"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). The earned-vs-received-after-costs gap is the gross-to-net fee drag. The flow-return tools are the vocabulary confusers."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). The earned-vs-received-after-costs gap is the gross-to-net fee drag. The flow-return tools are the vocabulary confusers."
     },
     {
       "case_id": "C13-twr-vs-mwr-explicit",
@@ -282,7 +282,7 @@
       "query": "Give me the time-weighted return for the mandate, not the money-weighted one.",
       "expected_tool_id": "SO-09-01-twr",
       "confusers": ["SO-09-01-mwr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office) -- the third of OIM-105's genuinely-hard misses. Names TWR explicitly while naming MWR as the rejected near-duplicate -- the most direct adversarial pairing of the two confusable returns."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office) -- the third of its genuinely-hard misses. Names TWR explicitly while naming MWR as the rejected near-duplicate -- the most direct adversarial pairing of the two confusable returns."
     },
     {
       "case_id": "C14-mwr-vs-twr-explicit",
@@ -290,7 +290,7 @@
       "query": "Give me the money-weighted (IRR) return for this account, not the time-weighted figure.",
       "expected_tool_id": "SO-09-01-mwr",
       "confusers": ["SO-09-01-twr", "SO-09-01-period-linking", "SO-09-01-gross-net"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). The mirror of C13: names MWR explicitly and TWR as the rejected confuser."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). The mirror of C13: names MWR explicitly and TWR as the rejected confuser."
     },
     {
       "case_id": "C15-period-linking-since-inception",
@@ -298,7 +298,7 @@
       "query": "Link our quarterly returns up to a since-inception number for the report.",
       "expected_tool_id": "SO-09-01-period-linking",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-composite"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Linking quarterly into since-inception is strike-period-returns. TWR is the linking-mechanism confuser; composite is the report-context bait."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Linking quarterly into since-inception is strike-period-returns. TWR is the linking-mechanism confuser; composite is the report-context bait."
     },
     {
       "case_id": "C16-gross-net-pre-and-post",
@@ -306,7 +306,7 @@
       "query": "Report both the pre-fee and the post-fee return so we can disclose the management fee and performance fee deduction.",
       "expected_tool_id": "SO-09-01-gross-net",
       "confusers": ["SO-09-01-twr", "SO-09-01-mwr", "SO-09-01-period-linking"],
-      "rationale": "Reused VERBATIM from the OIM-105 intra-domain set (within office). Pre-fee and post-fee return with the fee deduction is gross-and-net. The return-family confusers share most vocabulary."
+      "rationale": "Reused VERBATIM from the intra-domain set (within office). Pre-fee and post-fee return with the fee deduction is gross-and-net. The return-family confusers share most vocabulary."
     }
   ]
 }

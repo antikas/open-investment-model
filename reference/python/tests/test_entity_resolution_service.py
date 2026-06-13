@@ -1,4 +1,4 @@
-"""The entityResolution model-free service — registration + dispatch shape (OIM-199).
+"""The entityResolution model-free service — registration + dispatch shape.
 
 Proves the SD-13.2 resolution service is wired correctly and additively:
 
@@ -12,8 +12,7 @@ Proves the SD-13.2 resolution service is wired correctly and additively:
    keyed by the internal entity_id — the dispatch shape, exercised without the Restate runtime.
 
 These are pure / in-process tests — no Restate ingress, no canonical store. The end-to-end ingress
-round-trip (mirrored-aware ``pnpm dev:restate``) is proven separately and pasted in the cycle
-report.
+round-trip (mirrored-aware ``pnpm dev:restate``) is proven separately.
 """
 
 from __future__ import annotations
@@ -54,7 +53,7 @@ def test_tool_catalogue_appends_entity_resolution_additively() -> None:
     bd09 = load_tool_catalogue_from_bd09("any")
     er = load_tool_catalogue_from_entity_resolution("any")
     agg = load_tool_catalogue_from_services("any")
-    # bd09 leads byte-for-byte (the W1 NAV path is unperturbed)
+    # bd09 leads byte-for-byte (the NAV path is unperturbed)
     assert agg[: len(bd09)] == bd09
     # the entity-resolution tools are the tail, appended
     assert agg[-len(er):] == er

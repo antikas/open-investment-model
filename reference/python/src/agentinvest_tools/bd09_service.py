@@ -249,8 +249,8 @@ class ExecuteSoEnvelopeSerde(restate.serde.Serde[Any]):
             # SystemExit keep propagating) makes the never-raise invariant STRUCTURALLY TRUE: an
             # enumerated tuple (``json.JSONDecodeError`` / ``ValueError`` / ``UnicodeDecodeError``)
             # missed ``RecursionError`` (raised by ``json.loads`` on a deeply-nested body — a
-            # ``RuntimeError`` subclass, not a ``ValueError``) which escaped → a status-less 500
-            # (OIM-187 cycle-2). The serde does NOTHING but parse, so a blanket catch masks no
+            # ``RuntimeError`` subclass, not a ``ValueError``) which escaped → a status-less 500.
+            # The serde does NOTHING but parse, so a blanket catch masks no
             # logic.
             # Any parse failure — malformed JSON, non-UTF8, RecursionError on a deeply-nested body,
             # MemoryError on a huge body — returns the raw decoded text as a non-dict ``str`` so
@@ -350,8 +350,8 @@ def _coerce_envelope(req: Any) -> dict[str, Any]:
 
     Both guards run in the **handler body** (not the serde) on purpose: the Restate SDK re-wraps an
     exception raised inside a serde's ``deserialize`` as a status-less ``TerminalError`` (HTTP 500),
-    discarding a serde-set 400 — so the 400 must be raised here to stay a clean terminal 400 (the
-    cycle-1 design choice, preserved). The model is dumped back to a plain dict so the downstream
+    discarding a serde-set 400 — so the 400 must be raised here to stay a clean terminal 400. The
+    model is dumped back to a plain dict so the downstream
     registry lookup / arg-mapping path is unchanged.
     """
     if isinstance(req, ExecuteSoInput):
@@ -386,8 +386,8 @@ async def execute_so(ctx: restate.Context, req: ExecuteSoInput) -> ExecuteSoOutp
     The request envelope is the ``ExecuteSoInput`` Pydantic model, so the Restate auto-generated
     OpenAPI/MCP surface types it and the SDK's typed deserialiser rejects a non-object body as a
     ``TerminalError`` (no retry) before this handler runs; ``_coerce_envelope`` carries the same
-    guard for the programmatic path. A malformed non-dict body is therefore terminal at the ingress
-    (the OIM-113 carry-forward), not a bounded retry.
+    guard for the programmatic path. A malformed non-dict body is therefore terminal at the ingress,
+    not a bounded retry.
 
     Provenance is replay-safe: it is derived only from the request and the tool's deterministic
     output (no wall-clock is read inside the journaled step).

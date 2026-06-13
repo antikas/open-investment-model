@@ -3,7 +3,7 @@
 -- A 1:1 typed staging view over raw_entity_resolution_feed.csv: inbound legal-entity records from
 -- three named source systems (custodian · administrator · internal_onboarding) carrying deliberate,
 -- labelled duplicates and variants of a subset of the E-01 masters plus net-new entities. This is
--- the FEED the deterministic three-tier resolution cascade (OIM-199) runs over to produce golden
+-- the FEED the deterministic three-tier resolution cascade runs over to produce golden
 -- records + a steward review queue. SYNTHETIC, derived to exercise the difficulty gradient (exact
 -- LEI · alias · name-variant-no-ID · genuinely-ambiguous).
 --
@@ -11,7 +11,7 @@
 -- resolution problem; it is not part of the book). The companion entity_resolution_labels.{csv,json}
 -- is the ORACLE (the eval's ground truth), NOT an engine input — the cascade resolves from the feed's
 -- observable evidence (name / lei / domicile / parent hint / external id), never by reading the
--- answer key (the OIM-160 oracle-integrity discipline).
+-- answer key (the oracle-integrity discipline).
 --
 -- Parity-aware SQL: `varchar` / `date` casts only — portable across duckdb and postgres. No
 -- duckdb-only idiom.

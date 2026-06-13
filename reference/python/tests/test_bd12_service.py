@@ -1,4 +1,4 @@
-"""The ``bd12`` book-of-record read service — the WIRE path + the OIM-160 dual-book read.
+"""The ``bd12`` book-of-record read service — the WIRE path + the canonical dual-book read.
 
 These tests drive the ``bd12`` dispatch service (``execute_so`` / ``list_capabilities``) through a
 faithful fake ``restate.Context`` — the same seam the orchestrator and the MCP/OpenAPI ingress reach
@@ -7,15 +7,14 @@ over Restate. Two levels:
 1. **Envelope + catalogue (no store needed)** — the envelope guard (a non-dict / extra-key / unknown
    SO is a clean terminal error), and ``list_capabilities`` returns the 9 read tools with real I/O
    schemas (the bd09 service-test pattern).
-2. **The OIM-160 dual-book read (store-gated)** — the LOAD-BEARING tests: the read tools genuinely
-   read the OIM-160 canonical dual book through the data-access layer at the as-of, AND the IBOR
-   read
-   and the ABOR read of the same holding GENUINELY DIFFER on the three OIM-160 divergence classes
+2. **The canonical dual-book read (store-gated)** — the LOAD-BEARING tests: the read tools genuinely
+   read the canonical dual book through the data-access layer at the as-of, AND the IBOR read
+   and the ABOR read of the same holding GENUINELY DIFFER on the three divergence classes
    (TD/SD timing, accruals, cost-basis). If the two reads were identical there would be nothing for
-   OIM-162 to reconcile — that is the half-job this asserts against. These skip cleanly when the
-   canonical store is not provisioned.
+   the reconciliation engine to reconcile. These skip cleanly when the canonical store is not
+   provisioned.
 
-Honest boundary: the read is over the OIM-160 **synthetic** internal dual book; a green read proves
+Honest boundary: the read is over the **synthetic** internal dual book; a green read proves
 the typed per-book read + the as-of plumbing + the divergence, not a production book-of-record.
 """
 
@@ -141,9 +140,9 @@ def test_wrong_book_for_abor_tool_is_terminal() -> None:
     assert getattr(excinfo.value, "status_code", None) == 422
 
 
-# --- the OIM-160 dual-book read + the IBOR/ABOR divergence (store-gated, LOAD-BEARING) ------------
+# --- the canonical dual-book read + the IBOR/ABOR divergence (store-gated, LOAD-BEARING) ----------
 
-# The named holdings carrying each OIM-160 divergence class (confirmed against the canonical seed).
+# The named holdings carrying each divergence class (confirmed against the canonical seed).
 _TD_SD_PORTFOLIO = "PF-0008"   # POS-0021/22/27/30/31/36 — ibor qty/MV > abor (in-flight trades)
 _ACCRUAL_PORTFOLIO = "PF-0012"  # POS-0049..0053 — abor carries accrual, ibor null
 _COST_BASIS_PORTFOLIO = "PF-0005"  # POS-0013 — abor cost basis != ibor cost basis
@@ -156,7 +155,7 @@ def _read(so_id: str, **args: Any) -> dict[str, Any]:
 
 @pytest.mark.skipif(not _store_available(), reason="canonical store not provisioned")
 def test_read_reads_the_canonical_layer_not_inlined_fixtures() -> None:
-    """The IBOR position read returns the real OIM-160 rows (not an empty/fake set)."""
+    """The IBOR position read returns the real canonical rows (not an empty/fake set)."""
     out = _read("SO-12.1-01", book="ibor", portfolio_id=_TD_SD_PORTFOLIO, as_of_date="2026-03-31")
     assert out["book"] == "ibor"
     assert out["n_positions"] > 0
@@ -173,7 +172,7 @@ def test_ibor_and_abor_position_reads_differ_on_td_sd_timing() -> None:
 
     POS-0021 (PF-0008) is a TD/SD-timing divergence: the IBOR book carries the in-flight trade on
     trade date (higher quantity + market value); the ABOR book recognises it only on settlement.
-    If the two reads agreed there would be nothing for OIM-162 to reconcile — that is the half-job.
+    If the two reads agreed there would be nothing for the reconciliation engine to reconcile.
     """
     ibor = _read("SO-12.1-01", book="ibor", portfolio_id=_TD_SD_PORTFOLIO, as_of_date="2026-03-31")
     abor = _read("SO-12.2-01", book="abor", portfolio_id=_TD_SD_PORTFOLIO, as_of_date="2026-03-31")

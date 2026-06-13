@@ -9,9 +9,9 @@
 -- total-fund VaR at two as-of dates). The bi-temporal GRAIN is declared:
 --   grain = (measurement_id) primary key; as-of axis = as_of_date.
 --
--- ** MATERIALISATION IS AN OIM-110 COORDINATION POINT — NOT PICKED HERE. ** As
+-- ** MATERIALISATION IS A COORDINATION POINT — NOT PICKED HERE. ** As
 -- with E-07, this is a flat staging view, NOT a dbt snapshot/incremental model;
--- the snapshot-vs-incremental decision is OIM-110's.
+-- the snapshot-vs-incremental decision is deferred.
 --
 -- KEY-PARTITIONED by `risk_type` (ADR-0022 / ownership-map): the model file's
 -- Attribute schema now carries the `risk_type` column — the risk *domain* (market

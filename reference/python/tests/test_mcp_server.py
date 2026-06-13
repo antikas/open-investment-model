@@ -7,7 +7,7 @@ the ingress and turns each Service Operation into an MCP tool descriptor (name =
 drive the *real* server code (``list_tools_from_catalogue`` / ``dispatch_call`` / ``build_server``)
 against a mock ingress (``httpx.MockTransport``) so they are deterministic and CI-safe — they prove
 the transform and the dispatch wiring without a live Restate. The end-to-end round-trip through the
-real Restate server is proven separately (see the cycle report's MCP evidence).
+real Restate server is proven separately.
 
 Load-bearing properties asserted:
 
@@ -58,7 +58,7 @@ _CATALOGUE = {
     ],
 }
 
-# The bd12 (book-of-record read) catalogue the MCP face now aggregates alongside bd09 (OIM-161).
+# The bd12 (book-of-record read) catalogue the MCP face aggregates alongside bd09.
 # Built from the live bd12 registry so the mock stays in lock-step with the real read tools.
 _BD12_CATALOGUE = {
     "service": "bd12",
@@ -75,7 +75,7 @@ _BD12_CATALOGUE = {
     ],
 }
 
-# The bd12Recon (SD-12.10 reconcile) catalogue the MCP face now also aggregates (OIM-162). Built
+# The bd12Recon (SD-12.10 reconcile) catalogue the MCP face also aggregates. Built
 # from the live bd12Recon registry so the mock stays in lock-step with the real reconcile tools.
 _BD12_RECON_CATALOGUE = {
     "service": "bd12Recon",
@@ -91,8 +91,8 @@ _BD12_RECON_CATALOGUE = {
     ],
 }
 
-# The entityResolution (SD-13.2 resolution) catalogue the MCP face now also aggregates (OIM-199).
-# Built from the live entityResolution registry so the mock stays in lock-step with the real tools.
+# The entityResolution (SD-13.2 resolution) catalogue the MCP face also aggregates. Built
+# from the live entityResolution registry so the mock stays in lock-step with the real tools.
 _ENTITY_RESOLUTION_CATALOGUE = {
     "service": "entityResolution",
     "capabilities": [
@@ -113,8 +113,8 @@ def _mock_ingress(
 ) -> httpx.MockTransport:
     """A mock Restate ingress: serves each per-BD catalogue + a canned execute_so for both services.
 
-    Serves both ``bd09`` and ``bd12`` ``list_capabilities`` (the MCP face aggregates across both,
-    OIM-161); ``execute_so`` is canned for whichever service path the test dispatches to (the SO
+    Serves both ``bd09`` and ``bd12`` ``list_capabilities`` (the MCP face aggregates across
+    both); ``execute_so`` is canned for whichever service path the test dispatches to (the SO
     namespaces are disjoint, so the response is the configured one regardless of service).
     """
 
@@ -154,11 +154,11 @@ async def test_list_tools_generates_descriptors_from_the_aggregated_catalogue() 
         tools = await list_tools_from_catalogue(client)
 
     names = [t.name for t in tools]
-    # The bd09 five come FIRST, byte-for-byte as before (the W1 NAV-path tools unperturbed)...
+    # The bd09 five come FIRST, byte-for-byte (the NAV-path tools unperturbed)...
     assert names[:5] == ["SO-09-01", "SO-09-02", "SO-09-03", "SO-09-04", "SO-09-05"]
-    # ...then the bd12 read tools (OIM-161), the bd12Recon reconcile tools (OIM-162) and the
-    # entityResolution tools (OIM-199) are APPENDED, additive — the 9 IBOR + ABOR reads, the 4
-    # SD-12.10 reconciles, and the 3 SD-13.2 resolution tools.
+    # ...then the bd12 read tools, the bd12Recon reconcile tools and the entityResolution tools
+    # are APPENDED, additive — the 9 IBOR + ABOR reads, the 4 SD-12.10 reconciles, and the 3
+    # SD-13.2 resolution tools.
     assert set(names[5:]) == {
         "SO-12.1-01",
         "SO-12.1-02",
@@ -245,9 +245,8 @@ async def test_call_tool_round_trips_through_execute_so() -> None:
 async def test_call_tool_surfaces_a_terminal_error_not_a_silent_success() -> None:
     """A deterministic failure (the service returns HTTP 4xx) is raised, not a fabricated result.
 
-    The behaviour the OIM-114 test asserted is preserved — a 4xx still surfaces as an error, not a
-    success — but now as the typed :class:`McpToolError` (terminal), which the MCP SDK marks
-    ``isError`` (see ``test_real_mcp_client_*`` for the SDK-level proof).
+    A 4xx surfaces as an error, not a success — as the typed :class:`McpToolError` (terminal),
+    which the MCP SDK marks ``isError`` (see ``test_real_mcp_client_*`` for the SDK-level proof).
     """
     transport = _mock_ingress(execute_response=(400, {"message": "invalid arguments"}))
     async with _client(transport) as client:
@@ -340,7 +339,7 @@ async def test_list_tools_transient_when_catalogue_load_fails() -> None:
 # can't use — NOT a caller-argument fault. It must surface as a clean transient/unavailable error,
 # never the raw parse string, and on the catalogue path NEVER a session crash. These tests are
 # revert-sensitive: remove either body-parse guard and they go RED (raw JSONDecodeError / KeyError /
-# session crash). Mirrors the cycle-1 MockTransport + real-mcp-client SDK patterns.
+# session crash). They use the MockTransport + real-mcp-client SDK patterns.
 
 
 def _catalogue_then(
@@ -349,8 +348,8 @@ def _catalogue_then(
     """A mock ingress: both healthy catalogues + a caller-supplied bd09 execute_so handler.
 
     Serves both ``bd09`` + ``bd12`` ``list_capabilities`` (the aggregated MCP face the real client
-    lists over, OIM-161), so a real-client ``call_tool`` whose internal ``list_tools`` aggregates
-    both catalogues succeeds, and the dispatch reaches the caller-supplied ``bd09/execute_so``.
+    lists over), so a real-client ``call_tool`` whose internal ``list_tools`` aggregates both
+    catalogues succeeds, and the dispatch reaches the caller-supplied ``bd09/execute_so``.
     """
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -464,12 +463,12 @@ async def test_list_tools_partial_entry_missing_so_id_is_clean_unavailable() -> 
 
 @pytest.mark.anyio
 async def test_real_mcp_client_malformed_catalogue_does_not_crash_session() -> None:
-    """The P-2 crash is gone: a non-JSON catalogue → a clean MCP error AND the session SURVIVES.
+    """A non-JSON catalogue → a clean MCP error AND the session SURVIVES (no crash).
 
     Drives the REAL ``mcp`` client SDK. The first ``list_tools()`` (malformed catalogue) returns a
     clean error — NOT a raw parse string, NOT an ``ExceptionGroup`` session crash. The catalogue
     recovers and a second ``list_tools()`` succeeds on the SAME session, proving the session stayed
-    usable (the cycle-1 ``unhandled errors in a TaskGroup`` teardown is gone).
+    usable (no ``unhandled errors in a TaskGroup`` teardown).
     """
     from mcp.shared.exceptions import McpError
     from mcp.shared.memory import create_connected_server_and_client_session
@@ -557,7 +556,7 @@ async def test_real_mcp_client_non_json_execute_body_is_clean_iserror() -> None:
     text = _text_of(call)
     assert "service unavailable" in text
     assert "unreadable response" in text
-    # NOT the raw parse artefact the cycle-1 sidecar leaked.
+    # NOT the raw parse artefact a leaky sidecar would surface.
     assert "Expecting value" not in text
     assert "JSONDecodeError" not in text
 
@@ -827,8 +826,8 @@ async def test_real_mcp_client_round_trips_list_and_call() -> None:
         async with create_connected_server_and_client_session(server) as session:
             listed = await session.list_tools()
             names = [t.name for t in listed.tools]
-            # The aggregated face: bd09 five first (unperturbed), then the bd12 nine (OIM-161), the
-            # bd12Recon four (OIM-162) and the entityResolution three (OIM-199).
+            # The aggregated face: bd09 five first (unperturbed), then the bd12 nine, the
+            # bd12Recon four and the entityResolution three.
             assert names[:5] == ["SO-09-01", "SO-09-02", "SO-09-03", "SO-09-04", "SO-09-05"]
             assert len(names) == 21
             call = await session.call_tool(

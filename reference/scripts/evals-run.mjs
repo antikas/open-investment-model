@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * evals-run.mjs (OIM-105) — run the Tranche-0 eval harness.
+ * evals-run.mjs — run the eval harness.
  *
  * Runs the offline, deterministic, replay-stable golden-set runner
  * (`python -m agentinvest_evals`) for the agentINVEST eval substrate. The harness

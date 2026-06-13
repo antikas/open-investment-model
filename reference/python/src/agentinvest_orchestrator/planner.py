@@ -9,8 +9,8 @@ response against ``PlanSchema``. A malformed / unparseable response is a clear
 **typed error** (``PlannerDeterministicError``), never a silent bad plan; a
 transient API fault (429/529/timeout/connection) is a ``PlannerTransientError``.
 The Restate handler (``service.py``) maps the first to a ``TerminalError`` (no
-retry storm) and lets the second be retried — the OIM-112/113 deterministic-error
--is-terminal discipline.
+retry storm) and lets the second be retried — the deterministic-error-is-terminal
+discipline.
 
 Key loading. ``ANTHROPIC_API_KEY`` loads from ``reference/.env`` via
 ``python-dotenv``. The key is **never hard-coded, logged, printed, or committed**:
@@ -43,8 +43,8 @@ from pydantic import ValidationError
 from agentinvest_orchestrator.plan_schema import PlanSchema
 
 # The model id — Anthropic Sonnet 4.6, the frontier model driving the one loop
-# (ADR-0054 v0.1 frontier-only). Overridable via env for a future model bump, but
-# the default is the cycle's ratified model.
+# (frontier-only). Overridable via env for a future model bump, but the default is
+# the ratified model.
 PLANNER_MODEL = os.environ.get("AGENTINVEST_PLANNER_MODEL", "claude-sonnet-4-6")
 
 # The max_tokens cap — small plans only; hygiene against a runaway response.
@@ -235,8 +235,7 @@ def plan_task(
     (a fake Anthropic client) — when ``None`` a real ``anthropic.Anthropic`` client
     is constructed from the env-loaded key.
 
-    Error classification (the OIM-112/113 discipline, surfaced as typed errors the
-    handler maps):
+    Error classification (surfaced as typed errors the handler maps):
       - a missing key / a malformed-unparseable / schema-invalid response / a 4xx
         bad-request -> ``PlannerDeterministicError`` (terminal, no retry storm);
       - a 429 / 529 / timeout / connection error -> ``PlannerTransientError``

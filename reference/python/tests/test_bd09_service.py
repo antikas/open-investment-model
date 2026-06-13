@@ -1,6 +1,6 @@
 """The ``bd09`` model-free Restate dispatch service — dispatch, envelope-mapping, classification.
 
-Covers the load-bearing properties of OIM-113:
+Covers the load-bearing properties of the dispatch service:
 
 - **registry dispatch** — each of the five SD-09.1 SOs is registered, invocable via ``execute_so``,
   and appears in ``list_capabilities`` with its *real* Pydantic schema (not a stub);
@@ -18,7 +18,7 @@ invokes the action and propagates its result/exception exactly as the SDK does �
 into a *retried* transient failure (see ``create_run_coroutine`` in the SDK). So "the dispatch
 classifies a deterministic error as terminal" is exactly "a ``TerminalError`` (not a bare
 exception) escapes the journaled action" — which these tests assert directly. The end-to-end
-journaling through the real Restate server is proven separately (see the report's Restate evidence).
+journaling through the real Restate server is proven separately.
 """
 
 from __future__ import annotations
@@ -256,11 +256,11 @@ def test_non_dict_envelope_is_terminal_not_retried(bad_body: Any) -> None:
 def test_malformed_or_non_utf8_envelope_is_terminal_400(body: bytes) -> None:
     """A malformed-JSON / non-UTF8 body to execute_so → a clean 400, never a status-less 500.
 
-    OIM-187 consistency fix: ``ExecuteSoEnvelopeSerde.deserialize`` previously let a malformed body
-    raise (a status-less 500); it now catches the parse failure and returns the raw decoded text as
-    a ``str`` that ``_coerce_envelope`` rejects as a clean 400 via its existing non-dict branch —
-    the same status as the pass-through handlers, while bd09's envelope contract stays its own (not
-    the shared serde).
+    ``ExecuteSoEnvelopeSerde.deserialize`` does not let a malformed body raise (which would be a
+    status-less 500); it catches the parse failure and returns the raw decoded text as a ``str``
+    that ``_coerce_envelope`` rejects as a clean 400 via its existing non-dict branch — the same
+    status as the pass-through handlers, while bd09's envelope contract stays its own (not the
+    shared serde).
     """
     from agentinvest_tools.bd09_service import ExecuteSoEnvelopeSerde
 
@@ -269,13 +269,13 @@ def test_malformed_or_non_utf8_envelope_is_terminal_400(body: bytes) -> None:
         _exec(FakeContext(), deserialised)
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple in
-# ``ExecuteSoEnvelopeSerde`` did NOT catch it, so it escaped → a status-less 500 on ``execute_so``.
-# The cycle-2 fold catches the WHOLE parse-failure class (``except Exception``) → the serde returns
-# the raw text as a non-dict ``str`` that ``_coerce_envelope`` rejects as a clean 400.
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple in ``ExecuteSoEnvelopeSerde``
+# would NOT catch it, so it would escape → a status-less 500 on ``execute_so``. Catching the WHOLE
+# parse-failure class (``except Exception``) → the serde returns the raw text as a non-dict ``str``
+# that ``_coerce_envelope`` rejects as a clean 400.
 # REVERT-SENSITIVE: re-narrowing the catch makes the deep-nest body raise out of ``deserialize``.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
@@ -322,9 +322,9 @@ def test_typed_execute_so_input_envelope_round_trips() -> None:
 def test_execute_so_input_schema_is_typed_for_the_surface() -> None:
     """The envelope model produces a real JSON Schema (so the generated surface types the envelope).
 
-    The carried-forward residual was an *untyped* envelope: a non-object body slipped past to an
-    AttributeError. The typed envelope's schema names ``soId``/``args`` and is an object — this is
-    what the auto-generated OpenAPI request schema becomes.
+    An *untyped* envelope would let a non-object body slip past to an AttributeError. The typed
+    envelope's schema names ``soId``/``args`` and is an object — this is what the auto-generated
+    OpenAPI request schema becomes.
     """
     from agentinvest_tools.bd09_service import ExecuteSoInput
 
@@ -337,18 +337,18 @@ def test_execute_so_input_schema_is_typed_for_the_surface() -> None:
 
 # --- the envelope-schema guard: the published additionalProperties:false / soId-string enforced ---
 #
-# P-MINOR-1 (cycle-1 pre-mortem): the auto-generated execute_soRequest schema advertises
-# additionalProperties:false (ExecuteSoInput's extra="forbid") + soId as a required STRING, but the
-# permissive pass-through serde let an extra-top-level-key / non-string-soId envelope through with
-# HTTP 200 — the published contract lied. _coerce_envelope now validates the raw dict through
-# ExecuteSoInput.model_validate in the HANDLER BODY (not the serde — that would re-wrap as a 500),
-# so a malformed-but-dict envelope is terminal 400, aligning the runtime with the published schema.
+# The auto-generated execute_soRequest schema advertises additionalProperties:false (ExecuteSoInput's
+# extra="forbid") + soId as a required STRING. A permissive pass-through serde would let an
+# extra-top-level-key / non-string-soId envelope through with HTTP 200 — the published contract
+# would lie. _coerce_envelope validates the raw dict through ExecuteSoInput.model_validate in the
+# HANDLER BODY (not the serde — that would re-wrap as a 500), so a malformed-but-dict envelope is
+# terminal 400, aligning the runtime with the published schema.
 
 
 def test_extra_top_level_envelope_key_is_terminal_400() -> None:
-    """An extra top-level envelope key → terminal 400 (was HTTP 200 at the cycle-1 baseline).
+    """An extra top-level envelope key → terminal 400.
 
-    The published schema carries ``additionalProperties: false``; the runtime now enforces it via
+    The published schema carries ``additionalProperties: false``; the runtime enforces it via
     ``ExecuteSoInput`` (``extra="forbid"``), so a conforming external agent reading the schema and a
     stray-key body now agree — the contract no longer lies.
     """
@@ -366,9 +366,9 @@ def test_extra_top_level_envelope_key_is_terminal_400() -> None:
 def test_non_string_so_id_is_terminal_400() -> None:
     """A non-string ``soId`` → terminal 400 (the schema advertises ``soId`` as a string).
 
-    At the cycle-1 baseline a numeric ``soId`` slipped past the envelope and missed the registry as
-    a 404 ("unknown SO 'None'"); the schema-typed enforcement now rejects it at the envelope as a
-    clear 400, matching the published ``soId: string`` constraint.
+    Without envelope typing a numeric ``soId`` would slip past the envelope and miss the registry as
+    a 404 ("unknown SO 'None'"); the schema-typed enforcement rejects it at the envelope as a clear
+    400, matching the published ``soId: string`` constraint.
     """
     with pytest.raises(TerminalError, match="invalid request envelope"):
         _exec(FakeContext(), {"soId": 123, "args": {}})
@@ -390,12 +390,12 @@ def test_unknown_so_id_is_terminal() -> None:
 
 
 def test_missing_so_id_is_terminal() -> None:
-    """A missing ``soId`` is now an envelope-schema violation → terminal 400.
+    """A missing ``soId`` is an envelope-schema violation → terminal 400.
 
     The published ``execute_soRequest`` schema requires ``soId``; ``_coerce_envelope`` enforces it
     through ``ExecuteSoInput.model_validate``, so a body with no ``soId`` is a clear
     ``ValidationError`` → ``TerminalError`` (400) at the envelope, not a downstream 404 on a
-    ``None`` lookup. Still terminal (no retry) — only the diagnostic and status sharpen.
+    ``None`` lookup. Terminal (no retry) — the diagnostic and status are sharp.
     """
     with pytest.raises(TerminalError, match="invalid request envelope"):
         _exec(FakeContext(), {"args": {}})
@@ -444,7 +444,7 @@ def test_mistyped_arg_is_terminal() -> None:
 def test_non_conventional_irr_is_terminal_no_retry() -> None:
     """THE load-bearing proof — a non-conventional cash-flow series fails FAST and TERMINAL.
 
-    ``-1000, +6000, -11000, +6000`` has three sign changes (three real IRRs). The OIM-112 tool
+    ``-1000, +6000, -11000, +6000`` has three sign changes (three real IRRs). The tool
     fails loud with ``NonConventionalCashFlowError``; the dispatch service classifies it as a
     ``TerminalError`` so Restate does NOT retry it. A bare exception escaping here would be retried
     forever by Restate (a hang/cost landmine on a deterministic input) — so the assertion that a
@@ -495,8 +495,8 @@ def test_deterministic_compute_error_is_terminal() -> None:
 # A conventional (one sign change) but long-dated series: at the solver's lower bracket
 # (1 + rate) = 1e-6 underflows to 0.0 for a large time exponent, so the tool raises a
 # *ZeroDivisionError* — a deterministic compute failure that is NOT a ValueError. This is the exact
-# real-shaped private-markets series (a single long-dated distribution) that escaped the cycle-1
-# narrow ``except ValueError`` into an unbounded Restate retry storm.
+# real-shaped private-markets series (a single long-dated distribution) that a narrow
+# ``except ValueError`` would let escape into an unbounded Restate retry storm.
 _ZERO_DIVISION_LONG_DATED_CALL: dict[str, Any] = {
     "soId": "SO-09-03",
     "args": {
@@ -509,7 +509,7 @@ _ZERO_DIVISION_LONG_DATED_CALL: dict[str, Any] = {
 
 # Extreme-magnitude direct sub-period returns whose geometric product overflows the Decimal context:
 # the tool raises a *decimal.Overflow* (a subclass of ArithmeticError) — again a deterministic
-# compute failure that is NOT a ValueError, the second member of the class P named.
+# compute failure that is NOT a ValueError, the second member of the non-ValueError class.
 _DECIMAL_OVERFLOW_CALL: dict[str, Any] = {
     "soId": "SO-09-02",
     "args": {
@@ -567,9 +567,9 @@ def test_no_deterministic_failure_escapes_as_bare_exception() -> None:
 def test_zero_division_long_dated_series_is_terminal() -> None:
     """A conventional (one-sign-change) long-dated cash-flow series — the real-shaped
     private-markets case — raises ZeroDivisionError in the IRR solver, NOT a ValueError. It must be
-    classified terminal (no retry), with the underlying type named in the diagnostic. (Against the
-    cycle-1 narrow ``except ValueError`` this ZeroDivisionError escaped ctx.run and Restate retried
-    it unboundedly — proven live in the cycle-1 pre-mortem; this locks the regression.)
+    classified terminal (no retry), with the underlying type named in the diagnostic. (Against a
+    narrow ``except ValueError`` this ZeroDivisionError would escape ctx.run and Restate would retry
+    it unboundedly; this locks the regression.)
     """
     with pytest.raises(TerminalError) as excinfo:
         _exec(FakeContext(), _ZERO_DIVISION_LONG_DATED_CALL)
@@ -581,7 +581,7 @@ def test_zero_division_long_dated_series_is_terminal() -> None:
 def test_decimal_overflow_extreme_input_is_terminal() -> None:
     """Extreme-magnitude inputs overflow the Decimal context — a decimal.Overflow
     (ArithmeticError), NOT a ValueError — and must be classified terminal (no retry), the second
-    non-ValueError deterministic mode the pre-mortem named.
+    non-ValueError deterministic mode.
     """
     with pytest.raises(TerminalError) as excinfo:
         _exec(FakeContext(), _DECIMAL_OVERFLOW_CALL)

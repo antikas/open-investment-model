@@ -6,7 +6,7 @@ publish); each step is a checkpoint over a COMPONENT of the canonical fund NAV, 
 components are read HERE from the published ``mart_fund_nav`` mart so the workflow's
 struck NAV **is** the mart's NAV, not a re-implementation:
 
-    nav_usd = gross_market_value + accrued_income − fees          (the §A1 identity)
+    nav_usd = gross_market_value + accrued_income − fees          (the NAV identity)
 
 The mart is the single source: ``gross_market_value`` (Σ each held position's mark),
 ``accrued_income`` (Σ abor accrued income), ``fees`` (structurally present, zero on this
@@ -15,7 +15,7 @@ synthetic seed), ``nav_usd`` (the published identity). The reader returns each a
 the TS workflow can checkpoint each component AND assert its own roll-up equals the
 mart's published ``nav_usd`` to the penny.
 
-WHY A SEPARATE READER (not ``marts.py``). ``marts.py`` (the OIM-115 read path) derives a
+WHY A SEPARATE READER (not ``marts.py``). ``marts.py`` (the return read path) derives a
 return over a *window* (two dates), reading the valuation *series*. The NAV strike needs a
 single point-in-time **current strike** — the mart's own per-fund NAV row — which is a
 different, smaller read. This module is that read; it does not duplicate the window
@@ -23,7 +23,7 @@ derivation. It reuses ``marts.py``'s store-path resolution + the ``MartsUnavaila
 contract (the SSOT for "where is the canonical store" and "the data layer is not
 provisioned"), so there is one store-resolution convention, not two.
 
-THE STRIKE IS CURRENT-AS-OF ONLY (OIM-111 carry-forward — bounded, not silently struck).
+THE STRIKE IS CURRENT-AS-OF ONLY (bounded, not silently struck).
 ``mart_fund_nav`` is as-of-capable on the valuation axis, but its HOLDINGS set is the
 latest period-end only (E-04 carries no holding history), so a PAST-as-of strike on the
 latest-holdings path has an unbounded constituent-set error. This reader therefore reads
@@ -58,7 +58,7 @@ class FundNavComponents:
 
     Every money figure is an exact ``Decimal`` (no float). ``nav_usd`` is the mart's
     PUBLISHED identity value; ``gross_market_value + accrued_income - fees`` recomputes it
-    and must equal it to the penny (the §A1 invariant the workflow asserts at roll-up).
+    and must equal it to the penny (the NAV invariant the workflow asserts at roll-up).
     """
 
     fund_id: str
@@ -80,7 +80,7 @@ class FundHoldingsGross:
     gross (which sums the E-07 mark over the fund via a window-function selection). Summing
     the holdings mart's ``market_value_usd`` over the fund and reconciling it against
     ``mart_fund_nav.gross_market_value`` is the genuine, FALSIFIABLE cross-mart check
-    (the OIM-111 ``assert_marts_reconcile_holdings_to_nav`` invariant): two marts, two paths,
+    (the ``assert_marts_reconcile_holdings_to_nav`` invariant): two marts, two paths,
     so a divergence (a dropped position, a double-counted book, a mis-summed mark) shows up.
     It is NOT the within-row ``X == X`` tautology of reading gross + nav from one row.
     """
@@ -114,9 +114,9 @@ def read_fund_nav_components(
 
     The workflow checkpoints each returned component as a durable step and asserts its own
     roll-up (``gross_market_value + accrued_income - fees``) equals the mart's published
-    ``nav_usd`` to the penny — proving the struck NAV IS the mart's §A1 NAV.
+    ``nav_usd`` to the penny — proving the struck NAV IS the mart's NAV.
 
-    A ``nav_knowledge_date`` other than None is REFUSED (the OIM-111 carry-forward): the
+    A ``nav_knowledge_date`` other than None is REFUSED: the
     latest-holdings path cannot soundly strike a PAST as-of NAV (unbounded constituent-set
     error on real holding history); a correct past strike needs the as-of-holdings view
     (forward). The current strike is read from the default-built ``mart_fund_nav`` row
@@ -184,7 +184,7 @@ def read_fund_holdings_gross(
     ``gross_market_value`` (which the fund-NAV mart derives by a window-function mark
     selection rolled to the fund). The workflow's load-positions step uses THIS to derive the
     gross, then reconciles it against the fund-NAV mart's gross — the genuine cross-mart
-    reconciliation (the OIM-111 ``assert_marts_reconcile_holdings_to_nav`` invariant, here
+    reconciliation (the ``assert_marts_reconcile_holdings_to_nav`` invariant, here
     exercised live in the workflow), NOT a within-row ``X == X`` re-read.
 
     The fund must be present in the holdings mart (a missing fund is a clean

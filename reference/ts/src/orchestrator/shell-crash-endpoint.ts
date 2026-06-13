@@ -1,11 +1,10 @@
 /**
  * Production-shell crash endpoint — hosts the REAL `investmentOperation` virtual
  * object (the production orchestrator shell bound into `endpoint.ts`), NOT a
- * probe. This closes the P-CRASH-1 gap: cycle-1's crash proof SIGKILLed a
- * separate single-step `crashReplayProbe`; this endpoint lets the crash proof
- * SIGKILL the production `investmentOperation.execute` itself, in the
- * fiduciary-relevant window between its journaled `ctx.run('orchestrator-stub-
- * step')` and its terminal `ctx.set('state','completed')`.
+ * probe. This endpoint lets the crash proof SIGKILL the production
+ * `investmentOperation.execute` itself, in the fiduciary-relevant window between
+ * its journaled `ctx.run('orchestrator-stub-step')` and its terminal
+ * `ctx.set('state','completed')`.
  *
  * HOW THE WINDOW IS REACHED (proof-only, no production behaviour change). The
  * production handler runs straight through — there is no natural await point

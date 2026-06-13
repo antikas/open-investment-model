@@ -3,7 +3,7 @@ dist/
 .turbo/
 *.log
 
-# scratch-file convention (openim-builder spec)
+# scratch-file convention
 _probe-*
 _test-*
 _scratch-*

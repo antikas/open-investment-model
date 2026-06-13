@@ -14,7 +14,7 @@ spec (that would defeat the SSOT: the surface must track the handlers). It:
    Swagger UI on this build, so the helper serves the human-facing render — the spec it renders is
    still the auto-generated one, fetched live, never hand-written).
 
-The envelope typing (the OIM-113 carry-forward at the surface): because ``execute_so`` now takes the
+The envelope typing at the surface: because ``execute_so`` takes the
 ``ExecuteSoInput`` Pydantic envelope, the auto-generated request schema is a typed object (not the
 permissive ``{}`` a bare TypedDict produced), so the surface rejects a malformed non-object body at
 the schema — completing deterministic-error-is-terminal at the ingress on the OpenAPI face too.
@@ -129,7 +129,7 @@ def validate_openapi_spec(spec: dict[str, Any], normalise: bool = True) -> str:
 
 
 def is_openapi_31(spec: dict[str, Any]) -> bool:
-    """True iff the spec is OpenAPI 3.1 specifically (the version ADR-0054 targets)."""
+    """True iff the spec is OpenAPI 3.1 specifically (the targeted version)."""
     return bool(get_spec_version(spec) == openapi_versions.OPENAPIV31)
 
 
@@ -169,7 +169,7 @@ def assert_bd12_surface(spec: dict[str, Any]) -> dict[str, Any]:
     The bd12 service auto-generates its OWN OpenAPI 3.1 spec (Restate generates one per service from
     the handler signatures — the ``ReadRequest`` / read-output Pydantic models). Confirms the two
     handler paths and that the ``execute_so`` request schema is a *typed object* naming ``soId``
-    (the envelope typing — the OIM-113/114 carry-forward, inherited here). The same shape as
+    (the envelope typing, inherited here). The same shape as
     ``assert_bd09_surface``, scoped to the bd12 paths.
     """
     paths = spec.get("paths", {})

@@ -1,5 +1,5 @@
 /**
- * The SHA-256 audit hash chain — the tamper-EVIDENCE heart of the audit-journal export (OIM-151).
+ * The SHA-256 audit hash chain — the tamper-EVIDENCE heart of the audit-journal export.
  *
  * Given an ORDERED list of audit records, this produces a hash chain: each record becomes an entry
  * carrying its sequence number, the record, the PRIOR entry's hash, and this entry's hash, where

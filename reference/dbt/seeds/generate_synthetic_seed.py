@@ -94,7 +94,7 @@ def w(name: str, header: list[str], rows: list[list]) -> None:
 
 
 def _write_break_labels_json(header: list[str], rows: list[list]) -> None:
-    """Write the labels manifest as JSON too — the oracle the OIM-162 engine / OIM-165
+    """Write the labels manifest as JSON too — the oracle the reconciliation engine /
     eval read. A list of objects keyed by the same E-24 vocabulary as the CSV header.
     Deterministic: stable key order, LF newline, trailing newline (byte-stable)."""
     records = [dict(zip(header, r, strict=True)) for r in rows]
@@ -204,7 +204,7 @@ RNG_CMP = random.Random(20260606)   # the comparator feed + the labelled-break i
 
 # The labelled-break taxonomy — aligned 1:1 to E-24 Reconciliation Break's vocabulary
 # (model/entities/core/E-24-reconciliation-break.md). The labels manifest IS the
-# zero-missed-breaks oracle the OIM-165 eval scores the OIM-162 engine against, so its
+# zero-missed-breaks oracle a reconciliation eval scores the engine against, so its
 # `taxonomy_class` (cause) + `reconciliation_type` are E-24's own enums, not a parallel set.
 #   - reconciliation_type ∈ position / cash / transaction / ibor_abor / custodian / counterparty
 #   - cause_classification ∈ timing / pricing / missing_transaction / data_error / fx / fees / unexplained
@@ -223,7 +223,7 @@ def _apply_ibor_divergence(
 
     ABOR is the NAV-bearing book and is left UNCHANGED (so the W1 NAV-strike path is
     untouched). IBOR is rewritten in place across three characterised divergence
-    classes — the differences SD-12.10's IBOR/ABOR reconciliation (OIM-162) finds:
+    classes — the differences SD-12.10's IBOR/ABOR reconciliation finds:
 
       1. TRADE-DATE vs SETTLEMENT-DATE TIMING. IBOR is the real-time, trade-date book;
          ABOR is the accounting, settlement-date book. A BUY agreed on/before the as-of
@@ -650,9 +650,9 @@ def _gen_comparator_feed(
     return custodian_holdings, custodian_cash, admin_statement, break_labels
 
 
-# The OIM-197 enrichment RNG — a dedicated stream so the W2 enrichment does NOT shift the
-# OIM-160 streams (RNG_DIV / RNG_TXN / RNG_CMP). The OIM-160 eleven breaks stay byte-stable;
-# the enrichment is a SUPPLEMENT appended after them (T0: the OIM-160 labelled breaks are
+# The enrichment RNG — a dedicated stream so the enrichment does NOT shift the
+# base streams (RNG_DIV / RNG_TXN / RNG_CMP). The base eleven breaks stay byte-stable;
+# the enrichment is a SUPPLEMENT appended after them (the base labelled breaks are
 # preserved, never restated).
 RNG_ENR = random.Random(20260612)
 
@@ -680,34 +680,34 @@ def _enrich_comparator_feed(
     portfolios: list[list],
     latest_q: dt.date,
 ) -> tuple[list[list], list[list], list[list], list[list], list[list], list[list]]:
-    """OIM-197 data enrichment — make the W2 safety machinery exercised ON DATA.
+    """Data enrichment — make the safety machinery exercised ON DATA.
 
-    Takes the OIM-160 feed (the eleven byte-stable breaks) and SUPPLEMENTS it so the
+    Takes the base feed (the eleven byte-stable breaks) and SUPPLEMENTS it so the
     reconciliation engine's dual-pipeline disagreement, the cash Pipeline-B replay and the
     fx/pricing robustness paths fire on the live feed (not only on constructed test rows):
 
       (a) BALANCE-GRADE E-06. Adds an opening-balance cash-flow event per fund so the E-06
           replay sums to a figure of the same order/sign as the custodian balance — the cash
           Pipeline-B `_replay_is_balance_grade` gate now PASSES on data (abstention → 0), and
-          the OIM-160 cash break is found by BOTH pipelines (preserved, not restated).
+          the base cash break is found by BOTH pipelines (preserved, not restated).
       (b) A GENUINE A/B-DISAGREEMENT case. One holding's IBOR E-04 book value is set EQUAL to
           the custodian (Pipeline A clears) while its E-07 mark stays divergent (Pipeline B
           breaks) — `n_pipeline_disagreements > 0` on data, surfaced + labelled.
-      (c) BREAK-SET EXPANSION (N=29). The OIM-162 F-audit's three adversarial fx/pricing
+      (c) BREAK-SET EXPANSION (N=29). Three adversarial fx/pricing
           misclassification shapes (single-holding fx; a coincidental shared-ratio pricing
           pair; a pricing ratio colliding with an fx ratio) + ≥1 further instance per existing
           taxonomy class + a materiality spread — every break labelled cause + materiality.
       (d) ≥2 RULE-UNREACHABLE breaks. IBOR/ABOR residuals with NO timing/accrual/cost-basis
           class to explain them — the of-record engine classification lands `unexplained`; the
-          oracle carries the TRUE cause (`pricing` / `data_error`, P-197-2 fold) the
+          oracle carries the TRUE cause (`pricing` / `data_error`) the
           deterministic rules cannot reach.
-      (e) The ADMINISTRATOR NAV + a labelled >1 bp shadow-NAV divergence (the OIM-164 enabler):
+      (e) The ADMINISTRATOR NAV + a labelled >1 bp shadow-NAV divergence:
           a fund-level admin NAV per fund, one diverging from the internally-derivable NAV
-          beyond a 1 bp band. NOT an OIM-162 engine surface (the engine reconciles
-          position/cash/transaction/ibor_abor, not NAV) — it is OIM-164's input, labelled
-          `nav` in the oracle so OIM-164 proves on data.
+          beyond a 1 bp band. NOT an engine surface (the engine reconciles
+          position/cash/transaction/ibor_abor, not NAV) — it is the shadow-NAV oversight input,
+          labelled `nav` in the oracle so that capability proves on data.
 
-    Determinism: a dedicated RNG (`RNG_ENR`); the OIM-160 streams are untouched. Every injected
+    Determinism: a dedicated RNG (`RNG_ENR`); the base streams are untouched. Every injected
     difference reconciles to its manifest label by value (the two-way value-reconciliation
     invariant, extended over the enriched feed — including the ibor_abor surface — stays green).
 
@@ -722,7 +722,7 @@ def _enrich_comparator_feed(
         if row[1] == "ibor":
             ibor_idx_by_pos[row[0]] = k
 
-    # the next break sequence number (continue the OIM-160 sequence; preserve BRK-0001..0011)
+    # the next break sequence number (continue the base sequence; preserve BRK-0001..0011)
     brk_seq = len(break_labels)
     cf_seq = len(cash_flows)
 
@@ -731,7 +731,7 @@ def _enrich_comparator_feed(
         brk_seq += 1
         return f"BRK-{brk_seq:04d}"
 
-    # the set of position_ids the OIM-160 pass already broke (do not double-break them)
+    # the set of position_ids the base pass already broke (do not double-break them)
     already_broken = {
         lbl[3] for lbl in break_labels if lbl[1] == "position"
     }
@@ -754,7 +754,7 @@ def _enrich_comparator_feed(
     # ============================================================================
     # (c) BREAK-SET EXPANSION — sound (correctly-classified) per-class instances
     # ============================================================================
-    # A second SHARED-RATIO fx pair (ratio 0.965, distinct from the OIM-160 0.98 pair so the
+    # A second SHARED-RATIO fx pair (ratio 0.965, distinct from the base 0.98 pair so the
     # existing fx pins stay stable). The engine sees ≥2 holdings sharing the ratio → fx (CORRECT).
     fx_ratio = Decimal("0.965")
     for pos_id in ("POS-0005", "POS-0007"):
@@ -770,7 +770,7 @@ def _enrich_comparator_feed(
 
     # Two PRICING breaks with DISTINCT, idiosyncratic ratios (a single mismarked holding each →
     # unique ratio → pricing, CORRECT). The ratios (1.033 / 1.081) are chosen NOT to collide with
-    # any other value break's ratio (the OIM-160 pricing ratios are 1.04 / 1.07; the fx ratios are
+    # any other value break's ratio (the base pricing ratios are 1.04 / 1.07; the fx ratios are
     # 0.98 / 0.965; the adversarial pricing ratios are 1.058 / 0.965) — so the classifier sees a
     # UNIQUE ratio and correctly returns pricing.
     for pos_id, ratio in (("POS-0006", Decimal("1.033")), ("POS-0009", Decimal("1.081"))):
@@ -796,8 +796,8 @@ def _enrich_comparator_feed(
             f"custodian share count for {pos_id} is {qd} units below the internal book",
         ])
 
-    # Two TIMING breaks grounded in spare in-flight E-05 trades (the OIM-160 divergence pass
-    # created ~6 in-flight timing holdings; the OIM-160 comparator used the first 2 — reuse 2
+    # Two TIMING breaks grounded in spare in-flight E-05 trades (the base divergence pass
+    # created ~6 in-flight timing holdings; the base comparator used the first 2 — reuse 2
     # more, so the custodian lags by exactly the in-flight quantity → timing, CORRECT).
     timing_spares: list[tuple[str, Decimal]] = []
     used_timing = {lbl[3] for lbl in break_labels if lbl[2] == "timing"}
@@ -822,8 +822,8 @@ def _enrich_comparator_feed(
 
     # ============================================================================
     # (c) THE THREE ADVERSARIAL fx/pricing SHAPES — pinned KNOWN-MISCLASSIFIED
-    # (designed to misclassify under the current ratio-cluster rule; the FIX is OIM-162 cycle-2,
-    #  NOT this cycle — these are characterised, not corrected).
+    # (designed to misclassify under the current ratio-cluster rule; these are
+    #  characterised, not corrected — the classifier fix is a later refinement).
     # ============================================================================
     # ADV-1 — SINGLE-HOLDING fx: one fx-translated holding with a UNIQUE ratio. The rule needs
     # ≥2 holdings sharing a ratio to recognise fx, so a lone fx holding is misclassified PRICING.
@@ -889,7 +889,7 @@ def _enrich_comparator_feed(
     #     against the book-vs-mark divergence (NOT a custodian-vs-book difference — no break_note).
     #   - the IBOR/ABOR UNEXPLAINED residual: IBOR market_value now diverges from ABOR market_value
     #     with no timing/accrual/cost-basis class → the engine lands `unexplained` (one of the >=2
-    #     rule-unreachable breaks). Labelled ibor_abor / pricing (the P-197-2-fold true cause the
+    #     rule-unreachable breaks). Labelled ibor_abor / pricing (the true cause the
     #     rules can't get — the same stale-price corruption as the A/B case BRK-0024).
     ab_pos = "POS-0019"
     mark = _ibor_mv(ab_pos)  # == the E-07 current mark (IBOR mv currently equals the mark)
@@ -905,12 +905,12 @@ def _enrich_comparator_feed(
         f"(Pipeline A clears, Pipeline B mark breaks); surfaced as a pipeline-disagreement break",
     ])
     # the paired ibor_abor unexplained residual on the same holding (IBOR book now != ABOR book).
-    # TRUE CAUSE `pricing` (P-197-2 fold): this is the SAME single injected stale-price corruption
+    # TRUE CAUSE `pricing`: this is the SAME single injected stale-price corruption
     # as BRK-0024 (the A/B case) surfacing on a second reconcile surface — one corruption, ONE true
     # cause (`pricing`), coherent with BRK-0024. `pricing` is EQUALLY rule-unreachable on the
     # ibor_abor surface (the classifier reaches only timing/accrual/cost-basis — ibor_abor_reconcile.py
     # :167-204 emits ONLY `unexplained` for any residual), so this still lands `unexplained`
-    # of-record (the rule-discovery corpus for OIM-162 cycle-2).
+    # of-record (the rule-discovery corpus).
     ab_residual = mark - ab_book  # abor(= mark) − ibor(= ab_book)
     break_labels.append([
         _next_brk(), "ibor_abor", "pricing", f"ibor:{ab_pos}", "internal",
@@ -918,7 +918,7 @@ def _enrich_comparator_feed(
         f"IBOR vs ABOR market value for {ab_pos} diverges by {ab_residual} with NO timing, accrual "
         f"or cost-basis class to explain it — the of-record engine classification lands "
         f"`unexplained` (true cause `pricing`, the same stale-price corruption as the A/B case "
-        f"BRK-0024 on a second surface; the rule-discovery corpus for OIM-162 cycle-2)",
+        f"BRK-0024 on a second surface; the rule-discovery corpus)",
     ])
 
     # ============================================================================
@@ -930,7 +930,7 @@ def _enrich_comparator_feed(
     # NAV reads ABOR market_value, not quantity, so the W1 path stays byte-stable), and set the
     # custodian quantity = the new IBOR quantity (so NO position break — the custodian ties the IBOR
     # book on both quantity and value). The engine sees an IBOR/ABOR quantity divergence no rule
-    # explains → `unexplained`. The oracle carries the true cause (`data_error`, P-197-2 fold — a
+    # explains → `unexplained`. The oracle carries the true cause (`data_error` — a
     # quantity corruption with no value impact and no rule signal, which the rules cannot reach).
     unx_qty_pos = "POS-0035"  # quantity-bearing, currently unbroken
     # ibor qty == abor qty on an unbroken holding (the divergence pass left this one untouched).
@@ -940,7 +940,7 @@ def _enrich_comparator_feed(
     positions[ibor_idx_by_pos[unx_qty_pos]][5] = str(ibor_qty_new)
     # custodian == the new IBOR qty (so NO position break — the custodian ties the IBOR book).
     _set_cust_qty(unx_qty_pos, ibor_qty_new, "")
-    # TRUE CAUSE `data_error` (P-197-2 fold): a quantity divergence with ZERO value impact (IBOR and
+    # TRUE CAUSE `data_error`: a quantity divergence with ZERO value impact (IBOR and
     # ABOR market values are identical) and NO in-flight trade cannot coherently be `fees` (a fee
     # taken in units would move value proportionally). It is the goal's own example — "a corruption
     # with no rule signal": a quantity data_error no deterministic rule can reach (the ibor_abor
@@ -953,15 +953,15 @@ def _enrich_comparator_feed(
         f"IBOR vs ABOR QUANTITY for {unx_qty_pos} diverges by {qty_resid} units with NO value impact "
         f"and NO in-flight trade (so no timing class) and no accrual/cost-basis class — the engine "
         f"lands `unexplained` (true cause `data_error`, a quantity corruption with no rule signal; "
-        f"the second rule-unreachable break for OIM-162 cycle-2)",
+        f"the second rule-unreachable break)",
     ])
 
     # ============================================================================
     # (c) A SECOND CASH break (now both pipelines run, with balance-grade E-06 below)
     # ============================================================================
-    # The OIM-160 cash break is on the first fund (PF-0001). Add a SECOND on the second fund: its
+    # The base cash break is on the first fund (PF-0001). Add a SECOND on the second fund: its
     # admin balance is custodian + a labelled delta (the actual difference == the label, so the
-    # two-way value invariant holds). The OIM-160 first-fund break and the unbroken third fund are
+    # two-way value invariant holds). The base first-fund break and the unbroken third fund are
     # untouched.
     funds_sorted = sorted(fund_total_pf.values())
     cust_cash_by_fund = {row[2]: Decimal(row[4]) for row in custodian_cash}
@@ -979,9 +979,8 @@ def _enrich_comparator_feed(
     ])
 
     # ============================================================================
-    # (c) A SECOND MISSING/EXTRA-TRANSACTION break — the +1 the goal's per-class letter wants
-    # (P-197-2-fold / F-M3: goal (c) "at least one further instance per existing taxonomy class",
-    #  incl. missing/extra txn). A SECOND extra administrator transaction the internal book lacks
+    # (c) A SECOND MISSING/EXTRA-TRANSACTION break — a further instance of the
+    #  missing/extra-transaction class. A SECOND extra administrator transaction the internal book lacks
     #  (the same shape as ADMIN-TXN-EXTRA-01) — the transaction matcher's Pipeline B surfaces it as
     #  a `missing_transaction` break (transaction_match.py:131-146), record_a_ref = the admin ref.
     # ============================================================================
@@ -1002,7 +1001,7 @@ def _enrich_comparator_feed(
     # ============================================================================
     # (a) BALANCE-GRADE E-06 — opening-balance flows so the cash Pipeline-B replay is balance-grade
     # ============================================================================
-    # The OIM-160 E-06 seed is illustrative flows, so the replay sum is a small flow-delta, not a
+    # The base E-06 seed is illustrative flows, so the replay sum is a small flow-delta, not a
     # balance — Pipeline B abstained (`n_pipeline_b_abstained`). Add ONE opening-balance cash-flow
     # event per fund so the replay (Σ all E-06 flows up to the as-of) reconstructs a figure of the
     # same order/sign as the custodian balance — the `_replay_is_balance_grade` gate (same sign,
@@ -1011,7 +1010,7 @@ def _enrich_comparator_feed(
     # The opening balance is set so the FULL replay (opening + Σ the existing flows) equals the
     # custodian cash balance per fund — a true balance ledger: opening + flows = closing(= the
     # custodian balance). So the replay-derived balance reconciles to the custodian EXACTLY (the
-    # OIM-160 cash break is a custodian-vs-ADMIN disagreement; Pipeline B — replay vs custodian —
+    # base cash break is a custodian-vs-ADMIN disagreement; Pipeline B — replay vs custodian —
     # agrees with the custodian, so on the broken fund A breaks and B agrees with custodian → the
     # break is found by BOTH pipelines, as the of-record dual-pipeline cash reconcile).
     existing_flow_sum_by_fund: dict[str, Decimal] = {}
@@ -1039,21 +1038,21 @@ def _enrich_comparator_feed(
     cash_flows = opening_flows + cash_flows
 
     # ============================================================================
-    # (e) THE ADMINISTRATOR NAV + a labelled >1 bp shadow-NAV divergence (the OIM-164 enabler)
+    # (e) THE ADMINISTRATOR NAV + a labelled >1 bp shadow-NAV divergence
     # ============================================================================
     # A fund-level administrator NAV per fund on the admin statement (record_type='nav'). The
     # internally-derivable NAV is Σ the ABOR market values per fund (the NAV-bearing book) at the
     # as-of. The admin NAV equals that on the agreeing funds, and DIVERGES beyond a 1 bp band on
-    # ONE fund (the labelled shadow-NAV divergence case). This is the OIM-164 (SD-12.16 shadow-NAV)
-    # input — NOT an OIM-162 engine surface (the OIM-162 engine reconciles
+    # ONE fund (the labelled shadow-NAV divergence case). This is the SD-12.16 shadow-NAV
+    # oversight input — NOT an engine surface (the engine reconciles
     # position/cash/transaction/ibor_abor, not NAV), so the engine correctly does not surface it.
     # map each sleeve (asset_class_portfolio) to its parent total fund — the ABOR marks live on
     # the sleeve portfolios; the fund-level NAV rolls them up to the total fund.
     sleeve_to_total = {row[0]: row[3] for row in portfolios if row[3]}
     # The internally-derivable NAV is computed under the repo's CANONICAL NAV identity
     # (mart_fund_nav.sql:5) — NAV = Sigma(position market values) + accrued income - fees — so the
-    # admin NAV oracle and the W1 NAV-strike path read ONE NAV truth (SSOT; OIM-197 cycle-2 P-197-1
-    # fold). Sigma the ABOR market values AND Sigma the ABOR accrued income, per total fund; fees
+    # admin NAV oracle and the W1 NAV-strike path read ONE NAV truth (SSOT).
+    # Sigma the ABOR market values AND Sigma the ABOR accrued income, per total fund; fees
     # are STRUCTURALLY ZERO on this seed (no fee/management-charge source is seeded — the same
     # fees = 0 assumption mart_fund_nav.sql:48-53 states), so the fee term is omitted but named.
     # (Sigma ABOR mv ties the E-07 current marks via assert_marts_reconcile_holdings_to_nav, so this
@@ -1072,7 +1071,7 @@ def _enrich_comparator_feed(
         if fund == nav_divergent_fund:
             # diverge by ~12 bp (well beyond the 1 bp band) — a labelled shadow-NAV divergence.
             # The divergence is sized off the CANONICAL internal NAV, so the labelled magnitude and
-            # the bp figure are TRUE under the canonical identity (P-197-1 fold) and remain > 1 bp.
+            # the bp figure are TRUE under the canonical identity and remain > 1 bp.
             nav_delta = (internal_nav * Decimal("0.0012")).quantize(Decimal("0.01"))
             admin_nav = internal_nav + nav_delta
             admin_statement.append([
@@ -1085,11 +1084,11 @@ def _enrich_comparator_feed(
                 f"the administrator's fund-level NAV for {fund} diverges from the internally-derivable "
                 f"NAV (Sigma the ABOR marks + accrued income, the canonical NAV identity) by "
                 f"{nav_delta} (~12 bp, beyond the 1 bp band) — a shadow-NAV divergence case (the "
-                f"OIM-164 SD-12.16 oversight input; NOT an OIM-162 reconcile surface)",
+                f"SD-12.16 oversight input; NOT a reconcile surface)",
             ])
         else:
             # a non-divergent fund: admin NAV EQUALS the canonical internal NAV exactly (no
-            # accrual offset — the cycle-1 PF-0002 3,556 bug is closed; P-197-1 fold).
+            # accrual offset).
             admin_statement.append([
                 f"ADMIN-NAV-{fund}", "nav", fund, "", latest_q.isoformat(),
                 str(internal_nav), "USD", "",
@@ -1225,7 +1224,7 @@ def main() -> None:
     # Learned aliases for the no-universal-identifier private masters (the E-13 mechanism the
     # model names: a private portfolio company accumulates the names it has been seen under, and
     # the next resolution cycle matches them automatically). These are the realistic name surfaces
-    # the inbound entity-resolution feed (OIM-199) resolves against by alias + metadata — NOT the
+    # the inbound entity-resolution feed resolves against by alias + metadata — NOT the
     # internal LE-NNNN golden key, which never appears on a real inbound feed. Each is a name a
     # steward confirmed maps to the master after a prior unresolved record landed in the queue.
     for _le, _alias, _src in (
@@ -1331,8 +1330,8 @@ def main() -> None:
         holding_universe, positions, transactions, cash_flows, divergence_index,
         fund_total_pf, latest_q
     )
-    # OIM-197 enrichment — SUPPLEMENT the OIM-160 feed (the eleven byte-stable breaks are
-    # preserved) so the W2 safety machinery is exercised ON DATA: balance-grade E-06, a genuine
+    # enrichment — SUPPLEMENT the base feed (the eleven byte-stable breaks are
+    # preserved) so the safety machinery is exercised ON DATA: balance-grade E-06, a genuine
     # A/B-disagreement case, break-set expansion (N=29) incl. the three adversarial fx/pricing
     # shapes, >=2 rule-unreachable `unexplained` breaks, the admin NAV + a labelled shadow-NAV
     # divergence. Mutates positions + cash_flows in place (the IBOR book-vs-mark divergence + the
@@ -1499,7 +1498,7 @@ def main() -> None:
       ["admin_record_id", "record_type", "portfolio_id", "instrument_id", "as_of_date",
        "amount_usd", "currency", "ref"], admin_statement)
     # the labels manifest — the zero-missed-breaks ORACLE. Emitted as BOTH CSV (analyst /
-    # dbt-readable) and JSON (the OIM-162 engine / OIM-165 eval read either). The columns
+    # dbt-readable) and JSON (the reconciliation engine / eval read either). The columns
     # are E-24 Reconciliation Break's vocabulary (reconciliation_type / cause_classification
     # / materiality), so the eval scores the engine's E-24 output against this directly.
     break_header = [

@@ -12,8 +12,7 @@ to non-existent SDs are caught after the full parse by `validate_cross_refs`.
 SD whitelist (the only H2 headings permitted in an SD file): `## Purpose`,
 `## Service Operations`, `## Inputs and outputs`, `## Entities`,
 `## Standards`, `## Open extensions`. Any other H2 raises `ParseError`
-naming the file and the offending heading. This closes the strict-parser
-gap surfaced in OIM-54 cycle-1 audit P-1.
+naming the file and the offending heading.
 """
 from __future__ import annotations
 
@@ -37,9 +36,8 @@ _H2_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 
 
 # The whitelist of H2 headings every SD file may carry. Derived from a
-# class-walk of all 169 SD files at OIM-54 cycle-2 time (no SD currently
-# uses any other H2). Adding a heading to the model means adding it here
-# in the same change.
+# class-walk of all 169 SD files (no SD currently uses any other H2).
+# Adding a heading to the model means adding it here in the same change.
 SD_KNOWN_H2: frozenset[str] = frozenset({
     "Purpose",
     "Service Operations",
@@ -322,9 +320,8 @@ def _parse_sd_file(path: Path, expected_bd: int, expected_sd: int) -> ServiceDom
                 sd.downstream_sds.add(sid)
 
     # Strict: every H2 in the file must be in the whitelist. An unknown H2
-    # silently dropped is the cycle-1 P-1 false-integrity archetype — the
-    # ADR / README / brief all claimed strictness; the parser did not enforce
-    # it. Closes that gap.
+    # silently dropped is a false-integrity hazard — the parser would
+    # claim strictness it does not enforce. Raise instead.
     for m in _H2_RE.finditer(text):
         heading = m.group(1).strip()
         if heading not in SD_KNOWN_H2:

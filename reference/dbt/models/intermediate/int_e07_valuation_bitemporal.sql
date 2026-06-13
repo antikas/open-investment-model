@@ -9,8 +9,8 @@
 --                                     the same valuation_date recorded later, carrying a
 --                                     different value_usd.
 --
--- This is the genuine bi-temporal materialisation (the OIM-103 P-R4 carry-forward) —
--- NOT flat drop-recreate staging. It is materialised INCREMENTAL on the unique
+-- This is the genuine bi-temporal materialisation — NOT flat drop-recreate
+-- staging. It is materialised INCREMENTAL on the unique
 -- `valuation_id`: each seeded valuation row is appended ONCE; a re-run appends nothing
 -- (idempotent — no duplicate rows). This model is the append-only log; the derived
 -- system-time bounds (system_valid_to / is_current_knowledge) and the current/as-of

@@ -5,9 +5,9 @@ accruals, validates and **locks** the accounting book for the period. Downstream
 (NAV, reporting, audit) need to know whether the book they are reading is locked (closed) for a
 period or still open. This tool reports the period-lock status of the ABOR book at an as-of date.
 
-Honest derivation — no fabricated lock state. The OIM-160 canonical layer carries a single struck
+Honest derivation — no fabricated lock state. The canonical layer carries a single struck
 ABOR book at one ``as_of_date`` (2026-03-31) and **no explicit period-lock column** (a book-close
-state machine is a later cycle's structure, not seeded here). So this tool derives the status
+state machine is a later structure, not seeded here). So this tool derives the status
 honestly from what the layer carries: the ABOR book is treated as **closed/locked** for any period
 whose end date is on or before the latest struck book date the data-access layer reports, and
 **open** for any later period. It never invents a lock flag; it reports the derivation and the
@@ -17,7 +17,7 @@ seeded state-machine flag.
 Pure and deterministic: the latest struck book date is read by the data-access layer and passed in;
 this tool compares it to the requested as-of. No I/O, no clock, no RNG.
 
-Honest boundary: a correct *derived* read over the OIM-160 **synthetic** book — there is no seeded
+Honest boundary: a correct *derived* read over a **synthetic** book — there is no seeded
 book-close state machine; the lock status is derived from the struck-book date, not read from a
 period-lock ledger.
 """

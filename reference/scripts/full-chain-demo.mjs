@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /**
- * The A-Phase-4 CLOSURE demo + the full-chain crash-replay (OIM-134) — the capstone proof.
+ * The full-chain demo + crash-replay — the capstone proof.
  *
  * The full orchestrator task — *"calculate performance attribution for fund X for period Y, broken
  * down by sector"* — run REAL, END-TO-END, AUTONOMOUSLY through the production `investmentOperation`
- * virtual object: plan → resolve → dispatch → approve → aggregate → close. The first time all five
- * seams run as one pipeline producing a real, audited answer. Extends the OIM-131 dispatch-live-e2e
- * + the OIM-104/133 production-VO crash-replay patterns.
+ * virtual object: plan → resolve → dispatch → approve → aggregate → close. All five seams run as
+ * one pipeline producing a real, audited answer — the same patterns as dispatch-live-e2e and the
+ * production-VO crash-replay proofs.
  *
  * What it exercises, ALL on the REAL `investmentOperation` VO (NOT a probe):
  *
  *   (d) GREEN E2E + REAL ATTRIBUTION NUMBERS — the real Sonnet planner selects SO-09-01 (total
  *       return) + SO-09-05 (contribution breakdown); the RESOLVE step derives their concrete inputs
- *       from the OIM-111 marts (the OIM-115 derivation, in the loop); dispatch runs them for REAL
+ *       from the marts (the derivation, in the loop); dispatch runs them for REAL
  *       results; the gate is a no-op (read-only analytics, riskScore below threshold); aggregate
  *       combines them into a COHERENT attribution (the total return + the per-sector contributions,
- *       RECONCILING per the OIM-115 invariant); close writes a well-formed journaled audit record.
+ *       RECONCILING per the reconciliation invariant); close writes a well-formed journaled audit record.
  *       The PASS asserts: status=completed; both tools fulfilled; aggregated.coherent=true;
  *       aggregated.reconciles=true; the audit record well-formed (every field present).
  *   (c) FULL-CHAIN CRASH-REPLAY — a real crash AFTER the dispatch is journaled but BEFORE the
@@ -28,7 +28,7 @@
  *   `POST {ingress}/investmentOperation/{key}/execute` with the structured params (the fund + window
  *   the resolver resolves against the marts).
  *
- * Reuse-safe teardown (OIM-184): the SHARED Python deployment (:9091 — carrying
+ * Reuse-safe teardown: the SHARED Python deployment (:9091 — carrying
  * bd09/agentinvestPlanner/argResolver/navData/pyTools) is torn down ONLY if THIS run spawned it
  * (pySpawnedByUs). If reused, it is LEFT REGISTERED — never strip a shared resource (other local
  * projects sharing the dev substrate + concurrent OpenIM work depend on it). NEVER `wsl --shutdown`.
@@ -303,7 +303,7 @@ async function pruneDeployments(serviceName, port) {
 
 let pyChild = null;
 // Did THIS run spawn OUR OWN :9092 Python endpoint? Gates OUR Python-side teardown. The shared
-// :9091 endpoint is NEVER our spawn and is NEVER torn down (OIM-184; other local projects sharing
+// :9091 endpoint is NEVER our spawn and is NEVER torn down (other local projects sharing
 // the dev substrate + concurrent OpenIM work depend on it).
 let pySpawnedByUs = false;
 let tsChild = null;
@@ -540,7 +540,7 @@ async function main() {
   }
 
   // ALWAYS spawn OUR OWN instrumented Python endpoint on a DISTINCT port (:9092), COEXISTING with the
-  // shared :9091 endpoint — never colliding with it, never stripping it (OIM-184). Two reasons we
+  // shared :9091 endpoint — never colliding with it, never stripping it. Two reasons we
   // spawn our own rather than reuse the shared one:
   //   1. The crash-replay's planner-once instrument is the LLM-call-count side-effect log, which must
   //      be wired into the endpoint env (AGENTINVEST_LLM_CALL_LOG) — a reused endpoint does not carry
@@ -574,7 +574,7 @@ async function main() {
   results.greenE2e = green.pass;
   results.crashReplay = await runFullChainCrashReplay(green.result);
 
-  // Teardown — only what THIS run spawned (OIM-184). The TS proof endpoints are all self-pruned per
+  // Teardown — only what THIS run spawned. The TS proof endpoints are all self-pruned per
   // flow. The shared Python :9091 deployment is torn down ONLY if WE spawned it.
   if (pySpawnedByUs) {
     killOurPyEndpoint();
@@ -582,7 +582,7 @@ async function main() {
     // Prune ONLY our own :9092 deployment (the one WE registered) — never the shared :9091.
     await pruneDeployments('argResolver', OUR_PY_PORT);
   }
-  log('the shared :9091 OpenIM Python endpoint (bd09/agentinvestPlanner/navData/argResolver/pyTools) is LEFT INTACT — never stripped (OIM-184). Other local projects sharing the dev substrate are untouched.');
+  log('the shared :9091 OpenIM Python endpoint (bd09/agentinvestPlanner/navData/argResolver/pyTools) is LEFT INTACT — never stripped. Other local projects sharing the dev substrate are untouched.');
   try {
     rmSync(LLM_CALL_LOG_WIN, { force: true });
   } catch {
@@ -597,10 +597,10 @@ async function main() {
   log(`  (c) FULL-CHAIN CRASH-REPLAY — side-effects not duplicated                : ${results.crashReplay ? 'PASS' : 'FAIL'}`);
   log('');
   if (allPass) {
-    log('A-PHASE-4 CLOSURE PROVEN — the full orchestrator loop closes on a real, audited attribution:');
+    log('FULL ORCHESTRATOR LOOP PROVEN — the loop closes on a real, audited attribution:');
     log('  - plan → resolve → dispatch → approve → aggregate → close ran end-to-end on the production investmentOperation VO');
     log('  - the real Sonnet planner selected SO-09-01 + SO-09-05; the resolve step derived their concrete inputs from the marts');
-    log('    (the OIM-115 derivation, in the loop); dispatch ran them for REAL results; the gate was a no-op (read-only analytics)');
+    log('    (the derivation, in the loop); dispatch ran them for REAL results; the gate was a no-op (read-only analytics)');
     log('  - aggregate combined them into a coherent attribution (the per-sector contributions reconcile to the total return)');
     log('  - close wrote a well-formed journaled audit record; a full-chain crash recovered with side-effects not duplicated');
     log('  Synthetic data; arg-resolution v0.1 (the BD-09 return tools); the audit record is a journaled record (export is forward).');
@@ -614,7 +614,7 @@ main().catch((err) => {
   log(`ERROR: ${err.message}`);
   try {
     if (tsChild) killTree(tsChild);
-    // Kill ONLY our :9092 endpoint on the error path — never the shared :9091 (OIM-184).
+    // Kill ONLY our :9092 endpoint on the error path — never the shared :9091.
     if (pySpawnedByUs) killOurPyEndpoint();
   } catch {
     /* best-effort */

@@ -2,17 +2,17 @@
 
 These tests drive the ``navData`` service HANDLERS (``get_fund_nav_components`` /
 ``get_fund_holdings_gross``) through a faithful fake ``restate.Context`` — the SAME seam the
-TS workflow reaches over the ingress. This is the level the cycle-1 audit found a gap at: the
+TS workflow reaches over the ingress. This is the level where the original unit test had a gap: the
 past-as-of refusal was unit-tested only on the bare Python *function* (``read_fund_nav_components``
 called directly), which BYPASSED the handler — and the handler DROPPED the ``navKnowledgeDate``
 field, so a past date returned a CURRENT NAV (HTTP 200) on the wire instead of the 422 refusal.
 
-The fold (OIM-133 cycle-2) forwards ``navKnowledgeDate`` from the handler to the read. These
-tests assert the refusal fires AT THE HANDLER (the wire path), closing that gap:
+The handler forwards ``navKnowledgeDate`` to the read. These tests assert the refusal fires AT THE
+HANDLER (the wire path), closing that gap:
 
 - ``test_past_as_of_is_refused_on_the_wire`` — the load-bearing wire-level test: a non-null
   ``navKnowledgeDate`` through the HANDLER raises a ``TerminalError`` (422), NOT a silently-struck
-  current NAV. This is the test that the cycle-1 unit test did NOT cover (it bypassed the handler).
+  current NAV. This is the test the earlier unit test did NOT cover (it bypassed the handler).
 - the snake_case variant is NOT honoured (the wire field is ``navKnowledgeDate``; a snake_case
   ``nav_knowledge_date`` is not the contract field and is ignored — so it must NOT smuggle a past
   date past the refusal as a current strike either; documented behaviour).
@@ -78,19 +78,19 @@ def _store_available() -> bool:
 pytestmark = pytest.mark.filterwarnings("ignore")
 
 
-# --- THE WIRE-LEVEL PAST-AS-OF REFUSAL (the cycle-1 gap, now closed) ------------------------
+# --- THE WIRE-LEVEL PAST-AS-OF REFUSAL (the gap, now closed) --------------------------------
 #
 # Needs NO store: the refusal is checked before any read, so it fires whether or not the marts
-# are provisioned. This is the test the cycle-1 unit test did NOT have — it drives the HANDLER
+# are provisioned. This is the test the earlier unit test did NOT have — it drives the HANDLER
 # (which forwards navKnowledgeDate), not the bare function.
 
 
 def test_past_as_of_is_refused_on_the_wire() -> None:
     """A non-null ``navKnowledgeDate`` through the HANDLER → TerminalError(422), not a current NAV.
 
-    THE load-bearing wire-level test. At the cycle-1 baseline the handler dropped the field and a
-    past date returned the CURRENT NAV with HTTP 200. The fold forwards the field; the OIM-111
-    refusal now fires on the wire path the workflow uses — the honest boundary holds end-to-end.
+    THE load-bearing wire-level test. Before the fix the handler dropped the field and a past date
+    returned the CURRENT NAV with HTTP 200. The handler now forwards the field; the past-as-of
+    refusal fires on the wire path the workflow uses — the honest boundary holds end-to-end.
     """
     with pytest.raises(TerminalError) as excinfo:
         _components(FakeContext(), {"fundId": "PF-0001", "navKnowledgeDate": "2020-01-01"})
@@ -109,10 +109,10 @@ def test_past_as_of_refused_for_any_fund_on_the_wire() -> None:
             _components(FakeContext(), {"fundId": fund_id, "navKnowledgeDate": "2019-12-31"})
 
 
-# --- THE REJECT-UNKNOWN-KEYS HARDENING (OIM-185) — proven ON THE WIRE -----------------------
+# --- THE REJECT-UNKNOWN-KEYS HARDENING — proven ON THE WIRE ---------------------------------
 #
-# The fiduciary-surface input-validation hardening (from OIM-133 cycle-2 P-MINOR-1): the request
-# contracts were bare TypedDicts, which do NOT reject extra keys at runtime, so an off-contract key
+# The fiduciary-surface input-validation hardening: the request contracts were bare TypedDicts,
+# which do NOT reject extra keys at runtime, so an off-contract key
 # (e.g. snake_case `nav_knowledge_date` instead of the contract `navKnowledgeDate`) was silently
 # ignored — a current NAV under a mis-keyed request. The request types are now Pydantic models with
 # `extra="forbid"`, validated IN THE HANDLER BODY, so an unrecognised key is a clean TerminalError
@@ -127,9 +127,9 @@ def test_past_as_of_refused_for_any_fund_on_the_wire() -> None:
 def test_components_unknown_key_is_terminal_400_on_the_wire() -> None:
     """An off-contract key on getFundNavComponents → TerminalError(400), not a silent current NAV.
 
-    The exact OIM-133 P-MINOR-1 archetype: a caller passing snake_case ``nav_knowledge_date`` (NOT
-    the contract field ``navKnowledgeDate``) used to get a CURRENT NAV with no error. It now fails
-    loud at the handler before any read — the silent-mis-key class is closed on the wire.
+    The archetype: a caller passing snake_case ``nav_knowledge_date`` (NOT the contract field
+    ``navKnowledgeDate``) used to get a CURRENT NAV with no error. It now fails loud at the
+    handler before any read — the silent-mis-key class is closed on the wire.
     """
     with pytest.raises(TerminalError) as excinfo:
         _components(
@@ -143,7 +143,7 @@ def test_components_unknown_key_is_terminal_400_on_the_wire() -> None:
 def test_components_arbitrary_unknown_key_is_terminal_400_on_the_wire() -> None:
     """Any unrecognised key (not just the snake_case mis-key) is a clean terminal 400 on the wire.
 
-    The reject-unknown-keys guard rejects ANY extra key, not only the OIM-133 snake_case archetype.
+    The reject-unknown-keys guard rejects ANY extra key, not only the snake_case archetype.
     """
     with pytest.raises(TerminalError) as excinfo:
         _components(FakeContext(), {"fundId": "PF-0001", "bogusKey": 1})
@@ -168,7 +168,7 @@ def test_components_non_dict_body_is_terminal_400_on_the_wire() -> None:
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- MALFORMED-BODY → CLEAN 400 (OIM-187: the serde never raises) ----------------------------
+# --- MALFORMED-BODY → CLEAN 400 (the serde never raises) -------------------------------------
 #
 # Drive the FULL wire path on BOTH handlers — the shared ``PassThroughJsonSerde.deserialize`` over
 # the raw bytes (the transport-body parse; must NOT raise) then the REAL handler over its result. A
@@ -194,12 +194,12 @@ def test_holdings_malformed_or_non_utf8_body_is_terminal_400(body: bytes) -> Non
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple did NOT catch it, so it
-# escaped → a status-less 500. The cycle-2 fold catches the WHOLE parse-failure class
-# (``except Exception``) → the serde returns the raw text as a non-dict ``str`` the handler 400s.
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple would not catch it (→ a
+# status-less 500). Catching the WHOLE parse-failure class (``except Exception``) → the serde
+# returns the raw text as a non-dict ``str`` the handler 400s.
 # REVERT-SENSITIVE: re-narrowing the catch makes the deep-nest body raise out of ``deserialize``.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
@@ -243,7 +243,7 @@ def test_valid_keys_pass_the_guard_store_independent() -> None:
         _components(FakeContext(), {"fundId": "PF-0001"})
     except TerminalError as exc:
         assert getattr(exc, "status_code", None) == 422, "valid current strike must not be a 400"
-    # A valid past-as-of request: the OIM-133 refusal fires (422), NOT the guard's 400.
+    # A valid past-as-of request: the past-as-of refusal fires (422), NOT the guard's 400.
     with pytest.raises(TerminalError) as excinfo:
         _components(FakeContext(), {"fundId": "PF-0001", "navKnowledgeDate": "2020-01-01"})
     assert getattr(excinfo.value, "status_code", None) == 422
@@ -269,7 +269,7 @@ def test_holdings_gross_ties_to_nav_mart_gross_cross_mart() -> None:
 
     This is the falsifiable check the workflow's roll-up runs — two marts, two SQL paths. A green
     here proves the holdings-derived gross (an INDEPENDENT path) ties to the fund-NAV mart's gross,
-    so the workflow's reconciliation is NOT the within-row X==X tautology the cycle-1 audit found.
+    so the workflow's reconciliation is NOT a within-row X==X tautology.
     """
     for fund_id in list_fund_ids():
         nav = _components(FakeContext(), {"fundId": fund_id})

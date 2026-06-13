@@ -1,8 +1,8 @@
-"""The propose-only LLM cause-proposer + the evidence bundle (OIM-162 cycle-2, load-bearing tests).
+"""The propose-only LLM cause-proposer + the evidence bundle.
 
 These tests are OFFLINE + DETERMINISTIC (CI-safe): they inject a FAKE/stub Anthropic client so NO
-live model call is made (the planner-test precedent; the ONE live smoke is proven separately and
-pasted in the cycle report). What they prove:
+live model call is made (the planner-test precedent; the ONE live smoke is proven separately). What
+they prove:
 
 1. **the evidence bundle never touches the oracle label** — the assembler imports neither the labels
    reader nor any labels table; a bundle's serialised content contains no label, no true cause, no
@@ -278,7 +278,7 @@ def _cands(rows: list[tuple[str, str, str]]) -> list[ValueDiffCandidate]:
 def test_narrowed_rule_reproduces_the_flywheel_outcome_from_values_alone() -> None:
     """The narrowed `classify_value_diffs` reproduces the flywheel-turn outcome from values ALONE.
 
-    Mirrors the OIM-197 value-break population (the same ratios), NO label passed in — the rule
+    Mirrors the value-break population (the same ratios), NO label passed in — the rule
     sees only the observable values:
     - the shared downward fx pairs (0.98, 0.965) → `fx`;
     - the unique upward pricing breaks (1.04, 1.033 ...) → `pricing` (direction rule);
@@ -328,7 +328,7 @@ def test_narrowed_rule_output_is_invariant_to_a_label_permutation() -> None:
 def test_direction_rule_does_not_perturb_the_zero_amount_pin() -> None:
     """The POS-0019 by-construction pin (ratio == 1, zero amount) stays `pricing` under the rule.
 
-    The pin-fragility warning (OIM-197 F-N2/O-2): the zero-amount A/B-disagreement break is
+    The pin-fragility warning: the zero-amount A/B-disagreement break is
     classified `pricing` because its 1.000 ratio is unique. The narrowed DIRECTION rule (> 1 →
     pricing) must NOT change this — a ratio of exactly 1 is neither above nor below, so it falls to
     the cluster rule (unique → pricing). This guards that the rule holds on the EVIDENCE, not on the

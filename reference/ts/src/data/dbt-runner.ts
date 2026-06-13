@@ -1,16 +1,16 @@
 /**
- * dbt-runner — the agentINVEST canonical-data-layer driver (OIM-102).
+ * dbt-runner — the agentINVEST canonical-data-layer driver.
  *
  * Runs the dbt canonical-data pipeline (`reference/dbt/`, duckdb dev backend) by
  * invoking the workspace-level `scripts/dbt-build.mjs` launcher, which handles
- * the Windows->WSL2 hop and lands the duckdb file on WSL2-native ext4 (P-R2).
+ * the Windows->WSL2 hop and lands the duckdb file on WSL2-native ext4.
  * The CLI's `seed` subcommand and the `bootstrap` data-half both call this — so
  * `seed` is now REAL (it runs `dbt build`), not a stub.
  *
  * The dbt toolchain lives in the Python uv env (dbt-duckdb in the `dbt`
  * dependency group); this TS module does not import dbt — it shells out to the
- * launcher, the same pattern OIM-101 used for the cross-language smoke. The
- * canonical-data layer is a dbt store, NOT an "agent" (ADR-0054 vocabulary).
+ * launcher, the same pattern the cross-language smoke uses. The
+ * canonical-data layer is a dbt store, NOT an "agent".
  */
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';

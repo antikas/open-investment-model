@@ -1,8 +1,8 @@
--- The NAV invariant (build-gate A1): for every fund, the mart's nav_usd must equal an
+-- The NAV invariant: for every fund, the mart's nav_usd must equal an
 -- INDEPENDENT re-aggregation of the source — Σ(current marks) + Σ(abor accruals) − fees
 -- — to within |Δ| ≤ $0.01 absolute OR ≤ 1e-6 relative (whichever is looser), the
--- ratified A1 NAV-strike tolerance (docs/design/agentinvest-build-gate-tolerances.md
--- §A1). The test fails (returns rows) for any fund outside the tolerance.
+-- ratified NAV-strike tolerance. The test fails (returns rows) for any fund outside the
+-- tolerance.
 --
 -- THIS TEST IS FALSIFIABLE, NOT A TAUTOLOGY. It does NOT re-run the mart's own roll-up
 -- and compare to itself. It recomputes the NAV from the SOURCE by an independent path

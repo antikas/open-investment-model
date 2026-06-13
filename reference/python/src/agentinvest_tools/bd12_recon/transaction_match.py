@@ -5,8 +5,8 @@ the administrator's, so every settled event is confirmed on both sides. The matc
 transaction reference (the internal E-05 ``transaction_id`` ↔ the administrator line's ``ref``).
 Emits E-24-shaped transaction-break findings with a deterministic of-record cause.
 
-THE DUAL-INDEPENDENT-PIPELINE here is the **unmatched residue checked BOTH directions** (the goal's
-concretisation for the transaction surface):
+THE DUAL-INDEPENDENT-PIPELINE here is the **unmatched residue checked BOTH directions** for the
+transaction surface:
 
 - **Pipeline A — internal-not-in-external.** A settled internal transaction with no matching
   administrator line (a transaction the firm booked the administrator did not record) → a
@@ -21,14 +21,15 @@ dual-pipeline
 safety property for this surface (a one-direction match is the half-job). A transaction present on
 BOTH sides but with a disagreeing amount beyond tolerance is surfaced as a
 ``pipeline_disagreement`` break (the two sides matched on the key but the pipelines disagree on the
-value) — though OIM-160 injects no amount-mismatch on a matched transaction, the check is live.
+value) — though the synthetic feed injects no amount-mismatch on a matched transaction, the check is
+live.
 
 Pure and deterministic: the internal settled transactions and the administrator transaction lines
 are read by the data-access layers and passed in; this tool matches both directions, classifies and
 surfaces. No I/O.
 
-Honest boundary: a match over the OIM-160 **synthetic** records, FINDINGS-ONLY — never a production
-transaction reconciliation against a live administrator, never a correcting entry (OIM-163).
+Honest boundary: a match over **synthetic** records, FINDINGS-ONLY — never a production
+transaction reconciliation against a live administrator, never a correcting entry.
 """
 
 from __future__ import annotations

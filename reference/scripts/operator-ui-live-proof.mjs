@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * OPERATOR UI v0.1 LIVE PROOF (OIM-142) — proves the two load-bearing surfaces work
+ * OPERATOR UI v0.1 LIVE PROOF — proves the two load-bearing surfaces work
  * against the DEPLOYED stack over synthetic data, NOT mocked. It exercises the EXACT
  * server-side data paths the Operator UI's pages use (the same admin + ingress calls
  * `operator-ui/src/lib/restate.ts` makes), driving a REAL `navCalculation` workflow
- * paused at the OIM-132 gate:
+ * paused at the high-stakes approval gate:
  *
  *   APPROVALS QUEUE (load-bearing):
  *     1. force the gate to fire — submit a real NAV strike (riskScore 1.0 → pauses at
@@ -26,7 +26,7 @@
  *        data source) — the published strike carries its publish record; both operations'
  *        recorded state is the audit trail the dashboard renders.
  *
- * Reuse-safe teardown (OIM-184): the SHARED Python deployment (:9091 — navData/bd09) is
+ * Reuse-safe teardown: the SHARED Python deployment (:9091 — navData/bd09) is
  * torn down ONLY if THIS run spawned it (pySpawnedByUs). If reused (the usual case on
  * a dev workstation), it is LEFT REGISTERED — never strip a shared resource (other local
  * projects sharing the dev substrate + concurrent OpenIM work depend on it). The TS proof
@@ -208,10 +208,10 @@ async function uiReadOperation(workflowId) {
 
 /**
  * A RAW out-of-band resolve — exactly a CLI/admin operator resolving the awakeable on the
- * ingress, WITHOUT the UI's registry-mark. This is the path that, in cycle-1, left a phantom
- * pending entry (only the UI ever marked the registry). The fold's gate resolve-mark +
- * liveness-reconcile must make it leave the queue anyway. Mirrors `resolveAwakeable` in the
- * gate proof. Returns the HTTP status (202 for a dead/already-resolved awakeable too).
+ * ingress, WITHOUT the UI's registry-mark. The gate's own resolve-mark plus the reader's
+ * liveness-reconcile must make such an entry leave the queue anyway, even though the UI never
+ * marked it. Mirrors `resolveAwakeable` in the gate proof. Returns the HTTP status (202 for a
+ * dead/already-resolved awakeable too).
  */
 async function rawResolveAwakeable(awakeableId, payload) {
   const res = await fetch(`${INGRESS_URL}/restate/awakeables/${encodeURIComponent(awakeableId)}/resolve`, {
@@ -224,7 +224,7 @@ async function rawResolveAwakeable(awakeableId, payload) {
 }
 
 /**
- * The UI's NEW stale-row guard (OIM-142 cycle-2, fix #3) — mirrors `decideApproval`'s
+ * The UI's stale-row guard — mirrors `decideApproval`'s
  * status pre-check in operator-ui/src/lib/restate.ts: confirm the op is genuinely
  * suspended at the gate BEFORE resolving; refuse honestly (StaleApprovalError-shaped) and
  * record NOTHING if it is terminal/gone. Returns {recorded, observedStatus}.
@@ -263,7 +263,7 @@ async function attachRun(workflowId, timeoutMs = 90_000) {
 }
 
 /**
- * Clear the PRE-FOLD stale dev-state pending entries (OIM-142 cycle-2, deliverable #5) so
+ * Clear any stale dev-state pending entries so
  * the proof starts from a clean queue. Reads the shared index via the ingress reader, then
  * replaces each per-op `entry` VO + the shared `__index__` with empty via the admin
  * modify-state endpoint. Same mechanism as scripts/clear-approval-registry-state.mjs.
@@ -353,7 +353,7 @@ async function main() {
   }
 
   // navData up (the marts-read seam the NAV workflow needs). Reuse the shared :9091 if
-  // registered; only spawn if not (OIM-184 reuse-safety).
+  // registered; only spawn if not (reuse-safety).
   if (await awaitServiceRegistered('navData', 5)) {
     log('navData already registered — reusing the shared Python endpoint (no spawn). LEFT INTACT on exit (shared).');
   } else {
@@ -435,11 +435,10 @@ async function main() {
     !rejectState?.publishRecord && !stillPendingR;
   log(`REJECT flow: ${results.reject ? 'PASS' : 'FAIL'}`);
 
-  // ── CLI / OUT-OF-BAND RESOLVE LEAVES THE QUEUE (OIM-142 cycle-2, P-MAJOR-1) ──
-  // The cycle-1 defect: only the UI's own decideApproval marked the registry, so a CLI/raw
-  // resolve left a permanent phantom pending entry. The fold's gate resolve-mark (the gate
-  // marks the entry on the await-completes path) + the reader liveness-reconcile must make a
-  // RAW resolve (no UI mark) leave the pending queue too.
+  // ── CLI / OUT-OF-BAND RESOLVE LEAVES THE QUEUE ──
+  // A CLI/raw resolve never touches the UI's registry mark, so the gate's own resolve-mark
+  // (the gate marks the entry on the await-completes path) + the reader liveness-reconcile
+  // are what make a RAW resolve (no UI mark) leave the pending queue.
   log('');
   log('──── APPROVALS QUEUE: a CLI / OUT-OF-BAND resolve LEAVES the queue (no UI mark) ────');
   const cli = await fireGate('PF-0001', state);
@@ -459,9 +458,9 @@ async function main() {
   log(`CLI/OUT-OF-BAND resolve leaves the queue: ${results.cliResolveLeaves ? 'PASS' : 'FAIL'}`);
 
   // ── STALE ROW: acting on an already-resolved row records NO false approved ──
-  // The rejected workflow `r` is now terminal (aborted). Its awakeable is dead. In cycle-1,
-  // clicking Approve on it returned 202 and recorded a phantom `approved` audit. The fold's
-  // UI stale-row guard must confirm the op is no longer suspended and record NOTHING.
+  // The rejected workflow `r` is now terminal (aborted). Its awakeable is dead. Clicking
+  // Approve on a dead awakeable returns 202 but must NOT record a phantom `approved` audit:
+  // the UI stale-row guard confirms the op is no longer suspended and records NOTHING.
   log('');
   log('──── APPROVALS QUEUE: a STALE row records NO false approved ────');
   const beforeResolvedCount = (await uiListApprovals()).resolved.length;
@@ -537,7 +536,7 @@ async function main() {
     opAborted?.status === 'aborted';
   log(`OPERATIONS dashboard: ${results.operations ? 'PASS' : 'FAIL'} (published strike's 4 step checkpoints + publish record rendered; aborted strike's state rendered).`);
 
-  // ── Teardown (OIM-184 reuse-safe) ─────────────────────────────────────────
+  // ── Teardown (reuse-safe) ─────────────────────────────────────────────────
   killTree(tsChild);
   tsChild = null;
   await new Promise((x) => setTimeout(x, 600));
@@ -569,16 +568,16 @@ async function main() {
   log('SUMMARY:');
   log(`  APPROVALS — list a real pending approval, APPROVE → workflow proceeds/completes : ${results.approve ? 'PASS' : 'FAIL'}`);
   log(`  APPROVALS — REJECT → workflow aborts (aborted-by-operator), NO publish          : ${results.reject ? 'PASS' : 'FAIL'}`);
-  log(`  APPROVALS — CLI/OUT-OF-BAND resolve LEAVES the queue (no UI mark) [cycle-2]      : ${results.cliResolveLeaves ? 'PASS' : 'FAIL'}`);
-  log(`  APPROVALS — STALE row records NO false approved (refused honestly) [cycle-2]     : ${results.staleNoFalseApproved ? 'PASS' : 'FAIL'}`);
-  log(`  APPROVALS — TIMED-OUT approval LEAVES the queue [cycle-2]                        : ${results.timeoutLeaves ? 'PASS' : 'FAIL'}`);
+  log(`  APPROVALS — CLI/OUT-OF-BAND resolve LEAVES the queue (no UI mark)                 : ${results.cliResolveLeaves ? 'PASS' : 'FAIL'}`);
+  log(`  APPROVALS — STALE row records NO false approved (refused honestly)                : ${results.staleNoFalseApproved ? 'PASS' : 'FAIL'}`);
+  log(`  APPROVALS — TIMED-OUT approval LEAVES the queue                                  : ${results.timeoutLeaves ? 'PASS' : 'FAIL'}`);
   log(`  OPERATIONS — read the live journal + the publish/audit record                   : ${results.operations ? 'PASS' : 'FAIL'}`);
   log('');
   if (allPass) {
-    log('OPERATOR UI v0.1 surfaces PROVEN LIVE against the deployed stack (OIM-142): the Approvals queue lists a REAL');
+    log('OPERATOR UI v0.1 surfaces PROVEN LIVE against the deployed stack: the Approvals queue lists a REAL');
     log('paused workflow and approve→proceeds / reject→aborts (no publish) by resolving the awakeable on the ingress; a');
     log('CLI/out-of-band-resolved AND a timed-out approval each LEAVE the pending queue, and a STALE row records no false');
-    log('approved (the registry is now true to the world — cycle-2 P-MAJOR-1 fold). The Operations dashboard reads the');
+    log('approved (the registry is true to the world). The Operations dashboard reads the');
     log('live journal + audit record. Synthetic data; the gate pause/resolve/timeout behaviour UNCHANGED (additive marks).');
     process.exit(0);
   }

@@ -55,12 +55,21 @@ SAMPLE_LIMIT_MAX = 25
 SAMPLE_LIMIT_DEFAULT = 25
 
 # The inspectable schemas + table-name prefixes — the canonical "reader-facing" layer: the
-# published marts and the realised staging entities. The set of concrete tables is derived from
-# the store within these (never hard-coded), so the allowlist is the live table set.
+# realised canonical entity model, the bi-temporal as-of layer, the computed marts, and the
+# comparator/oracle feeds. The set of concrete tables is derived from the store within these
+# (never hard-coded), so the allowlist is the live table set.
 _MART_SCHEMA = "main_marts"
 _MART_PREFIX = "mart_"
 _STAGING_SCHEMA = "main_staging"
 _STAGING_PREFIX = "stg_"
+_INTERMEDIATE_SCHEMA = "main_intermediate"
+_INTERMEDIATE_PREFIX = "int_"
+
+# Within the staging schema, the realised canonical ENTITY model is the ``stg_eNN_*`` views
+# (E-01..E-20 — the OpenIM canonical model made data); the remaining ``stg_*`` are the
+# comparator/oracle/sample feeds. We split them so the inspector surfaces the canonical entity
+# model as its own layer rather than burying the headline differentiator under "staging".
+_ENTITY_RE = re.compile(r"^stg_e\d{2}_")
 
 # A plain SQL identifier (lower snake, no quoting, no spaces, no punctuation). Applied to BOTH
 # the schema and the table part before any membership check — a name that is not a plain
@@ -85,7 +94,7 @@ class CanonicalTable:
     name: str  # the fully-qualified "schema.table" — the handle the sampler validates against
     schema: str
     table: str
-    layer: str  # "mart" | "staging" — for the UI's grouping
+    layer: str  # "canonical" | "bitemporal" | "mart" | "staging" — for the UI's grouping
     row_count: int
 
 
@@ -110,11 +119,18 @@ def _is_plain_identifier_pair(fq_name: str) -> bool:
 
 
 def _inspectable_layer(schema: str, table: str) -> str | None:
-    """Return the layer ("mart"/"staging") iff this schema+table is inspectable, else None."""
+    """Return the inspector layer iff this schema+table is inspectable, else None.
+
+    Layers: ``"canonical"`` (the realised E-NN entity model, ``stg_eNN_*``), ``"bitemporal"``
+    (the as-of intermediate layer, ``int_*``), ``"mart"`` (the computed marts), and ``"staging"``
+    (the comparator/oracle/sample feeds — the remaining ``stg_*``).
+    """
     if schema == _MART_SCHEMA and table.startswith(_MART_PREFIX):
         return "mart"
     if schema == _STAGING_SCHEMA and table.startswith(_STAGING_PREFIX):
-        return "staging"
+        return "canonical" if _ENTITY_RE.match(table) else "staging"
+    if schema == _INTERMEDIATE_SCHEMA and table.startswith(_INTERMEDIATE_PREFIX):
+        return "bitemporal"
     return None
 
 
@@ -136,9 +152,14 @@ def list_canonical_tables(duckdb_path: Path | None = None) -> list[CanonicalTabl
             from information_schema.tables
             where (table_schema = ? and table_name like ?)
                or (table_schema = ? and table_name like ?)
+               or (table_schema = ? and table_name like ?)
             order by table_schema, table_name
             """,
-            [_MART_SCHEMA, _MART_PREFIX + "%", _STAGING_SCHEMA, _STAGING_PREFIX + "%"],
+            [
+                _MART_SCHEMA, _MART_PREFIX + "%",
+                _STAGING_SCHEMA, _STAGING_PREFIX + "%",
+                _INTERMEDIATE_SCHEMA, _INTERMEDIATE_PREFIX + "%",
+            ],
         ).fetchall()
 
         out: list[CanonicalTable] = []
@@ -167,8 +188,11 @@ def list_canonical_tables(duckdb_path: Path | None = None) -> list[CanonicalTabl
     finally:
         con.close()
 
-    # Marts first (the headline reader-facing layer), then staging; each group already name-ordered.
-    out.sort(key=lambda t: (0 if t.layer == "mart" else 1, t.name))
+    # Group order for the inspector: the canonical entity model first (the headline differentiator),
+    # then the bi-temporal as-of layer, the computed marts, and the comparator/oracle feeds last;
+    # each group already name-ordered.
+    _layer_order = {"canonical": 0, "bitemporal": 1, "mart": 2, "staging": 3}
+    out.sort(key=lambda t: (_layer_order.get(t.layer, 9), t.name))
     return out
 
 

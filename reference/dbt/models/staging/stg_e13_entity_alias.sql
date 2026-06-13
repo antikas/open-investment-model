@@ -8,7 +8,7 @@
 -- `first_seen_at`. KEY-PARTITIONED by master kind (`subject_type`: legal_entity /
 -- instrument / fund / portfolio_company) per the ownership map — SD-13.1/13.2/13.3
 -- own their partitions. Like the other append-only entities, the bi-temporal
--- MATERIALISATION is the OIM-110 coordination point — this is a flat view, not a
+-- MATERIALISATION is a coordination point — this is a flat view, not a
 -- snapshot/incremental model. Grain declared, materialisation deferred.
 --
 -- Parity-aware SQL: `varchar`/`date` casts only — portable across duckdb and

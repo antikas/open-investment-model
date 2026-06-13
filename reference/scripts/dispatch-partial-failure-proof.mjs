@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * CLEAN PARTIAL-FAILURE proof for the DISPATCH step (seam 2, OIM-131) — the HEADLINE
- * audit gate. On the REAL `investmentOperation` VO (not a probe).
+ * CLEAN PARTIAL-FAILURE proof for the DISPATCH step (seam 2) — the HEADLINE
+ * proof. On the REAL `investmentOperation` VO (not a probe).
  *
  * What it proves: when ONE dispatched step fails deterministically, the siblings
  * STILL complete and the failure is SURFACED cleanly — never swallowed, never a
@@ -74,7 +74,7 @@ function wslPrelude() {
  * A deterministic fixture plan: a healthy SO-09-01, an ENGINEERED BAD-ARG SO-09-01
  * (an extra key the tool's extra="forbid" input rejects → terminal 400), and a
  * healthy SO-09-05. The bad arg is the honest "planner could not resolve the args"
- * case the brief names.
+ * case.
  */
 function buildPartialFailurePlan() {
   return {
@@ -211,8 +211,7 @@ let pyChild = null;
 // :9091)? Only true if we started it; false on reuse. The TS proof endpoint is always
 // this-run-spawned (always killed); the shared Python endpoint is killed ONLY if we
 // spawned it — reusing then killing it would strip the shared deployment that other
-// local projects sharing the dev substrate + concurrent OpenIM work depend on
-// (OIM-131 cycle-2 fold).
+// local projects sharing the dev substrate + concurrent OpenIM work depend on.
 let pySpawnedByUs = false;
 let tsChild = null;
 

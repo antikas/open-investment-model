@@ -1,16 +1,16 @@
-"""SO-09-01 compute_total_return (Modified Dietz) — §A2 oracle, determinism, boundaries.
+"""SO-09-01 compute_total_return (Modified Dietz) — external oracle, determinism, boundaries.
 
 The load-bearing test is ``test_oracle_*``: the tool matches a **published** Modified Dietz
-worked example to <= 1 bp absolute (build-gate §A2). A tool tested only against its own
-synthetic data is self-referential — the published external figure is the proof.
+worked example to <= 1 bp absolute. A tool tested only against its own synthetic data is
+self-referential — the published external figure is the proof.
 
-§A2 source-authority note: the §A2 oracle here is the **Wikipedia "Modified Dietz method"**
+Source-authority note: the oracle here is the **Wikipedia "Modified Dietz method"**
 worked example (cross-checked against Corporate Finance Institute) — public, canonical-method
 mirrors (150/125 = 120% is textbook-invariant and was independently re-derived). They are *not*
-the brief's named primary source (the GIPS Handbook / official CFA-CIPM curriculum). The primary
-GIPS Handbook / CFA-CIPM worked examples are the production-grade oracle to fold into the
-eval-harness Class-A arm once properly sourced — a carry-forward. The figure is correct; the
-authority caveat is recorded honestly.
+the named primary source (the GIPS Handbook / official CFA-CIPM curriculum). The primary
+GIPS Handbook / CFA-CIPM worked examples are the production-grade oracle to fold in once
+properly sourced — a carry-forward. The figure is correct; the authority caveat is recorded
+honestly.
 """
 
 from __future__ import annotations
@@ -25,11 +25,11 @@ from agentinvest_tools.bd09.total_return import (
     so_09_01_compute_total_return,
 )
 
-# §A2 tolerance: 1 bp = 0.0001 as a rate.
+# Tolerance: 1 bp = 0.0001 as a rate.
 ONE_BP = Decimal("0.0001")
 
 
-# --- §A2 external oracle -----------------------------------------------------
+# --- external oracle ---------------------------------------------------------
 
 
 def test_oracle_wikipedia_modified_dietz_example_1() -> None:

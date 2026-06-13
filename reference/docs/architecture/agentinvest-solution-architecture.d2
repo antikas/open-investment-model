@@ -203,7 +203,7 @@ runtime.bd_services.recon -> data.break_store: "appends break findings (journale
 # The propose-only stage — BUILT: reads the unexplained residue, writes proposals ONLY (never the books).
 runtime.recon_propose -> data.break_store: "reads the unexplained residue (of-record cause unchanged) · BUILT + proven"
 runtime.recon_propose -> data.proposals_store: "appends explanation proposals (insert-only · the LLM's only write) · BUILT + proven"
-# The correction workflow — still designed/planned, not built (OIM-163).
+# The correction workflow — still designed/planned, not built.
 runtime.recon_correct -> runtime.approval: "the correcting entry rides the high-stakes gate" {style: {stroke-dash: 4}}
 
 # The entity-resolution engine reads the inbound feed + the E-01/E-13/E-14 masters and

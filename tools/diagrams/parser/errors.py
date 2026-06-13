@@ -8,7 +8,7 @@ class ParseError(ValueError):
 
     Carries the offending file path, the 1-indexed line number, and a
     one-clause reason. The generator surfaces these to stderr and exits
-    non-zero per criterion (c) in the OIM-54 cycle goal.
+    non-zero.
     """
 
     def __init__(self, path: Path | str, line: int | None, reason: str) -> None:

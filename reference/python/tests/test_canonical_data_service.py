@@ -72,7 +72,7 @@ pytestmark = pytest.mark.filterwarnings("ignore")
 # The inspector's read-only / no-injection boundary: an unknown or crafted table name is REFUSED
 # (404) before any sample SQL — never interpolated. These run on a present OR absent store: a
 # crafted name cannot match any real allowlisted table, so it is rejected either way. This is the
-# test the re-audit's P role attacks; it is the centre of the safety claim.
+# centre of the safety claim.
 
 
 def test_sample_rejects_injection_table_name() -> None:
@@ -126,7 +126,7 @@ def test_sample_rejects_unknown_but_well_formed_table_name() -> None:
 
 # --- THE REJECT-UNKNOWN-KEYS HARDENING (store-independent) -----------------------------------
 #
-# The same fiduciary-surface input-validation hardening as navData (OIM-185): the request types are
+# The same fiduciary-surface input-validation hardening as navData: the request types are
 # Pydantic models with extra="forbid", validated in the handler body, so an off-contract key is a
 # clean 400. These need NO store.
 
@@ -154,7 +154,7 @@ def test_sample_non_dict_body_is_terminal_400() -> None:
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- MALFORMED-BODY → CLEAN 400 (OIM-187: the serde never raises) ----------------------------
+# --- MALFORMED-BODY → CLEAN 400 (the serde never raises) -------------------------------------
 #
 # Drive the FULL wire path on BOTH handlers — the shared ``PassThroughJsonSerde.deserialize`` over
 # the raw bytes (must NOT raise) then the REAL handler over its result. A malformed-JSON / non-UTF8
@@ -180,12 +180,12 @@ def test_sample_malformed_or_non_utf8_body_is_terminal_400(body: bytes) -> None:
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple did NOT catch it → a
-# status-less 500. The cycle-2 fold catches the WHOLE parse-failure class (``except Exception``) →
-# the serde returns the raw text as a non-dict ``str`` the handler 400s. REVERT-SENSITIVE.
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple would not catch it (→ a
+# status-less 500). Catching the WHOLE parse-failure class (``except Exception``) → the serde
+# returns the raw text as a non-dict ``str`` the handler 400s. REVERT-SENSITIVE.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
 DEEP_NEST_BODY = b"[" * 20000 + b"]" * 20000
@@ -235,7 +235,7 @@ def test_list_tables_lists_marts_and_staging_with_counts() -> None:
     # Every table carries a non-negative integer row count and a known layer.
     for t in out["tables"]:
         assert isinstance(t["rowCount"], int) and t["rowCount"] >= 0
-        assert t["layer"] in ("mart", "staging")
+        assert t["layer"] in ("canonical", "bitemporal", "mart", "staging")
 
 
 @pytest.mark.skipif(not _store_available(), reason="store not provisioned")

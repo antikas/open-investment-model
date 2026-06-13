@@ -982,15 +982,15 @@ def _adr_status_qualifier(text: str) -> str | None:
 
     e.g. 'accepted (built)', 'accepted (audited)', 'accepted (remediated)',
     'accepted', 'proposed'. The qualifier is everything after `**Status:**`
-    up to the first ` —` / `.` / newline so trailing prose ("— awaiting
-    blind audit") does not pollute the comparison.
+    up to the first ` —` / `.` / newline so any trailing prose
+    does not pollute the comparison.
     """
     m = re.search(r"\*\*Status:\*\*\s*([^\n]+)", text)
     if not m:
         return None
     raw = m.group(1).strip()
     # Cut at the first em-dash-with-space or full stop so a trailing clause
-    # ("Accepted (built) — awaiting blind audit.") reduces to the qualifier.
+    # ("Accepted (built) — further notes.") reduces to the qualifier.
     raw = re.split(r"\s+—\s|(?<=\))\.", raw)[0].strip()
     return raw.lower()
 

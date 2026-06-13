@@ -5,14 +5,14 @@ yet settled (and, in the full model, announced-but-unpaid corporate actions and 
 projected adjustments to the current position. These are the E-05 ``pending`` / ``confirmed``
 transactions whose ``settlement_date`` is after the read as-of — the in-flight set that drives the
 TD/SD-timing divergence between the IBOR book (which carries them on trade date) and the ABOR book
-(which recognises them only on settlement). Exposing this read is what lets OIM-162's
+(which recognises them only on settlement). Exposing this read is what lets the reconciliation
 transaction-matching leg reason about what the IBOR book holds that the ABOR book does not yet.
 
 Pure and deterministic: the in-flight transactions are read by the data-access layer (filtered to
 ``settlement_date > as_of`` and ``status in (pending, confirmed)``) and passed in; this tool types,
 orders and counts them. No I/O, no clock, no RNG.
 
-Honest boundary: a correct read over the OIM-160 **synthetic** internal book, not a production
+Honest boundary: a correct read over a **synthetic** internal book, not a production
 pending-activity feed.
 """
 

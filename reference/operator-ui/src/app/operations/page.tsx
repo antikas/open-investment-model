@@ -1,7 +1,7 @@
 /**
  * The OPERATIONS DASHBOARD — read-only. Lists the operations the local engine has run
  * (in-flight + completed `investmentOperation`s and `navCalculation` strikes) with
- * their lifecycle status, and links each to its recorded audit trail (the OIM-134
+ * their lifecycle status, and links each to its recorded audit trail (the
  * `operation-closed` record / the NAV publish record). No mutation — an operator reads
  * the audit trail here; the decision surface is the Approvals queue.
  */

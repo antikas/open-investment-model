@@ -20,16 +20,15 @@ target-path: "target"
 clean-targets: ["target", "dbt_packages", "logs"]
 
 # Directory-level materialisation defaults, following the architecture-§4
-# staging/intermediate/marts convention. Only `staging` carries a model now;
-# the intermediate/marts folders are created empty so OIM-110/111 land without
-# moving files. (The investment-dbt-lab shape: staging = views, marts = tables.)
+# staging/intermediate/marts convention. (The investment-dbt-lab shape:
+# staging = views, marts = tables.)
 models:
   agentinvest:
     staging:
       +materialized: view        # staging is a cheap 1:1 typed view over the seed
       +schema: staging
     intermediate:
-      # The bi-temporal materialisation (OIM-110, the OIM-103 P-R4 carry-forward):
+      # The bi-temporal materialisation:
       # the append-only *_bitemporal log models set +materialized: incremental in
       # their own config blocks (idempotent append on the unique key); the *_versioned
       # and *_current models are cheap views over the full log. The folder default is

@@ -1,30 +1,30 @@
 /**
  * agentinvest-cli — the agentINVEST operator control plane.
  *
- * The OIM-100 substrate-floor CLI. Three subcommands:
+ * The substrate-floor CLI. Three subcommands:
  *
  *   bootstrap   Prove the substrate end-to-end: reach the shared Restate,
  *               register the agentINVEST handler endpoint, invoke the
  *               placeholder handler (baseline + crash-and-replay), report the
  *               journaled step. The data-bearing half runs the canonical-data
- *               `dbt build` (OIM-102) so a fresh bootstrap leaves a populated
+ *               `dbt build` so a fresh bootstrap leaves a populated
  *               duckdb canonical store.
  *
  *   seed        Load the canonical synthetic data: runs the dbt pipeline
- *               (`dbt build` over reference/dbt/, duckdb dev). REAL as of
- *               OIM-102 — it seeds + builds + tests the canonical-data layer.
+ *               (`dbt build` over reference/dbt/, duckdb dev). It seeds +
+ *               builds + tests the canonical-data layer.
  *
  *   serve       Start the agentINVEST handler endpoint, register it with the
  *               shared Restate, and hold it running so handlers stay invocable.
  *
- * Language choice (ADR-0054): TypeScript. The orchestrator and the operator
- * control surfaces (CLI, Operator UI) are TS in ADR-0054's polyglot split, on
+ * Language choice: TypeScript. The orchestrator and the operator
+ * control surfaces (CLI, Operator UI) are TS in the polyglot split, on
  * the mature Restate TS SDK; the placeholder handler and this CLI therefore
- * land where OIM-104's TS orchestrator will live, and reuse a sibling project's
+ * land where the TS orchestrator lives, and reuse a sibling project's
  * proven SDK-1.6.1-against-server-1.6.2 reach with no rework. (Python owns the tool +
- * data layer from OIM-101/102 — a separate `reference/python/` workspace.)
+ * data layer — a separate `reference/python/` workspace.)
  *
- * Topology vocabulary (ADR-0054): `serve` serves a model-free handler endpoint;
+ * Topology vocabulary: `serve` serves a model-free handler endpoint;
  * the per-Business-Domain layer is a service, never an "agent"; there is one
  * orchestrating loop, built later. Nothing here is named "agent".
  *
@@ -56,7 +56,7 @@ function out(line = ''): void {
   process.stdout.write(`${line}\n`);
 }
 
-const TOP_HELP = `${CLI} — agentINVEST operator control plane (OIM-100 substrate floor)
+const TOP_HELP = `${CLI} — agentINVEST operator control plane (substrate floor)
 
 USAGE
   ${CLI} <command> [--help]
@@ -65,9 +65,9 @@ COMMANDS
   bootstrap   Prove the substrate: reach the shared Restate, register the
               agentINVEST endpoint, invoke the placeholder handler (baseline +
               crash-and-replay), report the journaled step, THEN run the
-              canonical-data 'dbt build' (the data half — OIM-102).
+              canonical-data 'dbt build' (the data half).
   seed        Build the canonical data layer: runs 'dbt build' over reference/dbt/
-              (duckdb dev). REAL as of OIM-102 (seed + run + test, idempotent).
+              (duckdb dev) — seed + run + test, idempotent.
   serve       Start the agentINVEST handler endpoint, register it with the
               shared Restate, and hold it running (handlers stay invocable).
 
@@ -96,9 +96,9 @@ WHAT IT DOES
   5. Invokes ${PLACEHOLDER_SERVICE_NAME}/ping with a forced crash — expects
      attempts=2 with the SAME journaled step-id (journal replay proven).
   6. Invokes ${PLACEHOLDER_SERVICE_NAME}/health over the ingress.
-  7. Runs the canonical-data 'dbt build' (the data half — OIM-102): seeds +
+  7. Runs the canonical-data 'dbt build' (the data half): seeds +
      builds + tests reference/dbt/ on the duckdb dev backend (idempotent). The
-     duckdb file lands on WSL2-native ext4, not the repo mount (P-R2).
+     duckdb file lands on WSL2-native ext4, not the repo mount.
 
 OPTIONS
   --keep-serving   After the proof, keep the endpoint running (do not exit).
@@ -118,15 +118,15 @@ USAGE
 
 WHAT IT DOES
   Runs the canonical-data dbt pipeline: 'dbt build' over reference/dbt/ on the
-  duckdb dev backend (seed CSV -> staging view -> dbt tests). REAL as of OIM-102.
+  duckdb dev backend (seed CSV -> staging view -> dbt tests).
   Idempotent: dbt seed full-refreshes the seed table, so a re-run leaves the same
   state (no duplicate rows). The duckdb database file lands on WSL2-native ext4
   (~/.local/share/agentinvest/duckdb/canonical.duckdb by default), NOT the repo
-  mount (P-R2 — a duckdb locking/perf hazard on the 9p /mnt/d mount).
+  mount (a duckdb locking/perf hazard on the 9p /mnt/d mount).
 
-  At the OIM-102 scaffold the dbt project carries ONE sample staging model + a
-  small seed (proves the pipeline). The ten BD-09 entities are OIM-103; the full
-  synthetic seed + the intermediate/mart models are OIM-110/111.
+  At the scaffold stage the dbt project carries ONE sample staging model + a
+  small seed (proves the pipeline). The full synthetic seed + the
+  intermediate/mart models over the BD-09 entities are forward work.
 
 OPTIONS
   Any args after '--' are forwarded to dbt (e.g. '-- --select staging',
@@ -258,7 +258,7 @@ async function cmdBootstrap(args: string[]): Promise<number> {
     }
   }
 
-  // Data half — the canonical-data dbt build (OIM-102). Real, not a stub.
+  // Data half — the canonical-data dbt build. Real, not a stub.
   if (has(args, '--skip-data')) {
     out(`[${CLI}] bootstrap data-half SKIPPED (--skip-data); substrate proof only.`);
   } else {
@@ -267,7 +267,7 @@ async function cmdBootstrap(args: string[]): Promise<number> {
     if (dbtCode !== 0) {
       throw new Error(`canonical-data 'dbt build' failed (exit ${dbtCode})`);
     }
-    out(`[${CLI}] canonical data layer built (duckdb dev, on ext4 per P-R2).`);
+    out(`[${CLI}] canonical data layer built (duckdb dev, on ext4).`);
   }
 
   if (has(args, '--keep-serving')) {
@@ -286,7 +286,7 @@ async function cmdSeed(args: string[]): Promise<number> {
   const sep = args.indexOf('--');
   const dbtArgs = sep >= 0 ? args.slice(sep + 1) : [];
   const effective = dbtArgs.length > 0 ? dbtArgs : ['build'];
-  out(`[${CLI}] seed — canonical-data 'dbt ${effective.join(' ')}' (duckdb dev, ext4 per P-R2)`);
+  out(`[${CLI}] seed — canonical-data 'dbt ${effective.join(' ')}' (duckdb dev, ext4)`);
   const code = await runDbt(effective);
   if (code === 0) {
     out(`[${CLI}] canonical data layer built (seed + staging + tests, idempotent).`);

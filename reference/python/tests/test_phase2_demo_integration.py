@@ -14,7 +14,7 @@ local stack** and asserts the load-bearing properties:
   published mart);
 - the **per-operation warm latency is under the 2 s bar**, for *both* calls.
 
-Skip semantics (mirrors the OIM-114 live-surface tests): this is a live-stack test, skipped
+Skip semantics (the live-surface test pattern): this is a live-stack test, skipped
 unless BOTH preconditions hold — the canonical marts are readable (duckdb installed + the store
 built) AND the ``bd09`` service is registered and reachable over the ingress. So a plain
 ``uv run pytest`` in the base venv (no dbt group, substrate down) skips it cleanly; the data +

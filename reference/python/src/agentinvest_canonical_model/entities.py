@@ -176,7 +176,7 @@ class E03PortfolioMandate(CanonicalEntity):
 
 
 # ---------------------------------------------------------------------------
-# E-04 Holding / Position — key-partitioned by `book` (ADR-0022).
+# E-04 Holding / Position — key-partitioned by `book`.
 # ---------------------------------------------------------------------------
 
 
@@ -246,9 +246,8 @@ class E07Valuation(CanonicalEntity):
     new row). Bi-temporal grain: ``valuation_date`` is the as-of axis (see ``GRAIN``).
     The ownership map key-partitions on ``method`` using the same attribute-schema
     enum the column carries (``observable_price`` / ``mark_to_model`` /
-    ``manager_mark`` / ``appraisal`` / ``amortised_cost``); the prior ownership-map
-    vs attribute-schema vocabulary divergence is now reconciled in the model (the
-    ownership map adopted the enum vocabulary; the column itself is unchanged).
+    ``manager_mark`` / ``appraisal`` / ``amortised_cost``): the ownership map and
+    the attribute schema share one vocabulary.
     """
 
     valuation_id: str = Field(description="Primary key.")
@@ -280,9 +279,9 @@ class E07Valuation(CanonicalEntity):
     MODEL_FILE: ClassVar[str] = "model/entities/core/E-07-valuation.md"
     OWNERSHIP: ClassVar[OwnershipPattern] = OwnershipPattern.KEY_PARTITIONED
     # E-07 is key-partitioned by `method`. The ownership map and the attribute
-    # schema now share one vocabulary (the enum: observable_price / mark_to_model /
-    # manager_mark / appraisal / amortised_cost) — the prior divergence is
-    # reconciled in the model. The column realised is the schema's enum.
+    # schema share one vocabulary (the enum: observable_price / mark_to_model /
+    # manager_mark / appraisal / amortised_cost). The column realised is the
+    # schema's enum.
     PARTITION_KEY: ClassVar[str | None] = "method"
     # Append-only / as-of: the valid-time axis the bi-temporal materialisation
     # keys on. Materialised in the canonical-data layer as an incremental,
@@ -468,8 +467,8 @@ class E19RiskMeasurement(CanonicalEntity):
     ENTITY_ID: ClassVar[str] = "E-19"
     MODEL_FILE: ClassVar[str] = "model/entities/core/E-19-risk-measurement.md"
     OWNERSHIP: ClassVar[OwnershipPattern] = OwnershipPattern.KEY_PARTITIONED
-    # Key-partitioned by `risk_type` (ADR-0022 / ownership-map). The model's E-19
-    # attribute schema now carries the `risk_type` column — the partition is backed
+    # Key-partitioned by `risk_type` (the ownership-map). The model's E-19
+    # attribute schema carries the `risk_type` column — the partition is backed
     # by a real column, matching `measurement_id` as the surrogate row-handle and
     # `risk_type` as the partition discriminator that is part of the logical
     # identity. `measure_type` is the orthogonal axis (kind of number), kept too.
@@ -634,12 +633,12 @@ class E06CashFlowEvent(CanonicalEntity):
 # E-24 Reconciliation Break — the owned, aged reconciliation finding. Single owner
 # (SD-12.10 Reconciliation). Append-only-as-event (the disagreement happened on a
 # date; the break is never deleted). ENGINE-OWNED, NOT a dbt staging entity — it is
-# emitted by the OIM-162 reconciliation engine into a separate engine-owned break
-# store (a distinct duckdb file), so it has NO `stg_e24_*.sql` staging model and is
-# the one realised entity legitimately unstaged on the dbt staging surface (a
-# surfaced coverage gap, never a drift). It IS registered here so `drift.py`
-# substantively validates its Pydantic schema against the E-24 model file (the
-# E-05/E-06 precedent — the schema cross-check is the contract enforcer).
+# emitted by the reconciliation engine into a separate engine-owned break store (a
+# distinct duckdb file), so it has NO `stg_e24_*.sql` staging model and is the one
+# realised entity legitimately unstaged on the dbt staging surface (a surfaced
+# coverage gap, never a drift). It IS registered here so `drift.py` substantively
+# validates its Pydantic schema against the E-24 model file (the E-05/E-06
+# precedent — the schema cross-check is the contract enforcer).
 # ---------------------------------------------------------------------------
 
 
@@ -654,14 +653,14 @@ class E24ReconciliationBreak(CanonicalEntity):
     *cause classification*, the *ageing* and the *resolution trail* are not, which is
     why the break is stored rather than computed as a transient view.
 
-    OIM-162 cycle-1 emits these **append-only, insert-only, immutable** at
+    The reconciliation engine emits these **append-only, insert-only, immutable** at
     ``status = open``, ``identified_date = as_of``, ``age_days = 0``, with a
     deterministic of-record ``cause_classification`` (or ``unexplained`` on a
     rule-miss). The ``status`` transition / ``resolved_date`` / ``resolution_note`` /
     ``correcting_entry_ref`` fields are the resolution lifecycle the entity carries —
-    they are **never written this cycle** (the correcting entry + the lifecycle update
-    are OIM-163, behind the breach gate). ``frozen=True`` (inherited) realises the
-    immutable-as-event property: a break instance is a value, never mutated in place.
+    the correcting entry and the lifecycle update happen later, behind the breach
+    gate. ``frozen=True`` (inherited) realises the immutable-as-event property: a
+    break instance is a value, never mutated in place.
     """
 
     break_id: str = Field(description="Primary key.")
@@ -715,11 +714,11 @@ class E24ReconciliationBreak(CanonicalEntity):
 
 # ---------------------------------------------------------------------------
 # Registry — the realised entities, in model-file order. The drift check iterates this.
-# The W2 reconciliation substrate adds E-05 Transaction + E-06 Cash Flow Event (the
-# transaction-matching and cash-leg records the reconciliation tools consume) and, at
-# OIM-162, E-24 Reconciliation Break (the owned finding the reconciliation engine
-# emits — engine-owned + append-only, the one realised entity legitimately unstaged
-# on the dbt staging surface; its Pydantic schema is still drift-checked here).
+# The reconciliation substrate adds E-05 Transaction + E-06 Cash Flow Event (the
+# transaction-matching and cash-leg records the reconciliation tools consume) and
+# E-24 Reconciliation Break (the owned finding the reconciliation engine emits —
+# engine-owned + append-only, the one realised entity legitimately unstaged on the
+# dbt staging surface; its Pydantic schema is still drift-checked here).
 # ---------------------------------------------------------------------------
 
 ENTITY_MODELS: tuple[type[CanonicalEntity], ...] = (

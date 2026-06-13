@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * LIVE plan→dispatch END-TO-END proof for the DISPATCH step (seam 2, OIM-131).
+ * LIVE plan→dispatch END-TO-END proof for the DISPATCH step (seam 2).
  *
  * The seam-1→seam-2 chain, end to end, with the REAL planner: a real Sonnet 4.6
  * `.plan()` call (key in reference/.env) → a journaled plan → the dispatch step
@@ -9,7 +9,7 @@
  *
  * HONEST BOUNDARY (the whole point of the live run): a real plan may carry steps
  * whose args the planner could NOT fully resolve (the abstract-arg → concrete-input
- * resolution / marts-in-the-loop is FORWARD — what the OIM-115 demo did by hand).
+ * resolution / marts-in-the-loop is not yet automated — what phase2-demo does by hand).
  * Dispatch passes the args AS GIVEN; bd09 validates them; a step with unresolved
  * args surfaces as a CLEAN FAILURE (honest v0.1, not a bug). This proof reports
  * which steps FULFILLED vs surfaced-as-clean-failure — it does NOT require all
@@ -169,7 +169,7 @@ let pyChild = null;
 // endpoint. The TS proof endpoint is always this-run-spawned (always killed); the
 // shared Python endpoint is killed ONLY if we spawned it — reusing then killing it
 // would strip the shared deployment that other local projects sharing the dev
-// substrate + concurrent OpenIM work depend on (OIM-131 cycle-2 fold).
+// substrate + concurrent OpenIM work depend on.
 let pySpawnedByUs = false;
 let tsChild = null;
 

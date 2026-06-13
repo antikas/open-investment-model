@@ -14,7 +14,7 @@
  * (the same shape a sibling project's runtime uses). The exposure is dev-only and the
  * handler surface here is a no-op placeholder.
  *
- * As OIM-101/102/104 land, more handlers bind here (the orchestrator virtual
+ * More handlers bind here (the orchestrator virtual
  * object, the per-BD services, the typed tool surface). This file is the seam:
  * future handlers are added to the `.bind(...)` chain. The CLI's `serve`
  * subcommand calls `runEndpoint`.

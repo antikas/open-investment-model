@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * PRODUCTION-VO FORCED-FIRE proof for the HIGH-STAKES APPROVAL GATE (seam 3,
- * OIM-132) — extends the OIM-104/130/131 production-VO crash-replay pattern
- * (dispatch-crash-proof.mjs). The four-flow audit gate.
+ * PRODUCTION-VO FORCED-FIRE proof for the HIGH-STAKES APPROVAL GATE (seam 3) —
+ * the same production-VO crash-replay pattern as dispatch-crash-proof.mjs. The
+ * four-flow audit gate.
  *
  * What it proves, ALL on the REAL `investmentOperation` VO (a forced-fire fixture
  * plan with riskScore >= the test threshold, NO LLM call):
@@ -30,7 +30,7 @@
  * (payload body) and `/reject`. The awakeable id is read from the journaled notify
  * record the handler logs (the operator's "notification").
  *
- * Reuse-safe teardown (OIM-184): the SHARED Python deployment (:9091
+ * Reuse-safe teardown: the SHARED Python deployment (:9091
  * bd09/agentinvestPlanner/pyTools) is torn down ONLY if THIS run spawned it
  * (pySpawnedByUs). If reused, it is LEFT REGISTERED — never strip a shared resource
  * (other local projects sharing the dev substrate + concurrent OpenIM work depend
@@ -290,7 +290,7 @@ let pyChild = null;
 // Did THIS run spawn the shared Python endpoint (bd09/agentinvestPlanner/pyTools on
 // :9091)? Only true if WE started it; false if we REUSED an already-running shared
 // endpoint. Gates ALL Python-side teardown — never strip a shared deployment we did
-// not spawn (OIM-184; other local projects sharing the dev substrate + concurrent
+// not spawn (other local projects sharing the dev substrate + concurrent
 // OpenIM work depend on it). The TS proof endpoint we always spawn, so it is always
 // cleaned up.
 let pySpawnedByUs = false;
@@ -535,7 +535,7 @@ async function main() {
   log(`test timeout: ${TEST_TIMEOUT_MS}ms (shortened from the 24h provisional default for the timeout-abort flow).`);
 
   // bd09 up (the seam-2 dispatch target, reached before the gate). Reuse the shared
-  // :9091 endpoint if registered; only spawn if not (OIM-184 reuse-safety).
+  // :9091 endpoint if registered; only spawn if not (reuse-safety).
   if (await awaitServiceRegistered('bd09', 2)) {
     log('bd09 already registered — reusing the running Python endpoint (no spawn). LEFT INTACT on exit (shared).');
   } else {
@@ -585,7 +585,7 @@ async function main() {
     expectAbortKind: 'aborted-by-timeout',
   });
 
-  // Teardown — only what THIS run spawned (OIM-184). The TS proof endpoints are all
+  // Teardown — only what THIS run spawned. The TS proof endpoints are all
   // self-pruned per flow. The shared Python :9091 deployment is torn down ONLY if WE
   // spawned it; if reused, LEAVE IT REGISTERED (other local projects sharing the dev
   // substrate + concurrent OpenIM work depend on it).
@@ -614,7 +614,7 @@ async function main() {
   log(`  (iv) TIMEOUT → terminal abort (by-timeout)       : ${results.timeout ? 'PASS' : 'FAIL'}`);
   log('');
   if (allPass) {
-    log('PRODUCTION-VO HIGH-STAKES APPROVAL GATE PROVEN (OIM-132): all four flows + replay-safety green on the REAL');
+    log('PRODUCTION-VO HIGH-STAKES APPROVAL GATE PROVEN: all four flows + replay-safety green on the REAL');
     log('investmentOperation VO; the awakeable resolved via the ingress (the operator path); aborts terminal (no retry-storm).');
     process.exit(0);
   }

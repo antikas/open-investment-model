@@ -6,13 +6,13 @@ differences between them. Unlike the position/cash/transaction reconciles (inter
 data), this reconciles the two internal books against EACH OTHER. Emits E-24-shaped ``ibor_abor``
 break findings only for the UNEXPLAINED residual.
 
-THE KEY SEMANTIC: the two books LEGITIMATELY diverge on three known OIM-160 classes (the books are
+THE KEY SEMANTIC: the two books LEGITIMATELY diverge on three known classes (the books are
 *meant* to differ — E-04 places accruals on ABOR; the IBOR carries in-flight trades trade-date that
 ABOR recognises only on settlement; cost-basis is an accounting-book concept). So an IBOR/ABOR
 divergence is NOT automatically a break — it is a break only where it is NOT explained by a known
-class. This is the dual-independent-pipeline for this surface (the goal's concretisation):
+class. This is the dual-independent-pipeline for this surface:
 
-- **Pipeline A — the divergence EXPLAINED by the known OIM-160 classes.** For each holding, the
+- **Pipeline A — the divergence EXPLAINED by the known classes.** For each holding, the
   IBOR-vs-ABOR difference is attributed to: a TD/SD-timing class (the quantity/value lag explained
   by a known in-flight E-05 trade), an ACCRUAL class (the ABOR accrued income the IBOR does not
   carry), or a COST-BASIS class (the accounting cost basis). The explained divergence is accounted
@@ -26,7 +26,7 @@ explanation did not fully account for the difference), the residual is surfaced 
 ``pipeline_disagreement=True`` — the two pipelines disagree on whether the holding reconciles, and
 the engine surfaces the disagreement rather than silently accepting the explanation.
 
-On the clean OIM-160 synthetic dual book every divergence is fully explained by its class, so the
+On the clean synthetic dual book every divergence is fully explained by its class, so the
 residual is zero and this reconcile emits ZERO ``ibor_abor`` breaks — which is the CORRECT result
 (the two books are internally consistent; the breaks live between the internal book and the OUTSIDE
 data, which the position/cash/transaction reconciles find). A constructed unexplained residual (a
@@ -38,7 +38,7 @@ Pure and deterministic: the IBOR rows, the ABOR rows and the in-flight trades ar
 data-access layers and passed in; this tool accounts for the divergence and surfaces the residual.
 No I/O.
 
-Honest boundary: a reconcile over the OIM-160 **synthetic** internal dual book, FINDINGS-ONLY.
+Honest boundary: a reconcile over the **synthetic** internal dual book, FINDINGS-ONLY.
 """
 
 from __future__ import annotations

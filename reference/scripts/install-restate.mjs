@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
- * OpenIM-OWNED Restate installer (agentINVEST substrate, P-R1 decoupling).
+ * OpenIM-OWNED Restate installer (agentINVEST substrate).
  *
  * This is OpenIM's OWN install script — vendored from the pattern a sibling
  * project sharing the dev substrate uses, but OWNED and version-pinned by OpenIM.
  * A fresh OpenIM checkout installs its substrate binaries with THIS script and
- * NEVER reads the sibling project's source files. The OIM-100 floor depended
- * operationally on the sibling's `install-restate.mjs` / `run-restate-server.mjs`
- * at a hardcoded absolute checkout path OpenIM neither owned nor versioned; that
- * source-file dependency is removed here (the OIM-100 pre-mortem's P-R1, High/High).
+ * NEVER reads the sibling project's source files. OpenIM does not depend on the
+ * sibling's `install-restate.mjs` / `run-restate-server.mjs` at a hardcoded
+ * absolute checkout path it neither owns nor versions.
  *
  * Version contract: RESTATE_VERSION below is OpenIM's OWN pin. It is kept at the
  * same value the sibling project pins so the *running* instance can be shared at
@@ -32,7 +31,7 @@ import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-/** OpenIM's OWN Restate version pin (the P-R1 version contract). */
+/** OpenIM's OWN Restate version pin (the version contract). */
 export const RESTATE_VERSION = '1.6.2';
 
 const REPO = 'restatedev/restate';

@@ -2,16 +2,16 @@
 
 SD-12.2 ABOR's *income and expense accrual* Service Operation: the interest / dividends / fees the
 accounting book accrues between cash dates, so the book reflects earned-but-unreceived amounts.
-This is one of the three OIM-160 divergence classes — the ABOR book carries an
+This is one of the three divergence classes — the ABOR book carries an
 ``accrued_income_usd`` on E-04 that the IBOR book does not (E-04 places accruals on the ABOR
-partition). Exposing this read gives OIM-162's reconciliation a typed view of the accrual
+partition). Exposing this read gives the reconciliation a typed view of the accrual
 divergence.
 
 Pure and deterministic: the per-position accrued amounts are read by the data-access layer from the
 ABOR partition of E-04 at the as-of and passed in; this tool types, orders and totals them. No I/O,
 no clock, no RNG.
 
-Honest boundary: a correct read over the OIM-160 **synthetic** internal accounting book, not a
+Honest boundary: a correct read over a **synthetic** internal accounting book, not a
 production accrual.
 """
 

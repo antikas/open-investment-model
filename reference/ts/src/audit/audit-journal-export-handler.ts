@@ -1,12 +1,12 @@
 /**
- * `auditJournalExport` — the invokable Restate handler for the audit-journal export (OIM-151 part 5).
+ * `auditJournalExport` — the invokable Restate handler for the audit-journal export.
  *
  * A thin Restate SERVICE handler that runs the same GATHER → CHAIN → WRITE pipeline the CLI runs, so
  * the export is invokable over the ingress (e.g. by a future nightly scheduler). The NIGHTLY CRON
- * TRIGGER IS DEFERRED (deploy-surface, OIM-150) — this handler is built INVOKABLE; nothing wires a
+ * TRIGGER IS DEFERRED (deploy-surface) — this handler is built INVOKABLE; nothing wires a
  * schedule here.
  *
- * JOURNALING DISCIPLINE (the OIM-104 shape). The two side effects — the GATHER (admin/ingress reads
+ * JOURNALING DISCIPLINE. The two side effects — the GATHER (admin/ingress reads
  * over `fetch`) and the WRITE (the JSON-L file write) — each run inside a TOP-LEVEL `ctx.run` so
  * their results are journaled exactly-once; neither nests a further context action inside its
  * closure. The export TIMESTAMP is read as a TOP-LEVEL journaled `ctx.date.now()` (never a bare

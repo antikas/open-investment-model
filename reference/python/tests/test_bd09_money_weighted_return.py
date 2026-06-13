@@ -1,15 +1,15 @@
-"""SO-09-03 compute_money_weighted_return (IRR/MWR) — §A2 oracle, determinism, boundaries.
+"""SO-09-03 compute_money_weighted_return (IRR/MWR) — external oracle, determinism, boundaries.
 
 The load-bearing test is ``test_oracle_*``: the IRR matches a **published** MWR worked example
-to <= 1 bp absolute (build-gate §A2).
+to <= 1 bp absolute.
 
-§A2 source-authority note: the §A2 oracle here is the **AnalystPrep CFA Level I** worked example
+Source-authority note: the oracle here is the **AnalystPrep CFA Level I** worked example
 — a public, canonical-method mirror (the IRR root is textbook-invariant regardless of which
-publication prints it, and the figure was independently re-derived). It is *not* the brief's
+publication prints it, and the figure was independently re-derived). It is *not* the
 named primary source (the GIPS Handbook / official CFA-CIPM curriculum worked examples). The
-primary GIPS Handbook / CFA-CIPM examples are the production-grade oracle to fold into the
-eval-harness Class-A arm once properly sourced — a carry-forward. The figure is correct; the
-authority caveat is recorded honestly.
+primary GIPS Handbook / CFA-CIPM examples are the production-grade oracle to fold in once
+properly sourced — a carry-forward. The figure is correct; the authority caveat is recorded
+honestly.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from agentinvest_tools.bd09.money_weighted_return import (
 ONE_BP = Decimal("0.0001")
 
 
-# --- §A2 external oracle -----------------------------------------------------
+# --- external oracle ---------------------------------------------------------
 
 
 def test_oracle_analystprep_irr_example() -> None:

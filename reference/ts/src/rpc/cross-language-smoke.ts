@@ -1,5 +1,5 @@
 /**
- * Cross-language RPC smoke test (OIM-101's load-bearing proof).
+ * Cross-language RPC smoke test — the load-bearing proof of the TS↔Python seam.
  *
  * Proves a TypeScript handler invokes a Python handler over Restate's TYPED RPC,
  * the payload round-tripping as a typed structure, from a fresh checkout.
@@ -51,7 +51,7 @@ const SMOKE_TS_PORT = Number(process.env.AGENTINVEST_SMOKE_TS_PORT ?? 9092);
 
 /**
  * The thin TS orchestrator service whose handler crosses into Python. This is
- * the model-free service shape OIM-104's real orchestrator extends; here it does
+ * the model-free service shape the real orchestrator extends; here it does
  * nothing but dispatch to the Python tool over typed RPC.
  */
 const tsOrchestratorSmoke = service({
@@ -148,7 +148,7 @@ async function main(): Promise<number> {
     return 0;
   } finally {
     // Deregister this short-lived endpoint from the SHARED journal before the
-    // listener closes, so the smoke does not leave a dead-port orphan (OIM-107).
+    // listener closes, so the smoke does not leave a dead-port orphan.
     if (deploymentId) {
       out(`[cross-language-smoke] deregistering deployment ${deploymentId}`);
       await deregisterDeployment(deploymentId);

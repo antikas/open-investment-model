@@ -1,12 +1,12 @@
 /**
- * Unit proof of the ADDITIVE pending-approvals registry (OIM-142) — the read index
+ * Unit proof of the ADDITIVE pending-approvals registry — the read index
  * the gate ALSO records each notice in, so a surface can enumerate the approvals
  * awaiting a decision. Isolated from the substrate with a fake ObjectContext that
  * holds the keyed state; asserts register → pending, resolve → resolved, and that
  * the registry NEVER decides anything (the awakeable is the decision path).
  *
  * The LIVE proof (the gate's fire-and-forget send populating a real registry, read
- * by the Operator UI, the awakeable resolved on the ingress) is the OIM-142 UI proof.
+ * by the Operator UI, the awakeable resolved on the ingress) is the UI proof.
  */
 import { describe, expect, it } from 'vitest';
 import { type Context, type ObjectContext } from '@restatedev/restate-sdk';
@@ -92,11 +92,11 @@ describe('approvalRegistry — the additive pending-approvals index', () => {
 });
 
 /**
- * TERMINAL-TRUTH-WINS (OIM-142 cycle-4, fold P-MINOR-1 residual). Two writers race on the
+ * TERMINAL-TRUTH-WINS. Two writers race on the
  * same entry for a gated operation — the gate's terminal-path mark and the UI's post-resolve
  * mark — serialised by the single-writer-per-key VO. The recorded label must be the operation's
- * TERMINAL TRUTH regardless of ARRIVAL ORDER (cycle-3's first-writer-wins was order-based and
- * left the reverse interleaving open). The gate's `'aborted'` (durable-timeout path, the sole
+ * TERMINAL TRUTH regardless of ARRIVAL ORDER (a plain first-writer-wins rule is order-based and
+ * leaves the reverse interleaving open). The gate's `'aborted'` (durable-timeout path, the sole
  * producer of an `aborted` mark) DOMINATES: it overrides a recorded non-`aborted` whenever it
  * arrives (BOTH orderings → `aborted`); a non-`aborted` late write never overrides a recorded
  * `aborted`; a same decision is an idempotent no-op; a first write on a pending entry applies.
@@ -120,7 +120,7 @@ describe('approvalRegistry.resolve — terminal-truth-wins (decided-trail label 
     ).toBe(true);
   });
 
-  it('REVERSE (UI-marks-first): approved recorded on a pending row, the gate aborted arrives LATE and OVERRIDES — label becomes aborted + override line logged (the cycle-3 residual, now closed)', async () => {
+  it('REVERSE (UI-marks-first): approved recorded on a pending row, the gate aborted arrives LATE and OVERRIDES — label becomes aborted + override line logged', async () => {
     const ctx = fakeCtx();
     await handlers.register(ctx, notice);
     // UI's mark wins the race onto the still-pending entry FIRST: resolved=approved.
@@ -192,7 +192,7 @@ describe('approvalRegistry.resolve — terminal-truth-wins (decided-trail label 
 });
 
 /**
- * The READER's liveness reconcile (OIM-142 cycle-2, fix #2). The reader fans out a
+ * The READER's liveness reconcile. The reader fans out a
  * read of the shared index + each entry, THEN cross-checks each registry-pending entry
  * against its operation's actual recorded status, and DROPS (ages out) any whose op is
  * terminal or gone. This fakes the reader's `Context` so `objectClient`/`workflowClient`

@@ -18,16 +18,14 @@ truth — across **two surfaces** and **fails on drift** on either:
    double precision`` (silently became a float) -> a ``type_mismatch``.
 
 The OpenIM model files are the single source of truth. This check is the
-mechanism that keeps the implementation in lock-step with them on both surfaces —
-the schema-drift CI validator the implementation plan names (the CI leg is
-residual until ``reference/`` has CI; see the runbook). The staging models are
-**read, never edited**: a real staging drift is a finding for the coordinator,
-not something this check papers over.
+mechanism that keeps the implementation in lock-step with them on both surfaces.
+The staging models are **read, never edited**: a real staging drift is a finding
+to surface, not something this check papers over.
 
 Scope: **the ten realised entities only.** It is deliberately NOT a general
 73-entity markdown parser — it iterates ``ENTITY_MODELS`` and reads only those
 ten model files (and their ten staging models). Generalising to all 73 is a
-later item, planned below, not built here.
+later item, described below, not built here.
 
 Usage::
 
@@ -40,18 +38,18 @@ repository root (four parents up from this file:
 ``reference/python/src/agentinvest_canonical_model/`` -> repo root), overridable
 with ``OPENIM_REPO_ROOT`` for an out-of-tree run.
 
-## 73-entity generalisation (planned, NOT built)
+## 73-entity generalisation (described, NOT built)
 
 Today the check is bound to ``ENTITY_MODELS`` — the ten realised entities, each a
 ``core/E-NN-*.md`` model file with a hand-written Pydantic schema and a
-``stg_eNN_*.sql`` staging model. Generalising to all 73 OpenIM entities is
-deferred; the work it requires, concretely:
+``stg_eNN_*.sql`` staging model. Generalising to all 73 OpenIM entities requires,
+concretely:
 
 - **Model-file discovery beyond the core ten.** The other entities live under
   ``model/entities/`` in the specialisation packs — e.g.
   ``model/entities/packs/<pack>/PM-NN-*.md`` (multilateral / form-of-holding
-  packs, per ADR-0031), with the ``PM-NN`` / ``PB-NN`` / ``PD-NN`` / ``PR-NN`` id
-  forms (private-markets / public / debt / real-asset), not just ``E-NN``. The
+  packs), with the ``PM-NN`` / ``PB-NN`` / ``PD-NN`` / ``PR-NN`` id forms
+  (private-markets / public / debt / real-asset), not just ``E-NN``. The
   discovery walk must glob every ``E-NN`` *and* every ``Px-NN`` model file and
   derive the id from the filename, not assume the ``core/E-NN`` path shape.
 - **Entities with no realised schema and/or no staging model.** Most of the 73
@@ -73,11 +71,11 @@ Staged rollout: (1) generalise model-file discovery + id parsing across the pack
 behind a flag, reporting coverage only (no fail); (2) extend the type-maps as the
 pack files surface new keywords, each mapping reviewed; (3) turn the cross-check
 on per-pack as schemas/staging models are realised, failing only where a contract
-exists on both sides. It is deferred now because the ten realised entities are the
+exists on both sides. It is not built now because the ten realised entities are the
 only ones with a schema *and* a staging model to cross-check — running a 73-entity
 parser today would report 63 "no contract" rows and zero added drift coverage,
-for a much larger and more brittle parser. The marts layer (OIM-110/111) is a
-third surface for a later cycle.
+for a much larger and more brittle parser. The marts layer is a third surface for
+later work.
 """
 
 from __future__ import annotations
@@ -159,7 +157,7 @@ _SQL_TYPE_MAP: dict[str, str] = {
 #   - ``array`` and ``map`` legitimately serialise to ``varchar`` at the flat
 #     staging grain. The staging models keep ``known_aliases`` (array) and
 #     ``external_ids`` (map) as ``;``-joined / JSON *text* — the normalised
-#     list/map shaping is the OIM-110/111 mart layer, documented in the staging
+#     list/map shaping is the mart layer, documented in the staging
 #     SQL comments. So a model ``array``/``map`` column projected ``as varchar``
 #     in staging is the INTENDED flat-text carrier, not drift. (A native ``array``
 #     / ``map`` cast would also be accepted.) This is NOT a loosening of the
@@ -467,8 +465,8 @@ def _entity_slug(entity_id: str) -> str:
 def staging_path_for(model_cls: type[CanonicalEntity], root: Path) -> Path | None:
     """Resolve the ``stg_eNN_*.sql`` staging model for an entity, or ``None``.
 
-    Globs ``reference/dbt/models/staging/stg_<eNN>_*.sql`` (the convention the
-    OIM-103 staging layer follows). Returns the single match, or ``None`` when the
+    Globs ``reference/dbt/models/staging/stg_<eNN>_*.sql`` (the staging-layer
+    naming convention). Returns the single match, or ``None`` when the
     entity has no staging model (a surfaced gap, not an error). Raises if the glob
     is ambiguous (>1 match) — an unexpected shape worth surfacing.
     """

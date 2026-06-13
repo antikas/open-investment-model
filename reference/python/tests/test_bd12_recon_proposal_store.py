@@ -1,4 +1,4 @@
-"""The append-only LLM-proposal store — insert-only, immutable (OIM-162 cycle-2, load-bearing test).
+"""The append-only LLM-proposal store — insert-only, immutable.
 
 Proves the proposal store is append-only insert-only (the break-store test pattern, replicated for
 the second engine-owned store): a proposal is captured at ``status = proposed``, an idempotent
@@ -96,8 +96,8 @@ def test_proposal_store_has_no_mutation_or_promote_path() -> None:
     The append-only/immutable property is realised by the ABSENCE of a mutation path. The store's
     public surface is insert + read + path-resolve ONLY — there is no ``update_proposal``,
     ``transition_status``, ``promote_proposal``, ``delete_proposal`` or any other mutation entry
-    point. A proposal is PROMOTED into a rule by a HUMAN-GATED CODE CHANGE through an audited cycle,
-    never a runtime write here. If a future cycle adds a mutation path, this test fails loudly.
+    point. A proposal is PROMOTED into a rule by a HUMAN-GATED, REVIEWED CODE CHANGE, never a
+    runtime write here. If a future change adds a mutation path, this test fails loudly.
     """
     import inspect
 

@@ -1,14 +1,14 @@
 /**
  * Typed cross-language RPC contract — the TS↔Python seam.
  *
- * This is the load-bearing proof of OIM-101: a TypeScript handler invokes a
+ * This is the load-bearing proof that a TypeScript handler invokes a
  * Python handler over Restate's typed RPC, payloads round-tripping as typed
  * structures. Every later cross-language call — a Python tool invoked from the
- * TS orchestrator (OIM-103+) — rides on exactly this seam.
+ * TS orchestrator — rides on exactly this seam.
  *
- * Topology (ADR-0054): `pyTools` is a model-free Restate *service* — a
+ * Topology: `pyTools` is a model-free Restate *service* — a
  * namespace + dispatch boundary in the Python tool+data layer — NOT an "agent".
- * It carries no reasoning loop. The single orchestrating loop is OIM-104.
+ * It carries no reasoning loop.
  *
  * How the typing works across the language boundary:
  *  - The Python side (reference/python) registers a real Restate service named

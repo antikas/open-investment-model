@@ -1,4 +1,4 @@
-"""The pluggable `Selector` interface + this cycle's deterministic baseline.
+"""The pluggable `Selector` interface + the deterministic baseline.
 
 The harness measures *a* selector through one stable contract:
 
@@ -7,30 +7,29 @@ The harness measures *a* selector through one stable contract:
 `query` is the analyst request; `tools` is the candidate catalogue (the eval
 set's `ToolSpec`s); the return is the single `tool_id` the selector picks. That
 is the whole contract — deliberately the minimum that BOTH a lexical baseline AND
-OIM-130's LLM `.plan()` tool-RAG selector can satisfy:
+an LLM `.plan()` tool-RAG selector can satisfy:
 
-- the **baseline** (this cycle) ranks by lexical token overlap between the query
-  and each tool's text and returns the top tool — no network, no API key, no
-  randomness;
-- the **production selector** (OIM-130) will embed/RAG the query against the tool
-  catalogue inside the `.plan()` loop and return the chosen `tool_id` — the same
+- the **baseline** ranks by lexical token overlap between the query and each
+  tool's text and returns the top tool — no network, no API key, no randomness;
+- the **production selector** embeds/RAGs the query against the tool catalogue
+  inside the `.plan()` loop and returns the chosen `tool_id` — the same
   signature, a different mechanism. The interface is intentionally NOT coupled to
   the baseline's lexical mechanism: it takes the catalogue, not a precomputed
   index; it returns an id, not a score vector; it has no `.fit()` / no shared
   state. An LLM selector implements `select` by calling a model; nothing in the
-  contract leaks the baseline's internals. (Clause-5 interface walk.)
+  contract leaks the baseline's internals.
 
-This cycle's baseline is **token-overlap (Jaccard) with a deterministic
-tie-break**, chosen as the cheapest mechanism meeting deterministic + offline +
-replay-stable. Comparison is done with **integer cross-multiplication** of the
-overlap/union counts (never floating-point division), so the ranking is exact and
+The baseline is **token-overlap (Jaccard) with a deterministic tie-break**, chosen
+as the cheapest mechanism meeting deterministic + offline + replay-stable.
+Comparison is done with **integer cross-multiplication** of the overlap/union
+counts (never floating-point division), so the ranking is exact and
 byte-identical across runs and platforms; ties break on the lexicographically
 smallest `tool_id`. TF-IDF / local-embedding baselines were considered and
-rejected for this cycle: they introduce float accumulation whose summation order
-can vary, weakening the byte-identical replay property the harness must prove,
-for no gain on a 4-tool intra-domain set.
+rejected: they introduce float accumulation whose summation order can vary,
+weakening the byte-identical replay property the harness must prove, for no gain
+on a 4-tool intra-domain set.
 
-**Tie-break = deterministic but ARBITRARY (latent number-fragility, P-MINOR-2).**
+**Tie-break = deterministic but ARBITRARY (latent number-fragility).**
 When two tools tie on exact Jaccard, the lexicographically smallest `tool_id`
 wins. This is deterministic (so replay is stable) but it carries *no signal* —
 the winner is decided by id naming, not by the query. The explicit "X not Y" pair
@@ -116,7 +115,7 @@ class TokenOverlapBaselineSelector:
             # does NOT displace, so the first (lexicographically smallest tool_id)
             # wins ties — a deterministic-but-ARBITRARY tie-break (carries no query
             # signal; a tool_id rename can swap a tied pair's outcome, e.g. C13/C14
-            # at Jaccard 0.125 — see the module docstring, P-MINOR-2).
+            # at Jaccard 0.125 — see the module docstring).
             if best_id is None or num * best_den > best_num * den:
                 best_id, best_num, best_den = tool.tool_id, num, den
         assert best_id is not None  # tools is non-empty

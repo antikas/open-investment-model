@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 /**
- * OpenIM-OWNED Restate launcher (agentINVEST substrate, P-R1 decoupling).
+ * OpenIM-OWNED Restate launcher (agentINVEST substrate).
  *
  * Boots the Restate dev server from OpenIM's OWN binaries + config + version
  * pin. A fresh OpenIM checkout brings its substrate up with THIS script and
  * NEVER reads a sibling project's source files — it imports OpenIM's own
  * `install-restate.mjs` and reads OpenIM's own `config/restate-dev.toml`.
  *
- * This discharges the OIM-100 pre-mortem's P-R1 (High/High): the floor used to
- * launch via a sibling project's launcher at a hardcoded absolute checkout path,
- * a source-file dependency OpenIM neither owned nor versioned. Now OpenIM owns
- * the launcher, the installer, the config and the version pin.
+ * OpenIM does not launch via a sibling project's launcher at a hardcoded absolute
+ * checkout path — that would be a source-file dependency OpenIM neither owns nor
+ * versions. OpenIM owns the launcher, the installer, the config and the version pin.
  *
  * Dev-time note (ADR-0054): the RUNNING instance may still be shared with a
  * sibling project sharing the dev substrate by
@@ -18,13 +17,13 @@
  * the shared instance is already up (a sibling or a prior OpenIM run launched it),
  * this launcher DETECTS it (health-probes the admin API) and REUSES it — it
  * prints a "reusing" line and exits 0, never racing the bind. A genuinely-down
- * start still boots cleanly. This already-running guard (OIM-107, discharging the
- * OIM-100/101 P-R1 launcher bind-race) is what makes a second `pnpm dev:restate`
- * — and OIM-104's orchestrator launching alongside the sibling — idempotent instead
- * of an exit-139/port-collision. The decoupling is about SOURCE-FILE ownership +
- * the version contract; the reuse guard is about not forking the running process.
+ * start still boots cleanly. This already-running guard (which avoids the launcher
+ * bind-race) is what makes a second `pnpm dev:restate` — and an orchestrator launching
+ * alongside the sibling — idempotent instead of an exit-139/port-collision. The
+ * decoupling is about SOURCE-FILE ownership + the version contract; the reuse guard
+ * is about not forking the running process.
  *
- * Version-skew guard (P-R4): on detecting an already-running instance, the
+ * Version-skew guard: on detecting an already-running instance, the
  * launcher compares the running server's reported version against OpenIM's OWN
  * pin (RESTATE_VERSION) and warns LOUDLY on a mismatch — so a sibling-bumped
  * shared server is never talked to silently. It warns, it does not abort (the
@@ -50,7 +49,7 @@ const ADMIN_URL = process.env.RESTATE_ADMIN_URL ?? 'http://localhost:9070';
  * Health-probe the shared Restate admin API. Returns true iff it answers 200 —
  * i.e. an instance (a sibling project's, or a prior OpenIM run's) is already up. Used as
  * the already-running guard so a second launch reuses rather than racing the
- * bind (OIM-107). Single short-timeout probe; a 200 is the up signal.
+ * bind. Single short-timeout probe; a 200 is the up signal.
  */
 async function adminHealthy(timeoutMs = 1500) {
   try {
@@ -64,7 +63,7 @@ async function adminHealthy(timeoutMs = 1500) {
 /**
  * Report the running server's version via the admin /version endpoint, or null
  * if it cannot be determined (older server, or the endpoint is absent). Used by
- * the version-skew guard (P-R4) to compare against OpenIM's OWN pin.
+ * the version-skew guard to compare against OpenIM's OWN pin.
  */
 async function runningServerVersion(timeoutMs = 1500) {
   for (const p of ['/version', '/health']) {
@@ -88,7 +87,7 @@ async function runningServerVersion(timeoutMs = 1500) {
 }
 
 /**
- * Version-skew guard (P-R4): warn LOUDLY when the running shared server's
+ * Version-skew guard: warn LOUDLY when the running shared server's
  * version differs from OpenIM's OWN pin, so a sibling-bumped server is never
  * talked to silently. Warns by default; RESTATE_SKEW_FATAL=1 makes it exit 1.
  * Returns true on a detected mismatch.
@@ -183,10 +182,10 @@ const binaryArgs = [
   ...passThrough,
 ];
 
-// Already-running guard (OIM-107, P-R1): if the shared Restate is already up
+// Already-running guard: if the shared Restate is already up
 // (a sibling project's, or a prior OpenIM run's), DETECT it and REUSE it — never race the
-// bind. This is the idempotency the orchestrator (OIM-104) relies on and the fix
-// for the exit-139/port-collision seen in OIM-101/102. Probed FIRST, before the
+// bind. This is the idempotency the orchestrator relies on and the fix
+// for an exit-139/port-collision. Probed FIRST, before the
 // WSL preflight + install, so a reuse is cheap (no download, no WSL hop needed).
 if (await adminHealthy()) {
   const running = await runningServerVersion();
@@ -274,7 +273,7 @@ child.on('exit', async (code, signal) => {
   clearInterval(readinessTimer);
   if (signal === 'SIGINT' || signal === 'SIGTERM') process.exit(0);
 
-  // TOCTOU close (OIM-107): the already-running guard probed BEFORE the bind, so
+  // TOCTOU close: the already-running guard probed BEFORE the bind, so
   // a sibling could have started the shared instance in the window between the
   // probe and our bind — our child would then exit fast on a port collision
   // (a non-zero code, or SIGSEGV/139 on some builds). If the child died early

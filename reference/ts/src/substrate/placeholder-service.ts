@@ -1,22 +1,22 @@
 /**
  * agentINVEST substrate-proof placeholder service.
  *
- * This is the single placeholder Restate handler the OIM-100 floor registers.
+ * This is the single placeholder Restate handler the substrate floor registers.
  * It exists only to prove the substrate end-to-end: that the shared Restate
  * instance can register an agentINVEST handler, route an invocation to it, and
  * journal a step. It does NO business logic.
  *
- * Topology note (ADR-0054): this is a model-free Restate *service* — a
+ * Topology note: this is a model-free Restate *service* — a
  * namespace + dispatch boundary — NOT an "agent". It carries no reasoning loop.
  * The orchestrating loop (the single `InvestmentOperation.plan()` reasoning
- * step) is OIM-104; the per-Business-Domain layer (also a model-free service,
- * never an agent) is later still. Nothing here pre-judges either.
+ * step) lives elsewhere; the per-Business-Domain layer (also a model-free
+ * service, never an agent) is later still. Nothing here pre-judges either.
  *
  * The journaled step: `ctx.run('substrate-proof-step', ...)` records a single
  * durable step into the Restate journal. On a replay (a crash + retry within
  * the same invocation) the recorded value is read back from the journal rather
  * than re-executed — that is the journal-as-source-of-truth property the floor
- * proves. The OIM-100 smoke exercises both the baseline path and the
+ * proves. The substrate smoke exercises both the baseline path and the
  * crash-and-replay path.
  */
 import { service, type Context } from '@restatedev/restate-sdk';

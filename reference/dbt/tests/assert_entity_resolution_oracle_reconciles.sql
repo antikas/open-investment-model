@@ -1,7 +1,7 @@
 -- The labelled entity-resolution oracle reconciles to the feed AND the E-01 master, two-way —
--- the oracle-integrity invariant the cascade is scored against (the OIM-160 discipline, OIM-199).
+-- the oracle-integrity invariant the cascade is scored against.
 --
--- The OIM-160 Critical: a labelled oracle whose labels were drawn INDEPENDENTLY of the data is
+-- The oracle-integrity discipline: a labelled oracle whose labels were drawn INDEPENDENTLY of the data is
 -- corrupt (a label with no backing record; a real record left unlabelled; a label whose value bears
 -- no relation to the data). This test closes that defect-class for the entity-resolution oracle: it
 -- FAILS (returns a row) on any of —

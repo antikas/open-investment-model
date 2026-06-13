@@ -4,7 +4,7 @@ This module carries the canonical computation the cross-language RPC smoke test
 exercises end-to-end: a simple (Dietz-style) period return. It is a *pure*
 function with no Restate dependency so the unit test (pytest) can verify it
 directly, and so the Restate service (py_tools_service.py) is a thin typed
-wrapper over it. OIM-103+ replaces this sample with the real BD-09 return tools.
+wrapper over it. The real BD-09 return tools replace this sample.
 """
 
 from __future__ import annotations
@@ -33,8 +33,8 @@ def compute_simple_return(inp: SimpleReturnInput) -> float:
 
     The external cash flow is treated as occurring at the start of the period
     (the simplest Dietz variant) so the denominator is the beginning value plus
-    the flow. This is deliberately the textbook simple form — OIM-103 brings the
-    modified-Dietz and time-weighted tools the model's BD-09 actually owns.
+    the flow. This is deliberately the textbook simple form — the modified-Dietz
+    and time-weighted tools the model's BD-09 actually owns build on it.
     """
     denominator = inp.beginning_value + inp.cash_flow
     if denominator == 0:

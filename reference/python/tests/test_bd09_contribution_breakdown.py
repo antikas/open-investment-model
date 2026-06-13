@@ -1,7 +1,7 @@
 """SO-09-05 compute_contribution_breakdown — hand-verifiable oracle, determinism, boundaries.
 
 The contribution identity (``sum_i w_i * r_i = r_total``) is exact — it is its own oracle,
-checked to <= 1 bp against a hand-derived breakdown (build-gate §A2 hand-verifiable). A
+checked to <= 1 bp against a hand-derived breakdown (hand-verifiable). A
 deliberately weight-unbalanced input is rejected (the breakdown must partition the portfolio).
 """
 

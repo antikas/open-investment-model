@@ -1,8 +1,8 @@
-"""The resolution eval — ZERO mis-merge, ZERO missed-merge among auto-resolved (OIM-199, the floor).
+"""The resolution eval — ZERO mis-merge, ZERO missed-merge among auto-resolved (the floor).
 
 Scores the deterministic three-tier cascade against the SEED-LOADED labelled oracle
 (``entity_resolution_labels.json`` — the SSOT, so the eval tracks the seed and cannot drift to a
-stale hard-coded N). The cardinal properties this cycle must hold:
+stale hard-coded N). The cardinal properties that must hold:
 
 1. **ZERO mis-merges** — no source record the oracle says is entity X (or NEW / AMBIGUOUS) is
    resolved by the cascade to a DIFFERENT true entity. A mis-merge silently corrupts the golden

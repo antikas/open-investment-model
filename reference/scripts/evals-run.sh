@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# evals-run.sh (OIM-105) — run the Tranche-0 eval harness in the WSL2/local uv
+# evals-run.sh — run the eval harness in the WSL2/local uv
 # env. Invoked by scripts/evals-run.mjs (which handles the Windows->WSL2 hop and
 # forwards args). Kept as a real script file so the command survives the
 # Node -> wsl -> bash boundary without quote mangling (mirrors dbt-build.sh).
@@ -21,11 +21,11 @@ if [ -z "${REFERENCE_ROOT_WSL:-}" ]; then
 fi
 PYTHON_DIR="$REFERENCE_ROOT_WSL/python"
 
-# The uv project environment lands on WSL2-native ext4 (P-R1/OIM-107), NOT the
+# The uv project environment lands on WSL2-native ext4, NOT the
 # 9p /mnt/d repo mount — same placement as dbt-build.sh. The harness has no dbt
 # dependency, so the base venv (no --group dbt) is enough. The path is keyed on
-# THIS checkout's repo root (OIM-110, P-MAJOR-2 fix) so a concurrent checkout / CI
-# run does not share-and-clobber one venv; still on ext4 (OIM-107 perf preserved).
+# THIS checkout's repo root so a concurrent checkout / CI
+# run does not share-and-clobber one venv; still on ext4 (perf preserved).
 # An explicit UV_PROJECT_ENVIRONMENT still wins. See lib/agentinvest-venv-path.sh.
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
 # shellcheck source=lib/agentinvest-venv-path.sh
@@ -34,7 +34,7 @@ REPO_ROOT_WSL="$(cd "$REFERENCE_ROOT_WSL/.." && pwd)"
 agentinvest_set_venv_env "$REPO_ROOT_WSL"
 
 cd "$PYTHON_DIR"
-# Mask-immunity (OIM-181, from OIM-115 P-NOTE-1): in this WSL2 launch env `uv run`
+# Mask-immunity: in this WSL2 launch env `uv run`
 # intermittently masks a non-zero child exit to 0 (invocation-form-dependent —
 # `bash -lc '… && uv run …'` masks because the `&&` stops `uv run` being the
 # exec'd leaf), so the `uv run` exit code is NOT a trustworthy success oracle. We
@@ -42,10 +42,10 @@ cd "$PYTHON_DIR"
 # the output, tee it to the operator's terminal (the harness report stays fully
 # visible), and derive success from the harness's OWN stdout verdict sentinel
 # (`EVALS_RESULT: PASS|FAIL rc=N`, emitted on every exit path by
-# agentinvest_evals.__main__ — uv cannot eat stdout). The eval numbers + the
-# PASS/FAIL verdict logic are unchanged; only the success-signal plumbing is made
-# mask-immune. Pin uv's project dir explicitly (--directory "$PYTHON_DIR") so a
-# glitched invocation can NEVER fall back to the repo-root cwd (OIM-107 leak-guard).
+# agentinvest_evals.__main__ — uv cannot eat stdout). Only the success-signal
+# plumbing is made mask-immune. Pin uv's project dir explicitly (--directory
+# "$PYTHON_DIR") so a glitched invocation can NEVER fall back to the repo-root cwd
+# (leak-guard).
 #
 # `set -o pipefail` would let the (maskable) `uv run` exit leak through the pipe;
 # we deliberately read the SENTINEL, not the pipe status, so the exit derives from
@@ -57,7 +57,7 @@ cd "$PYTHON_DIR"
 # to /dev/tty, which can block in a detached/CI context even when a pty exists), so
 # the operator still sees the full report while a copy is captured for the parse.
 #
-# CRITICAL (the OIM-181 fix): the capture is wrapped with `|| true` so `set -e` can
+# CRITICAL: the capture is wrapped with `|| true` so `set -e` can
 # NEVER abort the script on the assignment line. If `uv run` exits non-zero, a bare
 # `VAR="$(uv run … )"` under `set -e` dies on the assignment with `uv run`'s OWN
 # (maskable, untrustworthy) exit code BEFORE the sentinel parse runs — re-coupling

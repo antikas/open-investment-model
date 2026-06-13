@@ -10,10 +10,10 @@ Service, not agent (the load-bearing topology point). The per-BD layer is a **mo
 tool-hosting boundary** that carries **no reasoning loop**. It routes a *named* SO to its read tool;
 it does **not** decide which SO to call (that is the one orchestrating ``.plan()`` loop). It also
 does **not reconcile** the two books — it exposes each book to be read; the reconciliation engine is
-a later cycle (OIM-162). And it writes **nothing**: every handler is strictly read-only.
+a separate service. And it writes **nothing**: every handler is strictly read-only.
 
-The I/O distinction (the OIM-113 carry-forward, now realised). Unlike ``bd09`` (pure compute), the
-``bd12`` tools are **I/O-touching** — each reads the OIM-160 canonical dual book through the
+The I/O distinction. Unlike ``bd09`` (pure compute), the
+``bd12`` tools are **I/O-touching** — each reads the canonical dual book through the
 ``book_of_record_data`` data-access layer at the requested as-of, then maps the typed rows onto the
 pure tool's input and runs the tool. So the error classification distinguishes two classes:
 
@@ -628,7 +628,7 @@ async def execute_so(ctx: restate.Context, req: ExecuteSoInput) -> ExecuteSoOutp
     shaping
     runs inside the journaled step (replay reads the result back, the store is not re-queried).
 
-    Strictly read-only — every registered SO reads the OIM-160 canonical dual book and shapes a
+    Strictly read-only — every registered SO reads the canonical dual book and shapes a
     typed
     result; none writes, mutates, produces an E-24 break, or reads the comparator feed. An unknown
     ``soId`` is a terminal 404; a bad/extra/missing arg or a deterministic data condition is

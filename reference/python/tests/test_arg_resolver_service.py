@@ -1,10 +1,10 @@
-"""The ``argResolver`` service — unit + live-marts tests for the resolve step (OIM-134).
+"""The ``argResolver`` service — unit + live-marts tests for the resolve step.
 
 The resolver is the abstract-arg → concrete-tool-input seam: given a fund + a window it READS the
-OIM-111 marts and DERIVES the SO-09-01 / SO-09-05 concrete inputs by REUSING the OIM-115 demo's
-derivation. These tests pin:
+marts and DERIVES the SO-09-01 / SO-09-05 concrete inputs by REUSING the demo's derivation. These
+tests pin:
 
-- the REUSE — the resolver imports and uses the OIM-115 demo's ``_total_return_args`` /
+- the REUSE — the resolver imports and uses the demo's ``_total_return_args`` /
   ``_breakdown_args`` (the same derivation, not a re-implementation);
 - the v0.1 BOUND — an unresolvable tool (anything but SO-09-01/05) is a clean terminal failure
   (no marts read needed);
@@ -76,7 +76,7 @@ live_marts = pytest.mark.skipif(
 
 
 def test_v01_bound_names_only_the_bd09_return_tools() -> None:
-    """The v0.1 resolver is honestly bounded to the OIM-115 demo's two BD-09 return tools."""
+    """The v0.1 resolver is honestly bounded to the demo's two BD-09 return tools."""
     assert _RESOLVABLE_SO_IDS == ("SO-09-01", "SO-09-05")
     # NOT the other BD-09 tools — those surface as a clean "cannot resolve" failure (a general
     # resolver for the full catalogue is forward, not silently guessed).
@@ -86,7 +86,7 @@ def test_v01_bound_names_only_the_bd09_return_tools() -> None:
 
 @live_marts
 def test_resolves_so_09_01_to_concrete_begin_end_nav() -> None:
-    """REUSE: the SO-09-01 resolution IS the OIM-115 derivation (begin/end NAV + period + flows)."""
+    """REUSE: the SO-09-01 resolution IS the demo's derivation (begin/end NAV + period + flows)."""
     data = read_fund_window(
         fund_id=DEFAULT_FUND_ID, begin_date=DEFAULT_BEGIN_DATE, end_date=DEFAULT_END_DATE
     )
@@ -96,13 +96,13 @@ def test_resolves_so_09_01_to_concrete_begin_end_nav() -> None:
     assert args["ending_value"] == str(data.end_nav)
     assert args["period_days"] == data.period_days
     assert args["cash_flows"] == []  # the no-external-flow path (the synthetic seed carries none)
-    # The end NAV reconciles to the published fund-NAV mart (the OIM-115 cross-check).
+    # The end NAV reconciles to the published fund-NAV mart (the published-mart cross-check).
     assert data.end_nav == data.mart_fund_nav
 
 
 @live_marts
 def test_resolves_so_09_05_to_per_segment_weights_summing_to_one() -> None:
-    """REUSE: the SO-09-05 resolution IS the OIM-115 derivation (per-segment weights + returns)."""
+    """REUSE: the SO-09-05 resolution IS the demo's derivation (per-segment weights + returns)."""
     data = read_fund_window(
         fund_id=DEFAULT_FUND_ID, begin_date=DEFAULT_BEGIN_DATE, end_date=DEFAULT_END_DATE
     )
@@ -122,7 +122,7 @@ def test_resolves_so_09_05_to_per_segment_weights_summing_to_one() -> None:
 
 @live_marts
 def test_resolution_reconciles_total_return_to_contribution_sum() -> None:
-    """The OIM-115 coherence invariant holds on the RESOLVED args — contributions sum to the total.
+    """The coherence invariant holds on the RESOLVED args — contributions sum to the total.
 
     This is the property the aggregate (seam 4) reuses: the SO-09-01 total return equals the sum
     of the SO-09-05 per-segment contributions (weight x return), because both resolved-arg sets
@@ -137,15 +137,15 @@ def test_resolution_reconciles_total_return_to_contribution_sum() -> None:
     assert abs(contribution_sum - total_return) < Decimal("0.000000001")
 
 
-# --- THE REJECT-UNKNOWN-KEYS HARDENING (OIM-185) — proven ON THE WIRE -----------------------
+# --- THE REJECT-UNKNOWN-KEYS HARDENING — proven ON THE WIRE ----------------------------------
 #
-# The same fiduciary-surface input-validation hardening as navData (from OIM-133 cycle-2
-# P-MINOR-1, the ADR-0046 class-walk sibling): ``ResolveStepArgsRequest`` was a bare TypedDict, so
-# an off-contract key was silently ignored — a step resolved over a wrong/default window under a
-# mis-keyed request. It is now a Pydantic model with ``extra="forbid"``, validated IN THE HANDLER
-# BODY, so an unrecognised key is a clean TerminalError (400) on the wire. These tests drive the
-# HANDLER (the OIM-133 lesson — NOT the bare derivation function), and need NO store: both the guard
-# AND the v0.1-bound / missing-fund refusals run before the marts read.
+# The same fiduciary-surface input-validation hardening as navData: ``ResolveStepArgsRequest`` was
+# a bare TypedDict, so an off-contract key was silently ignored — a step resolved over a
+# wrong/default window under a mis-keyed request. It is now a Pydantic model with ``extra="forbid"``,
+# validated IN THE HANDLER BODY, so an unrecognised key is a clean TerminalError (400) on the wire.
+# These tests drive the HANDLER (NOT the bare derivation function — a bare function would not carry
+# the handler's validation), and need NO store: both the guard AND the v0.1-bound / missing-fund
+# refusals run before the marts read.
 
 
 def test_resolve_unknown_key_is_terminal_400_on_the_wire() -> None:
@@ -177,7 +177,7 @@ def test_resolve_non_dict_body_is_terminal_400_on_the_wire() -> None:
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- MALFORMED-BODY → CLEAN 400 (OIM-187: the serde never raises) ----------------------------
+# --- MALFORMED-BODY → CLEAN 400 (the serde never raises) -------------------------------------
 #
 # Drive the FULL wire path — the shared ``PassThroughJsonSerde.deserialize`` over the raw bytes
 # (must NOT raise) then the REAL handler over its result. A malformed-JSON / non-UTF8 transport body
@@ -193,12 +193,12 @@ def test_resolve_malformed_or_non_utf8_body_is_terminal_400(body: bytes) -> None
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple did NOT catch it → a
-# status-less 500. The cycle-2 fold catches the WHOLE parse-failure class (``except Exception``) →
-# the serde returns the raw text as a non-dict ``str`` the handler 400s. REVERT-SENSITIVE.
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple would NOT catch it (→ a
+# status-less 500). Catching the WHOLE parse-failure class (``except Exception``) → the serde
+# returns the raw text as a non-dict ``str`` the handler 400s. REVERT-SENSITIVE.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
 DEEP_NEST_BODY = b"[" * 20000 + b"]" * 20000

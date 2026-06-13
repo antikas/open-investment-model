@@ -2,14 +2,13 @@
 
 These tests drive the ``pyTools`` ``computeSimpleReturn`` HANDLER through a faithful fake
 ``restate.Context`` — the same cross-language RPC seam a TS orchestrator handler invokes over the
-ingress. The load-bearing addition (OIM-185): the reject-unknown-keys hardening.
+ingress. The load-bearing addition: the reject-unknown-keys hardening.
 
 The request contract ``SimpleReturnInputDict`` was a bare ``TypedDict`` (the same class as the
-``navData`` / ``argResolver`` gaps the ADR-0046 class-walk surfaced from OIM-133 cycle-2
-P-MINOR-1) — a ``TypedDict`` does NOT reject extra keys at runtime, so an off-contract key was
-silently ignored. It is now a Pydantic model with ``extra="forbid"``, validated IN THE HANDLER
-BODY, so an unrecognised key is a clean ``TerminalError`` (400) on the wire. These tests prove the
-rejection on the wire AND that the valid contract keys still compute.
+``navData`` / ``argResolver`` gaps) — a ``TypedDict`` does NOT reject extra keys at runtime, so an
+off-contract key was silently ignored. It is now a Pydantic model with ``extra="forbid"``,
+validated IN THE HANDLER BODY, so an unrecognised key is a clean ``TerminalError`` (400) on the
+wire. These tests prove the rejection on the wire AND that the valid contract keys still compute.
 
 Honest boundary: a DEFENSIVE input-validation hardening — the real contract fields were already
 enforced; this closes the silent-mis-key class (an unknown key now fails loud).
@@ -82,7 +81,7 @@ def test_non_dict_body_is_terminal_400_on_the_wire() -> None:
     assert getattr(excinfo.value, "status_code", None) == 400
 
 
-# --- MALFORMED-BODY → CLEAN 400 (OIM-187: the serde never raises) ----------------------------
+# --- MALFORMED-BODY → CLEAN 400 (the serde never raises) -------------------------------------
 #
 # Drive the FULL wire path — the shared ``PassThroughJsonSerde.deserialize`` over the RAW BYTES
 # first (the transport-body parse the SDK runs), then the REAL handler over its result. A malformed
@@ -110,16 +109,16 @@ def test_serde_never_raises_on_any_body() -> None:
     assert serde.deserialize(b"[1,2,3]") == [1, 2, 3]  # valid non-dict → passed through
 
 
-# --- DEEP-NEST BODY → CLEAN 400 (OIM-187 cycle-2: the never-raise invariant is now structural) -
+# --- DEEP-NEST BODY → CLEAN 400 (the never-raise invariant is structural) --------------------
 #
 # A deeply-nested JSON body makes ``json.loads`` raise ``RecursionError`` (a ``RuntimeError``
-# subclass, NOT a ``ValueError``) — the cycle-1 enumerated ``except`` tuple did NOT catch it, so it
-# escaped ``deserialize`` → the SDK re-wrapped it as a status-less 500 (the exact defect OIM-187
-# set out to kill, surviving via the recursion-limit parse path). The cycle-2 fold catches the WHOLE
-# parse-failure class (``except Exception``), so the serde returns the raw text as a non-dict
-# ``str`` the handler's ``_coerce_request`` rejects as a clean 400. These tests are REVERT-SENSITIVE
-# re-narrowing the catch back to the narrow ``(JSONDecodeError, ValueError, UnicodeDecodeError)``
-# tuple makes the deep-nest body raise ``RecursionError`` out of ``deserialize`` again → RED.
+# subclass, NOT a ``ValueError``) — an enumerated ``except`` tuple would not catch it, so it would
+# escape ``deserialize`` → the SDK would re-wrap it as a status-less 500 (surviving via the
+# recursion-limit parse path). Catching the WHOLE parse-failure class (``except Exception``), so the
+# serde returns the raw text as a non-dict ``str`` the handler's ``_coerce_request`` rejects as a
+# clean 400. These tests are REVERT-SENSITIVE: re-narrowing the catch back to the narrow
+# ``(JSONDecodeError, ValueError, UnicodeDecodeError)`` tuple makes the deep-nest body raise
+# ``RecursionError`` out of ``deserialize`` again → RED.
 
 # A few-KB craftable payload: 20000 levels of nesting, well past the C scanner's depth budget.
 DEEP_NEST_BODY = b"[" * 20000 + b"]" * 20000

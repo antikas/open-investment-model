@@ -1,10 +1,9 @@
 /**
- * The GATHER — enumerate the REAL agentINVEST audit records via the authoritative admin-API path
- * (OIM-151 part 3).
+ * The GATHER — enumerate the REAL agentINVEST audit records via the authoritative admin-API path.
  *
  * The audit records live in the operation/workflow STATE (the `investmentOperation` VO's
  * `auditRecord`, the `navCalculation` workflow's `publishRecord`), read over the Restate ingress
- * `status` handler — exactly the OIM-142 Operations-dashboard read path. This module REUSES that
+ * `status` handler — exactly the Operations-dashboard read path. This module REUSES that
  * read path rather than coupling the export to the Operator UI's server-only `lib/restate.ts` (which
  * `import 'server-only'`s and cannot be pulled into this orchestrator-adjacent package): it factors a
  * small, dependency-free reader that speaks the SAME two surfaces the UI uses —

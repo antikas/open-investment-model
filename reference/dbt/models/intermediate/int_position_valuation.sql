@@ -47,7 +47,7 @@ instruments as (
         instrument_id,
         instrument_name,
         instrument_class,
-        asset_class as asset_class_key   -- int FK -> E-09 (OIM-70: integer = integer)
+        asset_class as asset_class_key   -- int FK -> E-09 (integer = integer)
     from {{ ref('stg_e02_instrument_asset') }}
 ),
 

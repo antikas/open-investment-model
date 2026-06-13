@@ -1,10 +1,10 @@
 -- The labelled-break oracle reconciles to the data BY VALUE, two-way, on every surface —
--- the value-correctness guard the cash class escaped in cycle 1.
+-- the value-correctness guard.
 --
--- The cycle-1 oracle tests checked the feed-vs-manifest correspondence by SET MEMBERSHIP
--- (which position_ids are flagged == which are labelled) and by COUNT, but never checked
--- that a labelled break's VALUE matches the actual data difference — and the cash surface
--- had no test at all. The result was a corrupt cash class: a cash label whose amount bore
+-- A correspondence check by SET MEMBERSHIP alone (which position_ids are flagged == which
+-- are labelled) and by COUNT does NOT verify
+-- that a labelled break's VALUE matches the actual data difference — and a surface with
+-- no value test at all can carry a corrupt class: a cash label whose amount bore
 -- no relation to the data, and two real cash differences that were unlabelled. This test
 -- closes that defect-class for good: EVERY difference between the comparator feed and the
 -- internal book must reconcile to EXACTLY ONE manifest label whose class AND value match,
@@ -12,7 +12,7 @@
 -- value. It FAILS (returns a row) on any of: an unlabelled difference, a label with no
 -- backing difference, or a value mismatch — on cash OR position.
 --
--- It is REVERT-SENSITIVE: re-introduce the cycle-1 cash bug (draw admin cash independently
+-- It is REVERT-SENSITIVE: re-introduce the original cash bug (draw admin cash independently
 -- of custodian cash, or drop the unbroken-fund equality) and a cash difference becomes
 -- unlabelled (or the cash label's value stops matching the data) — this test returns a row
 -- and FAILS. Likewise a position label whose amount drifts from the feed difference fails.
@@ -44,7 +44,7 @@ cash_labels as (
     where reconciliation_type = 'cash'
 ),
 
--- (1) an actual cash difference with no label (the cycle-1 false-negative archetype)
+-- (1) an actual cash difference with no label (the false-negative archetype)
 cash_unlabelled as (
     select
         d.portfolio_id as detail,
@@ -55,7 +55,7 @@ cash_unlabelled as (
       and l.portfolio_id is null
 ),
 
--- (2) a cash label with no backing difference, OR a value mismatch (the cycle-1
+-- (2) a cash label with no backing difference, OR a value mismatch (the
 --     mis-valued-label archetype: label says 141029, data says 2972240)
 cash_label_problems as (
     select
@@ -138,7 +138,7 @@ pos_decorative as (
       and d.qty_diff <= 0.0000001 and d.mv_diff <= 0.05
 ),
 
--- ============================ A/B-DISAGREEMENT surface (OIM-197) ============================
+-- ============================ A/B-DISAGREEMENT surface ============================
 -- The A/B-disagreement case is a position label whose expected_side is INTERNAL: the custodian
 -- ties to the IBOR book value (Pipeline A clears) but the IBOR book value diverges from the E-07
 -- mark (Pipeline B breaks). Its labelled value must equal the book-vs-mark divergence by value.
@@ -165,7 +165,7 @@ ab_labels as (
 --     re-implemented here in SQL — it is enforced at the PYTEST layer: the seed-loaded pin test's
 --     NO-SPURIOUS assertion fails on any unlabelled engine-visible divergence, and
 --     assert_comparator_unbroken_rows_agree binds every un-noted custodian holding to tie the book.
---     (The full two-direction scoring formalisation is OIM-165's; do not add the reverse CTE here.)
+--     (The full two-direction scoring formalisation lives in the eval layer; do not add the reverse CTE here.)
 ab_value_mismatch as (
     select
         l.position_id as detail,
@@ -176,7 +176,7 @@ ab_value_mismatch as (
        or abs(m.book_mark_diff - l.labelled_amount) > 0.05
 ),
 
--- ============================ IBOR/ABOR surface (OIM-197) ============================
+-- ============================ IBOR/ABOR surface ============================
 -- A rule-unreachable break is an IBOR-vs-ABOR market-value residual the deterministic rules
 -- cannot explain (the engine lands `unexplained`; the oracle carries the true cause). Its
 -- labelled value must equal the actual IBOR-vs-ABOR market-value difference.
@@ -215,11 +215,11 @@ ibor_abor_problems as (
        or abs(d.mv_diff - l.labelled_amount) > 0.05
 ),
 
--- ============================ NAV surface (OIM-197 — the OIM-164 enabler) ============================
+-- ============================ NAV surface ============================
 -- The admin fund-level NAV vs the internally-derivable NAV, rolled up per total fund under the
 -- repo's CANONICAL NAV identity (mart_fund_nav.sql:5) — NAV = Sigma(market values) + accrued
--- income - fees — so the oracle and the W1 NAV-strike path read ONE NAV truth (SSOT; the OIM-197
--- cycle-2 P-197-1 fold). fees are structurally zero on this seed (no fee source is seeded —
+-- income - fees — so the oracle and the W1 NAV-strike path read ONE NAV truth (SSOT).
+-- fees are structurally zero on this seed (no fee source is seeded —
 -- mart_fund_nav.sql:48-53), so the term is omitted but named. The labelled shadow-NAV divergence's
 -- value must equal the admin-vs-canonical-internal NAV difference.
 fund_parent as (

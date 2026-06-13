@@ -155,7 +155,7 @@ function resolvedStep(soId: string, index: number): ResolvedStep {
   };
 }
 
-describe('dispatchResolvedPlan — dispatching the RESOLVED steps (OIM-134)', () => {
+describe('dispatchResolvedPlan — dispatching the RESOLVED steps', () => {
   it('dispatches resolved steps over bd09 and collects one fulfilled result per step', async () => {
     const ctx = fakeCtx({
       'SO-09-01': () => ok('SO-09-01'),

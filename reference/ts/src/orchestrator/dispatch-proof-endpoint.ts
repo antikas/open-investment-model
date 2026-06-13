@@ -3,7 +3,7 @@
  * (the production orchestrator, bound into `endpoint.ts`), NOT a probe. This is the
  * endpoint the seam-2 DISPATCH proofs run against, so the parallel fan-out, the
  * latency-vs-serial, the clean partial-failure and the journaled-replay are all
- * proven on the PRODUCTION VO (the OIM-104 P9 bar — never a substituted probe).
+ * proven on the PRODUCTION VO — never a substituted probe.
  *
  * The proofs feed a DETERMINISTIC fixture plan via AGENTINVEST_DISPATCH_FIXTURE_PLAN
  * (the env-gated proof seam in `investment-operation.ts`), so seam 1 bypasses the
@@ -35,7 +35,7 @@ const READY_FILE = process.env.DISPATCH_PROOF_READY_FILE;
 
 async function main(): Promise<void> {
   // Bind the additive pending-approvals registry beside the orchestrator so the
-  // gate's fire-and-forget registry send (OIM-142) is deliverable in the proof too
+  // gate's fire-and-forget registry send is deliverable in the proof too
   // (the gate's own pause/resolve/timeout behaviour is unchanged either way).
   const e = restateEndpoint().bind(investmentOperation).bind(approvalRegistry).bind(approvalRegistryReader);
   const bind = isWindowsWsl2Host() ? '0.0.0.0' : '127.0.0.1';

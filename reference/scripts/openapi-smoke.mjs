@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * OIM-141 — curl-driven SMOKE TEST of EVERY agentINVEST OpenAPI endpoint (reuse-safe, live).
+ * curl-driven SMOKE TEST of EVERY agentINVEST OpenAPI endpoint (reuse-safe, live).
  *
  * WHAT IT DOES. With the shared Restate substrate up + bd09 registered, this proof curls
  * EVERY endpoint of the OpenAPI surface and asserts the status + a well-formed response:
@@ -15,13 +15,13 @@
  *     - GET /docs                                                  -> 200 + the Swagger UI HTML
  *     - GET /no-such-path  (the well-formed-error check, IN #3)    -> 404 + a structured JSON error
  *
- * MASK-IMMUNE SUCCESS ORACLE (OIM-181). Each check derives PASS/FAIL from the curl's ACTUAL
+ * MASK-IMMUNE SUCCESS ORACLE. Each check derives PASS/FAIL from the curl's ACTUAL
  * status code + a structural assertion on the body (a substring / JSON shape), NOT from a wrapped
  * `pnpm`/`uv`/`curl` exit a shell could mask. The gate prints a single stdout sentinel
  * `OPENAPI_SMOKE_RESULT: PASS|FAIL rc=N` (N = the count of failed checks) derived from those
  * per-check results — that sentinel is the oracle; this script's own exit merely mirrors it.
  *
- * REUSE-SAFE (OIM-184). The shared Python endpoint on :9091 (bd09/agentinvestPlanner/pyTools/...)
+ * REUSE-SAFE. The shared Python endpoint on :9091 (bd09/agentinvestPlanner/pyTools/...)
  * is REUSED if already serving and LEFT REGISTERED + RUNNING on exit. It is spawned (with
  * --no-register: the deployment is already registered pointing at :9091) ONLY if it is not
  * serving, and torn down on exit ONLY in that case (gated on `pySpawnedByUs`). The docs app runs
@@ -172,7 +172,7 @@ async function fetchText(url, init = {}) {
   return { status: r.status, body };
 }
 
-// --- teardown state (OIM-184) ----------------------------------------------------------------
+// --- teardown state -------------------------------------------------------------------------
 let pyChild = null;
 let pySpawnedByUs = false; // the SHARED :9091 endpoint — killed ONLY if we spawned it
 let docsChild = null;
@@ -188,7 +188,7 @@ function teardown() {
   }
   // Kill the shared Python endpoint ONLY if THIS run spawned it; a reused one stays up + registered
   // (other local projects sharing the dev substrate + concurrent OpenIM work depend on the shared
-  // deployment — OIM-184).
+  // deployment).
   if (pySpawnedByUs && pyChild) {
     try {
       pyChild.kill('SIGKILL');
@@ -201,11 +201,11 @@ function teardown() {
 function finish(failCount) {
   teardown();
   if (!pySpawnedByUs) {
-    log('reused the shared :9091 endpoint — left bd09/agentinvestPlanner/pyTools registered + running (OIM-184).');
+    log('reused the shared :9091 endpoint — left bd09/agentinvestPlanner/pyTools registered + running.');
   } else {
     log('spawned :9091 for this run — torn down (registration in Restate is left intact, pointing at :9091).');
   }
-  // The sentinel IS the oracle (OIM-181); this script's exit mirrors it.
+  // The sentinel IS the oracle; this script's exit mirrors it.
   process.stdout.write(`OPENAPI_SMOKE_RESULT: ${failCount === 0 ? 'PASS' : 'FAIL'} rc=${failCount}\n`);
   process.exit(failCount === 0 ? 0 : 1);
 }

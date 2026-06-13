@@ -17,19 +17,19 @@
  *    back), not re-executed. Replay-grade reproducibility is the fiduciary
  *    property the whole substrate exists to provide.
  *
- * SCOPE — ALL FIVE SEAMS ARE NOW BUILT HERE (the A-Phase-4 closure). The `execute`
+ * SCOPE — ALL FIVE SEAMS ARE BUILT HERE. The `execute`
  * handler runs the version-skew gate, then: SEAM 1 PLAN — a real LLM-driven `.plan()`
  * call via the Python `agentinvestPlanner.planTask` handler, decomposing the task into
  * a schema-validated plan; then the RESOLVE step — the abstract-arg → concrete-input
  * resolution layer: it calls the Python `argResolver.resolveStepArgs` handler to derive
- * each step's CONCRETE tool inputs from the OIM-111 marts (REUSING the OIM-115
+ * each step's CONCRETE tool inputs from the marts (REUSING the marts→tool-input
  * derivation), so the planner's abstract args become the tools' real inputs (an
  * unresolvable step surfaces as a clean failure, never fabricated); then SEAM 2 DISPATCH
  * — it dispatches the RESOLVED steps' concrete args to `bd09` in parallel and collects
  * `stepResults`; then SEAM 3 the reusable high-stakes approval gate — a no-op for this
  * read-only analytics task (riskScore below threshold); then SEAM 4 AGGREGATE — it
  * combines the step results into a coherent attribution answer (the total return + the
- * per-sector contributions, with the OIM-115 coherence invariant — the contributions
+ * per-sector contributions, with the coherence invariant — the contributions
  * reconcile to the total return — as the correctness check; a partial failure is
  * surfaced, not fabricated); then SEAM 5 CLOSE — it writes a journaled, well-formed,
  * structured audit record of the whole operation (task, plan, resolved args, step
@@ -53,7 +53,7 @@
  * model-free Restate *services*, never "agents". The SOs are *tools*. There is
  * exactly one reasoning loop — the `.plan()` step here.
  *
- * HONEST BOUNDARY (ADR-0054 v0.1). Frontier-only (Sonnet 4.6, no fine-tuning /
+ * HONEST BOUNDARY (v0.1). Frontier-only (Sonnet 4.6, no fine-tuning /
  * fleet / office-split); the plan is generated, not executed (dispatch is later);
  * the model is non-deterministic, so a "valid plan" is a structural claim
  * (PlanSchema-valid, journaled once) — the quantified tool-selection claim is the
@@ -110,7 +110,7 @@ export interface OperationResult {
   /**
    * The RESOLVE step's per-step outcomes — one entry per `plan.steps[]`, each resolved
    * (the marts-derived concrete inputs) or unresolved (a clean, surfaced resolution
-   * failure). The abstract-arg → concrete-input resolution (REUSING the OIM-115 marts
+   * failure). The abstract-arg → concrete-input resolution (REUSING the marts→tool-input
    * derivation), journaled by the resolver RPCs.
    */
   resolvedSteps: ResolvedStep[];
@@ -128,7 +128,7 @@ export interface OperationResult {
   rejectedCount: number;
   /**
    * The AGGREGATE (seam 4) — the coherent attribution answer (the total return + the
-   * per-sector contributions, reconciling per the OIM-115 invariant), or a surfaced
+   * per-sector contributions, reconciling per the coherence invariant), or a surfaced
    * partial failure (never fabricated).
    */
   aggregated: AttributionAggregate;
@@ -378,26 +378,26 @@ export const investmentOperation = object({
       }
 
       // ── RESOLVE — abstract-arg → concrete-tool-input resolution (between plan and dispatch) ──
-      // The missing link OIM-131 surfaced: the planner emits ABSTRACT args (it knows the fund +
+      // THE MISSING LINK. The planner emits ABSTRACT args (it knows the fund +
       // period + a sector axis, but not the concrete begin/end NAV or per-segment weights — those
-      // live in the OIM-111 marts), so a dispatch on the as-given args surfaces clean failures. THIS
+      // live in the marts), so a dispatch on the as-given args surfaces clean failures. THIS
       // step bridges that: for each plan step it calls the Python `argResolver.resolveStepArgs`
       // handler (a journaled RPC — the LEGAL shape, no enclosing ctx.run) which READS the marts and
-      // DERIVES the concrete inputs by REUSING the OIM-115 derivation (read_fund_window +
-      // _total_return_args / _breakdown_args) — moved into the orchestrator's flow so the chain runs
-      // AUTONOMOUSLY instead of the OIM-115 demo's by-hand glue. The resolver is DETERMINISTIC (no
+      // DERIVES the concrete inputs by REUSING the marts→tool-input derivation (read_fund_window +
+      // _total_return_args / _breakdown_args) — folded into the orchestrator's flow so the chain runs
+      // AUTONOMOUSLY instead of by-hand glue. The resolver is DETERMINISTIC (no
       // LLM — mechanism, not a second loop). Honestly bounded to the BD-09 return tools (SO-09-01/05):
       // a step the resolver cannot resolve (an unknown tool, a missing fund, an unbuilt store)
       // surfaces as a CLEAN FAILURE — NEVER a fabricated input (no fake data driving a real-looking
       // attribution). The operation's declared fund/window (the abstract args the analyst task names)
       // drive the marts read.
       // PROOF-ONLY SEAM — when the dispatch-proof fixture plan is active the plan's args are ALREADY
-      // CONCRETE (the OIM-131 dispatch proofs feed ready-to-dispatch args to exercise the dispatch/
+      // CONCRETE (the dispatch proofs feed ready-to-dispatch args to exercise the dispatch/
       // journal mechanics WITHOUT the resolution), so the resolve step is a PASS-THROUGH: it carries
       // the plan's concrete args straight to dispatch unchanged. NO-OP in production:
       // AGENTINVEST_DISPATCH_FIXTURE_PLAN is unset everywhere except those proofs, so the real
       // `resolvePlan` (the marts-in-the-loop) runs and a step's abstract args are resolved against
-      // the marts. This keeps the frozen OIM-131 dispatch proofs green (their fixture args are
+      // the marts. This keeps the frozen dispatch proofs green (their fixture args are
       // pre-resolved) while the full-chain demo runs the real resolution.
       const resolutionWindow = buildResolutionWindow(task);
       const resolve = process.env.AGENTINVEST_DISPATCH_FIXTURE_PLAN
@@ -440,8 +440,8 @@ export const investmentOperation = object({
       // executed to REAL results. Three properties, all proven on THIS production VO (see
       // scripts/dispatch-fanout-proof.mjs + scripts/dispatch-crash-proof.mjs):
       //   - PARALLEL: N RPCs from one handler complete in ~max(step) not ~sum —
-      //     the OIM-104 intra-handler-fan-out carry-forward discharged.
-      //   - CLEAN PARTIAL-FAILURE: a deterministic bd09 TerminalError (OIM-113), or an UNRESOLVED
+      //     intra-handler outbound fan-out.
+      //   - CLEAN PARTIAL-FAILURE: a deterministic bd09 TerminalError, or an UNRESOLVED
       //     step (never dispatched on fabricated inputs), is captured as a clean {status:'rejected'}
       //     step-failure, the siblings still complete, the failure is SURFACED in stepResults
       //     (allSettled, NOT Promise.all which would fail-fast; NOT a whole-operation abort).
@@ -505,7 +505,7 @@ export const investmentOperation = object({
         });
         // Capture the gate decision for the audit record. For BD-09's read-only analytics the gate
         // is a no-op (gated:false) — the riskScore stays below the threshold; the audit record
-        // states it honestly (the mechanism is the OIM-132 gate, the real high-stakes use is the
+        // states it honestly (the gate is the mechanism; the real high-stakes use is the
         // NAV publish).
         gateOutcome = outcome.gated
           ? { gated: true, awakeableId: outcome.awakeableId }
@@ -549,11 +549,11 @@ export const investmentOperation = object({
 
       // ── SEAM 4 — AGGREGATE ───────────────────────────────────────────────
       // Combine the dispatched step results into a coherent attribution answer: the fund's total
-      // return (SO-09-01) + the per-sector contribution breakdown (SO-09-05), with the OIM-115
+      // return (SO-09-01) + the per-sector contribution breakdown (SO-09-05), with the
       // COHERENCE INVARIANT as the correctness check — the per-sector contributions RECONCILE to
       // the total return (both draw on one underlying per-segment NAV-delta derivation, so they tie
       // by construction; a divergence catches a wrong tool compute / misrouted dispatch / pluck
-      // bug). HONEST PARTIAL-FAILURE (the OIM-131 discipline): if a step FAILED, the aggregate
+      // bug). HONEST PARTIAL-FAILURE: if a step FAILED, the aggregate
       // SURFACES it (coherent:false + incoherenceReason) — it does NOT fabricate a number. Pure
       // logic; no context action.
       const aggregated = aggregateResults(dispatch.stepResults, plan);
@@ -576,7 +576,7 @@ export const investmentOperation = object({
       // results, aggregate, gate decision) and write it via a journaled `ctx.run` so it is recorded
       // EXACTLY-ONCE: a crash AFTER the close reads the journaled record back, it is NOT re-emitted.
       // A PLAIN journaled record — the hash-chained, tamper-evident S3 export (7-year fiduciary
-      // retention) is OIM-150-class, NOT built here. The `ctx.run` closure is a plain side effect
+      // retention) is NOT built here. The `ctx.run` closure is a plain side effect
       // (build + log the record); it makes no further context action (the legal shape).
       const auditRecord = await ctx.run('operation-closed', (): OperationAuditRecord => {
         const record = buildAuditRecord({

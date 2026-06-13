@@ -1,4 +1,4 @@
-"""The E-24-shaped break finding + the deterministic of-record cause-classifier (OIM-162 cycle-1).
+"""The E-24-shaped break finding + the deterministic of-record cause-classifier.
 
 The shared contract the four SD-12.10 reconcile tools emit: a typed, E-24-shaped **break finding**
 (the in-flight value, before it is persisted as an immutable E-24 break event) plus the
@@ -7,23 +7,22 @@ The shared contract the four SD-12.10 reconcile tools emit: a typed, E-24-shaped
 ``unexplained``.
 
 THE DETERMINISTIC SPINE (the load-bearing design point). The cause-classification is the **of-record
-classification** — a pure function of observable evidence, NO LLM (the propose-only LLM over the
-``unexplained`` residue is OIM-162 cycle-2, not this cycle). A break the rules cannot reach is
+classification** — a pure function of observable evidence, NO LLM (the propose-only LLM operates over
+the ``unexplained`` residue, downstream of this classifier). A break the rules cannot reach is
 ``unexplained`` — the of-record value — never force-fit and never guessed (Kleppmann/Helland: derive
 the classification as a view over the feed; the deterministic spine keeps the LLM out of the
 knowledge-claim path). The rules are exhaustively unit-testable precisely because they are
 deterministic.
 
 THE CLASSIFIER DOES NOT READ THE ANSWER KEY. The custodian feed carries a ``break_note`` column
-(``fx_break`` / ``price_break`` / ...), but that is the OIM-160 injected label — using it would be
+(``fx_break`` / ``price_break`` / ...), but that is the injected label — using it would be
 reading the oracle, not classifying. The classifier therefore derives the cause from NEUTRAL
 observable evidence only:
 
 - ``timing``           — the quantity difference is exactly explained by a known in-flight E-05
 trade
                          (TD-booked internally, not yet SD-settled by the custodian — read via the
-                         OIM-161 pending-activity tool). A TD/SD timing divergence, not a hard
-                         break.
+                         pending-activity tool). A TD/SD timing divergence, not a hard break.
 - ``data_error``       — a quantity difference NOT explained by any in-flight trade (a genuine share
                          miscount), or a cash balance disagreement.
 - ``fx``               — quantity agrees, market value differs beyond the bp band, the value-ratio
@@ -36,27 +35,22 @@ trade
                          difference (the custodian marks higher), never the downward fx-translation
                          signature.
 - ``missing_transaction`` — a transaction present on one side of the match only.
-- ``fees``             — a fee/charge difference (no fee-class break is injected; the rule is for
-                         completeness, firing on a genuine fee-line divergence only). No oracle
-                         label
-                         carries ``fees`` in the OIM-197 enriched feed — it is a valid, currently
-                         instance-free cause.
-- ``unexplained``      — no rule fires. The of-record residue (the propose-only LLM input). This now
+- ``fees``             — a fee/charge difference (the rule is for completeness, firing on a genuine
+                         fee-line divergence only). It is a valid, currently instance-free cause.
+- ``unexplained``      — no rule fires. The of-record residue (the propose-only LLM input). This
                          ALSO covers a LONE downward value difference (a single holding, ratio < 1,
                          unique): no cluster signal and no direction signal separates a
                          single-holding
-                         fx from a single-holding pricing-below, so the narrowed rule STOPS GUESSING
-                         (the OIM-162 cycle-2 honest demotion — cycle-1 wrongly called it
-                         ``pricing``).
+                         fx from a single-holding pricing-below, so the rule STOPS GUESSING.
 
-THE NARROWING (OIM-162 cycle-2 rule-discovery — the flywheel promote + demote). Cycle-1's fx/pricing
-rule was a single ratio-cluster signal, proven over-broad in three adversarial modes by the cycle-1
-functional audit. Cycle-2 NARROWS it with the DIRECTION of the value difference (a label-independent
-observable): a value the custodian marks ABOVE the book is ``pricing`` (flips the coincidental
-shared-ratio pricing pair back to correct); a LONE downward value difference is ``unexplained`` (the
-honest demotion of the single-holding misread). A pricing break whose downward ratio coincides
-EXACTLY with a genuine fx cluster's ratio stays misclassified ``fx`` — observably indistinguishable
-in this USD-only feed, carried + documented, never force-fit. See ``classify_value_diffs``.
+THE FX/PRICING SPLIT. The fx/pricing rule combines two label-independent observables: the
+ratio-cluster signal (a ratio shared across ≥2 holdings) and the DIRECTION of the value difference.
+A value the custodian marks ABOVE the book is ``pricing`` (an idiosyncratic mark difference, never
+the downward fx-translation signature); a LONE downward value difference is ``unexplained`` (no
+cluster or direction signal can separate a single-holding fx from a single-holding pricing-below).
+A pricing break whose downward ratio coincides EXACTLY with a genuine fx cluster's ratio stays
+misclassified ``fx`` — observably indistinguishable in this USD-only feed, carried + documented,
+never force-fit. See ``classify_value_diffs``.
 
 The ``fx`` vs ``pricing`` split needs the WHOLE position-break population (the ratio-cluster is a
 property of the set, not one row), so the position reconcile classifies AFTER it has gathered every
@@ -84,8 +78,7 @@ ReconciliationType = Literal[
 ]
 Materiality = Literal["low", "medium", "high"]
 
-# The reconcile tolerances (D5, the coordinator's brief-time proposal — confirmed in the report,
-# not silently changed). Position quantity matches TO THE SHARE (exact); cash matches TO THE CENT
+# The reconcile tolerances. Position quantity matches TO THE SHARE (exact); cash matches TO THE CENT
 # (exact); a valuation/price difference within a 1 bp band CLEARS, beyond it raises a pricing/fx
 # break. These are the declared per-surface tolerances the engine reconciles to.
 PRICE_TOLERANCE_BPS = Decimal("1")  # 1 basis point — within clears, beyond is a value break.
@@ -99,9 +92,9 @@ class BreakFinding(BaseModel):
     Column-faithful to the subset of the E-24 attribute schema a freshly-identified break carries
     at ``status = open`` (model/entities/core/E-24-reconciliation-break.md). The resolution
     fields E-24 also carries (``resolved_date`` / ``resolution_note`` / ``correcting_entry_ref``)
-    are NOT part of a freshly-identified finding — they are written only when a break is resolved,
-    which is OIM-163 (behind the breach gate), never this cycle. This finding is what the four
-    reconcile tools emit and what the append-only store persists as an immutable ``open`` event.
+    are NOT part of a freshly-identified finding — they are written only when a break is resolved
+    (behind the breach gate). This finding is what the four reconcile tools emit and what the
+    append-only store persists as an immutable ``open`` event.
     """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -147,10 +140,10 @@ class ValueDiffCandidate:
 def materiality_for_amount(amount: Decimal | None) -> Materiality:
     """Deterministic materiality band by absolute monetary difference (the engine's declared band).
 
-    The OIM-160 oracle labels the position/transaction breaks ``medium`` and the two timing breaks
+    The oracle labels the position/transaction breaks ``medium`` and the two timing breaks
     ``low``; this band reproduces that split from the observable magnitude alone (it is applied to
     value differences; the timing breaks carry no amount and are banded ``low`` by the position
-    reconcile). The bands are declared, deterministic, and documented in the cycle report:
+    reconcile). The bands are declared and deterministic:
     ``|amount| < 100,000`` → ``low``; ``< 1,000,000`` → ``medium``; otherwise ``high``.
     """
     if amount is None:
@@ -185,22 +178,16 @@ def _value_ratio(internal_value: Decimal, external_value: Decimal) -> Decimal | 
 def classify_value_diffs(candidates: list[ValueDiffCandidate]) -> dict[str, CauseClassification]:
     """Split a set of qty-agree value differences into ``fx`` / ``pricing`` / ``unexplained``.
 
-    THE NARROWED OF-RECORD FX/PRICING RULE (OIM-162 cycle-2 rule-discovery — the flywheel promote).
-    Cycle-1 used a single ratio-cluster signal (``ratio shared by ≥2 → fx; unique → pricing``). The
-    cycle-1 functional audit proved that rule OVER-BROAD in three adversarial modes (a
-    single-holding
-    fx misread as pricing; a coincidental shared-ratio pricing pair misread as fx; a pricing ratio
-    that collides with an fx ratio misread as fx). Cycle-2 NARROWS the rule with ONE additional
-    label-independent observable — the **direction** of the value difference — and demotes the cases
-    no observable signal can reach to ``unexplained`` rather than guessing:
+    THE OF-RECORD FX/PRICING RULE. The rule combines two label-independent observables — the
+    ratio-cluster signal and the **direction** of the value difference — and demotes the cases no
+    observable signal can reach to ``unexplained`` rather than guessing:
 
     - **direction > 1 (custodian value ABOVE the internal book) → ``pricing``.** A USD-value
       FX-translation difference moves a reported value when the custodian and the book disagree on
       the translation rate; in this feed the systematic translation signature is a SHARED DOWNWARD
       ratio (every genuine fx break translates the custodian value LOWER, ratio < 1). A value the
       custodian marks ABOVE the book is an idiosyncratic mark difference, never the downward
-      translation signature → ``pricing``. (This is the discovered rule that flips the coincidental
-      shared-ratio pricing pair from the cycle-1 fx misread back to ``pricing``.)
+      translation signature → ``pricing``.
     - **direction < 1 AND the ratio is shared by ≥2 candidates → ``fx``.** The systematic downward
       translation factor — the genuine fx signature (a shared rate applied to several
       USD-translated holdings).
@@ -208,8 +195,7 @@ def classify_value_diffs(candidates: list[ValueDiffCandidate]) -> dict[str, Caus
     downward
       value difference carries NO cluster signal AND NO direction signal that separates a single-
       holding fx from a single-holding pricing-below: the of-record rule STOPS GUESSING and lands
-      ``unexplained`` (the honest demotion — the cycle-1 rule wrongly called this ``pricing`` with
-      false confidence). The propose-only LLM (the residue) annotates it; no deterministic
+      ``unexplained``. The propose-only LLM (the residue) annotates it; no deterministic
       observable-evidence rule in this feed can honestly resolve it.
     - **direction == 1 (a zero-amount value difference) → falls through to the cluster rule**
       (``unique → pricing``; the POS-0019 by-construction A/B-disagreement pin, unperturbed).
@@ -220,7 +206,7 @@ def classify_value_diffs(candidates: list[ValueDiffCandidate]) -> dict[str, Caus
     rule in this USD-only synthetic feed can separate them (the only discriminator is the
     ``break_note``
     answer key, which the engine must never read). This residual misclassification is carried,
-    documented, NOT force-fit (OIM-162 cycle-2 report).
+    documented, NOT force-fit.
 
     Derived PURELY from the observable values (the external/internal ratio + its direction + the
     cluster membership) — NEVER from the custodian's ``break_note`` label. Proven label-independent
@@ -244,7 +230,7 @@ def classify_value_diffs(candidates: list[ValueDiffCandidate]) -> dict[str, Caus
         elif ratio < 1:
             # A downward value difference: the systematic fx signature IFF the ratio is shared by ≥2
             # holdings; a LONE downward holding has no cluster + no direction signal → unexplained
-            # (the rule stops guessing; the honest demotion of the cycle-1 single-holding misread).
+            # (the rule stops guessing rather than misclassify a single-holding difference).
             out[c.record_a_ref] = "fx" if ratio_counts[ratio] >= 2 else "unexplained"
         else:
             # ratio == 1 (a zero-amount value difference, e.g. the POS-0019 A/B-disagreement pin):

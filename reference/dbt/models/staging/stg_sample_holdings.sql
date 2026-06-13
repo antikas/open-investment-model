@@ -1,14 +1,13 @@
--- stg_sample_holdings — the OIM-102 SAMPLE staging model that proves the
+-- stg_sample_holdings — a SAMPLE staging model that proves the
 -- pipeline runs (seed -> staging view -> tests), nothing more.
 --
 -- This is a DELIBERATELY GENERIC sample, NOT a BD-09 entity. The ten BD-09
 -- entities (E-01 Legal Entity, E-04 Holding/Position, E-07 Valuation, E-20
--- Performance Result, ...) are realised as staging models in OIM-103, each
--- cross-checked against model/entities/E-NN-*.md. The intermediate/mart models
--- and the full synthetic seed are OIM-110/111. This model exists only to make
+-- Performance Result, ...) are realised as the stg_eNN_* staging models, each
+-- cross-checked against model/entities/E-NN-*.md. This model exists only to make
 -- `dbt build` green + idempotent on the duckdb dev backend.
 --
--- Shape (so OIM-103's entity staging models drop in beside it without rework):
+-- Shape (so the entity staging models drop in beside it without rework):
 -- a 1:1 typed view over a `raw` seed, casting raw CSV text to typed columns and
 -- deriving one trivial measure (market_value). Materialised as a view per the
 -- staging convention (idempotent by construction — a view is a query, not

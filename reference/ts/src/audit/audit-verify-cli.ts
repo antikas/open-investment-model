@@ -1,5 +1,5 @@
 /**
- * `pnpm audit-verify <file>` — the tamper-detecting verifier CLI (OIM-151 part 4).
+ * `pnpm audit-verify <file>` — the tamper-detecting verifier CLI.
  *
  * Reads a JSON-L audit export, recomputes the SHA-256 hash chain, and reports whether the chain is
  * intact. On a tampered chain it names the FIRST broken `seq` + the tamper class + a human reason,
@@ -29,7 +29,7 @@ function err(line = ''): void {
   process.stderr.write(`${line}\n`);
 }
 
-const HELP = `${CLI} — verify a hash-chained audit-journal export (OIM-151 v0.1)
+const HELP = `${CLI} — verify a hash-chained audit-journal export (v0.1)
 
 USAGE
   pnpm audit-verify <export.jsonl> [--manifest <manifest.json>]

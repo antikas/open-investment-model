@@ -7,15 +7,14 @@ runs the declared baseline selector, prints a **byte-identical** report, and
 **exits non-zero when the bar is missed** (CI-gate-ready — the `reference/` CI
 pipeline that would invoke it is a later item, not built here).
 
-`gap_metric(eval_set, card, selector)` (OIM-106 — the net-new runner/verdict work
-the OIM-105 P-MAJOR-2 carry-forward named) runs the selector over an
-**office-arm-tagged** set and returns a `GapResult`: within-office accuracy,
-cross-office accuracy, the **gap** (within − cross), and the gate-E **two-part
-trigger** (gap `> 5pp` primary OR cross-office `< 90%` backstop, build-gate annex
-§E). The `--gap` CLI path runs it over the cross-office set. This is a distinct
-result/verdict shape — it is NOT expressible through `RunResult.passed`'s single
-`accuracy >= bar` — and the OIM-105 single-set default path is kept working
-unchanged alongside it (additive, not a rewrite).
+`gap_metric(eval_set, card, selector)` (the net-new runner/verdict work) runs the
+selector over an **office-arm-tagged** set and returns a `GapResult`: within-office
+accuracy, cross-office accuracy, the **gap** (within − cross), and the **two-part
+trigger** (gap `> 5pp` primary OR cross-office `< 90%` backstop). The `--gap` CLI
+path runs it over the cross-office set. This is a distinct result/verdict shape —
+it is NOT expressible through `RunResult.passed`'s single `accuracy >= bar` — and
+the single-set default path is kept working unchanged alongside it (additive, not
+a rewrite).
 
 Determinism / replay (the regression+replay property the brief requires):
 
@@ -29,7 +28,7 @@ encoding*. The CLI proves this itself with `--check-replay` (runs the report twi
 in-process and asserts the two strings are identical), so the replay property is
 part of what the one command demonstrates rather than a claim made elsewhere.
 
-Encoding-robust replay identity (P-MINOR-3): the *rendered console stdout* is not
+Encoding-robust replay identity: the *rendered console stdout* is not
 a safe cross-machine replay key — the report carries non-ASCII (em-dashes etc.)
 which serialises to different bytes under cp1252 (a Windows console) vs UTF-8 (a
 Linux CI runner), so hashing stdout would spuriously differ across machines even
@@ -41,27 +40,27 @@ sort_keys=True, ensure_ascii=True)` over the result dataclass, SHA-256'd. Becaus
 regardless of the console's locale. That is the hash a CI gate should pin, not the
 stdout hash.
 
-The honest boundary (goal (f)): the accuracy this runner emits is the *baseline
-selector's* accuracy — a harness-validation datapoint. It is NOT agentINVEST's
-tool-selection accuracy and NOT a verdict on the single-orchestrator bet. The
-report states this in terms; the runner never narrates a green/red as "tool
-selection proven" / "cross-office risk retired". The same boundary holds for the
-gap metric: the proven thing is that the GAP METRIC computes the two
-sub-population accuracies + the gap + the two-part trigger and fires correctly;
-the baseline's "split-indicated" / "no-split" is a harness datapoint, NOT the
-architecture's split decision. Gate-E's "within-office < 95% => catalogue broken"
-and "gap > 5pp => split" interpretations apply to OIM-130's REAL selector, not to
-a lexical baseline (a baseline below 95% within-office is expected). That is why
-`_main_gap` does NOT exit non-zero on a baseline split-indicated — it would be the
+The honest boundary: the accuracy this runner emits is the *baseline selector's*
+accuracy — a harness-validation datapoint. It is NOT agentINVEST's tool-selection
+accuracy and NOT a verdict on the single-orchestrator bet. The report states this
+in terms; the runner never narrates a green/red as "tool selection proven" /
+"cross-office risk retired". The same boundary holds for the gap metric: the
+proven thing is that the GAP METRIC computes the two sub-population accuracies +
+the gap + the two-part trigger and fires correctly; the baseline's
+"split-indicated" / "no-split" is a harness datapoint, NOT the architecture's
+split decision. The "within-office < 95% => catalogue broken" and "gap > 5pp =>
+split" interpretations apply to the REAL (production) selector, not to a lexical
+baseline (a baseline below 95% within-office is expected). That is why `_main_gap`
+does NOT exit non-zero on a baseline split-indicated — it would be the
 equivalence-substitution failure to treat the baseline's gap as the CI-gating
-architecture verdict. The number becomes a statement
-about agentINVEST only when OIM-130's selector's selections are scored here.
-OIM-130's `.plan()` selector is async/durable/non-deterministic (ADR-0054), so it
-integrates by **recording its per-query selections as a fixed transcript and
-scoring that** through this same scoring code — NOT by wrapping the async selector
-in a synchronous `Selector` proxy (that would score a stand-in). The synchronous
-`Selector` contract scored live in the loop below is the *deterministic-selector*
-contract; `run_eval` stays synchronous and pure precisely to keep replay stable.
+architecture verdict. The number becomes a statement about agentINVEST only when
+the production selector's selections are scored here. The production `.plan()`
+selector is async/durable/non-deterministic, so it integrates by **recording its
+per-query selections as a fixed transcript and scoring that** through this same
+scoring code — NOT by wrapping the async selector in a synchronous `Selector`
+proxy (that would score a stand-in). The synchronous `Selector` contract scored
+live in the loop below is the *deterministic-selector* contract; `run_eval` stays
+synchronous and pure precisely to keep replay stable.
 """
 
 from __future__ import annotations
@@ -75,8 +74,8 @@ from pathlib import Path
 from agentinvest_evals.schema import CROSS_OFFICE, WITHIN_OFFICE, EvalCard, EvalSet
 from agentinvest_evals.selector import Selector, TokenOverlapBaselineSelector
 
-# The eval-content home (builder surface). Resolved relative to this file so the
-# runner works from any cwd: .../reference/python/src/agentinvest_evals/runner.py
+# The eval-content home. Resolved relative to this file so the runner works from
+# any cwd: .../reference/python/src/agentinvest_evals/runner.py
 # -> .../reference/evals/sets.
 _SETS_DIR = Path(__file__).resolve().parents[3] / "evals" / "sets"
 
@@ -86,16 +85,15 @@ _INTRA_DOMAIN_CARD = "intra-domain-bd09-returns.card.md"
 _CROSS_OFFICE_SET = "cross-office-front-vs-middle.json"
 _CROSS_OFFICE_CARD = "cross-office-front-vs-middle.card.md"
 
-# Gate-E gap-metric tolerances (build-gate annex §E — the SSOT). The split is
-# indicated (for the REAL selector — see the honest boundary) when EITHER limb
-# fires: the gap exceeds 5 percentage points (primary), OR cross-office accuracy
-# drops below 90% (backstop).
+# Gap-metric tolerances (the SSOT). The split is indicated (for the REAL selector
+# — see the honest boundary) when EITHER limb fires: the gap exceeds 5 percentage
+# points (primary), OR cross-office accuracy drops below 90% (backstop).
 #
-# The two §E threshold constants are held as exact integer rationals so the
-# trigger can be computed in integer percentage-point space (see `GapResult`'s
+# The two threshold constants are held as exact integer rationals so the trigger
+# can be computed in integer percentage-point space (see `GapResult`'s
 # `primary_gap_fires` / `backstop_fires`). The float forms `_GAP_PRIMARY_PP` /
 # `_CROSS_OFFICE_BACKSTOP` remain ONLY for the report's display strings — they are
-# never used in a trigger comparison (that was the P-MAJOR-1 float-fragility bug:
+# never used in a trigger comparison (that avoids the float-fragility trap:
 # `gap_pp > 5.0` on a float-subtracted gap gives different verdicts for
 # mathematically-equal inputs, e.g. `1.0 − 0.95` fires but `0.10 − 0.05` does not).
 _GAP_PRIMARY_PP = 5.0  # DISPLAY ONLY — the primary 5pp threshold as a float string
@@ -142,7 +140,7 @@ class RunResult:
 
 
 def canonical_json(result: RunResult) -> str:
-    """Encoding-independent canonical serialisation of a `RunResult` (P-MINOR-3).
+    """Encoding-independent canonical serialisation of a `RunResult`.
 
     The replay/identity key must be platform-stable. Hashing the *rendered console
     stdout* is not safe across machines: the report's non-ASCII (em-dashes, `>=`,
@@ -167,31 +165,31 @@ def replay_hash(result: RunResult) -> str:
 
 @dataclass(frozen=True)
 class GapResult:
-    """The gate-E gap-metric verdict (OIM-106 — the net-new runner/verdict work).
+    """The gap-metric verdict (the net-new runner/verdict work).
 
-    The P-MAJOR-2 carry-forward: gate-E's cross-office verdict is NOT a single
-    `accuracy >= bar`. It is two sub-population accuracies, their difference, and a
-    two-part trigger — none expressible through `RunResult.passed`. So this is a
-    distinct result shape computed over an office-arm-tagged set.
+    The cross-office verdict is NOT a single `accuracy >= bar`. It is two
+    sub-population accuracies, their difference, and a two-part trigger — none
+    expressible through `RunResult.passed`. So this is a distinct result shape
+    computed over an office-arm-tagged set.
 
     Fields:
       - `within_total` / `within_correct` / `cross_total` / `cross_correct` — the
         two sub-populations' raw counts, partitioned by each case's `office_arm`.
       - `within_accuracy` / `cross_accuracy` — the two sub-population accuracies.
       - `gap` — within_accuracy − cross_accuracy, a fraction (the degradation the
-        office-split specifically fixes; the cleaner of the two signals per §E).
-      - `gap_pp` — the same gap in percentage points (the §E unit).
-      - the two trigger limbs, computed against the §E SSOT tolerances in
+        office-split specifically fixes; the cleaner of the two signals).
+      - `gap_pp` — the same gap in percentage points.
+      - the two trigger limbs, computed against the SSOT tolerances in
         **integer percentage-point space** (exact cross-multiplication of the
-        raw counts — never a float `>` / `<`, the P-MAJOR-1 fix): the primary
+        raw counts — never a float `>` / `<`): the primary
         fires iff the gap STRICTLY exceeds 5pp; the backstop fires iff cross-office
         accuracy STRICTLY drops below 90%. `gap` / `gap_pp` (floats) are for the
         report's display only and are never used in a trigger comparison.
-      - `split_indicated` — True iff EITHER limb fires (the §E rule: primary OR
+      - `split_indicated` — True iff EITHER limb fires (the rule: primary OR
         backstop). **See the honest boundary below: for a LEXICAL BASELINE this
         flag is a harness-validation datapoint, NOT a verdict that the architecture
-        must split. The gate-E split interpretation is reserved for OIM-130's real
-        selector run through this metric (via record-then-score).**
+        must split. The split interpretation is reserved for the real selector run
+        through this metric (via record-then-score).**
 
     `outcomes` carries every case outcome (both arms) so the report and the
     replay hash are complete and deterministic.
@@ -228,10 +226,10 @@ class GapResult:
 
     @property
     def primary_gap_fires(self) -> bool:
-        """Primary §E limb: the gap STRICTLY exceeds 5 percentage points.
+        """Primary limb: the gap STRICTLY exceeds 5 percentage points.
 
         Computed in integer percentage-point space to be exact and stable at the
-        boundary (the P-MAJOR-1 fix). The float gap `within_acc − cross_acc` is
+        boundary. The float gap `within_acc − cross_acc` is
         representation-fragile: `1.0 − 0.95` and `0.10 − 0.05` are mathematically
         the same 5pp gap but land on different sides of a float `> 5.0`, giving
         different verdicts for equal inputs. Instead, fire iff
@@ -243,7 +241,7 @@ class GapResult:
                                                     all strictly positive]
 
         — an all-integer comparison. STRICT `>`: an exact 5.000…pp gap does NOT
-        fire (honoring §E's "exceeds 5 percentage points"). `within_total` and
+        fire (honoring the rule's "exceeds 5 percentage points"). `within_total` and
         `cross_total` are both ≥ 1 (the both-arms guard in `gap_metric`), so the
         multipliers are positive and the inequality direction is preserved. A
         negative gap (cross-office better than within) yields a negative left side
@@ -260,12 +258,12 @@ class GapResult:
 
     @property
     def backstop_fires(self) -> bool:
-        """Backstop §E limb: cross-office accuracy STRICTLY drops below 90%.
+        """Backstop limb: cross-office accuracy STRICTLY drops below 90%.
 
-        Integer comparison (the P-MAJOR-1 fix; consistent with the primary limb):
+        Integer comparison (consistent with the primary limb):
         fire iff cross_correct/cross_total < 9/10 ⇔ cross_correct·10 < 9·cross_total
         (cross_total ≥ 1, so the multiplier is positive). STRICT `<`: an exact 90%
-        cross-office accuracy does NOT fire (honoring §E's "drops below 90%").
+        cross-office accuracy does NOT fire (honoring the rule's "drops below 90%").
         """
         if not self.cross_total:
             return False
@@ -273,21 +271,20 @@ class GapResult:
 
     @property
     def split_indicated(self) -> bool:
-        """The §E two-part trigger: primary OR backstop. (Honest boundary: for the
+        """The two-part trigger: primary OR backstop. (Honest boundary: for the
         baseline this is a harness datapoint, NOT the architecture verdict.)"""
         return self.primary_gap_fires or self.backstop_fires
 
 
 def gap_metric(eval_set: EvalSet, card: EvalCard, selector: Selector) -> GapResult:
-    """Run `selector` over an office-arm-tagged set and compute the gate-E gap.
+    """Run `selector` over an office-arm-tagged set and compute the gap.
 
     Pure; deterministic; no I/O. Partitions every case by its `office_arm`,
     scores each case identically (selected == label), and assembles the two
     sub-population accuracies, the gap, and the two-part trigger into a
     `GapResult`. Raises if the set is malformed, one-sided over the focus tools,
     or does not actually carry BOTH arms (a gap needs both sub-populations — a
-    single-arm set cannot compute a gap, the goal-(f)/T0 "no defensible control"
-    guard).
+    single-arm set cannot compute a gap, the "no defensible control" guard).
     """
     structural = eval_set.validate()
     if structural:
@@ -334,7 +331,7 @@ def gap_metric(eval_set: EvalSet, card: EvalCard, selector: Selector) -> GapResu
 
 
 def gap_replay_hash(result: GapResult) -> str:
-    """Encoding-independent canonical replay hash of a `GapResult` (P-MINOR-3).
+    """Encoding-independent canonical replay hash of a `GapResult`.
 
     Same portable-CI-key discipline as `replay_hash` for `RunResult`: canonical
     JSON (`sort_keys`, `ensure_ascii` → pure ASCII), SHA-256'd, so the hash is
@@ -349,8 +346,8 @@ def two_sidedness_problems(eval_set: EvalSet, focus_tool_ids: tuple[str, ...]) -
     """Assert each focus tool appears as BOTH a correct answer and a confuser.
 
     A one-sided set (a tool that is only ever the answer, or only ever a confuser)
-    is a toy set — the brief's Clause-5 walk requires each of the 4 return tools to
-    play both roles. Returns a list of problems (empty == genuinely two-sided).
+    is a toy set — each of the 4 return tools must play both roles. Returns a list
+    of problems (empty == genuinely two-sided).
     """
     as_expected: set[str] = {c.expected_tool_id for c in eval_set.cases}
     as_confuser: set[str] = {cf for c in eval_set.cases for cf in c.confusers}
@@ -400,7 +397,7 @@ def run_eval(eval_set: EvalSet, card: EvalCard, selector: Selector) -> RunResult
 def format_report(result: RunResult, card: EvalCard) -> str:
     """Render the byte-identical report. No timestamps / paths / randomness."""
     lines: list[str] = []
-    lines.append("agentINVEST Tranche-0 eval harness")
+    lines.append("agentINVEST eval harness")
     lines.append("=" * 60)
     lines.append(f"eval        : {result.eval_id}")
     lines.append(f"set         : {result.set_id}")
@@ -420,11 +417,11 @@ def format_report(result: RunResult, card: EvalCard) -> str:
     acc_pct = f"{result.accuracy * 100:.2f}%"
     bar_pct = f"{result.bar * 100:.2f}%"
     lines.append(f"accuracy    : {result.correct}/{result.total} = {acc_pct}")
-    lines.append(f"bar (gate-E within-office) : >= {bar_pct}")
+    lines.append(f"bar (within-office) : >= {bar_pct}")
     verdict = "PASS" if result.passed else "FAIL"
     lines.append(f"verdict     : {verdict} (selector accuracy vs the bar)")
     lines.append("")
-    lines.append("HONEST BOUNDARY (goal (f)): this is the BASELINE selector's accuracy —")
+    lines.append("HONEST BOUNDARY: this is the BASELINE selector's accuracy —")
     lines.append("a harness-validation datapoint. It is NOT agentINVEST's tool-selection")
     lines.append("accuracy and NOT a verdict on the single-orchestrator bet. The harness is")
     lines.append("what is proven here. The real measurement comes when the LLM planner's real")
@@ -438,7 +435,7 @@ def format_report(result: RunResult, card: EvalCard) -> str:
 
 
 def format_gap_report(result: GapResult, card: EvalCard) -> str:
-    """Render the byte-identical gate-E gap-metric report. No timestamps/paths.
+    """Render the byte-identical gap-metric report. No timestamps/paths.
 
     Shows the two sub-population accuracies, the gap, BOTH trigger limbs (so the
     metric is visibly the whole two-part trigger, not half of it), the combined
@@ -446,7 +443,7 @@ def format_gap_report(result: GapResult, card: EvalCard) -> str:
     that the baseline's gap is a harness datapoint, NOT the architecture verdict.
     """
     lines: list[str] = []
-    lines.append("agentINVEST Tranche-0 gate-E gap metric")
+    lines.append("agentINVEST gap metric")
     lines.append("=" * 64)
     lines.append(f"eval        : {result_eval_id(card)}")
     lines.append(f"set         : {card.set_ref}")
@@ -474,7 +471,7 @@ def format_gap_report(result: GapResult, card: EvalCard) -> str:
     )
     lines.append(f"gap (within - cross)   : {gap_pct}")
     lines.append("-" * 64)
-    lines.append("gate-E two-part trigger (build-gate annex E):")
+    lines.append("two-part trigger:")
     primary = "FIRES" if result.primary_gap_fires else "clear"
     backstop = "FIRES" if result.backstop_fires else "clear"
     lines.append(
@@ -488,11 +485,11 @@ def format_gap_report(result: GapResult, card: EvalCard) -> str:
     verdict = "SPLIT-INDICATED" if result.split_indicated else "NO-SPLIT"
     lines.append(f"  trigger verdict (primary OR backstop) : {verdict}")
     lines.append("")
-    lines.append("HONEST BOUNDARY (goal (f)): the gate-E GAP METRIC is what is proven here —")
+    lines.append("HONEST BOUNDARY: the GAP METRIC is what is proven here —")
     lines.append("it computes within-office accuracy, cross-office accuracy, the gap, and the")
     lines.append("two-part trigger, and fires correctly. The numbers above are the BASELINE")
     lines.append("selector's — a harness-validation datapoint. They are NOT a verdict on")
-    lines.append("whether to split the architecture. Gate-E's interpretations — 'within-office")
+    lines.append("whether to split the architecture. The interpretations — 'within-office")
     lines.append("< 95% => the catalogue/retrieval is broken' and 'gap > 5pp => split the")
     lines.append(
         "architecture' — apply to the LLM planner's REAL selector, not to a lexical baseline."
@@ -528,20 +525,20 @@ def _load_cross_office() -> tuple[EvalSet, EvalCard]:
 
 
 def _main_gap(argv: list[str]) -> int:
-    """The gate-E gap-metric path (OIM-106) over the cross-office tagged set.
+    """The gap-metric path over the cross-office tagged set.
 
     Computes within-office accuracy, cross-office accuracy, the gap, and the
     two-part trigger, then prints the gap report. The same `--check-replay` /
     `--replay-hash` flags apply, over the `GapResult` (encoding-independent).
 
     Exit code: this path reports the gap metric; it does NOT exit non-zero on a
-    "split-indicated" baseline result, because — per the honest boundary (goal
-    (f)) — a baseline split-indicated is a harness datapoint, not a CI-failing
+    "split-indicated" baseline result, because — per the honest boundary — a
+    baseline split-indicated is a harness datapoint, not a CI-failing
     architecture verdict. The exit code instead guards the HARNESS's own
     integrity: 0 when the gap metric computed cleanly over both arms; non-zero
     only on a malformed / one-sided / single-arm set (the metric could not be
-    computed) or a replay failure. (OIM-130's real-selector gate decides what
-    exit semantics a split-indicated verdict carries when the production selector
+    computed) or a replay failure. (The real-selector gate decides what exit
+    semantics a split-indicated verdict carries when the production selector
     runs through this metric — not the baseline.)
     """
     check_replay = "--check-replay" in argv
@@ -578,22 +575,22 @@ def _main_gap(argv: list[str]) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry. Default: the OIM-105 intra-domain single-set eval (unchanged).
+    """CLI entry. Default: the intra-domain single-set eval.
 
     Modes:
-      (default)       the OIM-105 within-office single-set `accuracy >= bar` path
+      (default)       the within-office single-set `accuracy >= bar` path
                       over the intra-domain BD-09 returns set — exit non-zero on a
-                      bar miss (CI-gate-ready), kept working exactly as before.
-      --gap           the OIM-106 gate-E gap-metric path over the cross-office
-                      office-arm-tagged set: within / cross / gap + two-part
-                      trigger. (See `_main_gap` for its distinct exit semantics.)
+                      bar miss (CI-gate-ready).
+      --gap           the gap-metric path over the cross-office office-arm-tagged
+                      set: within / cross / gap + two-part trigger. (See
+                      `_main_gap` for its distinct exit semantics.)
 
     Flags (apply to both modes):
       --check-replay  run the report twice in-process and assert byte-identical
                       output (the regression+replay proof), then print it once.
       --replay-hash   print ONLY the encoding-independent canonical replay hash
-                      (the portable CI key, P-MINOR-3) and exit — nothing else, so
-                      a CI gate can capture exactly one stable line across machines.
+                      (the portable CI key) and exit — nothing else, so a CI gate
+                      can capture exactly one stable line across machines.
 
     Exit code (default mode): 0 iff selector accuracy >= the bar; non-zero on a
     bar miss (CI-gate-ready) or on a malformed/one-sided set.
@@ -612,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:
     result = run_eval(eval_set, card, selector)
 
     if hash_only:
-        # The portable replay key — pure ASCII, locale-independent (P-MINOR-3).
+        # The portable replay key — pure ASCII, locale-independent.
         sys.stdout.write(replay_hash(result) + "\n")
         return 0 if result.passed else 1
 

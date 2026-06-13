@@ -39,6 +39,8 @@ Build status, stated plainly:
 - **Built and audited end to end** — the NAV-strike workflow: an LLM planning loop, a human approval gate, and a journaled durable workflow, with crash-replay proven.
 - **In build** — the reconciliation capability: the deterministic dual-pipeline engine and the append-only break store are complete and audited; the propose-only AI stage over unexplained breaks is designed but not built; the state-mutating correction workflow is not yet built.
 
+The whole implementation — the durable-execution substrate, the typed tool catalogue, the canonical data layer, the orchestrator and its workflows, and the agent ingress — is drawn in the [solution-architecture diagram](reference/docs/architecture/agentinvest-solution-architecture.svg), with a [layer-by-layer walkthrough](reference/docs/architecture/agentinvest-solution-architecture.md).
+
 ## The model at a glance
 
 **17 Business Domains, 171 Service Domains, ~1,030 Service Operations.** Office tags: Front / Middle / Back / Cross-cutting / Commercial.
@@ -131,7 +133,7 @@ Your first question is probably "what about FIBO?" or "what about CDM?" — it i
 
 1. **Service-domain-first.** A capability decomposition of the firm, not only a data model. This is the differentiator against the archived `glue`.
 2. **Agent-native.** A typed tool surface, an MCP server, and audit binding as first-class concerns — the buy-side parallel to the AI-native bank reference architectures.
-3. **Private-markets master-data.** Explicit entity resolution and golden keys for the reality that private markets have no universal identifier. A model that assumes a shared identifier breaks the moment it meets a GP report.
+3. **Private-markets master-data, made runnable.** Explicit entity resolution and golden keys for the reality that private markets have no universal identifier — a model that assumes a shared identifier breaks the moment it meets a GP report. Not only modelled: implemented and demonstrated in agentINVEST as a deterministic three-tier resolver with golden-record survivorship, scored by a labelled evaluation that holds **zero mis-merges**, with no model in the of-record decision. See [the entity-resolution capability](reference/docs/capabilities/entity-resolution.md).
 4. **Vendor-neutral and maintained.** Open and maintainer-led (see [GOVERNANCE.md](GOVERNANCE.md)), MIT-licensed, tied to no vendor's platform. This is the failure mode of `glue` that OpenIM exists to avoid.
 
 ## Declared scope

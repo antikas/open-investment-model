@@ -1,6 +1,6 @@
 /**
  * The PENDING-APPROVALS REGISTRY — a thin, ADDITIVE read-surface over the
- * high-stakes approval gate (seam 3, OIM-132), built so a human surface (the
+ * high-stakes approval gate (seam 3), built so a human surface (the
  * Operator UI's Approvals queue) can ENUMERATE the live approvals awaiting a
  * decision WITHOUT the raw Restate CLI/awakeable API.
  *
@@ -14,7 +14,7 @@
  * send), and a resolution marks it resolved — so a surface can list exactly the
  * pending approvals, with the fields the operator reads, from one query.
  *
- * ADDITIVE — THE GATE'S SEMANTICS ARE FROZEN (the OIM-142 constraint). The gate's
+ * ADDITIVE — THE GATE'S SEMANTICS ARE FROZEN (the frozen-semantics constraint). The gate's
  * pause/resolve/timeout behaviour is UNCHANGED: the registry write is a top-level
  * FIRE-AND-FORGET send (`ctx.objectSendClient(...).register(...)`) that the gate
  * does not await and whose outcome the gate does not depend on. The gate still
@@ -120,9 +120,9 @@ export const approvalRegistry = object({
      * (`markRegistryResolved`, fire-and-forget on approve/reject/timeout) and the Operator
      * UI's post-resolve mark. The single-writer-per-key VO serialises them in ISSUE order.
      *
-     * TERMINAL-TRUTH-WINS (OIM-142 cycle-4, fold P-MINOR-1 residual). The recorded decision must
+     * TERMINAL-TRUTH-WINS. The recorded decision must
      * be the operation's TERMINAL TRUTH regardless of the order in which the two writers arrive —
-     * NOT merely the first writer (cycle-3's first-writer-wins was order-based, and order is not
+     * NOT merely the first writer (a plain first-writer-wins is order-based, and order is not
      * guaranteed across two fire-and-forget issuers). The two writers are NOT symmetric: the gate's
      * `'aborted'` mark (issued ONLY by the durable-timeout path, approval-gate.ts) is the
      * operation's terminal ground truth; the UI's `'approved'`/`'rejected'` mark is the operator's
@@ -135,9 +135,9 @@ export const approvalRegistry = object({
      *   - incoming `'aborted'` on a recorded non-`'aborted'` (`approved`/`rejected`) → OVERRIDE to
      *     `'aborted'` and log the correction. This closes BOTH orderings of the decide/timeout race:
      *       • gate-marks-first → entry is `aborted`; a late UI `approved` does not override it (next
-     *         bullet) → label `aborted` (the cycle-3 forward case, unregressed);
+     *         bullet) → label `aborted` (the forward case);
      *       • UI-marks-first → entry is `approved`/`rejected` on a pending row; the gate's later
-     *         `aborted` mark THEN overrides it → label `aborted` (the cycle-3 residual, now closed).
+     *         `aborted` mark THEN overrides it → label `aborted` (the reverse interleaving).
      *   - incoming non-`'aborted'` on a recorded `'aborted'` → IGNORE-with-log (a late UI mark after
      *     the gate already recorded the terminal `aborted` stays ignored — keeps a genuine timeout
      *     abort honest);
@@ -216,7 +216,7 @@ export const approvalRegistry = object({
 export type ApprovalListItem = PendingApproval;
 
 /**
- * LIVENESS RECONCILE (OIM-142 cycle-2, fix #2) — the read-only liveness contract.
+ * LIVENESS RECONCILE — the read-only liveness contract.
  *
  * A `pending` row must correspond to a GENUINELY-SUSPENDED workflow. The gate's
  * terminal-path resolve-marks (approval-gate.ts) keep the registry true to the world
@@ -290,7 +290,7 @@ export const approvalRegistryReader = service({
      * (awaiting an operator decision) and resolved (a decision recorded). The Approvals
      * queue renders `pending`; `resolved` is the recent-decisions trail.
      *
-     * Before returning, the pending set is reconciled for LIVENESS (OIM-142 cycle-2):
+     * Before returning, the pending set is reconciled for LIVENESS:
      * any pending entry whose operation is TERMINAL (resolved out-of-band — a crash
      * between the awakeable resolve and the gate's resolve-mark) or GONE is aged out, so
      * a pending row is always a genuinely-suspended workflow. Read-only filtering — the

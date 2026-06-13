@@ -1,13 +1,12 @@
-"""The SD-12.10 reconciliation engine — the load-bearing characterisation tests (OIM-162 + OIM-197).
+"""The SD-12.10 reconciliation engine — the load-bearing characterisation tests.
 
 Drives the four reconcile tools (position · cash · transaction-matching · IBOR/ABOR) against the
-canonical store and proves the cycle's load-bearing properties:
+canonical store and proves the load-bearing properties:
 
 1. the engine surfaces EVERY engine-reconciled labelled break with its pinned cause — the oracle is
    SEED-LOADED from ``break_labels.json`` (the SSOT), so the pin count tracks the seed and cannot
    drift to a stale hard-coded N; each break is pinned correct / unexplained-by-design /
-   KNOWN-MISCLASSIFIED (the OIM-197 enriched feed; OIM-160's hand-transcribed N=11 oracle is
-   SUPERSEDED);
+   KNOWN-MISCLASSIFIED on the enriched feed;
 2. the dual-pipeline meta-disagreement is non-vacuous (a constructed A/B disagreement is surfaced),
    and fires ON DATA (``n_pipeline_disagreements > 0``);
 3. an explained TD/SD timing diff is NOT a false break;
@@ -80,23 +79,22 @@ STORE = pytest.mark.skipif(not _store_available(), reason="canonical store not p
 
 
 # ---------------------------------------------------------------------------
-# (1) The engine is CHARACTERISED, not fixed — seed-loaded per-break pins (OIM-197).
+# (1) The engine is CHARACTERISED, not fixed — seed-loaded per-break pins.
 #
-# The OIM-160 hand-transcribed N=11 oracle is SUPERSEDED by SEED-LOADED pins: the labelled-break
-# oracle is read from reference/dbt/seeds/break_labels.json (the SSOT), and each break's expected
-# ENGINE outcome is pinned as an executable expectation — correct / unexplained-by-design /
-# KNOWN-MISCLASSIFIED (the OIM-162 cycle-1 deterministic classifier's HONEST behaviour on the
-# enriched feed; the fix is OIM-162 cycle-2 rule-discovery, NOT this cycle). ZERO breaks may be
-# MISSED (surfacing is rule-independent — a misclassified break is still surfaced); a genuinely
-# missed engine-reconciled break is a gating failure, never a pin.
+# The labelled-break oracle is read from reference/dbt/seeds/break_labels.json (the SSOT), and each
+# break's expected ENGINE outcome is pinned as an executable expectation — correct /
+# unexplained-by-design / KNOWN-MISCLASSIFIED (the deterministic classifier's HONEST behaviour on
+# the enriched feed). ZERO breaks may be MISSED (surfacing is rule-independent — a misclassified
+# break is still surfaced); a genuinely missed engine-reconciled break is a gating failure, never
+# a pin.
 # ---------------------------------------------------------------------------
 
 # the seed dir (reference/dbt/seeds) relative to this test file (reference/python/tests).
 _SEED_DIR = Path(__file__).resolve().parents[2] / "dbt" / "seeds"
 
-# the OIM-162 engine reconciles these reconciliation types; `nav` (the OIM-197 admin shadow-NAV
-# divergence) is an SD-12.16 oversight surface (OIM-164), NOT an SD-12.10 reconcile surface, so
-# the engine correctly does NOT surface it.
+# the engine reconciles these reconciliation types; `nav` (the admin shadow-NAV divergence) is an
+# SD-12.16 oversight surface, NOT an SD-12.10 reconcile surface, so the engine correctly does NOT
+# surface it.
 _ENGINE_RECONCILED_TYPES = {"position", "cash", "transaction", "ibor_abor"}
 
 # Pin types — the executable characterisation of the engine's HONEST per-break behaviour.
@@ -105,12 +103,11 @@ _UNEXPLAINED = "unexplained-by-design"  # engine lands `unexplained`; oracle car
 _MISCLASSIFIED = "KNOWN-MISCLASSIFIED"  # engine cause != true cause (the adversarial shapes)
 
 # The per-break engine-outcome pins, keyed by the oracle record_ref. Each value is
-# (engine_cause, pin_type) — the cause the OIM-162 cycle-1 deterministic engine ACTUALLY assigns,
-# and how that relates to the oracle's TRUE cause. The three KNOWN-MISCLASSIFIED pins are the
-# OIM-162 F-audit's three adversarial fx/pricing shapes — OIM-162 cycle-2's rule-discovery flips
-# these pins deliberately. Everything else the engine classifies correctly.
+# (engine_cause, pin_type) — the cause the deterministic engine ACTUALLY assigns, and how that
+# relates to the oracle's TRUE cause. The KNOWN-MISCLASSIFIED pins are the adversarial fx/pricing
+# shapes. Everything else the engine classifies correctly.
 _ENGINE_PINS: dict[str, tuple[str, str]] = {
-    # --- the OIM-160 eleven (still correct on the enriched feed) ---
+    # --- the original eleven (still correct on the enriched feed) ---
     "POS-0004": ("fx", _CORRECT),
     "POS-0012": ("pricing", _CORRECT),
     "POS-0021": ("timing", _CORRECT),
@@ -122,7 +119,7 @@ _ENGINE_PINS: dict[str, tuple[str, str]] = {
     "TXN-00046": ("missing_transaction", _CORRECT),
     "ADMIN-TXN-EXTRA-01": ("missing_transaction", _CORRECT),
     "PF-0001": ("data_error", _CORRECT),
-    # --- the OIM-197 sound (correctly-classified) additions ---
+    # --- the sound (correctly-classified) additions ---
     "POS-0005": ("fx", _CORRECT),
     "POS-0007": ("fx", _CORRECT),
     "POS-0006": ("pricing", _CORRECT),
@@ -132,31 +129,31 @@ _ENGINE_PINS: dict[str, tuple[str, str]] = {
     "POS-0030": ("timing", _CORRECT),
     "POS-0031": ("timing", _CORRECT),
     "PF-0002": ("data_error", _CORRECT),
-    # the +1 missing/extra-transaction instance (OIM-197 cycle-2 F-M3 fold): a second extra admin
-    # transaction the internal book lacks → the matcher surfaces it `missing_transaction`.
+    # the +1 missing/extra-transaction instance: a second extra admin transaction the internal book
+    # lacks → the matcher surfaces it `missing_transaction`.
     "ADMIN-TXN-EXTRA-02": ("missing_transaction", _CORRECT),
-    # --- the three adversarial fx/pricing shapes (the OIM-162 F-audit modes) — the OIM-162 cycle-2
-    #     rule-discovery flywheel turn outcome (the narrowed direction rule + the honest demotion):
+    # --- the three adversarial fx/pricing shapes — the narrowed direction rule + the honest
+    #     demotion:
     # ADV-1 single-holding fx (ratio 0.94 < 1, lone): the narrowed rule has NO cluster + NO
     # direction signal to call it fx → the rule STOPS GUESSING → engine lands `unexplained` (the
-    # honest DEMOTION; cycle-1 wrongly called it `pricing`). The true cause `fx` is rule-unreachable
-    # in this USD-only feed — it joins the `unexplained` residue (the propose-only LLM sees it).
+    # honest DEMOTION). The true cause `fx` is rule-unreachable in this USD-only feed — it joins the
+    # `unexplained` residue (the propose-only LLM sees it).
     "POS-0013": ("unexplained", _UNEXPLAINED),
     # ADV-2 coincidental shared-ratio pricing pair (ratio 1.058 > 1, custodian ABOVE book): the
     # narrowed DIRECTION rule reads an above-book mark as `pricing` (never the downward fx
-    # signature) → engine now CORRECT (the flywheel PROMOTE — these two pins FLIP to correct).
+    # signature) → engine CORRECT.
     "POS-0014": ("pricing", _CORRECT),
     "POS-0015": ("pricing", _CORRECT),
     # ADV-3 pricing ratio (0.965 < 1) COLLIDES EXACTLY with the genuine fx pair's ratio → it
     # clusters with them and stays `fx` (true pricing). The collision is observably UNBREAKABLE in
     # this USD-only feed (no label-independent signal separates it from the real fx members) → it
-    # stays KNOWN-MISCLASSIFIED: the documented honest boundary of the flywheel turn (no force-fit,
-    # no label-encoded rule). See the cycle-2 report's honest-boundary section.
+    # stays KNOWN-MISCLASSIFIED: the documented honest boundary (no force-fit, no label-encoded
+    # rule).
     "POS-0016": ("fx", _MISCLASSIFIED),
     # --- the A/B-disagreement case (position-internal): surfaced with pipeline_disagreement=True;
     #     the engine classifies the (zero-amount, custodian-ties-book) surfaced break `pricing`. ---
     "POS-0019": ("pricing", _CORRECT),
-    # --- the two rule-unreachable breaks → `unexplained` (the OIM-162 cycle-2 corpus) ---
+    # --- the two rule-unreachable breaks → `unexplained` ---
     "ibor:POS-0019": ("unexplained", _UNEXPLAINED),
     "ibor:POS-0035": ("unexplained", _UNEXPLAINED),
 }
@@ -183,17 +180,17 @@ def _ref_key(record_a_ref: str) -> str:
 
 @STORE
 def test_engine_pins_every_labelled_break_seed_loaded() -> None:
-    """THE LOAD-BEARING TEST (OIM-197): every engine-reconciled labelled break is surfaced and its
+    """THE LOAD-BEARING TEST: every engine-reconciled labelled break is surfaced and its
     engine outcome matches the SEED-LOADED pin — correct / unexplained-by-design / misclassified.
 
     Runs all four reconciles over the enriched canonical store (persist=False). The oracle is read
     from break_labels.json (the seed SSOT, NOT a hand-transcribed dict). ZERO engine-reconciled
     breaks may be missed (surfacing is rule-independent — a misclassified break is still surfaced);
     every surfaced break's cause matches its pin; no spurious break beyond the oracle; the `nav`
-    shadow-NAV-divergence (the OIM-164 surface) is correctly NOT surfaced by the OIM-162 engine.
+    shadow-NAV-divergence is correctly NOT surfaced by the engine.
     """
     oracle = _load_oracle()
-    # the engine-reconciled subset of the oracle (exclude the nav OIM-164-enabler surface).
+    # the engine-reconciled subset of the oracle (exclude the nav oversight surface).
     engine_oracle = {
         b["record_ref"]: (b["reconciliation_type"], b["cause_classification"])
         for b in oracle
@@ -231,10 +228,10 @@ def test_engine_pins_every_labelled_break_seed_loaded() -> None:
     spurious = [ref for ref in surfaced if ref not in engine_oracle]
     assert not spurious, f"SPURIOUS breaks not in the oracle: {spurious}"
 
-    # (4) the nav shadow-NAV-divergence is the OIM-164 surface — the OIM-162 engine does NOT
-    #     surface it (the engine reconciles position/cash/transaction/ibor_abor, not NAV).
+    # (4) the nav shadow-NAV-divergence is an oversight surface — the engine does NOT surface it
+    #     (the engine reconciles position/cash/transaction/ibor_abor, not NAV).
     surfaced_nav = [ref for ref in nav_refs if ref in surfaced]
-    assert not surfaced_nav, f"the engine wrongly surfaced a nav (OIM-164) break: {surfaced_nav}"
+    assert not surfaced_nav, f"the engine wrongly surfaced a nav break: {surfaced_nav}"
 
     # the pins cover exactly the engine-reconciled oracle (every break pinned, no orphan pins).
     assert set(_ENGINE_PINS) == set(engine_oracle), (
@@ -245,9 +242,9 @@ def test_engine_pins_every_labelled_break_seed_loaded() -> None:
 
 @STORE
 def test_flywheel_turn_outcome_pins_are_honest() -> None:
-    """The OIM-162 cycle-2 flywheel-turn outcome: 2 pins flip to correct, 1 demotes, 1 stays honest.
+    """The rule-discovery outcome: 2 pins flip to correct, 1 demotes, 1 stays honest.
 
-    The cycle-2 rule-discovery NARROWED the fx/pricing rule (the direction signal) + DEMOTED the
+    The rule-discovery NARROWED the fx/pricing rule (the direction signal) + DEMOTED the
     lone-downward case. This test guards the HONEST outcome over the three adversarial shapes + the
     two ibor residue breaks, re-derived from the live engine + the seed oracle (NOT the pin map):
 
@@ -293,7 +290,7 @@ def test_flywheel_turn_outcome_pins_are_honest() -> None:
 
     # (5) the unexplained-by-design residue: the engine lands `unexplained`; the oracle carries a
     #     true cause the deterministic rules cannot reach. POS-0013 joins it (the demotion); the two
-    #     ibor breaks are coherent with the injected corruption (P-197-2 fold).
+    #     ibor breaks are coherent with the injected corruption.
     unexplained = {ref for ref, (_c, pt) in _ENGINE_PINS.items() if pt == _UNEXPLAINED}
     assert unexplained == {"POS-0013", "ibor:POS-0019", "ibor:POS-0035"}
     _unexplained_true_cause = {
@@ -310,11 +307,11 @@ def test_flywheel_turn_outcome_pins_are_honest() -> None:
 def test_live_data_exercises_cash_b_and_pipeline_disagreement() -> None:
     """ON DATA: the cash Pipeline-B replay runs (no abstention) and the dual-pipeline disagrees.
 
-    The OIM-197 balance-grade E-06 enrichment makes the cash Pipeline-B `_replay_is_balance_grade`
+    The balance-grade E-06 enrichment makes the cash Pipeline-B `_replay_is_balance_grade`
     gate PASS on the live feed (``n_pipeline_b_abstained == 0``), and the A/B-disagreement
     enrichment makes the dual-pipeline genuinely disagree on data
-    (``n_pipeline_disagreements > 0``) — the two carry-forwards from the OIM-162 cycle-1 close-out,
-    now exercised by the data rather than only by constructed test rows.
+    (``n_pipeline_disagreements > 0``) — both exercised by the data rather than only by constructed
+    test rows.
     """
     req = ReconcileRequest(as_of_date=AS_OF_STR, persist=False)
     cash_raw, _ = _reconcile_cash(req)
@@ -451,7 +448,7 @@ def test_cash_dual_pipeline_disagreement_surfaces_with_balance_grade_replay() ->
 def test_cash_pipeline_b_abstains_on_a_non_balance_grade_replay() -> None:
     """A non-balance-grade replay (a small opposite-sign flow-delta) makes Pipeline B abstain.
 
-    The OIM-160 seed is not a balance ledger — the E-06 replay sum is a small opposite-sign delta,
+    The seed is not a balance ledger — the E-06 replay sum is a small opposite-sign delta,
     not a balance. Pipeline B abstains (recorded in ``n_pipeline_b_abstained``) rather than
     manufacturing a false disagreement on a fund the externals agree on. No phantom break.
     """
@@ -569,7 +566,7 @@ def test_ibor_abor_unexplained_residual_lands_unexplained() -> None:
 
     Two books differ in market value with NO in-flight trade (timing), NO accrual and NO cost-basis
     class to explain it — the residual is genuinely unexplained. The engine surfaces a single
-    ``ibor_abor`` break classified ``unexplained`` (the of-record residue cycle-2's LLM annotates),
+    ``ibor_abor`` break classified ``unexplained`` (the of-record residue the LLM annotates),
     never silently dropped and never force-fit to a known class.
     """
     out = reconcile_ibor_abor(
@@ -608,7 +605,7 @@ def test_ibor_abor_explained_divergence_emits_zero_breaks_on_the_clean_book() ->
 
     NEGATIVE CONTROL: the ABOR book lags the IBOR by exactly an in-flight trade quantity — a known
     timing class. The engine accounts for it (n_explained=1) and emits NO ibor_abor break. On the
-    clean OIM-160 dual book every divergence is so explained → zero ibor_abor breaks.
+    clean dual book every divergence is so explained → zero ibor_abor breaks.
     """
     out = reconcile_ibor_abor(
         ReconcileIborAborInput(

@@ -18,7 +18,7 @@ beginning value, ending value and any income/flow that accrued to value within i
 
     r_k = (V_end - V_begin + income) / V_begin
 
-External oracle (build-gate §A2): matched in the test suite to the published two-period
+External oracle: matched in the test suite to the published two-period
 worked example in the AnalystPrep CFA Level I "Money-Weighted and Time-Weighted Rates of
 Return" notes (sub-period returns 7% and ~4.9057% link to 12.24% as published) to <= 1 bp
 absolute. The published figure is the proof, not this tool's own synthetic output.

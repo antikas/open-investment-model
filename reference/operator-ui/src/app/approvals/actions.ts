@@ -6,7 +6,7 @@
  * ingress. No Restate URL or secret crosses to the client; the action is the whole
  * trust boundary.
  *
- * The decision is recorded at the AWAKEABLE (the OIM-132 gate's path of record):
+ * The decision is recorded at the AWAKEABLE (the gate's path of record):
  * approve → the paused workflow proceeds; reject → it aborts (`aborted-by-operator`,
  * no publish). The registry entry is then marked resolved so the queue refreshes.
  */

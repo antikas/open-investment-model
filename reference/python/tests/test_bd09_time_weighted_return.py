@@ -1,14 +1,14 @@
-"""SO-09-02 compute_time_weighted_return (true TWR) — §A2 oracle, determinism, boundaries.
+"""SO-09-02 compute_time_weighted_return (true TWR) — external oracle, determinism, boundaries.
 
 The load-bearing test is ``test_oracle_*``: the geometric link matches a **published** TWR
-worked example to <= 1 bp absolute (build-gate §A2).
+worked example to <= 1 bp absolute.
 
-§A2 source-authority note: the §A2 oracle here is the **AnalystPrep CFA Level I** worked example
+Source-authority note: the oracle here is the **AnalystPrep CFA Level I** worked example
 — a public, canonical-method mirror (the geometric link is textbook-invariant and was
-independently re-derived). It is *not* the brief's named primary source (the GIPS Handbook /
+independently re-derived). It is *not* the named primary source (the GIPS Handbook /
 official CFA-CIPM curriculum). The primary GIPS Handbook / CFA-CIPM worked examples are the
-production-grade oracle to fold into the eval-harness Class-A arm once properly sourced — a
-carry-forward. The figure is correct; the authority caveat is recorded honestly.
+production-grade oracle to fold in once properly sourced — a carry-forward. The figure is
+correct; the authority caveat is recorded honestly.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from agentinvest_tools.bd09.time_weighted_return import (
 ONE_BP = Decimal("0.0001")
 
 
-# --- §A2 external oracle -----------------------------------------------------
+# --- external oracle ---------------------------------------------------------
 
 
 def test_oracle_analystprep_two_period_linking_from_values() -> None:

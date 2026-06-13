@@ -1,6 +1,6 @@
 """The book-of-record canonical read — the SD-12.1 IBOR + SD-12.2 ABOR dual book, READ-ONLY.
 
-This is the **data** end the BD-12 read tools draw on. It reads the OIM-160 canonical dual book
+This is the **data** end the BD-12 read tools draw on. It reads the canonical dual book
 from the dbt-built canonical store (the same duckdb file the NAV-strike marts read from) and hands
 typed rows to the pure ``bd12`` tools, at a requested as-of date, per book, per portfolio:
 
@@ -22,13 +22,13 @@ not four.
 
 READ-ONLY (the load-bearing safety property). The connection is opened ``read_only=True`` (via
 ``marts._connect``); this module never writes, never mutates, produces no E-24 break record, and
-never reads the external comparator feed / ``break_labels`` (that is OIM-162's detector input). It
+never reads the external comparator feed / ``break_labels`` (the reconciliation detector's input). It
 reads the *internal* dual book only. The as-of is honoured by filtering: positions to ``as_of_date
 <= as_of``, transactions to ``trade_date <= as_of`` (with the in-flight set settling after), cash
 flows to ``cash_flow_date <= as_of``. All queries are parameterised (the as-of and the portfolio
 are bound parameters, never interpolated) — no injection surface.
 
-SYNTHETIC, NOT A PRODUCTION BOOK OF RECORD. The dual book is the OIM-160 synthetic internal book;
+SYNTHETIC, NOT A PRODUCTION BOOK OF RECORD. The dual book is the synthetic internal book;
 a green read proves the typed per-book read + the as-of plumbing + the IBOR/ABOR divergence, NOT a
 production book-of-record service or a read against a live custodian.
 """
@@ -148,7 +148,7 @@ def read_positions(
     Reads ``int_position_valuation`` (the (position_id, book) grain) filtered to the named book +
     portfolio, with ``as_of_date <= the requested as-of`` (the position snapshot up to the read
     date). The book + portfolio + as-of are bound parameters (never interpolated). The IBOR read and
-    the ABOR read of the same portfolio return genuinely-different rows on the OIM-160 dual book.
+    the ABOR read of the same portfolio return genuinely-different rows on the dual book.
     """
     _validate_book(book)
     path = duckdb_path or resolve_duckdb_path()

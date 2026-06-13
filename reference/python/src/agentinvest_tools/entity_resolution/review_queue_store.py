@@ -1,4 +1,4 @@
-"""The append-only steward-review-queue store — engine-owned, insert-only, immutable (OIM-199).
+"""The append-only steward-review-queue store — engine-owned, insert-only, immutable.
 
 Where resolution honesty lives. Every feed record the deterministic cascade CANNOT resolve to
 exactly one master at or above the Tier-2 threshold — a genuinely-ambiguous name-key collision, a
@@ -7,15 +7,15 @@ conflicting-domicile match, a within-batch net-new collision — lands here as a
 quarantine is the correct outcome where the evidence is genuinely insufficient, and forcing it would
 be the cardinal mis-merge that silently corrupts the golden master.
 
-This store is the ``break_store.py`` pattern VERBATIM (the OIM-162 append-only discipline):
+This store is the ``break_store.py`` pattern VERBATIM (the append-only discipline):
 
 - persists each quarantined record as an immutable event at ``status = in_review`` — the
   awaiting-steward state. Each row: ``queue_id``, the source record ref, the cascade tier that
   routed it (always ``tier_3_review``), the explainable signal, the as-of run, ``status``;
 - is **insert-only** — there is NO update method, NO ``status``-transition method, NO delete. A
-  steward's confirmation (``in_review`` -> resolved, the alias write-back to E-13) is a later cycle,
-  human-gated; none exists here. The API surface is ``append_review_items`` + ``read_review_items``
-  + ``count_review_items`` only;
+  steward's confirmation (``in_review`` -> resolved, the alias write-back to E-13) is human-gated and
+  out of scope here; none exists here. The API surface is ``append_review_items`` +
+  ``read_review_items`` + ``count_review_items`` only;
 - is **ENGINE-OWNED and SEPARATE from the dbt canonical store** — its OWN duckdb file
   (``AGENTINVEST_RESOLUTION_REVIEW_STORE_PATH`` override, else a checkout-keyed default DISTINCT
   from the canonical / break / proposal / golden stores), so ``dbt build`` never writes or clobbers
@@ -27,7 +27,7 @@ write path is an INSERT (``insert ... on conflict do nothing``). There is no UPD
 / DROP SQL in this module — the append-only property is proven by the absence of a mutation path AND
 by an AST scan of the executed SQL (``test_entity_resolution_stores``).
 
-SYNTHETIC, FINDINGS-ONLY. The quarantined records are over the OIM-199 synthetic resolution oracle —
+SYNTHETIC, FINDINGS-ONLY. The quarantined records are over a synthetic resolution oracle —
 never a production resolution, never a steward-confirmed merge.
 """
 

@@ -1,4 +1,4 @@
-"""The append-only E-24 break store — insert-only, immutable (OIM-162 cycle-1, load-bearing test 4).
+"""The append-only E-24 break store — insert-only, immutable.
 
 Proves the break store is append-only insert-only: a break is persisted at ``status = open``, an
 idempotent re-append does not double-insert, and there is NO update / NO status-transition / NO
@@ -101,9 +101,9 @@ def test_break_store_has_no_mutation_path() -> None:
     The append-only/immutable property is realised by the ABSENCE of a mutation path. This test
     asserts the module's public surface is insert + read only — there is no ``update_break``,
     ``transition_status``, ``resolve_break``, ``write_correcting_entry``, ``delete_break`` or any
-    other mutation entry point (those are OIM-163, behind the breach gate — not this cycle). If a
-    future cycle adds one, this test fails loudly so the append-only contract cannot be silently
-    broken.
+    other mutation entry point (those live behind the breach gate, a separate mutation entry point).
+    If a future change adds one, this test fails loudly so the append-only contract cannot be
+    silently broken.
     """
     # The callables DEFINED in this module (not imported types/helpers from elsewhere).
     import inspect
@@ -117,7 +117,7 @@ def test_break_store_has_no_mutation_path() -> None:
     }
     # The break store's defined functions must be exactly this insert + read + path-resolve set —
     # any function NOT on this allowlist is an unexpected entry point (a mutation path is one).
-    # The allowlist is explicit so a future cycle adding an ``update_break`` / ``resolve_break`` /
+    # The allowlist is explicit so a future change adding an ``update_break`` / ``resolve_break`` /
     # ``transition_status`` / ``write_correcting_entry`` fails this test loudly. (The legitimate
     # ``resolve_break_store_path`` is a PATH resolver, not a break resolver — it is allowed.)
     allowed = {"append_breaks", "read_breaks", "count_breaks", "resolve_break_store_path"}

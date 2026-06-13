@@ -15,7 +15,7 @@
  *   3. Starts the PYTHON endpoint (the `bd09` dispatch service) — on Windows
  *      inside WSL2 via uv (`uv run python -m agentinvest_tools.endpoint`); native
  *      otherwise — and waits for it to register `bd09` against the shared Restate.
- *      Reuse-safe (OIM-184): if a `bd09` endpoint is ALREADY registered (the shared
+ *      Reuse-safe: if a `bd09` endpoint is ALREADY registered (the shared
  *      :9091 carrying bd09/agentinvestPlanner/navData/pyTools), it is REUSED — not
  *      re-spawned — and LEFT REGISTERED on exit. Only an endpoint THIS run spawned is
  *      torn down. Never strip a shared resource (other local projects sharing the dev
@@ -32,7 +32,7 @@
  *
  * The Python side runs inside WSL2 on Windows (the Restate Python SDK + the data
  * toolchain are Linux-native — the ADR-0054 polyglot split), with the uv env +
- * the duckdb store on WSL2-native ext4 (the OIM-110 checkout-keyed paths, via the
+ * the duckdb store on WSL2-native ext4 (the checkout-keyed paths, via the
  * shared `agentinvest-venv-path.sh` helper). The demo runs under the `dbt` group
  * so duckdb is available to read the marts.
  *
@@ -289,7 +289,7 @@ async function main() {
 
   // Reuse the running shared bd09 if it is already registered (the shared :9091 —
   // carrying bd09/agentinvestPlanner/navData/pyTools); only spawn our own if not
-  // (OIM-184 reuse-safety). pySpawnedByUs gates ALL Python-side teardown: a reused
+  // (reuse-safety). pySpawnedByUs gates ALL Python-side teardown: a reused
   // shared endpoint is NEVER killed or deregistered (other local projects sharing the
   // dev substrate + concurrent OpenIM work depend on it). NEVER `wsl --shutdown`.
   let py = null;

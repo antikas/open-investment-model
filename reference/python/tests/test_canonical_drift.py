@@ -1,12 +1,11 @@
 """The schema-drift check, pytest-hosted — clean on the ten, across both surfaces.
 
 The negative ("fails on a planted drift") leg is proven separately: a planted
-drift is added to a schema or a model file and the check is run, then reverted —
-documented in the cycle-1 report. Here we assert the check is CLEAN on the
-committed ten (Pydantic schemas AND dbt staging SQL), and we exercise the
-drift-detection machinery directly with synthetic drifted schemas and synthetic
-staging SQL so the "fails on drift" behaviour is itself tested and does not depend
-on a manual plant.
+drift is added to a schema or a model file and the check is run, then reverted.
+Here we assert the check is CLEAN on the committed ten (Pydantic schemas AND dbt
+staging SQL), and we exercise the drift-detection machinery directly with synthetic
+drifted schemas and synthetic staging SQL so the "fails on drift" behaviour is
+itself tested and does not depend on a manual plant.
 
 The **money-critical decimal->float retype** is asserted on BOTH surfaces (a
 ``decimal`` model column realised as ``float`` / cast ``as double precision`` ->
@@ -47,10 +46,10 @@ from agentinvest_canonical_model.entities import (
 def test_drift_check_clean_on_all_realised() -> None:
     """The committed schemas match their model files — zero drift.
 
-    Thirteen realised entities: the OIM-103 ten, the W2 reconciliation substrate's
-    E-05 Transaction + E-06 Cash Flow Event (OIM-160), and E-24 Reconciliation Break
-    (OIM-162 — the engine-owned finding the reconciliation engine emits; its Pydantic
-    schema is drift-checked here even though it has no dbt staging model).
+    Thirteen realised entities: the original ten, the reconciliation substrate's
+    E-05 Transaction + E-06 Cash Flow Event, and E-24 Reconciliation Break (the
+    engine-owned finding the reconciliation engine emits; its Pydantic schema is
+    drift-checked here even though it has no dbt staging model).
     """
     results = run_drift_check()
     assert len(results) == 13
@@ -205,11 +204,11 @@ def test_pydantic_positive_control_decimal_stays_clean() -> None:
 def test_staging_drift_check_clean_on_all_realised() -> None:
     """The committed staging models match their model files — zero drift.
 
-    The real-surface proof across all thirteen realised entities (the OIM-103 ten,
+    The real-surface proof across all thirteen realised entities (the original ten,
     E-05/E-06, and E-24): a green here means the check is CORRECT (it passes the
     faithful staging models AND surfaces the one legitimately-unstaged entity), not
     merely that synthetic drift trips it. E-24 Reconciliation Break is engine-owned
-    (the OIM-162 break store is a separate duckdb file, NOT a dbt model), so it has no
+    (the break store is a separate duckdb file, NOT a dbt model), so it has no
     `stg_e24_*.sql` and is reported `no_staging_model` — a surfaced coverage gap that
     is `clean` (not a column/type drift) and does not fail the build.
     """
@@ -227,10 +226,10 @@ def test_only_e24_is_legitimately_unstaged() -> None:
     """Every realised entity is staged EXCEPT E-24 — the one engine-owned entity.
 
     The staging layer carries one `stg_eNN_*.sql` per dbt-materialised realised entity:
-    the OIM-103 ten plus the W2 substrate's stg_e05_transaction + stg_e06_cash_flow_event.
-    E-24 Reconciliation Break is **engine-owned** — the OIM-162 reconciliation engine
-    inserts breaks into a SEPARATE duckdb break store (so `dbt build` never writes or
-    clobbers it), so E-24 has no staging model BY DESIGN. The drift check reports it
+    the original ten plus the substrate's stg_e05_transaction + stg_e06_cash_flow_event.
+    E-24 Reconciliation Break is **engine-owned** — the reconciliation engine inserts
+    breaks into a SEPARATE duckdb break store (so `dbt build` never writes or clobbers
+    it), so E-24 has no staging model BY DESIGN. The drift check reports it
     `no_staging_model` (a surfaced gap, `clean=True`), which is the correct, honest
     state — not a drift. The no-staging-model code path is also exercised by
     `test_unstaged_entity_is_surfaced` with a synthetic entity.
@@ -249,9 +248,10 @@ def test_only_e24_is_legitimately_unstaged() -> None:
 def test_staging_collection_columns_accept_varchar_carrier() -> None:
     """E-01 `known_aliases` (array) / `external_ids` (map) cast `as varchar` are CLEAN.
 
-    The documented flat-text staging carrier (normalisation deferred to OIM-110/111)
-    is accepted by the compat rule — NOT a loosening of money/scalar checks. This is
-    why the real surface is clean WITHOUT editing the SQL or the model file.
+    The documented flat-text staging carrier (normalisation deferred to the
+    staging/marts layer) is accepted by the compat rule — NOT a loosening of
+    money/scalar checks. This is why the real surface is clean WITHOUT editing the SQL
+    or the model file.
     """
     result = check_entity_staging(E01LegalEntity, repo_root())
     assert result.clean, f"type={result.type_mismatches}"

@@ -1,6 +1,6 @@
 /**
  * The AGGREGATE (seam 4) + CLOSE (seam 5) seams — the orchestrator's coherent answer + its
- * journaled audit record (OIM-134, the A-Phase-4 closure).
+ * journaled audit record.
  *
  * After the resolve step derives the concrete inputs and the dispatch step runs the tools, the
  * orchestrator has the RAW per-step results. AGGREGATE combines them into a coherent attribution
@@ -9,10 +9,10 @@
  * AGGREGATE (seam 4) — `aggregateResults(stepResults, plan)`. For the performance-attribution task
  * the plan selects SO-09-01 (the fund's total return) + SO-09-05 (the per-sector contribution
  * breakdown). Aggregate combines them into one attribution answer: the total return + the
- * per-sector contributions, with the OIM-115 COHERENCE INVARIANT as the correctness check — the
+ * per-sector contributions, with the COHERENCE INVARIANT as the correctness check — the
  * per-sector contributions RECONCILE to the total return (both draw on one underlying per-segment
  * NAV-delta derivation, so they tie by construction; a divergence catches a wrong tool compute, a
- * misrouted dispatch, or an envelope pluck bug). HONEST PARTIAL-FAILURE (the OIM-131 discipline):
+ * misrouted dispatch, or an envelope pluck bug). HONEST PARTIAL-FAILURE:
  * if a step FAILED, the aggregate SURFACES it — it does NOT fabricate a number. A coherent answer
  * is produced ONLY when both tools fulfilled and reconcile; otherwise the aggregate is `coherent:
  * false` and names what is missing.
@@ -21,7 +21,7 @@
  * operation: the task, the plan, the resolved args, the step results, the aggregate, and the gate
  * decision (if any). The orchestrator writes it via a journaled `ctx.run("operation-closed", ...)`
  * so it is recorded exactly-once (replay reads it back, it is not re-emitted). A PLAIN journaled
- * record — the hash-chained S3 export (tamper-evidence, 7-year retention) is OIM-150-class, NOT
+ * record — the hash-chained S3 export (tamper-evidence, 7-year retention) is a forward item, NOT
  * built here.
  *
  * PURE LOGIC. Both functions are pure (no I/O, no clock, no context) — the orchestrator calls them
@@ -31,7 +31,7 @@
  *
  * HONEST BOUNDARY (v0.1). The attribution is REAL (the resolved args make the plan executable) but
  * over SYNTHETIC marts data — not a production performance attribution. The coherence invariant is
- * a plumbing-consistency check (the OIM-115 ruling: it catches a wrong compute / misrouted dispatch
+ * a plumbing-consistency check (it catches a wrong compute / misrouted dispatch
  * / pluck bug; it is NOT an independent-methods cross-validation — both tools draw on one
  * per-segment NAV-delta set, so they reconcile exact-by-construction). The audit record is a
  * journaled record, not a tamper-evident export.
@@ -45,7 +45,7 @@ export const TOTAL_RETURN_SO_ID = 'SO-09-01';
 export const CONTRIBUTION_SO_ID = 'SO-09-05';
 
 /**
- * The reconciliation tolerance — the OIM-115 invariant's tolerance. The per-sector contributions
+ * The reconciliation tolerance — the coherence invariant's tolerance. The per-sector contributions
  * reconcile to the total return BY CONSTRUCTION (both derive from one per-segment NAV-delta set),
  * so the only gap is decimal rounding in the weight/return ratios. 1e-9 is far tighter than any
  * 1-bp (1e-4) reporting tolerance — exact-by-construction, not an approximation.
@@ -80,7 +80,7 @@ export interface AttributionAggregate {
   contributions: SectorContribution[] | null;
   /** The sum of the per-sector contributions (the reconciliation LHS), or null. */
   contributionSum: string | null;
-  /** Whether the contributions reconcile to the total return within tolerance (the OIM-115 check). */
+  /** Whether the contributions reconcile to the total return within tolerance (the coherence check). */
   reconciles: boolean;
   /** |contributionSum − totalReturn| (the reconciliation diff), or null if a step failed. */
   reconciliationDiff: string | null;
@@ -109,7 +109,7 @@ function readDecimalField(result: Record<string, unknown>, key: string): string 
  * Aggregate the dispatched step results into a coherent performance-attribution answer (seam 4).
  *
  * Combines SO-09-01 (total return) + SO-09-05 (per-sector contributions) into one answer, with the
- * OIM-115 coherence invariant (the contributions reconcile to the total return) as the correctness
+ * coherence invariant (the contributions reconcile to the total return) as the correctness
  * check. HONEST PARTIAL-FAILURE: if either tool's step failed, the aggregate is NOT coherent and
  * `incoherenceReason` names the failed step — no fabricated number. Pure logic.
  *
@@ -151,7 +151,7 @@ export function aggregateResults(stepResults: StepResult[], plan: Plan): Attribu
     contributionSum = readDecimalField(contributionStep.result.result, 'total_return');
   }
 
-  // The OIM-115 COHERENCE INVARIANT — the contributions reconcile to the total return. Computed
+  // The COHERENCE INVARIANT — the contributions reconcile to the total return. Computed
   // only when BOTH tools fulfilled; a partial failure makes the answer non-coherent (surfaced).
   let reconciles = false;
   let reconciliationDiff: string | null = null;
@@ -224,7 +224,7 @@ export interface GateDecisionRecord {
  * The journaled, well-formed, structured audit record of the whole operation (seam 5's payload).
  * Queryable (a structured object, not free text): the task, the plan, the resolved args, the step
  * results, the aggregate, and the gate decision. A PLAIN journaled record — the hash-chained
- * tamper-evident export is OIM-150-class, NOT built here.
+ * tamper-evident export is a forward item, NOT built here.
  */
 export interface OperationAuditRecord {
   kind: 'operation-closed';

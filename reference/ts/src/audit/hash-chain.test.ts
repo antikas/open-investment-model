@@ -1,5 +1,5 @@
 /**
- * Unit proof of the SHA-256 audit hash chain (OIM-151) — the tamper-evidence heart.
+ * Unit proof of the SHA-256 audit hash chain — the tamper-evidence heart.
  *
  * Pins: well-formed chain (seq + prevHash + chainHash links); the genesis seed for seq 0; the chain
  * is DETERMINISTIC + REPRODUCIBLE (the same records → the same chain + tip across runs); a record

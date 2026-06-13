@@ -2,17 +2,17 @@
  * The `NavCalculationWorkflow` — a multi-step, journaled Restate WORKFLOW that strikes a
  * fund's NAV, with the high-stakes approval gate at the irreversible PUBLISH step.
  *
- * This is the FIRST REAL wiring of the reusable `HighStakesApprovalGate` (the OIM-132
- * component) at an irreversible action: NAV publication is a regulated event. The OIM-132
- * gate was a MECHANISM proven by a forced-fire test (the read-only BD-09 tools never fire
- * it). Here the gate fires because the PUBLISH IS DECLARED HIGH-STAKES — the workflow
- * supplies a high riskScore at the gate, so the publish always pauses for an operator.
+ * This is the FIRST REAL wiring of the reusable `HighStakesApprovalGate` at an
+ * irreversible action: NAV publication is a regulated event. The gate is a MECHANISM (the
+ * read-only BD-09 tools never fire it). Here the gate fires because the PUBLISH IS
+ * DECLARED HIGH-STAKES — the workflow supplies a high riskScore at the gate, so the
+ * publish always pauses for an operator.
  *
  * THE STEPS (architecture §6.1), each a journaled durable checkpoint (`ctx.run`):
  *
  *   load-positions → price-positions → apply-fees → roll-up → [GATE] → publish
  *
- * Faithful to §6.1's `navCalculation` sketch. The COMPONENTS are READ FROM the OIM-111
+ * Faithful to §6.1's `navCalculation` sketch. The COMPONENTS are READ FROM the
  * marts via the `navData` Python service — the workflow does NOT re-implement pricing/NAV.
  * Each step is a durable CHECKPOINT over real data; the reconciliation is a GENUINE
  * CROSS-MART check, NOT a within-row tautology:
@@ -25,7 +25,7 @@
  *   - roll-up         — the GENUINE CROSS-MART RECONCILIATION: the holdings-derived gross
  *                      (load-positions, from `mart_portfolio_holdings`) is asserted EQUAL to
  *                      `mart_fund_nav.gross_market_value` to the penny — two independent
- *                      marts / SQL paths (the OIM-111 `assert_marts_reconcile_holdings_to_nav`
+ *                      marts / SQL paths (the `assert_marts_reconcile_holdings_to_nav`
  *                      invariant, here exercised live), so a divergence (a dropped position,
  *                      a double-counted book) FAILS. This is FALSIFIABLE, not X==X. Then
  *                      NAV = gross + accrued_income − fees is the §A1 identity (dbt-enforced
@@ -42,12 +42,12 @@
  * WHY A WORKFLOW (not the `investmentOperation` virtual object). A Restate WORKFLOW is keyed
  * by a one-shot workflow id (one strike per id), has the single `run` handler plus shared
  * query handlers, and is the natural shape for "a long-running, human-gated, journaled
- * fiduciary process with a terminal outcome" (ADR-0054: workflows are durable orchestrations
+ * fiduciary process with a terminal outcome" (workflows are durable orchestrations
  * / playbooks, NOT agents, NOT new reasoning loops). The `WorkflowContext` extends
- * `ObjectContext`, so the OIM-132 gate (typed to `ObjectContext`) accepts the workflow's
+ * `ObjectContext`, so the approval gate (typed to `ObjectContext`) accepts the workflow's
  * context DIRECTLY — the gate is reused cross-API with no copy.
  *
- * THE LEGAL RESTATE SHAPE (the OIM-104 discipline). The marts-read RPC (`ctx.serviceClient
+ * THE LEGAL RESTATE SHAPE. The marts-read RPC (`ctx.serviceClient
  * (NAV_DATA_SERVICE).getFundNavComponents`), every `ctx.run` checkpoint, the gate's
  * awakeable + notify + abort-trace, and the publish-record `ctx.run` are ALL top-level
  * context actions — none nested inside another `ctx.run` closure (a context action inside a
@@ -59,11 +59,11 @@
  * production gate, is the named arc). NO SHARE CLASSES (the seed lacks them → a per-fund
  * single-class roll-up; the share_class column is carried for forward-compat). The gate
  * fires because the PUBLISH IS DECLARED HIGH-STAKES (the first real high-stakes wiring, vs
- * OIM-132's forced-fire test). PUBLISH is a journaled record, and EXACTLY-ONCE here is
+ * the gate's forced-fire test). PUBLISH is a journaled record, and EXACTLY-ONCE here is
  * exactly-once journaling of that INTERNAL record — there is no external system-of-record
  * write yet (the hash-chained audit export / downstream book is a forward item; once one is
  * wired, exactly-once must be re-proven at THAT boundary). PAST-AS-OF striking is BOUNDED
- * (the OIM-111 carry-forward — this workflow strikes the CURRENT NAV; a past-as-of strike
+ * (this workflow strikes the CURRENT NAV; a past-as-of strike
  * needs the as-of-holdings view, forward — the `navData` read refuses a past date on the wire
  * rather than strike an unsound NAV). The §A1 reconciliation is a GENUINE cross-mart check:
  * the gross is rolled up independently from `mart_portfolio_holdings` and reconciled against
@@ -82,7 +82,7 @@ export const NAV_CALCULATION_WORKFLOW_NAME = 'navCalculation';
 /**
  * The riskScore the workflow declares for a NAV publish. NAV publication is a regulated,
  * irreversible event → it is HIGH-STAKES by declaration, so the gate FIRES (this is the
- * first REAL high-stakes wiring, distinct from OIM-132's forced-fire test). Fixed at 1.0:
+ * first REAL high-stakes wiring, distinct from the gate's forced-fire test). Fixed at 1.0:
  * the publish is unconditionally high-stakes, not a marginal riskScore. Override via env for
  * a proof that exercises the below-threshold no-op path (not the production behaviour).
  */
@@ -93,7 +93,7 @@ export interface NavStrikeInput {
   /** The fund to strike, e.g. "PF-0003". */
   fundId: string;
   /**
-   * A past-as-of knowledge date. BOUNDED (OIM-111 carry-forward): the latest-holdings path
+   * A past-as-of knowledge date. BOUNDED: the latest-holdings path
    * cannot soundly strike a PAST NAV, so a non-null value is REFUSED by the `navData` read
    * (a clean terminal abort), never silently struck. Omit for the current strike.
    */
@@ -204,7 +204,7 @@ function fmtCents(v: bigint): string {
  *     to the penny. The two marts are built by different SQL (the holdings mart ships each
  *     position's abor market value; the NAV mart sums a window-selected E-07 mark rolled to the
  *     fund), so a divergence — a dropped position, a double-counted book, a mis-selected mark —
- *     FAILS here. This is the OIM-111 `assert_marts_reconcile_holdings_to_nav` invariant,
+ *     FAILS here. This is the `assert_marts_reconcile_holdings_to_nav` invariant,
  *     exercised LIVE in the workflow. It can fail on real data — it is not `X == X`.
  *  2. §A1 IDENTITY — NAV = gross + accrued_income − fees, reconciled to the fund-NAV mart's
  *     published `nav_usd`. The §A1 invariant itself (independent NAV re-derivation from source)
@@ -287,7 +287,7 @@ export const navCalculation = workflow({
       //     marts, two SQL paths, a FALSIFIABLE cross-mart check (NOT X==X).
       // Both are DIRECT `ctx.serviceClient(...)` calls — the legal Restate journaling shape (the
       // RPC results are journaled; on replay they are read back, the marts NOT re-queried). A
-      // past-as-of date is REFUSED on the wire (the OIM-111 bound, now forwarded by the navData
+      // past-as-of date is REFUSED on the wire (the past-as-of bound, forwarded by the navData
       // handler) — surfaced here as a clean terminal abort. The workflow does NOT compute the
       // NAV — it READS the marts and reconciles them.
       const navDataClient = ctx.serviceClient(NAV_DATA_SERVICE);
@@ -379,7 +379,7 @@ export const navCalculation = workflow({
       });
 
       // ── [GATE] — HIGH-STAKES APPROVAL before the irreversible PUBLISH ─────────
-      // The FIRST REAL wiring of the OIM-132 gate at an irreversible step (REUSED, NOT
+      // The FIRST REAL wiring of the approval gate at an irreversible step (REUSED, NOT
       // re-implemented). NAV publication is high-stakes by DECLARATION → the gate FIRES (a
       // high riskScore). It PAUSES on a durable `ctx.awakeable`, notifies the operator (a
       // journaled record + the awakeable id, resolved via the Restate CLI/admin), and awaits

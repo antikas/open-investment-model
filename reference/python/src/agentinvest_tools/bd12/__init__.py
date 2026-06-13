@@ -2,9 +2,9 @@
 
 The reconciliation-relevant **read** surface of the two books of record, exposed as typed, pure,
 per-Service-Operation tools (the ``bd09/`` precedent: one pure, deterministic, Pydantic-in/out
-function per Service Operation). These tools turn the OIM-160 canonical dual book into a consumable
-read surface so OIM-162's reconciliation engine has two typed pipelines to compare. They read; they
-do not reconcile, and they write nothing (strictly read-only this cycle).
+function per Service Operation). These tools turn the canonical dual book into a consumable
+read surface so the reconciliation engine has two typed pipelines to compare. They read; they
+do not reconcile, and they write nothing (strictly read-only).
 
 SD-12.1 IBOR — the real-time front-office book (E-04 ``book = ibor``, E-05, E-06):
 
@@ -27,7 +27,7 @@ step): each function takes exactly one Pydantic input model and returns one Pyda
 The pure tools take the rows in (read by the ``book_of_record_data`` from the canonical
 layer at the as-of) — they do not query.
 
-Honest boundary: these are read services over the OIM-160 **synthetic** internal dual book (the dbt
+Honest boundary: these are read services over a **synthetic** internal dual book (the dbt
 canonical layer). A green read proves the typed per-book read + the as-of plumbing + the
 IBOR-vs-ABOR divergence; it is **not** a production book-of-record service and **not** a read
 against a live custodian.

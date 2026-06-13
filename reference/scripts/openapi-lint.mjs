@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * OIM-141 — Spectral lint gate for the agentINVEST bd09 OpenAPI surface.
+ * Spectral lint gate for the agentINVEST bd09 OpenAPI surface.
  *
  * WHAT IT DOES. `openapi-spec-validator` (the Python surface) checks the spec is
  * STRUCTURALLY a valid OpenAPI 3.1 document. This gate runs Spectral's built-in
@@ -18,7 +18,7 @@
  *      Corroborates that the real, currently-emitted spec lints clean too. Skipped
  *      (not failed) when the substrate / bd09 is unreachable.
  *
- * MASK-IMMUNE SUCCESS ORACLE (OIM-181). The PASS/FAIL is derived STRUCTURALLY from
+ * MASK-IMMUNE SUCCESS ORACLE. The PASS/FAIL is derived STRUCTURALLY from
  * Spectral's OWN machine-readable results, not from a wrapped `pnpm`/`uv` exit that a
  * shell could mask. For each target Spectral writes its findings as JSON to a file
  * (`--format json --output`); this script PARSES that file and PASSes a target iff
@@ -238,7 +238,7 @@ function finish(pass) {
   } catch {
     /* best-effort */
   }
-  // The sentinel IS the oracle (OIM-181); this script's exit mirrors it.
+  // The sentinel IS the oracle; this script's exit mirrors it.
   process.stdout.write(`OPENAPI_LINT_RESULT: ${pass ? 'PASS' : 'FAIL'}\n`);
   process.exit(pass ? 0 : 1);
 }

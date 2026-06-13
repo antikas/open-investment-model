@@ -18,7 +18,7 @@ time in periods (years, for an annualised IRR). The root is found by a **determi
 bracketed bisection** on a sign-change interval — deterministic and replay-stable (no RNG, no
 seed, no Newton starting-point sensitivity).
 
-External oracle (build-gate §A2): matched in the test suite to the published worked example in
+External oracle: matched in the test suite to the published worked example in
 the AnalystPrep CFA Level I "Money-Weighted and Time-Weighted Rates of Return" notes (flows
 −10,000 at t=0, −5,000 at t=1, +25,000 at t=2 → IRR ≈ 35.08%) to <= 1 bp absolute. The
 published figure is the proof.
@@ -56,7 +56,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 # Bracket and convergence for the deterministic bisection. The bracket spans economically
 # meaningful annual rates (a near-total loss up to a 100x gain); a series whose root lies
 # outside it raises rather than returning a mis-bracketed number. The tolerance is far tighter
-# than the §A2 1 bp gate so solver convergence is never the limiting error.
+# than the 1 bp gate so solver convergence is never the limiting error.
 _RATE_LOWER = -0.999999
 _RATE_UPPER = 100.0
 _NPV_TOLERANCE = 1e-12

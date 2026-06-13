@@ -1,8 +1,8 @@
 version: 2
 
 # Tests on the staging models. The sample model (stg_sample_holdings) is the
-# OIM-102 scaffold's pipeline proof; the ten BD-09 entity models below are
-# OIM-103, each cross-checked against model/entities/core/E-NN-*.md.
+# pipeline proof; the ten BD-09 entity models below are
+# each cross-checked against model/entities/core/E-NN-*.md.
 #
 # The unique + not_null tests on each entity's primary key are also the
 # IDEMPOTENCY guard: a view-materialised staging model cannot duplicate rows, and
@@ -12,7 +12,7 @@ version: 2
 # composite uniqueness its `book`-in-identity shape requires.
 
 models:
-  # --- OIM-102 sample (generic, NOT a BD-09 entity) -------------------------
+  # --- sample (generic, NOT a BD-09 entity) ---------------------------------
   - name: stg_sample_holdings
     description: >
       Generic sample staging model — a 1:1 typed view over the
@@ -41,7 +41,7 @@ models:
         data_tests:
           - not_null
 
-  # --- OIM-103 BD-09 canonical entities (E-01 ... E-20) ---------------------
+  # --- BD-09 canonical entities (E-01 ... E-20) -----------------------------
 
   - name: stg_e01_legal_entity
     description: >
@@ -262,8 +262,8 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              # 'nav' (OIM-197): the fund-level administrator NAV — the SD-12.16 shadow-NAV
-              # oversight input (OIM-164), not an SD-12.10 reconcile surface.
+              # 'nav': the fund-level administrator NAV — the SD-12.16 shadow-NAV
+              # oversight input, not an SD-12.10 reconcile surface.
               values: ['transaction', 'cash', 'nav']
 
   - name: stg_break_labels
@@ -282,9 +282,9 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              # 'nav' (OIM-197): the labelled shadow-NAV divergence — an SD-12.16 oversight
-              # (E-36) surface (OIM-164), carried in the oracle but NOT an E-24 / SD-12.10
-              # reconcile type (the OIM-162 engine reconciles position/cash/transaction/ibor_abor).
+              # 'nav': the labelled shadow-NAV divergence — an SD-12.16 oversight
+              # (E-36) surface, carried in the oracle but NOT an E-24 / SD-12.10
+              # reconcile type (the engine reconciles position/cash/transaction/ibor_abor).
               values: ['position', 'cash', 'transaction', 'ibor_abor', 'custodian', 'counterparty', 'nav']
       - name: cause_classification
         data_tests:
@@ -304,7 +304,7 @@ models:
           - accepted_values:
               values: ['custodian', 'internal']
 
-  # --- the entity-resolution feed + oracle (OIM-199; SYNTHETIC, not canonical entities) ----
+  # --- the entity-resolution feed + oracle (SYNTHETIC, not canonical entities) ----
   # The inbound legal-entity feed the deterministic three-tier resolution cascade runs over, plus
   # the labelled oracle (true entity_id / NEW / AMBIGUOUS + difficulty tier). Derived to exercise the
   # difficulty gradient over the E-01 masters. NOT OpenIM entities — no model file, out of the
@@ -314,7 +314,7 @@ models:
     description: >
       The inbound entity-resolution feed — legal-entity records from three named source systems
       (custodian / administrator / internal_onboarding) carrying labelled duplicates and variants of
-      a subset of the E-01 masters plus net-new entities (SD-13.2 entity resolution, OIM-199).
+      a subset of the E-01 masters plus net-new entities (SD-13.2 entity resolution).
       Synthetic; the cascade resolves it deterministically into golden records + a review queue.
     columns:
       - name: source_record_id
@@ -553,9 +553,8 @@ seeds:
           - unique
           - not_null
 
-  # The ten BD-09 entity seeds are minimal flat samples (OIM-103). The full
-  # ~5000-row synthetic dataset is OIM-110. Seed-level key tests assert the
-  # golden key is unique + not-null at the raw layer too.
+  # The ten BD-09 entity seeds are minimal flat samples. Seed-level key tests
+  # assert the golden key is unique + not-null at the raw layer too.
   - name: raw_e01_legal_entity
     columns:
       - name: entity_id

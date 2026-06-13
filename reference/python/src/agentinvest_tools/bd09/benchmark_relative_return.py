@@ -9,7 +9,7 @@ to benchmark comparison and feeds SD-09.2 attribution. Two declared methods:
 - **geometric**: ``active = (1 + r_portfolio) / (1 + r_benchmark) - 1`` — the compounding-consistent
   excess return that links cleanly across periods (the GIPS-preferred linking-consistent form).
 
-External oracle (build-gate §A2 hand-verifiable): the arithmetic active return is, by
+External oracle (hand-verifiable): the arithmetic active return is, by
 construction, ``r_portfolio - r_benchmark`` and the geometric is ``(1+r_p)/(1+r_b)-1`` — both
 are exact, closed-form identities verified to <= 1 bp against hand-derived figures (no toy
 oracle is invented; the identity itself is the oracle).

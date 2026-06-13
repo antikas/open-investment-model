@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * PRODUCTION-VO JOURNALED-REPLAY proof for the DISPATCH step (seam 2, OIM-131) —
- * extends the OIM-104/130 production-VO crash-replay pattern (plan-crash-proof.mjs).
+ * PRODUCTION-VO JOURNALED-REPLAY proof for the DISPATCH step (seam 2) —
+ * the same production-VO crash-replay pattern as plan-crash-proof.mjs.
  *
  * What it proves: the dispatched stepResults are JOURNALED on the REAL
  * `investmentOperation` VO, so a crash+replay reads them back from the journal and
  * does NOT re-execute the tools. The fiduciary-determinism property holds THROUGH
- * dispatch. (The OIM-130 sibling proves the same for the .plan() step; this proves
- * it for the dispatched execute_so RPCs.)
+ * dispatch. (The plan-crash-proof.mjs sibling proves the same for the .plan() step;
+ * this proves it for the dispatched execute_so RPCs.)
  *
  * Mechanism (extends plan-crash-proof.mjs):
  *   1. Start the PYTHON endpoint (bd09 — the dispatch target); wait for it.
@@ -268,7 +268,7 @@ let pyChild = null;
 // :9091)? Only true if we started it; false if we REUSED an already-running shared
 // endpoint. Gates ALL Python-side teardown: we only ever tear down what we started.
 // Reusing and then stripping the shared deployment would disrupt other local projects
-// sharing the dev substrate + concurrent OpenIM work (OIM-131 cycle-2 fold). The TS
+// sharing the dev substrate + concurrent OpenIM work. The TS
 // proof endpoint we always spawn, so it is always cleaned up; only the shared Python
 // deployment is left intact when reused.
 let pySpawnedByUs = false;
@@ -397,7 +397,7 @@ async function main() {
 
   log('');
   if (ok) {
-    log('PRODUCTION-VO DISPATCH JOURNALED-REPLAY PROVEN (OIM-131):');
+    log('PRODUCTION-VO DISPATCH JOURNALED-REPLAY PROVEN:');
     log('  - the REAL investmentOperation was SIGKILLed mid-execute, between its journaled dispatch and the terminal write');
     log('  - Restate RESUMED the SAME invocation from the journal on a fresh process (Replaying invocation, new pid)');
     log('  - the resumed stepResults EQUAL the pre-crash dispatched outcomes — replay READ THE JOURNALED RESULTS BACK, the tools were NOT re-executed');

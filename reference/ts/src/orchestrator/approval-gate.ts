@@ -46,7 +46,7 @@
  *  - TIMEOUT → the gate writes a journaled `"aborted-by-timeout"` abort-trace and
  *    throws `OperationAbortedError` (terminal, same clean abort).
  *
- * THE LEGAL RESTATE SHAPE (the OIM-104 discipline). The awakeable creation, the
+ * THE LEGAL RESTATE SHAPE. The awakeable creation, the
  * operator-notify `ctx.run`, the abort-trace `ctx.run` and the durable timeout are
  * ALL top-level context actions — none is nested inside another `ctx.run` closure
  * (a context action inside a `ctx.run` body is the Restate determinism
@@ -88,7 +88,7 @@ export const OPERATION_ABORTED_CODE = 403;
  * or timed out awaiting a decision. It extends Restate's `TerminalError`: the abort
  * is the gate's deliberate, FINAL decision (NOT a transient fault), so Restate must
  * NOT retry it (a plain `Error` would retry-storm), and the ingress surfaces it as a
- * 4xx. This is the OIM-112/113 terminal-abort discipline applied to the gate.
+ * 4xx. This is the terminal-abort discipline applied to the gate.
  */
 export class OperationAbortedError extends TerminalError {
   /** Which abort path produced this — an operator reject or a decision timeout. */
@@ -116,7 +116,7 @@ export class OperationAbortedError extends TerminalError {
  * these defaults.
  *
  *  - `HIGH_STAKES_THRESHOLD` (default 0.7): a plan with `riskScore >= 0.7` is
- *    high-stakes and gated. The OIM-130 planner's observed read-only-analytics
+ *    high-stakes and gated. The planner's observed read-only-analytics
  *    riskScores (~0.05–0.6) stay below it, so BD-09's read-only surface does NOT
  *    fire by default — the honest "configurable threshold not exercised" property.
  *  - `APPROVAL_TIMEOUT` (default 86_400_000 ms = 24h): how long the gate awaits an
@@ -166,7 +166,7 @@ export type ApprovalOutcome =
   | { gated: true; decision: ApprovalDecision; awakeableId: string };
 
 /**
- * ADDITIVE registry resolve-mark (OIM-142 cycle-2, fix #1) — mark this operation's
+ * ADDITIVE registry resolve-mark — mark this operation's
  * pending-approvals entry RESOLVED on the terminal path the gate just processed, so the
  * entry LEAVES the pending queue for EVERY resolution path (approve / reject / timeout /
  * any out-of-band resolve the awakeable absorbs), not only the UI's own resolve.
@@ -258,13 +258,13 @@ export async function highStakesApprovalGate(
     return notice;
   });
 
-  // ── ADDITIVE PENDING-APPROVALS INDEX (OIM-142) ────────────────────────────
+  // ── ADDITIVE PENDING-APPROVALS INDEX ──────────────────────────────────────
   // ALSO record this notice in the pending-approvals registry so a human surface
   // (the Operator UI's Approvals queue) can ENUMERATE the approvals awaiting a
   // decision WITHOUT tailing the handler log or the raw CLI. This is a top-level
   // FIRE-AND-FORGET send — the gate does NOT await it and does NOT depend on its
   // outcome, so the gate's pause/resolve/timeout behaviour is UNCHANGED (the
-  // OIM-142 frozen-semantics constraint). The awakeable above is still the SOLE
+  // frozen-semantics constraint). The awakeable above is still the SOLE
   // decision path; this registry is a passive READ MIRROR of the already-journaled
   // notice, never a second control path. A lost/undelivered send leaves the gate
   // wholly unaffected (the awakeable id in the notice is the resolve path of record).

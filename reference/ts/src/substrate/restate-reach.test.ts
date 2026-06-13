@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * Unit coverage for the mirrored-networking-aware deploy-URL resolution
- * (OIM-108). The load-bearing properties under test:
+ * Unit coverage for the mirrored-networking-aware deploy-URL resolution.
+ * The load-bearing properties under test:
  *
  *  - NAT (the current dev reality) → the WSL2 gateway IP, UNCHANGED.
  *  - mirrored (forced via the env override) → http://127.0.0.1:port (the IPv4
@@ -66,7 +66,7 @@ afterEach(() => {
   delete process.env.AGENTINVEST_ENDPOINT_DEPLOY_URL;
 });
 
-describe('resolveWslNetworkingMode (OIM-108 detection)', () => {
+describe('resolveWslNetworkingMode (detection)', () => {
   it('honours the AGENTINVEST_WSL_NETWORKING=mirrored override without probing', async () => {
     process.env.AGENTINVEST_WSL_NETWORKING = 'mirrored';
     const { resolveWslNetworkingMode } = await import('./restate-reach.js');
@@ -116,7 +116,7 @@ describe('resolveWslNetworkingMode (OIM-108 detection)', () => {
   });
 });
 
-describe('resolveDeployUrl (OIM-108 mirrored-aware, backward-compatible)', () => {
+describe('resolveDeployUrl (mirrored-aware, backward-compatible)', () => {
   it('off-Windows (Mac/Linux): plain localhost, no WSL hop', async () => {
     stubPlatform('linux');
     const { resolveDeployUrl } = await import('./restate-reach.js');

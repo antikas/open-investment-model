@@ -1,4 +1,4 @@
-"""Tests over the ten OIM-103 canonical-model Pydantic schemas."""
+"""Tests over the ten canonical-model Pydantic schemas."""
 
 from __future__ import annotations
 
@@ -25,10 +25,10 @@ from agentinvest_canonical_model.base import CanonicalEntity, OwnershipPattern
 def test_registered_entities_in_model_file_order() -> None:
     """The registry carries the realised entities in model-file order.
 
-    The OIM-103 ten (E-01..E-04, E-07, E-09, E-13, E-14, E-19, E-20), the W2
+    The original ten (E-01..E-04, E-07, E-09, E-13, E-14, E-19, E-20), the
     reconciliation substrate's E-05 Transaction + E-06 Cash Flow Event (slotted in
-    model-file order between E-04 and E-07), and E-24 Reconciliation Break (OIM-162 —
-    the engine-owned finding the reconciliation engine emits, after E-20 in model-file
+    model-file order between E-04 and E-07), and E-24 Reconciliation Break (the
+    engine-owned finding the reconciliation engine emits, after E-20 in model-file
     order; the one realised entity with no dbt staging model).
     """
     ids = [cls.ENTITY_ID for cls in ENTITY_MODELS]
@@ -203,10 +203,10 @@ def test_cash_flow_event_round_trips_and_ties_to_transaction() -> None:
 def test_as_of_entities_declare_bitemporal_grain(
     cls: type[CanonicalEntity], grain: tuple[str, ...]
 ) -> None:
-    """E-07/E-19/E-20 declare their as-of/append-only grain columns (OIM-110 input).
+    """E-07/E-19/E-20 declare their as-of/append-only grain columns.
 
     The grain is DECLARED here; the materialisation strategy (snapshot/incremental)
-    is an OIM-110 coordination point, deliberately not set in this cycle.
+    is a downstream coordination point, deliberately not set here.
     """
     assert cls.GRAIN == grain
     for col in grain:

@@ -6,15 +6,16 @@ the four reconcile tools (position · cash · transaction-matching · IBOR/ABOR)
 analogue — same ``execute_so`` / ``list_capabilities`` envelope shape — so the MCP/OpenAPI ingress
 and the orchestrator reach it identically.
 
-Service, not agent (the load-bearing topology point — ADR-0054). The per-BD layer is a **model-free
+Service, not agent (the load-bearing topology point). The per-BD layer is a **model-free
 dispatch / tool-hosting boundary** that carries **no reasoning loop**. It routes a *named* SO to its
 reconcile tool; it does **not** decide which SO to call (that is the one orchestrating ``.plan()``
-loop). And it adds **no LLM** — the cause-classification is the deterministic of-record classifier
-(cycle-1); the propose-only LLM over the ``unexplained`` residue is OIM-162 cycle-2.
+loop). And it adds **no LLM** — the cause-classification is the deterministic of-record classifier;
+the propose-only LLM operates over the ``unexplained`` residue, downstream of the deterministic
+classifier.
 
 THE I/O the reconcile touches:
 
-- the **internal dual book** (via ``book_of_record_data`` — the OIM-161 read surface): the per-book
+- the **internal dual book** (via ``book_of_record_data`` — the read surface): the per-book
   positions (E-04), the E-05 transactions, the E-06 cash flows, the in-flight pending activity;
 - the **external comparator feed** (via ``comparator_feed_data`` — the outside-data seam): the
   custodian holdings/cash + the administrator statement.
@@ -28,8 +29,8 @@ keep an actual re-append idempotent regardless).
 
 THE APPEND IS NOT A STATE-MUTATION. It writes a NEW ``status = open`` break event (append-only,
 immutable); it never updates a break, never transitions a ``status``, never writes a correcting
-entry to ABOR, never mutates IBOR/ABOR. The first state-mutation (the correcting entry, behind the
-breach gate) is OIM-163.
+entry to ABOR, never mutates IBOR/ABOR. The first state-mutation (the correcting entry) lives behind
+the breach gate.
 
 Error classification (the ``bd12`` precedent): a Pydantic ``ValidationError`` on the request args is
 a terminal 400; a ``MartsUnavailableError`` / ``BreakStoreUnavailableError`` (a deterministic data
@@ -449,18 +450,16 @@ _register()
 
 
 # ======================================================================================
-# SO-12.10-05 — the PROPOSE-ONLY LLM cause-proposer over the `unexplained` residue (OIM-162
-# cycle-2). ADDITIVE: the four reconcile SOs (SO-12.10-01..04) + ``_REGISTRY`` + ``_dispatch``
-# above are byte-unperturbed. The proposer has a DIFFERENT shape (it generates + captures
-# proposals over the residue, it does NOT emit/persist break findings), so it carries its own
+# SO-12.10-05 — the PROPOSE-ONLY LLM cause-proposer over the `unexplained` residue. The proposer
+# has a DIFFERENT shape from the four reconcile SOs (SO-12.10-01..04): it generates + captures
+# proposals over the residue, it does NOT emit/persist break findings, so it carries its own
 # request model, closure and dispatch branch — it never routes through the reconcile ``ToolSpec``.
 #
 # THE DETERMINISTIC SPINE. This SO writes ONLY to the append-only proposal store (the LLM's entire
 # writable universe). It NEVER writes the of-record break store, NEVER changes a break's
 # of-record cause, NEVER mutates IBOR/ABOR. The LLM PROPOSES; the deterministic rules CLASSIFY.
 # CI runs against a deterministic stub client (no live model in the gate); the one live smoke is
-# proven separately (the cycle report). No live model call happens on this path unless a real
-# client is injected.
+# proven separately. No live model call happens on this path unless a real client is injected.
 # ======================================================================================
 
 PROPOSER_SO_ID = "SO-12.10-05"
@@ -865,9 +864,9 @@ async def execute_so(ctx: restate.Context, req: ExecuteSoInput) -> ExecuteSoOutp
     deterministic run-scoped break ids keep an actual re-append idempotent).
 
     The append writes a NEW ``status = open`` break only — no update, no status transition, no
-    correcting entry, no IBOR/ABOR mutation (those are OIM-163, behind the breach gate). An unknown
+    correcting entry, no IBOR/ABOR mutation (those live behind the breach gate). An unknown
     ``soId`` is a terminal 404; a bad/extra arg or a deterministic data condition is terminal
-    (400 / 422) — never a retry storm. No LLM (cycle-1 is deterministic).
+    (400 / 422) — never a retry storm. No LLM — the reconcile is deterministic.
     """
     envelope = _coerce_envelope(req)
 
@@ -875,11 +874,10 @@ async def execute_so(ctx: restate.Context, req: ExecuteSoInput) -> ExecuteSoOutp
     args = envelope.get("args", {})
     as_of = args.get("as_of_date", "2026-03-31") if isinstance(args, dict) else "2026-03-31"
 
-    # SO-12.10-05 — the propose-only LLM cause-proposer (OIM-162 cycle-2). ADDITIVE branch: the four
-    # reconcile SOs route through ``_REGISTRY`` below unchanged. The proposer dispatches via its own
-    # closure (a different shape — it captures proposals, not break findings) and uses the
-    # DETERMINISTIC STUB client (no live model on the ingress; the spine — writes only the proposal
-    # store, never the of-record cause).
+    # SO-12.10-05 — the propose-only LLM cause-proposer. The four reconcile SOs route through
+    # ``_REGISTRY`` below. The proposer dispatches via its own closure (a different shape — it
+    # captures proposals, not break findings) and uses the DETERMINISTIC STUB client (no live model
+    # on the ingress; the spine — writes only the proposal store, never the of-record cause).
     if so_id == PROPOSER_SO_ID:
         run_id = f"{ctx.request().id}-{PROPOSER_SO_ID}-{as_of}"
         return await ctx.run(f"so-{PROPOSER_SO_ID}", lambda: _dispatch_proposer(args, run_id))
@@ -916,8 +914,7 @@ async def list_capabilities(ctx: restate.Context) -> ListCapabilitiesOutput:
         }
         for spec in _REGISTRY.values()
     ]
-    # SO-12.10-05 — the propose-only cause-proposer (OIM-162 cycle-2), appended after the four
-    # reconcile tools (additive; the reconcile entries are unperturbed).
+    # SO-12.10-05 — the propose-only cause-proposer, appended after the four reconcile tools.
     capabilities.append(
         {
             "soId": PROPOSER_SO_ID,

@@ -10,7 +10,7 @@
  * Dispatch is MECHANISM, not a reasoning loop. It fans the plan's steps out to the
  * model-free `bd09` service and collects what comes back. It does not decide which
  * tool to run (that is the one `.plan()` loop, seam 1) and it does not aggregate the
- * results into a coherent answer (that is a forward seam — OIM-133/134); it collects
+ * results into a coherent answer (that is a forward seam); it collects
  * the raw per-step outcomes.
  *
  * THREE load-bearing properties, all proven on the PRODUCTION `investmentOperation`
@@ -19,13 +19,12 @@
  *  - **Parallel fan-out.** The independent steps are dispatched CONCURRENTLY with
  *    `Promise.allSettled` over `plan.steps.map(...)`. N parallel `execute_so` RPCs
  *    from one handler complete in ~max(step) not ~sum(step) — a measured latency
- *    improvement vs a serial baseline. This discharges the OIM-104 carry-forward
- *    (intra-handler outbound fan-out, "to be proven at OIM-131's gate").
+ *    improvement vs a serial baseline. This is intra-handler outbound fan-out.
  *
  *  - **Clean partial-failure.** `Promise.allSettled` (NOT `Promise.all`): one step
  *    failing must NOT abort the siblings or retry-storm the operation. A
- *    deterministic tool error is the bd09-classified `TerminalError` (OIM-113 —
- *    invalid/incomplete args → terminal 400/422, `retry_count=0`): it is captured
+ *    deterministic tool error is the bd09-classified `TerminalError`
+ *    (invalid/incomplete args → terminal 400/422, `retry_count=0`): it is captured
  *    as a clean step-failure (`{ status: 'rejected', error }`), the siblings
  *    complete (`{ status: 'fulfilled', result }`), and the failure is SURFACED in
  *    the collected `stepResults` — never swallowed, never a silent drop, never a
@@ -38,14 +37,11 @@
  *    from the journal; the tools are NOT re-executed. The fiduciary-determinism
  *    property holds through dispatch.
  *
- * HONEST BOUNDARY (v0.1). plan→dispatch is built; the approval gate (OIM-132 —
- * `riskScore` declared-not-gated), aggregate-into-a-coherent-answer + the
- * close/audit-record seam (OIM-133/134), and the NAV-strike workflow (OIM-133) are
- * forward. The planner's abstract `args` → concrete tool-input resolution
- * (resolving "fund X over Q1" into the begin/end NAV from the marts — what the
- * OIM-115 demo did by hand) is forward: dispatch passes `args` AS GIVEN; bd09
- * validates them; a step whose args the planner could not resolve surfaces as a
- * CLEAN FAILURE (the honest v0.1 behaviour, not a bug). Synthetic data;
+ * HONEST BOUNDARY (v0.1). This step passes the planner's abstract `args` AS GIVEN;
+ * bd09 validates them; a step whose args the planner could not resolve surfaces as a
+ * CLEAN FAILURE (the honest v0.1 behaviour, not a bug). The abstract `args` →
+ * concrete tool-input resolution (resolving "fund X over Q1" into the begin/end NAV
+ * from the marts) is the resolve step's concern, not dispatch's. Synthetic data;
  * supervised-autonomous; frontier-only.
  *
  * v0.1 parallelism note. `PlanSchema` carries NO inter-step dependency field, so
@@ -74,8 +70,8 @@ export type StepResult =
       index: number;
       soId: string;
       /**
-       * The step failed cleanly: a deterministic bd09 `TerminalError` (OIM-113 —
-       * bad/missing/extra arg, unknown soId, or a deterministic compute failure),
+       * The step failed cleanly: a deterministic bd09 `TerminalError`
+       * (bad/missing/extra arg, unknown soId, or a deterministic compute failure),
        * captured here, NOT propagated as a whole-operation abort. The siblings
        * still ran. This is the honest v0.1 behaviour when the planner could not
        * resolve a step's args.
@@ -178,9 +174,9 @@ export async function dispatchPlan(ctx: ObjectContext, plan: Plan): Promise<Disp
 }
 
 /**
- * Dispatch the RESOLVED plan (OIM-134) — dispatch each RESOLVED step's CONCRETE args to
+ * Dispatch the RESOLVED plan — dispatch each RESOLVED step's CONCRETE args to
  * `bd09.execute_so` IN PARALLEL, and surface an UNRESOLVED step as a clean failure WITHOUT
- * dispatching it. This is the resolve→dispatch composition: the resolve step (OIM-134) turned the
+ * dispatching it. This is the resolve→dispatch composition: the resolve step turned the
  * planner's abstract args into the tools' concrete inputs from the marts; this dispatches those
  * concrete inputs. The difference from `dispatchPlan` is the args source — here the marts-derived
  * resolved args, not the planner's as-given abstract args — and the honest handling of an

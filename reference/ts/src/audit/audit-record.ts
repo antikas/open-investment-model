@@ -1,5 +1,5 @@
 /**
- * The normalised audit-record shape the hash chain folds over (OIM-151).
+ * The normalised audit-record shape the hash chain folds over.
  *
  * agentINVEST produces two kinds of fiduciary audit record today, both READ-ONLY for the export:
  *  - the `investmentOperation` `operation-closed` record (`aggregate-close.ts`'s

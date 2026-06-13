@@ -14,6 +14,16 @@ Where the model (`../model/`) is the reference model itself — a decomposition,
 - **Audit and governance binding** — human-in-the-loop gates on high-stakes operations, model-decision provenance, alignment to the FINOS AI Governance Framework. Fiduciary discipline applied to an agent channel.
 - **Recorded build decisions** — the architecture decisions behind agentINVEST are kept as decision records in the project's governance history.
 
+Capability notes for the built workflows live under [`docs/capabilities/`](docs/capabilities/) — see [entity resolution](docs/capabilities/entity-resolution.md) (the no-universal-identifier cascade, the golden record, and the zero-mis-merge evaluation).
+
+## Architecture
+
+The whole implementation is drawn in one diagram: the durable-execution substrate, the typed tool catalogue, the canonical data layer, the agent ingress (MCP and OpenAPI), the orchestrator and its workflows, and the human approval gate that sits on the truth path.
+
+![agentINVEST solution architecture](docs/architecture/agentinvest-solution-architecture.svg)
+
+The [solution-architecture walkthrough](docs/architecture/agentinvest-solution-architecture.md) takes each layer in turn — the substrate, the tool surface, the data layer, the workflows and the agent channel — and explains how the deterministic spine keeps the model out of the of-record path.
+
 ## Status
 
 The substrate is built: the durable-execution engine, the typed tool catalogue, the canonical dbt data layer, MCP and OpenAPI ingress, the operator UI with all four pages (Approvals, Operations, Deployments, and a canonical-data inspector), and a hash-chained audit journal are all in place. The first business workflow — the NAV strike — is built and audited end to end: a human approval gate, a journaled durable workflow, and crash-replay proven recovery.

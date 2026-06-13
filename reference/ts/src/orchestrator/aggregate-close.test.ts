@@ -1,9 +1,9 @@
 /**
- * Unit proof of the AGGREGATE (seam 4) + CLOSE (seam 5) seams (OIM-134) — the coherent attribution
+ * Unit proof of the AGGREGATE (seam 4) + CLOSE (seam 5) seams — the coherent attribution
  * answer + the well-formed journaled audit record, isolated as pure logic.
  *
  * Pins:
- *  - the coherent attribution (the OIM-115 coherence invariant — the per-sector contributions
+ *  - the coherent attribution (the coherence invariant — the per-sector contributions
  *    reconcile to the total return);
  *  - the HONEST PARTIAL-FAILURE (a failed step → coherent:false + a surfaced reason, NEVER a
  *    fabricated number);
@@ -64,7 +64,7 @@ function contributionStep(contributionTotal: string): StepResult {
   };
 }
 
-describe('aggregateResults — seam 4 (the coherent attribution + the OIM-115 coherence invariant)', () => {
+describe('aggregateResults — seam 4 (the coherent attribution + the coherence invariant)', () => {
   it('produces a coherent attribution when both tools fulfil and the contributions reconcile', () => {
     const agg = aggregateResults([totalReturnStep('0.10'), contributionStep('0.10')], attributionPlan());
     expect(agg.kind).toBe('performance-attribution');
@@ -78,7 +78,7 @@ describe('aggregateResults — seam 4 (the coherent attribution + the OIM-115 co
   });
 
   it('SURFACES a non-reconciliation (a wrong compute) — coherent:false, NOT fabricated away', () => {
-    // The contribution sum (0.99) does NOT match the total return (0.10) — the OIM-115 invariant
+    // The contribution sum (0.99) does NOT match the total return (0.10) — the coherence invariant
     // FIRES. The aggregate must surface it (coherent:false, reconciles:false, a reason), never
     // silently report a coherent number.
     const agg = aggregateResults([totalReturnStep('0.10'), contributionStep('0.99')], attributionPlan());
@@ -91,7 +91,7 @@ describe('aggregateResults — seam 4 (the coherent attribution + the OIM-115 co
 
   it('HONEST PARTIAL-FAILURE: a failed step → coherent:false + surfaced reason, NO fabricated number', () => {
     // SO-09-05 surfaced a clean dispatch failure; the aggregate must NOT fabricate the breakdown —
-    // it surfaces the partial failure (the OIM-131 honesty).
+    // it surfaces the partial failure (the honest partial-failure discipline).
     const failedContribution: StepResult = {
       index: 1,
       soId: 'SO-09-05',

@@ -27,9 +27,9 @@ agentinvest:
       # (scripts/dbt-build.sh via lib/agentinvest-venv-path.sh) EXPORT a
       # checkout-keyed AGENTINVEST_DUCKDB_PATH
       # (~/.local/share/agentinvest/duckdb/canonical-<token>.duckdb) so concurrent
-      # checkouts / CI do not collide on duckdb's single-writer file lock (OIM-110
-      # cycle-2 — the P-MAJOR-2 entry condition, same keying the venv uses). The
-      # launcher is the keying AUTHORITY; the literal below is ONLY the fallback for a
+      # checkouts / CI do not collide on duckdb's single-writer file lock (the same
+      # keying the venv uses). The launcher is the keying AUTHORITY; the literal
+      # below is ONLY the fallback for a
       # bare `dbt` run that did NOT go through a launcher.
       #
       # NOTE the asymmetry between the two shared-state defaults — they are NOT the
@@ -49,7 +49,7 @@ agentinvest:
 
     prod:
       # PLACEHOLDER — documents the dev->prod path (ADR-0054). Not expected to
-      # connect for the OIM-102 scaffold. Production co-locates with Restate's
+      # connect in the dev configuration. Production co-locates with Restate's
       # Postgres cluster but in a SEPARATE schema (agentinvest_canonical.*),
       # distinct from Restate's own backend schema — see the P-R3 reconcile.
       type: postgres

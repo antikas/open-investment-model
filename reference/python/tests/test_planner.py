@@ -2,14 +2,14 @@
 
 These tests are **offline + deterministic** (CI-safe): they inject a FAKE Anthropic
 client so no live model call is made. The LIVE Sonnet 4.6 call is proven separately
-(the gate-E record-then-score run + the crash-replay proof — see the cycle report).
+(the record-then-score run + the crash-replay proof).
 What these tests prove:
 
 - **PlanSchema** validates a well-formed plan and rejects a malformed one;
 - **the ten BD-09 tasks** each produce a ``PlanSchema``-valid plan through the
   planner (with the fake client returning a schema-valid plan), so the planner's
   parse-and-validate path is exercised over ten realistic tasks (the LIVE plans
-  are journaled through the production VO + recorded in the gate-E transcripts);
+  are journaled through the production VO + recorded in the transcripts);
 - **error classification** — a malformed / schema-invalid response, a missing
   ``emit_plan`` tool-use, an empty task/catalogue → ``PlannerDeterministicError``
   (terminal); a 429 / 529 / timeout SDK fault → ``PlannerTransientError``
@@ -52,10 +52,10 @@ _BD09_CATALOGUE: tuple[ToolDescriptor, ...] = (
     ),
 )
 
-# Ten realistic BD-09 analyst tasks (the goal's "ten test tasks"). Each maps to a
-# plausible SD-09.1 tool; the fake client returns a schema-valid plan so the
-# planner's validate path runs. (The LIVE plans for these classes of task are
-# journaled through the production VO + recorded in the gate-E transcripts.)
+# Ten realistic BD-09 analyst tasks. Each maps to a plausible SD-09.1 tool; the
+# fake client returns a schema-valid plan so the planner's validate path runs.
+# (The LIVE plans for these classes of task are journaled through the production
+# VO + recorded in the transcripts.)
 TEN_BD09_TASKS: tuple[tuple[str, str], ...] = (
     ("Compute the time-weighted return for fund X over Q1.", "SO-09-02"),
     ("What is the money-weighted (IRR) return for the LP's commitment to fund Y?", "SO-09-03"),

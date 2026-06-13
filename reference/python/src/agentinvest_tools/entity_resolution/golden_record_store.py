@@ -1,18 +1,18 @@
-"""The append-only golden-record store — engine-owned, insert-only, immutable (OIM-199).
+"""The append-only golden-record store — engine-owned, insert-only, immutable.
 
 The canonical golden record for every cluster the deterministic cascade resolved (Tier-1 / Tier-2).
 Keyed by the OpenIM-internal ``entity_id`` (E-01's golden-key discipline — NEVER an external id),
 carrying the survived canonical fields (name / lei / domicile) + per-field provenance (which source
 won each field, serialised as JSON). This is the resolution capability's of-record output.
 
-This store is the ``break_store.py`` pattern VERBATIM (the OIM-162 append-only discipline):
+This store is the ``break_store.py`` pattern VERBATIM (the append-only discipline):
 
 - persists each golden record as an immutable event at ``status = resolved`` — the resolved state.
   Each row: ``golden_id`` (run-scoped, deterministic), the internal ``entity_id``, the survived
   fields, the contributing source_record_ids (comma-joined), the per-field provenance JSON,
   ``status``;
 - is **insert-only** — there is NO update method, NO ``status``-transition method, NO delete. A
-  re-resolution producing a refined golden record is a NEW append (a later cycle); this store never
+  re-resolution producing a refined golden record is a NEW append; this store never
   mutates an existing row. The API surface is ``append_golden_records`` + ``read_golden_records`` +
   ``count_golden_records`` only;
 - is **ENGINE-OWNED and SEPARATE from the dbt canonical store** — its OWN duckdb file
@@ -22,7 +22,7 @@ This store is the ``break_store.py`` pattern VERBATIM (the OIM-162 append-only d
 
 THE GOLDEN KEY IS NEVER AN EXTERNAL ID. ``entity_id`` is the internal golden key (E-01's
 discipline);
-the LEI is a SURVIVED ATTRIBUTE, never the key. A net-new entity is NOT written here in cycle-1 — it
+the LEI is a SURVIVED ATTRIBUTE, never the key. A net-new entity is NOT written here — it
 goes through the steward flow first (a net-new golden key is a curated decision); this store holds
 only the records that resolved to an EXISTING master's golden key, so it never invents a key.
 
@@ -31,7 +31,7 @@ conflict do nothing``). No UPDATE / DELETE / ALTER / DROP SQL exists in this mod
 absence of a mutation path AND by an AST scan of the executed SQL
 (``test_entity_resolution_stores``).
 
-SYNTHETIC, FINDINGS-ONLY. The golden records are over the OIM-199 synthetic resolution oracle —
+SYNTHETIC, FINDINGS-ONLY. The golden records are over a synthetic resolution oracle —
 never a production resolution.
 """
 
@@ -161,8 +161,8 @@ def append_golden_records(
     Each record is persisted at ``status = resolved``, keyed by the internal ``entity_id`` (the LEI
     is a survived attribute, never the key). The golden id is deterministic + run-scoped, so
     re-appending the SAME run is idempotent (the PK rejects the dup). There is NO update path: a
-    golden record, once appended, is never modified (a refined re-resolution is a new append in a
-    later cycle). Returns the appended ids.
+    golden record, once appended, is never modified (a refined re-resolution is a new append).
+    Returns the appended ids.
     """
     path = store_path or resolve_golden_store_path()
     con = _connect(path, read_only=False)

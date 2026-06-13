@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Cross-language RPC smoke orchestrator (OIM-101) — one command, fresh checkout.
+ * Cross-language RPC smoke orchestrator — one command, fresh checkout.
  *
  * Brings up everything the TS↔Python typed-RPC proof needs, in order, then runs
  * the proof and tears down:
  *
  *   1. Verifies the shared Restate substrate is reachable (boot it first with
- *      OpenIM's OWN launcher: `pnpm dev:restate` from reference/ — P-R1).
+ *      OpenIM's OWN launcher: `pnpm dev:restate` from reference/).
  *   2. Starts the PYTHON endpoint (pyTools) — on Windows, inside WSL2 via uv
  *      (`uv run python -m agentinvest_tools.endpoint`); native otherwise. It
  *      registers itself against the shared Restate on its own port (9091).
- *      Reuse-safe (OIM-184): if a `pyTools` endpoint is ALREADY registered (the
+ *      Reuse-safe: if a `pyTools` endpoint is ALREADY registered (the
  *      shared :9091 carrying bd09/agentinvestPlanner/navData/pyTools), it is REUSED —
  *      not re-spawned — and LEFT REGISTERED on exit. Only an endpoint THIS run
  *      spawned is torn down. Never strip a shared resource (other local projects
@@ -62,7 +62,7 @@ async function awaitAdmin(timeoutSeconds = 20) {
 function startPythonEndpoint() {
   // On Windows the Python endpoint runs inside WSL2 (Linux-native SDK). The
   // Python SOURCE lives on the 9p mount (/mnt/d/...); the uv ENVIRONMENT lands on
-  // WSL2-native ext4 (UV_PROJECT_ENVIRONMENT, OIM-107) — the same split the dbt
+  // WSL2-native ext4 (UV_PROJECT_ENVIRONMENT) — the same split the dbt
   // launcher uses, so the cold import is fast (ext4) and the source stays in-repo.
   const wslPythonDir = '/mnt/' + REFERENCE_ROOT[0].toLowerCase() + REFERENCE_ROOT.slice(2).replace(/\\/g, '/') + '/python';
   const nativePythonDir = path.join(REFERENCE_ROOT, 'python');
@@ -70,8 +70,8 @@ function startPythonEndpoint() {
   let args;
   // Pin uv's project dir explicitly (--directory <reference/python>) on BOTH
   // branches — not just the cwd — so a glitched invocation can NEVER fall back to
-  // the repo-root cwd and write a stray pyproject.toml/uv.lock there (OIM-107
-  // leak-guard, root cause).
+  // the repo-root cwd and write a stray pyproject.toml/uv.lock there (leak-guard,
+  // root cause).
   if (isWin) {
     cmd = 'wsl';
     args = [
@@ -81,7 +81,7 @@ function startPythonEndpoint() {
       'bash',
       '-lc',
       `export PATH="$HOME/.local/bin:$PATH"; ` +
-        // Checkout-keyed ext4 venv (OIM-110, P-MAJOR-2 fix) via the SSOT helper —
+        // Checkout-keyed ext4 venv via the SSOT helper —
         // same placement/perf as dbt-build.sh, but keyed on this checkout so a
         // concurrent checkout / CI run does not share one venv. An explicit
         // UV_PROJECT_ENVIRONMENT still wins.
@@ -135,10 +135,10 @@ function runTsSmoke() {
 }
 
 /**
- * Run the TS smoke with a cold-start warm-up/retry (OIM-107, F-1). OIM-101 saw a
- * one-shot cold-start exit 139 (SIGSEGV) on the very first run after a cold
- * WSL2/uv/tsx cache, with back-to-back runs 2–7 clean — i.e. a transient cold
- * fault, not a logic defect. A cold CI run would spuriously fail on it. So: if
+ * Run the TS smoke with a cold-start warm-up/retry. The first run after a cold
+ * WSL2/uv/tsx cache can hit a one-shot exit 139 (SIGSEGV), with back-to-back runs
+ * clean afterwards — i.e. a transient cold fault, not a logic defect. A cold CI
+ * run would spuriously fail on it. So: if
  * the first attempt dies by signal (139/SIGSEGV) or with a non-zero code, warm
  * up briefly and retry once. A clean exit 0 returns immediately. A second
  * failure is a real failure and is returned.
@@ -149,8 +149,8 @@ async function runTsSmokeWithRetry(attempts = 2) {
     if (result === 0) return 0;
     if (i < attempts) {
       log(
-        `TS smoke attempt ${i} did not pass (${result}); cold-start transient suspected ` +
-          `(OIM-101 F-1). Warming up and retrying once...`,
+        `TS smoke attempt ${i} did not pass (${result}); cold-start transient suspected. ` +
+          `Warming up and retrying once...`,
       );
       await new Promise((res) => setTimeout(res, 2000));
     } else {
@@ -174,7 +174,7 @@ async function deregister(id) {
   }
 }
 
-/** Find + deregister the pyTools deployment so the shared journal stays clean (OIM-107). */
+/** Find + deregister the pyTools deployment so the shared journal stays clean. */
 async function deregisterPyTools() {
   try {
     const r = await fetch(`${ADMIN_URL}/deployments`, { signal: AbortSignal.timeout(4000) });
@@ -204,7 +204,7 @@ async function main() {
 
   // Reuse the running shared pyTools if it is already registered (the shared :9091 —
   // carrying bd09/agentinvestPlanner/navData/pyTools); only spawn our own if not
-  // (OIM-184 reuse-safety). pySpawnedByUs gates ALL Python-side teardown: a reused
+  // (reuse-safety). pySpawnedByUs gates ALL Python-side teardown: a reused
   // shared endpoint is NEVER killed or deregistered (other local projects sharing the
   // dev substrate + concurrent OpenIM work depend on it). NEVER `wsl --shutdown`.
   let py = null;
@@ -243,7 +243,7 @@ async function main() {
         }
       }
       // Deregister the pyTools deployment so the SHARED journal does not accumulate
-      // a dead-port orphan after the endpoint is gone (OIM-107). The TS orchestrator
+      // a dead-port orphan after the endpoint is gone. The TS orchestrator
       // smoke deregisters itself in its own finally.
       await deregisterPyTools();
     } else {

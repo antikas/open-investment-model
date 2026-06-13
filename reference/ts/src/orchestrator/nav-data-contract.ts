@@ -2,7 +2,7 @@
  * Typed cross-language RPC contract for the `navData` service — the NAV-strike workflow's
  * marts-read seam.
  *
- * The `navCalculation` workflow (TS) reads the per-fund §A1 NAV components from the OIM-111
+ * The `navCalculation` workflow (TS) reads the per-fund §A1 NAV components from the
  * `mart_fund_nav` mart. The mart lives in the Python data layer (duckdb), so the workflow
  * calls the Python `navData.getFundNavComponents` handler over Restate's typed RPC (the same
  * `ctx.serviceClient(...)` path the `bd09` / `pyTools` / planner contracts use). The TS side
@@ -21,7 +21,7 @@
  * `.getFundNavComponents(...)` (camelCase, as registered — matching the `pyTools`
  * camelCase-handler convention, distinct from `bd09`'s snake_case `execute_so`).
  *
- * Topology (ADR-0054): `navData` is a model-free Restate *service* — a data tool boundary.
+ * Topology: `navData` is a model-free Restate *service* — a data tool boundary.
  * It carries NO reasoning loop.
  *
  * Schema SSOT: the Python `nav_data_service.py` (`FundNavComponentsResult`) is the authority;
@@ -38,7 +38,7 @@ export interface FundNavComponentsRequest {
   /** The fund to strike, e.g. 'PF-0003'. */
   fundId: string;
   /**
-   * A past-as-of knowledge date. BOUNDED (OIM-111 carry-forward): a non-null value is REFUSED
+   * A past-as-of knowledge date. BOUNDED: a non-null value is REFUSED
    * by the Python read (the latest-holdings path cannot soundly strike a past NAV) — a clean
    * terminal error, never a silently-struck unsound NAV. Null/omitted → the current strike.
    */

@@ -48,7 +48,7 @@ interface FakeCtxOptions {
 interface FakeCtxCapture {
   ctx: ObjectContext;
   runRecords: Array<{ name: string; value: unknown }>;
-  /** The OIM-142 cycle-2 additive registry resolve-marks the gate fired (by decision). */
+  /** The additive registry resolve-marks the gate fired (by decision). */
   resolveMarks: Array<{ decision: 'approved' | 'rejected' | 'aborted' }>;
   awakeableId: string;
 }
@@ -81,9 +81,9 @@ function fakeCtx(opts: FakeCtxOptions): FakeCtxCapture {
       runRecords.push({ name, value });
       return value;
     },
-    // The additive OIM-142 pending-approvals registry sends are FIRE-AND-FORGET — the
+    // The additive pending-approvals registry sends are FIRE-AND-FORGET — the
     // gate does not await them and does not depend on them; the fake provides a no-op
-    // send-client (capturing the cycle-2 terminal-path `resolve` marks so the test can
+    // send-client (capturing the terminal-path `resolve` marks so the test can
     // assert the entry leaves the queue on every path) + a fixed clock so the gate's
     // control flow under test is unchanged.
     objectSendClient: () => ({
@@ -138,7 +138,7 @@ describe('highStakesApprovalGate — the seam-3 control flow', () => {
     });
     // No abort-trace on an approve.
     expect(runRecords.find((r) => r.name === 'abort-trace')).toBeUndefined();
-    // OIM-142 cycle-2: the additive registry resolve-mark fired `approved` so the entry
+    // The additive registry resolve-mark fired `approved` so the entry
     // LEAVES the pending queue (additive — it did not change the approve outcome above).
     expect(resolveMarks).toEqual([{ decision: 'approved' }]);
   });
@@ -157,7 +157,7 @@ describe('highStakesApprovalGate — the seam-3 control flow', () => {
       operationId: 'op-reject',
       reason: 'fails the mandate check',
     });
-    // OIM-142 cycle-2: the reject path marks the entry resolved `rejected` (it leaves the queue).
+    // The reject path marks the entry resolved `rejected` (it leaves the queue).
     expect(resolveMarks).toEqual([{ decision: 'rejected' }]);
   });
 
@@ -169,7 +169,7 @@ describe('highStakesApprovalGate — the seam-3 control flow', () => {
     });
     const abort = runRecords.find((r) => r.name === 'abort-trace');
     expect(abort?.value).toMatchObject({ kind: 'aborted-by-operator' });
-    // OIM-142 cycle-2: an out-of-band (CLI/ingress) reject the awakeable absorbed also
+    // An out-of-band (CLI/ingress) reject the awakeable absorbed also
     // marks the entry resolved `rejected` — it leaves the queue, not only a UI decision.
     expect(resolveMarks).toEqual([{ decision: 'rejected' }]);
   });
@@ -189,7 +189,7 @@ describe('highStakesApprovalGate — the seam-3 control flow', () => {
       });
       const abort = runRecords.find((r) => r.name === 'abort-trace');
       expect(abort?.value).toMatchObject({ kind: 'aborted-by-timeout', operationId: 'op-timeout' });
-      // OIM-142 cycle-2: the timeout path marks the entry resolved `aborted` (it leaves the queue).
+      // The timeout path marks the entry resolved `aborted` (it leaves the queue).
       expect(resolveMarks).toEqual([{ decision: 'aborted' }]);
     } finally {
       if (prev === undefined) delete process.env.AGENTINVEST_APPROVAL_TIMEOUT_MS;

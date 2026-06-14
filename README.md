@@ -4,17 +4,11 @@
 
 ## Why OpenIM exists
 
-AI agents are becoming a real channel into the investment firm, and an agent can only operate a firm it has a model of. The architect designing one needs that model just as much. Both need a shared map of what the firm does and what it knows: its service domains and its canonical entities. A bank-building agent can reach for BIAN; a buy-side agent has had nothing to reach for. OpenIM is that map, and the need for it is sharper now than it would have been five years ago.
+AI agents are becoming a real channel into the investment firm, and an agent can only operate a firm it has a model of. The architect designing one needs that model just as much. OpenIM is that model: an open, vendor-neutral map of what a buy-side firm does and what it knows, its service domains and its canonical entities, built to be read and operated by agents.
 
-Retail and commercial banking has BIAN, an open service-domain reference model that decomposes a bank into discrete, non-overlapping units of capability. The buy-side lacks an open, vendor-neutral equivalent. Asset managers, sovereign wealth funds, LP allocators and institutional investors are served by proprietary vendor capability maps and by consultancy operating-model frameworks, but no *open, maintained, vendor-neutral, agent-native* reference model of what the firm *is* (its service domains, its canonical entities, the operations it performs) is in current circulation. The adjacent standards each solve a different problem (the full mapping is in [PRIOR-ART.md](PRIOR-ART.md)):
+The buy-side has never had one. Asset managers, sovereign wealth funds, LP allocators and institutional investors run on proprietary vendor capability maps and consultancy operating-model frameworks, with no open, maintained, vendor-neutral, agent-native reference model of what the firm *is* in circulation. Retail banking has had BIAN for years; the buy-side has had nothing to reach for.
 
-- **FIBO** is an ontology of the *things* of financial business: instruments, legal entities, securities, and (more than is commonly assumed) funds and the GP/LP partnership roles. It models funds and partnerships as legal and structural nouns, but not the investment lifecycle above them: commitments, capital calls, distributions, NAV-as-event, the portfolio-mandate and allocation layer, or the risk-operating layer.
-- **ISDA CDM** models the *transaction* layer (trades and their lifecycle), not the portfolio, fund or mandate above it.
-- **ILPA templates** standardise the *format* of GP-to-LP reporting, not the model beneath it.
-- **GIPS** standardises *performance presentation*. **ISO 20022 / FIX / FpML** are *wire formats*.
-- **FINOS `glue`**, the one open buy-side data model, was archived in 2023, was a data model rather than a service-domain decomposition, and predates the agent era.
-
-So the precise, defensible gap: **there is no current, open, vendor-neutral, agent-native service-domain and master-data model for institutional investment management.** OpenIM fills it.
+The precise gap: there is no current, open, vendor-neutral, agent-native service-domain and master-data model for institutional investment management. OpenIM fills it. How it sits alongside FIBO, ISDA CDM and the other adjacent standards is covered below, and in full in [PRIOR-ART.md](PRIOR-ART.md).
 
 ### What a model of the firm makes answerable
 

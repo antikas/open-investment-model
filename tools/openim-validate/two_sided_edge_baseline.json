@@ -1,0 +1,3302 @@
+{
+  "_comment": "OIM-212 cycle-2 ratchet baseline: grandfathered asymmetric edges (true count 659 after M2 parser fix). This baseline must only SHRINK. New asymmetric edges not in this list are hard defects. Burn-down tracked as OIM-216.",
+  "_count": 659,
+  "_generated": "2026-06-14",
+  "entries": [
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-05.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-05.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-06.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-05.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-08.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-03",
+      "sd_id": "SD-08.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-04",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-04",
+      "sd_id": "SD-11.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-05",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "DR-05",
+      "sd_id": "SD-12.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-09.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-01.11",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-13.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-12",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-12",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-12",
+      "sd_id": "SD-13.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-17",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-17",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-18",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-09.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-09.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-20",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-21",
+      "sd_id": "SD-05.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-21",
+      "sd_id": "SD-07.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-21",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-21",
+      "sd_id": "SD-16.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-16.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-23",
+      "sd_id": "SD-08.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-23",
+      "sd_id": "SD-12.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-23",
+      "sd_id": "SD-12.9",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-23",
+      "sd_id": "SD-13.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-23",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-24",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-24",
+      "sd_id": "SD-12.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-24",
+      "sd_id": "SD-14.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-24",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-24",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-11.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-12.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-12.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-26",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-26",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-26",
+      "sd_id": "SD-11.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-26",
+      "sd_id": "SD-12.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-26",
+      "sd_id": "SD-12.13",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-27",
+      "sd_id": "SD-01.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-27",
+      "sd_id": "SD-05.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-27",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-27",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-28",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-28",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-28",
+      "sd_id": "SD-07.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-28",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-29",
+      "sd_id": "SD-01.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-29",
+      "sd_id": "SD-05.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-29",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-29",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-30",
+      "sd_id": "SD-15.12",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-30",
+      "sd_id": "SD-15.14",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-31",
+      "sd_id": "SD-15.12",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-31",
+      "sd_id": "SD-15.14",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-32",
+      "sd_id": "SD-15.14",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-34",
+      "sd_id": "SD-03.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-34",
+      "sd_id": "SD-04.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-34",
+      "sd_id": "SD-12.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-34",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-34",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-35",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-36",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-37",
+      "sd_id": "SD-10.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-37",
+      "sd_id": "SD-16.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-01",
+      "sd_id": "SD-12.15",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-02",
+      "sd_id": "SD-12.15",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-03",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-05",
+      "sd_id": "SD-12.15",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-07",
+      "sd_id": "SD-12.15",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "FO-08",
+      "sd_id": "SD-12.15",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-06.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-07.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-08.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-12.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-13.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-08.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-11.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-12.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-03",
+      "sd_id": "SD-06.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-03",
+      "sd_id": "SD-06.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-03",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-04",
+      "sd_id": "SD-06.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-04",
+      "sd_id": "SD-08.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-04",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-04",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-05",
+      "sd_id": "SD-10.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-05",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-05",
+      "sd_id": "SD-12.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-05",
+      "sd_id": "SD-12.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-06",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-06",
+      "sd_id": "SD-11.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-06",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-06",
+      "sd_id": "SD-12.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-07",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-07",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-07",
+      "sd_id": "SD-12.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-07",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-08.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-09.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-11.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-09",
+      "sd_id": "SD-05.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-09",
+      "sd_id": "SD-05.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-09",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-09",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-09",
+      "sd_id": "SD-09.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-10",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-10",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-10",
+      "sd_id": "SD-12.12",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-10",
+      "sd_id": "SD-12.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-10",
+      "sd_id": "SD-12.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-11",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-11",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PB-11",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-09.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-02",
+      "sd_id": "SD-03.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-02",
+      "sd_id": "SD-03.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-02",
+      "sd_id": "SD-03.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-02",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-03",
+      "sd_id": "SD-12.10",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-03",
+      "sd_id": "SD-12.9",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-03",
+      "sd_id": "SD-13.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-03",
+      "sd_id": "SD-13.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-04.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-07.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-09.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-13.9",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-05",
+      "sd_id": "SD-04.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-05",
+      "sd_id": "SD-12.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-05",
+      "sd_id": "SD-14.9",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-09.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-07",
+      "sd_id": "SD-05.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-05.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-12.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-04.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-11",
+      "sd_id": "SD-03.6",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-11",
+      "sd_id": "SD-03.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-11",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-12",
+      "sd_id": "SD-09.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-12",
+      "sd_id": "SD-09.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-12",
+      "sd_id": "SD-09.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-13",
+      "sd_id": "SD-12.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-13",
+      "sd_id": "SD-14.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-13",
+      "sd_id": "SD-16.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-13",
+      "sd_id": "SD-16.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-14",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-14",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "PM-14",
+      "sd_id": "SD-12.8",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-08.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-07.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-08.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-09.1",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-09.5",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-03",
+      "sd_id": "SD-07.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-03",
+      "sd_id": "SD-08.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-03",
+      "sd_id": "SD-09.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-04",
+      "sd_id": "SD-04.11",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-04",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-04",
+      "sd_id": "SD-08.3",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-04",
+      "sd_id": "SD-09.7",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-05",
+      "sd_id": "SD-05.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-05",
+      "sd_id": "SD-07.4",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "RA-05",
+      "sd_id": "SD-12.2",
+      "direction": "entity_consumed_by_but_sd_not_consumes"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-07",
+      "sd_id": "SD-01.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-01.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-01.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-01.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-01.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-01.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-01.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-01.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-01.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-01.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-01.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-01.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-01.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-31",
+      "sd_id": "SD-01.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-01.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-01.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-01.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-01.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-01.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-01.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-01.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-01.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-01.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-01.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-01.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-01.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-01.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-01.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-01.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-01.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-01.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-01.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-01.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-02.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-02.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-02.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-02.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-02.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-02.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-02.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-02.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-02.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-02.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-02.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-02.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-02.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-02.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-02.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-02.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-02.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-01",
+      "sd_id": "SD-02.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-02.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-02.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-02.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-15",
+      "sd_id": "SD-02.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-02.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-03.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-03.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-03.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-03.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-03.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-03.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-03.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-03.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-05",
+      "sd_id": "SD-04.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-04.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-04.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-04.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-05",
+      "sd_id": "SD-04.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-04.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-04.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-04.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-04.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-04.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-04.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-04.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-04.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-04.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-04.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-04.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-05.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-05.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-05.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-05.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-05.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-05.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-05.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-04",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-05.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-05.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-05.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-05.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-05.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-05.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-04",
+      "sd_id": "SD-05.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-05.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-05.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-05.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-05.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-05.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-05.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-05.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-06.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-06.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-06.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-06.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-06.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-02",
+      "sd_id": "SD-06.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-06.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-06.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-06.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-06.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-06.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-03",
+      "sd_id": "SD-06.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-06.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-07.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-07.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-07.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-07.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-07.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-07.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-07.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-07.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-07.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-07.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-07.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-07.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-17",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-07.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-08.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-08.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-08.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-08.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-08.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-08.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-08.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-08.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-08.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-08.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-08.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-08.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-08.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-08.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-04",
+      "sd_id": "SD-08.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-08.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-08.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-08.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-09.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-09.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-09.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-09.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-09.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-09.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-09.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-09.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-11",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-12",
+      "sd_id": "SD-09.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-09.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-09.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-07",
+      "sd_id": "SD-09.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-09.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-09.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-09.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-09.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-09.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-09.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-10.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-10.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-10.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-10.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-10.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-10.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-10.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-10.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-10.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-10.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-10.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-10.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-10.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-10.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-10.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-03",
+      "sd_id": "SD-10.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-05",
+      "sd_id": "SD-10.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-10.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-10.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-10.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-10.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-10.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-15",
+      "sd_id": "SD-10.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-16",
+      "sd_id": "SD-10.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-22",
+      "sd_id": "SD-10.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-11.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-11.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-25",
+      "sd_id": "SD-11.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-11.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-11.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-11.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-07",
+      "sd_id": "SD-11.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-11.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-11.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-11.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-11.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-11.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-11.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-11.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-11.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-11.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-12.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-12.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-12.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-12.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-12.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-12.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-12.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-01",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-02",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-03",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "DR-05",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-12.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-12.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.17",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-12.17",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.17",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-05",
+      "sd_id": "SD-12.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-12.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-12.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-12.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-12.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PB-08",
+      "sd_id": "SD-12.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-12.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-12.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-12.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-12.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-12.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-12.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-13.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-13.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-19",
+      "sd_id": "SD-13.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-07",
+      "sd_id": "SD-13.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-08",
+      "sd_id": "SD-13.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-13.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-09",
+      "sd_id": "SD-13.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-13.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-13.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-09",
+      "sd_id": "SD-13.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-13.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-04",
+      "sd_id": "SD-13.6",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-12",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-13.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-04",
+      "sd_id": "SD-13.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-13.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-07",
+      "sd_id": "SD-13.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-08",
+      "sd_id": "SD-13.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-10",
+      "sd_id": "SD-13.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-13.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-02",
+      "sd_id": "SD-13.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-14",
+      "sd_id": "SD-13.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-14.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-14.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-01",
+      "sd_id": "SD-14.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "RA-02",
+      "sd_id": "SD-14.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-15.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-15.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-15.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-15.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-06",
+      "sd_id": "SD-15.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-15.11",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-15.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.12",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-15.13",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-04",
+      "sd_id": "SD-15.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-05",
+      "sd_id": "SD-15.14",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.15",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-03",
+      "sd_id": "SD-15.15",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.16",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-01",
+      "sd_id": "SD-15.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-05",
+      "sd_id": "SD-15.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-15.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-01",
+      "sd_id": "SD-15.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-10",
+      "sd_id": "SD-15.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-01",
+      "sd_id": "SD-15.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-15.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-16.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-16.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-16.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-16.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.1",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-15",
+      "sd_id": "SD-17.10",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.2",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-06",
+      "sd_id": "SD-17.3",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-03",
+      "sd_id": "SD-17.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-04",
+      "sd_id": "SD-17.4",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.5",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-15",
+      "sd_id": "SD-17.7",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-01",
+      "sd_id": "SD-17.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "FO-08",
+      "sd_id": "SD-17.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "PM-03",
+      "sd_id": "SD-17.8",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    },
+    {
+      "entity_id": "E-15",
+      "sd_id": "SD-17.9",
+      "direction": "sd_consumes_but_entity_not_consumed_by"
+    }
+  ]
+}

@@ -52,6 +52,10 @@ Each term definition shares the computation-as-data shape. The hurdle is the wor
 
 Terms change — at each fund close, at LPA amendments, at step-down points. `FundTerms` is a **versioned entity**: a change inserts a new row with `effective_from` set to the change date and closes the prior row. No history is overwritten. Any historical carry or distribution can be recomputed with the term definition that was actually in force.
 
+## The fee-boundary across fund forms
+
+PM-10 is the fee *definition* for the closed-end LPA form. The boundary across the three-layer chain holds the same way for both open-ended and closed-end funds: (1) fee *definition / schedule* lives on PM-10 (closed-end) and on `FO-02.class_fee_schedule` (open-ended share/unit classes); (2) fee *computed amount* is FO-06 Fee Accrual, produced and owned by SD-12.11 Expense, Fee & Carry Processing, which reads PM-10 or FO-02 but never duplicates the formula; (3) NAV *booking* of the accrual is SD-12.9 Fund Accounting & NAV, which consumes FO-06. No formula is duplicated; no figure is double-owned. The `formula_spec_ref` field on FO-06 is a provenance pointer back to the PM-10 `terms_id` (or FO-02 schedule-version token) that produced the accrual — not a typed FK, consistent with the FO-02/PM-10 precedent for bare provenance pointers.
+
 ## Out of scope
 
 - The fund the terms govern — that is PM-01 Fund & Vehicle, referenced through `fund_id`; PM-10 is the economic terms, not the fund.
@@ -63,7 +67,7 @@ Terms change — at each fund close, at LPA amendments, at step-down points. `Fu
 
 - **Owned by:** SD-13.3 Investment Vehicle & Fund Master (the structured term data).
 - **Sourced from:** SD-14.9 Legal & Contract Management (the LPA is the authoritative document).
-- **Consumed by:** SD-12.11 Expense, Fee & Carry Processing, SD-09.8 Private-Markets Performance Analytics, SD-03.4 Fund Investment Due Diligence.
+- **Consumed by:** SD-12.11 Expense, Fee & Carry Processing, SD-09.8 Private-Markets Performance Analytics, SD-03.4 Fund Investment Due Diligence, SD-12.15 Transfer Agency & Investor Dealing (the dealing frequency, cut-off and pricing basis govern subscription and redemption order processing).
 
 ## Open extensions
 

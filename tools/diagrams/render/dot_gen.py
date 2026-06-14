@@ -346,6 +346,7 @@ def entity_erd_dot(entity_model: EntityModel) -> str:
         "public-markets": ("#e5efe1", "#5b8a48"),
         "derivatives": ("#fbf0d8", "#a07b2c"),
         "real-assets": ("#f7dfe0", "#a65b5b"),
+        "fund-operations": ("#fef3e2", "#b07d2a"),
     }
     by_pack = entity_model.by_pack()
     for pack, ents in by_pack.items():

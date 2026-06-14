@@ -1,6 +1,6 @@
 # Conceptual ERD — core entities
 
-The 38 entities of the [OpenIM core](../entities/INDEX.md), organised in six groups, with the key relationships among them. The specialisation packs ([private-markets](../entities/specialisations/private-markets/README.md), [public-markets](../entities/specialisations/public-markets/README.md), [derivatives](../entities/specialisations/derivatives/README.md), [real-assets](../entities/specialisations/real-assets/README.md)) sit on top of this core — a fund specialises Instrument, a capital call specialises Transaction, a fund NAV specialises Valuation, a direct loan specialises Instrument. This diagram covers only the core; the [attribute-level ERD](d2/core-erd.d2) — every core entity's full column schema, at attribute grain — lives in D2.
+The 38 entities of the [OpenIM core](../entities/INDEX.md), organised in six groups, with the key relationships among them. The specialisation packs ([public-markets](../entities/specialisations/public-markets/README.md), [fund-operations](../entities/specialisations/fund-operations/README.md), [private-markets](../entities/specialisations/private-markets/README.md), [derivatives](../entities/specialisations/derivatives/README.md), [real-assets](../entities/specialisations/real-assets/README.md)) sit on top of this core — a fund specialises Instrument, a capital call specialises Transaction, a fund NAV specialises Valuation, a direct loan specialises Instrument. **47 specialisation entities** across the five packs; with the 38 core entities, the OpenIM entity model is **85 entities**. This diagram covers only the core; the [attribute-level ERD](d2/core-erd.d2) — every core entity's full column schema, at attribute grain — lives in D2.
 
 The diagram is at **entity-and-relationship grain**, not attribute grain. The attribute-level schema for every core entity lives in its own file under [`../entities/core/`](../entities/core/).
 
@@ -29,6 +29,8 @@ erDiagram
     INSTRUMENT                   ||--o{ EXTERNAL_IDENTIFIER       : "maps to"
     INSTRUMENT                   ||--o{ CLASSIFICATION_HISTORY    : "classified by"
     INSTRUMENT                   ||--o{ VALUATION                 : "valued by"
+
+    SHARE_UNIT_CLASS             ||--o{ VALUATION                 : "NAV per unit struck for (class grain)"
 
     TRANSACTION                  ||--o{ CASH_FLOW_EVENT           : "generates"
     TRANSACTION                  ||--o{ HOLDING                   : "affects"
@@ -87,6 +89,8 @@ erDiagram
     FINANCIAL_PLAN               ||--o{ GOAL                      : "contains"
 ```
 
+> **Note:** `SHARE_UNIT_CLASS` (FO-02 Share / Unit Class) is the only fund-operations specialisation-pack entity shown in this diagram. It appears here solely as the FK target of the `VALUATION` NAV-per-unit class-grain edge; its full definition is in the [fund-operations pack](../entities/specialisations/fund-operations/FO-02-share-unit-class.md). This mirrors the treatment in the attribute-level D2 ERD (`d2/core-erd.d2`), which includes FO-02 with an explanatory comment marking it as a pack reference.
+
 ## Reading the diagram
 
 The 38-entity core organises into six groups. The Mermaid render above is busy by intent — every cross-group relationship is shown so a reader sees what depends on what. The attribute-level rendering (sql-table form with the full schemas) is at [`d2/core-erd.d2`](d2/core-erd.d2).
@@ -96,7 +100,7 @@ The 38-entity core organises into six groups. The Mermaid render above is busy b
 The party / instrument / portfolio / event / valuation axes — the universal core every institutional investor runs over:
 
 - **Legal Entity ([E-01](../entities/core/E-01-legal-entity.md))** — the universal party master. Issuer, counterparty, manager, custodian, administrator, portfolio company, *client*, *borrower* are all *roles* of one Legal Entity, not separate masters.
-- **Instrument / Asset ([E-02](../entities/core/E-02-instrument-asset.md))** — the universal holdable thing. Specialised by the four packs (a fund, a listed equity, a derivative, a direct loan, a directly-held real asset).
+- **Instrument / Asset ([E-02](../entities/core/E-02-instrument-asset.md))** — the universal holdable thing. Specialised by the five packs (a fund, a listed equity, a derivative, a direct loan, a directly-held real asset, an issued fund product).
 - **Portfolio / Mandate ([E-03](../entities/core/E-03-portfolio-mandate.md)) → Holding / Position ([E-04](../entities/core/E-04-holding-position.md))** — the container, the positions in it at a point in time. E-04 is key-partitioned by `book` (IBOR vs ABOR).
 - **Transaction ([E-05](../entities/core/E-05-transaction.md)) → Cash Flow Event ([E-06](../entities/core/E-06-cash-flow-event.md))** — what happened, with cash consequences.
 - **Valuation ([E-07](../entities/core/E-07-valuation.md)) ← Price & Market Data ([E-08](../entities/core/E-08-price-market-data.md))** — a point-in-time value, backed by observable prices or mark-to-model. Append-only. E-07 is key-partitioned by `method`.
@@ -124,6 +128,6 @@ The objective / target / plan records that allocation and portfolio construction
 ## What this diagram does not show
 
 - **Attributes.** Conceptual layer only; attribute-level schemas live in each entity's file under [`../entities/core/`](../entities/core/). The attribute-level ERD — the same entities at column grain — is at [`d2/core-erd.d2`](d2/core-erd.d2).
-- **Specialisations.** The 35 specialisation entities across the four packs (a fund as an Instrument, a capital call as a Transaction, a fund NAV as a Valuation, a directly-held real asset as an Instrument, a direct loan as an Instrument) are in the [pack READMEs](../entities/INDEX.md).
+- **Specialisations.** The 47 specialisation entities across the five packs (a fund as an Instrument, a capital call as a Transaction, a fund NAV as a Valuation, a directly-held real asset as an Instrument, a direct loan as an Instrument, an issued fund product as an Instrument, a share or unit class as an Instrument, an investor unitholding as a Holding / Position, a dealing order as a Transaction, a fund distribution event as a Transaction, a fee accrual as a Valuation, an investor tax statement as a Document Metadata (E-15), a service-provider appointment record, an omnibus account as an Account (E-25), an ETF creation/redemption order as a Transaction, an ETF creation basket (portfolio composition file), and an ETF authorised-participant agreement) are in the [pack READMEs](../entities/INDEX.md).
 - **Ownership** — which Service Domain owns each entity. That mapping is in [`../ownership-map.md`](../ownership-map.md).
 - **Faceted, key-partitioned and co-owned ownership patterns** — ten entities (E-03 faceted; E-04, E-07, E-13, E-14, E-19, E-25, E-29 key-partitioned; E-27 and E-34 co-owned) have multiple co-owning Service Domains under defined patterns. See the ownership map for the full detail.

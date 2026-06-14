@@ -15,12 +15,12 @@ from pathlib import Path
 from .errors import ParseError
 
 
-_ENTITY_FILE_RE = re.compile(r"^(E|PM|PB|DR|RA)-(\d{2})-(.+)\.md$")
-_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA)-(\d{2})\b")
+_ENTITY_FILE_RE = re.compile(r"^(E|PM|PB|DR|RA|FO)-(\d{2})-(.+)\.md$")
+_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA|FO)-(\d{2})\b")
 _SD_ID_RE = re.compile(r"\bSD-(\d{2})\.(\d+)\b")
-_FK_RE = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA)[_-]?\d{2,3})", re.IGNORECASE)
-_TITLE_RE = re.compile(r"^#\s+(E|PM|PB|DR|RA)-(\d{2})\s+[—-]\s+(.+?)\s*$")
-_SPECIALISES_RE = re.compile(r"\*\*Specialises:\*\*\s*((?:E|PM|PB|DR|RA)-\d{2})")
+_FK_RE = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA|FO)[_-]?\d{2,3})", re.IGNORECASE)
+_TITLE_RE = re.compile(r"^#\s+(E|PM|PB|DR|RA|FO)-(\d{2})\s+[—-]\s+(.+?)\s*$")
+_SPECIALISES_RE = re.compile(r"\*\*Specialises:\*\*\s*((?:E|PM|PB|DR|RA|FO)-\d{2})")
 
 
 @dataclass
@@ -45,6 +45,7 @@ class Entity:
             "PB": "public-markets",
             "DR": "derivatives",
             "RA": "real-assets",
+            "FO": "fund-operations",
         }[self.prefix]
 
 
@@ -97,7 +98,7 @@ def _normalise_entity_id(raw: str) -> str:
     raw = raw.replace("_", "-")
     if "-" not in raw:
         # 'E09' -> 'E-09'
-        for prefix in ("PM", "PB", "DR", "RA"):
+        for prefix in ("PM", "PB", "DR", "RA", "FO"):
             if raw.upper().startswith(prefix):
                 return f"{prefix}-{raw[len(prefix):].zfill(2)}"
         return f"{raw[0].upper()}-{raw[1:].zfill(2)}"
@@ -174,8 +175,25 @@ def _parse_entity_file(path: Path, expected_prefix: str, expected_num: int) -> E
             seen.append(sid)
     ent.owned_by = seen
 
+    # Extract SD ids from the *structured consumer list* only — not from any
+    # trailing prose clarification sentence.
+    #
+    # Entity files occasionally carry a clarifying sentence after the structured
+    # semicolon-separated consumer list, e.g.:
+    #   "…SD-16.1 Corporate & Fund Governance (…). The E-01 party records
+    #    referenced … are mastered by SD-13.2 … not a consumer …"
+    #
+    # The structured list ends at the last `);` or `).` that closes the final
+    # consumer entry; any prose that follows (a new sentence starting after a
+    # period) is excluded.  The split pattern `). ` followed by a capital
+    # letter (or `\n`) detects the boundary.
+    m_prose = re.search(r'\)\.\s+[A-Z\n]', consumed_by_text)
+    structured_consumer_text = (
+        consumed_by_text[: m_prose.start() + 2]  # include the closing ').'
+        if m_prose else consumed_by_text
+    )
     seen = []
-    for sm in _SD_ID_RE.finditer(consumed_by_text):
+    for sm in _SD_ID_RE.finditer(structured_consumer_text):
         sid = f"SD-{sm.group(1)}.{sm.group(2)}"
         if sid not in seen:
             seen.append(sid)
@@ -222,6 +240,7 @@ def parse_entities(repo_root: Path) -> EntityModel:
                 "public-markets": "PB",
                 "derivatives": "DR",
                 "real-assets": "RA",
+                "fund-operations": "FO",
             }
             if pack_dir.name not in pack_prefix_map:
                 raise ParseError(pack_dir, None,

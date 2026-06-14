@@ -4,7 +4,7 @@ Plain-English definitions of the investment-management vocabulary OpenIM uses. T
 
 The vocabulary spans **both public-markets investing and private-markets investing** — public-markets terms (TWR, GIPS, ISIN, ISDA CDM), private-markets / LP-GP terms (LPA, capital call, distribution, J-curve, vintage, the family of PME / IRR / TVPI / DPI / RVPI / MOIC metrics, the waterfall mechanics) and the master-data terms (LEI, golden key, alias, external identifier, ABOR / IBOR) that the OpenIM canonical model is built around.
 
-Conventions: alphabetical; **bold** the term; cross-references with *see also*; each definition is one or two sentences plain enough to read on first encounter. Cross-references to OpenIM elements use the model's identifiers — `E-NN` for [core entities](entities/INDEX.md), `PM-NN` / `PB-NN` / `DR-NN` / `RA-NN` for [specialisation entities](entities/INDEX.md), `BD-NN` / `SD-NN.M` for [service-domain elements](service-domains/INDEX.md).
+Conventions: alphabetical; **bold** the term; cross-references with *see also*; each definition is one or two sentences plain enough to read on first encounter. Cross-references to OpenIM elements use the model's identifiers — `E-NN` for [core entities](entities/INDEX.md), `PB-NN` / `FO-NN` / `PM-NN` / `DR-NN` / `RA-NN` for [specialisation entities](entities/INDEX.md), `BD-NN` / `SD-NN.M` for [service-domain elements](service-domains/INDEX.md).
 
 ---
 

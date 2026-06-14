@@ -27,7 +27,7 @@ _BD_DIR_RE = re.compile(r"^BD-(\d{2})-(.+)$")
 _SD_FILE_RE = re.compile(r"^SD-(\d{2})\.(\d+)-(.+)\.md$")
 _SD_ID_RE = re.compile(r"\bSD-(\d{2})\.(\d+)\b")
 _BD_ID_RE = re.compile(r"\bBD-(\d{2})\b")
-_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA)-(\d{2})\b")
+_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA|FO)-(\d{2})\b")
 _APPLIES_RE = re.compile(r"\*\*Applies:\*\*\s*([A-Z]+)")
 _TITLE_RE = re.compile(r"^#\s+SD-(\d{2})\.(\d+)\s+[—-]\s+(.+?)\s*$")
 _BD_TITLE_RE = re.compile(r"^#\s+BD-(\d{2})\s+[—-]\s+(.+?)\s*$")
@@ -45,6 +45,7 @@ SD_KNOWN_H2: frozenset[str] = frozenset({
     "Entities",
     "Standards",
     "Open extensions",
+    "Design notes",
 })
 
 

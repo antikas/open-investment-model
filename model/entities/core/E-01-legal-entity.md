@@ -58,7 +58,7 @@ Legal entities resolve through the three-tier cascade common to every OpenIM mas
 ## Owned and consumed by
 
 - **Owned by:** SD-13.2 Entity & Counterparty Master.
-- **Consumed by:** effectively every domain — issuers by SD-07.2 Credit & Counterparty Risk and the fixed-income domains; counterparties by SD-06 Trading & Execution and SD-11.4 Margin & Collateral Operations; managers by BD-03 Manager & Fund Investment; and the investor and its vehicles by the portfolio and reporting domains.
+- **Consumed by:** effectively every domain — issuers by SD-07.2 Credit & Counterparty Risk and the fixed-income domains; counterparties by SD-06 Trading & Execution and SD-11.4 Margin & Collateral Operations; managers by BD-03 Manager & Fund Investment; and the investor and its vehicles by the portfolio and reporting domains — specifically SD-12.15 Transfer Agency & Investor Dealing (the registered investors in the fund) and the reporting domains.
 
 ## Open extensions
 

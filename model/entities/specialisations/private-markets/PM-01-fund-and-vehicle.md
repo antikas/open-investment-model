@@ -71,12 +71,13 @@ Three-tier matching — exact external-ID match, alias / normalised-name match, 
 - A fund's own holdings in portfolio companies or underlying funds — that is PM-09 Fund Investment, reached by look-through.
 - The fund's economic terms — hurdle, fee, carry, clawback — that is PM-10 Fund Terms, one versioned record per fund.
 - The LP's commitment to the fund — that is PM-06 LP Commitment; PM-01 is the fund itself, not the commitment relationship.
+- **The manager's issued-product view of the same fund.** PM-01 is the *allocator's commitment-vehicle view* — the institution as an LP or outside investor committing capital to a fund. The *manager's issued-product view* of that same fund — the registered, priced and distributed collective investment vehicle from the issuing manager's perspective — is FO-01 Fund Product (fund-operations pack). The two are discriminated on the issuance axis: PM-01 records `committed_capital_usd` (the investor's own obligation to the fund); FO-01 records the product-lifecycle, dealing-terms and regulatory-authorisation attributes that govern how the fund operates as an issued product. An institution that both invests in funds and operates its own carries both records for the same fund.
 
 ## Owned and consumed by
 
 - **Owned by:** SD-13.3 Investment Vehicle & Fund Master.
 - **Populated via:** SD-03.5 Fund Commitment & Subscription, SD-13.6 GP & Manager Report Ingestion.
-- **Consumed by:** SD-03.6 GP & Manager Monitoring, SD-09.8 Private-Markets Performance Analytics, SD-11.6 Fund Finance & Capital-Call Liquidity, SD-12.8 Capital Call & Distribution Processing, SD-12.9 Fund Accounting & NAV.
+- **Consumed by:** SD-03.6 GP & Manager Monitoring, SD-09.8 Private-Markets Performance Analytics, SD-11.6 Fund Finance & Capital-Call Liquidity, SD-12.8 Capital Call & Distribution Processing, SD-12.9 Fund Accounting & NAV, SD-12.15 Transfer Agency & Investor Dealing (the fund vehicle record anchors the investor register).
 
 ## Open extensions
 

@@ -4,21 +4,21 @@ The consolidated map of which Service Domain is the **authoritative source** for
 
 This map is the **SSOT for entity ownership.** Each entity file's `Owned by` line is reconciled to it; the Tier-0 validator enforces the consistency. The map answers two questions for every entity: who is the authoritative source (the *system of record* — for agentINVEST, the write-path), and which Service Domains consume it.
 
-The model has 17 Business Domains and 171 Service Domains; the canonical entity model has 73 entities — a generalised core of 38 (`E-NN`) plus four specialisation packs (`PM-NN`, `PB-NN`, `DR-NN`, `RA-NN`).
+The model has 17 Business Domains and 171 Service Domains; the canonical entity model has 85 entities — a generalised core of 38 (`E-NN`) plus five specialisation packs (`PB-NN`, `FO-NN`, `PM-NN`, `DR-NN`, `RA-NN`).
 
 ## The four ownership patterns
 
-The model's default is **one entity, one owning Service Domain.** 63 of 73 entities follow this default. The remaining ten are not defects — they are entities whose shape genuinely admits more than one authoritative source. This map declares the pattern that applies to each, so the ownership is *explicit* rather than implicit.
+The model's default is **one entity, one owning Service Domain.** 75 of 85 entities follow this default. The remaining ten are not defects — they are entities whose shape genuinely admits more than one authoritative source. This map declares the pattern that applies to each, so the ownership is *explicit* rather than implicit.
 
-**1. Single owner.** One Service Domain is the authoritative source for every instance. The vast majority. *Example:* SD-13.1 owns E-02 Instrument / Asset.
+**1. Single owner.** One Service Domain is the authoritative source for every instance. The vast majority (75 of 85 entities). *Example:* SD-13.1 owns E-02 Instrument / Asset.
 
-**2. Key-partitioned ownership.** One entity type whose instances are partitioned by a key attribute — different attribute values are produced by different, co-equal Service Domains. The model's rule generalises naturally: *one authoritative source per (entity, key partition).* The schema is shared; the instance set is partitioned; no Service Domain is subordinate to another. Used where a key attribute determines which Service Domain is the system of record for that instance — most acutely for **E-04 Holding / Position**, where the `book` attribute records two genuinely-different position numbers that are reconciled against each other. Also used for **E-25 Account** (partitioned by `account_type`: safekeeping vs cash) and **E-29 Allocation Plan** (partitioned by `plan_type`: strategic vs reference-portfolio vs commitment-pacing).
+**2. Key-partitioned ownership.** One entity type whose instances are partitioned by a key attribute — different attribute values are produced by different, co-equal Service Domains. The model's rule generalises naturally: *one authoritative source per (entity, key partition).* The schema is shared; the instance set is partitioned; no Service Domain is subordinate to another. Used where a key attribute determines which Service Domain is the system of record for that instance — most acutely for **E-04 Holding / Position**, where the `book` attribute records two genuinely-different position numbers that are reconciled against each other. Also used for **E-25 Account** (partitioned by `account_type`: safekeeping / cash / register) and **E-29 Allocation Plan** (partitioned by `plan_type`: strategic vs reference-portfolio vs commitment-pacing).
 
 **3. Faceted ownership.** One entity carries two facets, owned by different Service Domains because they are different *kinds of fact* — not different instances. Used only for **E-03 Portfolio / Mandate**: the *portfolio* facet (the live holdings container) and the *mandate* facet (objectives and constraints) live on the same record but answer different questions.
 
 **4. Co-ownership.** One entity, one concept, two co-equal owning Service Domains — neither partitioned by a key nor split into facets, but a single shared concept that two Service Domains are jointly the authoritative source for because they are two views of the same thing. Used for **E-27 Liability Profile**: the pension-scheme view (SD-01.7) and the insurance-book view (SD-01.8) of the same kind of actuarially-projected liability stream; and **E-34 Investment Authorisation**: the fund-commitment IC view (SD-03.9) and the direct-investment IC view (SD-04.5) of the same kind of governance record. Distinct from key-partitioned ownership — there is no key attribute that assigns an instance to one owner or the other; the two Service Domains co-own the entity outright.
 
-## The 73 entities
+## The 85 entities
 
 ### Generalised core — `model/entities/core/`
 
@@ -48,7 +48,7 @@ The model's default is **one entity, one owning Service Domain.** 63 of 73 entit
 | E-22 Metric Definition | SD-13.8 Semantic & Metric Layer | Single owner |
 | E-23 Extraction Record | SD-13.6 GP & Manager Report Ingestion | Single owner |
 | E-24 Reconciliation Break | SD-12.10 Reconciliation | Single owner |
-| **E-25 Account** | per `account_type`: **SD-12.5 Custody & Safekeeping Oversight** (`safekeeping`) **+ SD-11.7 Bank Account & Mandate Administration** (`cash`) — co-equal | **Key-partitioned by `account_type`** |
+| **E-25 Account** | per `account_type`: **SD-12.5 Custody & Safekeeping Oversight** (`safekeeping`) **+ SD-11.7 Bank Account & Mandate Administration** (`cash`) **+ SD-15.4 Distribution Strategy & Channel Management** (`register`) — co-equal | **Key-partitioned by `account_type`** |
 | E-26 Collateral Position | SD-11.5 Collateral Optimisation & Inventory Management | Single owner |
 | **E-27 Liability Profile** | **SD-01.7 Liability-Driven & Cash-Flow-Driven Strategy + SD-01.8 Insurance Investment Strategy** — co-equal | **Co-owned** |
 | E-28 Risk Budget | SD-01.9 Risk-Capital & Strategy Allocation | Single owner |
@@ -118,6 +118,23 @@ The model's default is **one entity, one owning Service Domain.** 63 of 73 entit
 | RA-04 Development Project | SD-04.11 Development & Construction Management | Single owner |
 | RA-05 Asset Appraisal | SD-08.3 Private-Asset Valuation | Single owner |
 
+### Fund-operations pack — `model/entities/specialisations/fund-operations/`
+
+| Entity | Owning Service Domain | Pattern |
+|---|---|---|
+| FO-01 Fund Product | SD-13.3 Investment Vehicle & Fund Master | Single owner |
+| FO-02 Share / Unit Class | SD-13.3 Investment Vehicle & Fund Master | Single owner |
+| FO-03 Investor Unitholding | SD-12.15 Transfer Agency & Investor Dealing | Single owner |
+| FO-04 Dealing Order | SD-12.15 Transfer Agency & Investor Dealing | Single owner |
+| FO-05 Fund Distribution Event | SD-12.7 Income & Distribution Processing | Single owner |
+| FO-06 Fee Accrual | SD-12.11 Expense, Fee & Carry Processing | Single owner |
+| FO-07 Investor Tax Statement | SD-17.4 Investment & Portfolio Tax | Single owner |
+| FO-08 Service-Provider Appointment | SD-17.8 Vendor, Outsourcing & Service-Provider Oversight | Single owner |
+| FO-09 Omnibus Account | SD-15.4 Distribution Strategy & Channel Management | Single owner |
+| FO-10 ETF Creation/Redemption Order | SD-12.15 Transfer Agency & Investor Dealing | Single owner |
+| FO-11 ETF Creation Basket (Portfolio Composition File) | SD-12.9 Fund Accounting & NAV | Single owner |
+| FO-12 ETF Authorised-Participant Agreement | SD-12.15 Transfer Agency & Investor Dealing | Single owner |
+
 ## The ten non-default cases — in detail
 
 ### E-04 Holding / Position — key-partitioned by `book`
@@ -136,6 +153,8 @@ The model's default is **one entity, one owning Service Domain.** 63 of 73 entit
 
 One entity. A given holding at a given as-of has one valuation, recorded with a `method` value — drawn from the attribute schema's enum (`observable_price` / `mark_to_model` / `manager_mark` / `appraisal` / `amortised_cost`) — that determines the producing Service Domain. **SD-08.1** Security Pricing for `method = observable_price` (a quoted market price) and `method = amortised_cost` (the rule-based amortised-cost carrying price of a held-to-maturity debt instrument). **SD-08.2** Independent / Mark-to-Model Valuation for `method = mark_to_model` (a quant-modelled mark). **SD-08.3** Private-Asset Valuation for `method = manager_mark` (the manager- or administrator-reported mark of a private fund, private-credit or directly-held private interest) and `method = appraisal` (the real-asset appraisal RA-05 specialises). **SD-12.9** Fund Accounting & NAV produces the official struck NAV of a vehicle the institution *operates*, recorded as `method = manager_mark`: it shares the method value with SD-08.3 because both are manager/administrator-struck marks, but the producing capability differs — SD-12.9 strikes the NAV of an operated vehicle (the source side, with its PM-13 investor capital accounts), where SD-08.3 records the mark the institution consumes as an investor in an externally-managed interest. Holding-level marks and the operated-vehicle NAV are different *kinds* of valuation, intentionally one entity to keep the value-trajectory same-shape across kinds — the BD-08 design.
 
+**Share/unit-class grain (the NAV-per-unit variant).** E-07 also accommodates a third grain: the `unit_class_id` FK → FO-02 (Share / Unit Class) populates when the valuation is at the per-class NAV-per-unit level, with `units_in_issue` carried as the divisor at the moment of the strike. These records use `method = manager_mark` and are produced exclusively by **SD-12.9** Fund Accounting & NAV — the class-level NAV-per-unit that SD-12.9 strikes from the fund-level NAV, the hedge P&L (SD-11.3, for currency-hedged classes), and the securities-lending revenue (SD-12.13). The `unit_class_id` is null for position-grain and instrument-grain valuations; the class-grain rows are discriminated by a non-null `unit_class_id`.
+
 ### E-13 Entity Alias and E-14 External Identifier — key-partitioned by master kind
 
 An alias or external identifier always attaches to a master record. The master kind is part of its identity. **SD-13.1** Instrument & Security Master is the authoritative source for aliases / identifiers of instruments and assets. **SD-13.2** Entity & Counterparty Master for legal entities (including issuers, counterparties, managers, custodians in their role facets). **SD-13.3** Investment Vehicle & Fund Master for funds and vehicles. The same shape — one record set, partitioned by which master the alias/identifier resolves against; each master's owning Service Domain is the authoritative source for its partition.
@@ -150,7 +169,7 @@ E-03 carries two facets that are different *kinds of fact*, not different instan
 
 ### E-25 Account — key-partitioned by `account_type`
 
-One entity. A custody / safekeeping account and a bank / cash account are the same kind of thing — an account structure portfolios are held and settled through — distinguished by `account_type`, which is part of the account's identity. Ownership is partitioned and co-equal: **SD-12.5 Custody & Safekeeping Oversight** is the sole authoritative source for every instance with `account_type = safekeeping`; **SD-11.7 Bank Account & Mandate Administration** for every instance with `account_type = cash`. Neither holds schema authority over the other; the schema is the model's. Two Service Domains independently surfaced the same gap and asked for one shared account entity; the key-partitioned pattern (the same shape E-04 uses on `book`) gives them one schema with co-equal owners rather than two schema-identical entities. The entity aligns to the FIBO `fibo-fbc-pas-caa:Account` concept rather than re-defining what an account is.
+One entity. A custody / safekeeping account, a bank / cash account, and a fund-register / nominee account are the same kind of thing — an account structure portfolios are held and settled through — distinguished by `account_type`, which is part of the account's identity. Ownership is partitioned and co-equal: **SD-12.5 Custody & Safekeeping Oversight** is the sole authoritative source for every instance with `account_type = safekeeping`; **SD-11.7 Bank Account & Mandate Administration** for every instance with `account_type = cash`; **SD-15.4 Distribution Strategy & Channel Management** for every instance with `account_type = register` (the fund-register / nominee account held by an intermediary or distributor at the transfer agent, as specialised by FO-09 Omnibus Account). No partition holds schema authority over any other; the schema is the model's. The key-partitioned pattern (the same shape E-04 uses on `book`) gives the three co-equal owners one schema rather than three schema-identical entities. The entity aligns to the FIBO `fibo-fbc-pas-caa:Account` concept rather than re-defining what an account is.
 
 ### E-27 Liability Profile — co-owned
 

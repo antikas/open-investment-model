@@ -23,6 +23,7 @@ Much of what an institutional investor knows arrives as documents — and in pri
 
 - The link from a document to a *durable* identifier is the load-bearing part. Where an operational identifier is not durable, the document resolves to the durable key (E-13), so historical documents stay correctly attached through identifier changes.
 - Document Metadata is the on-ramp record for SD-13.6 GP & Manager Report Ingestion — the ingestion pipeline reads the document, the metadata records what was read — and the provenance anchor for every domain that consumes extracted data.
+- E-15 covers both documents *received* by the firm (manager reports, capital-account statements, LPAs, trade confirmations) and documents *issued* by the firm that are filed or furnished to a counterparty or authority (investor tax statements, regulatory filings). The filing-status lifecycle and correction chain are attributes of the issued-document case.
 
 ## Out of scope
 

@@ -41,6 +41,8 @@ An agent-native implementation built on the model: a typed agent-tool catalogue,
 
 The whole implementation (the durable-execution substrate, the typed tool catalogue, the canonical data layer, the orchestrator and its workflows, and the agent ingress) is drawn in the [solution-architecture diagram](reference/docs/architecture/agentinvest-solution-architecture.svg), with a [layer-by-layer walkthrough](reference/docs/architecture/agentinvest-solution-architecture.md).
 
+agentINVEST and the model it implements are governed on the record; what enters the model and when a version is cut is set out in [GOVERNANCE.md](GOVERNANCE.md).
+
 ## The model at a glance
 
 **17 Business Domains, 171 Service Domains, ~1,030 Service Operations.** Office tags: Front / Middle / Back / Cross-cutting / Commercial.

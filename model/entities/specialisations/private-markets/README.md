@@ -1,6 +1,6 @@
 # Private-Markets Specialisation
 
-**Maturity:** Provisional · broad — the deepest of the four packs; the closed-end-fund-vehicle form of holding in full depth, look-through to portfolio companies and fund-agreement economics as computable data, plus directly-originated private credit
+**Maturity:** Provisional · broad — the deepest of the five packs; the closed-end-fund-vehicle form of holding in full depth, look-through to portfolio companies and fund-agreement economics as computable data, plus directly-originated private credit
 
 The entity specialisation for the **private, illiquid, no-universal-identifier shape** an institutional investor's holding takes — the closed-end-fund-vehicle form of holding in full depth (the form used by GP/LP private-asset funds, and the form a hedge-fund LPA structure also takes), plus directly-originated private credit (PM-14) which shares the same form-of-holding properties (private, illiquid, no universal identifier, structured monitoring against borrower / GP reports). An institutional investor commits capital to closed-ended funds run by external managers (GPs), invests directly and through co-investments in private companies and assets, and originates private loans alongside or independently of fund vehicles.
 

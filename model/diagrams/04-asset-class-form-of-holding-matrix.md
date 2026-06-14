@@ -30,3 +30,43 @@ A class is not a pack and a pack is not a class. One asset class can be held in 
 The empty cells (`—`) are where a class is not, in practice, held in that form — equities, fixed income, cash and the strategy-based classes are not *physical* assets, so the real-assets form does not hold them; there is no standing liquid derivative market on a specific buyout or infrastructure asset, so those class × derivatives cells are empty. An empty cell is the expected shape of an orthogonal grid, not a coverage hole: every crossing that *occurs* has a named entity-and-Service-Domain home above.
 
 See [E-09 Asset Class](../entities/core/E-09-asset-class.md) for the asset-class axis and the [specialisation packs](../entities/specialisations/) for the form-of-holding axis.
+
+---
+
+## Asset-class breadth for the fund-issuing manager
+
+The matrix above describes how asset-class exposures are held by an investor. A fund-issuing manager operates a second, orthogonal surface: the funds it manufactures, registers, prices and distributes to investors. These are governed by the fund-operations pack (FO-01 through FO-12), which is organised by the issuing-manager form of operation rather than by holding form or asset class.
+
+The fund-operations pack is asset-class-agnostic by design: an equity UCITS, a bond ETF, a money-market fund, a multi-asset SICAV and an alternative-strategy fund are all described by the same FO-01/FO-02 structure; the underlying asset class is carried via the `asset_class` FK to E-09. The pack's 12 entities cover the fund product and its share/unit classes, the investor register and dealing lifecycle, the fee and tax reporting surface, the service-provider appointment web, the distribution-channel economics, and the ETF primary-market mechanism.
+
+### Public-markets pack (PB — 11 entities) — reconciliation for the fund-issuing manager
+
+The public-markets pack covers the listed-security instruments a fund-issuing manager's funds hold: listed equities (PB-01), debt instruments (PB-02), and the full secondary-market trade lifecycle (PB-03 Order, PB-04 Execution, PB-05 Allocation, PB-06 Settlement Instruction), plus corporate actions (PB-07), income schedules (PB-08), index constituents (PB-09), securities loans (PB-10), and proxy votes (PB-11). For a fund-issuing manager, these 11 entities are the instrument-and-trade surface of the portfolios the issued funds hold.
+
+A fund-issuing manager does not need additional PB entities to manage its fund-manufacturing activity — the fund as a product is FO-01, and its share/unit classes are FO-02. The 11-entity public-markets pack is sized for the instrument and trade lifecycle of the underlying portfolios, not for the fund-as-product surface, which is the fund-operations pack's domain. The asymmetry (PB 11 < PM 14) reflects a genuine conceptual difference: the private-markets allocator form carries more structurally distinct artefacts (fund, commitment, calls, distributions, capital account, GP, legal vehicle, terms, succession, administrator) than the listed-security form (instrument, trade lifecycle, corporate action, income, constituent). This is a property of the form, not a coverage deficit. C8 (asymmetry justification) is met.
+
+### Derivatives pack (DR — 5 entities) — reconciliation for the fund-issuing manager
+
+The derivatives pack covers the overlay and synthetic-exposure instruments a fund-issuing manager's funds may use: listed derivatives (DR-01), OTC derivatives (DR-02), the ISDA master-agreement and collateral terms (DR-03), margin balance (DR-04), and clearing relationship (DR-05). For a fund-issuing manager, these five entities serve the funds that use derivatives for hedging (currency-hedged share classes, duration overlays, equity-futures replication) or as primary exposure instruments (multi-asset, absolute-return funds).
+
+The five-entity count defers the transaction-grain contract model to ISDA CDM (which models the derivative contract lifecycle at full fidelity); the five DR entities cover the buy-side position, exposure, relationship and margining layer above CDM. A fund manager's FX hedging of currency-hedged share classes is the highest-frequency use case: SD-11.3 FX Execution & Share-Class Hedging manages the programme; FO-02 carries the static hedged-class configuration; the per-period hedge P&L is consumed by SD-12.9 at NAV strike. No additional DR entity is needed for this surface because the exposure sits on the existing DR-01/DR-02/E-04 chain. C8 (asymmetry justification) is met: the derivatives pack is narrow by explicit design, deferring the transaction model to the published CDM standard.
+
+### Residual asset-class gap — C6 / C8 status
+
+Against the nine E-09 asset classes, the fund-issuing manager's entity and capability coverage is:
+
+| Asset class | Entity coverage | Service-domain capability | Gap status |
+|---|---|---|---|
+| Public equities | PB-01 Listed Equity + full trade lifecycle (PB-03 to PB-06) | BD-02 (research) + BD-05 (portfolio) + BD-06 (execution) + BD-08 (pricing) | None — full listed-security chain. |
+| Fixed income | PB-02 Debt Instrument + PB-08 Income Schedule | BD-02 credit research + BD-05 construction + BD-06 execution | None — same listed-security chain. |
+| Cash & money markets | PB-02 (`debt_type = money_market`) | SD-05.13 Cash & Money-Market Portfolio Management + SD-11.1 Liquidity placement | None — the money-market-fund-as-product shape is FO-01/FO-02; the money-market-instrument shape is PB-02. |
+| Private equity | PM-01 to PM-14 (14 entities) | BD-03 fund investment + BD-04 direct + BD-08 valuation | None — the deepest-covered class by entity count. |
+| Private credit | PM-01 fund route + PM-14 Direct Loan | BD-03 fund route + SD-04.12 loan monitoring | None — direct loan added with PM-14. |
+| Real estate | RA-01 to RA-05 | SD-04.10 real-asset management + SD-04.11 development + SD-08.3 valuation | None — directly-held route; fund route is PM. |
+| Infrastructure | RA-01 to RA-05 | SD-04.10 + SD-04.11 + SD-08.3 | None — same directly-held route. |
+| Natural resources / commodities | RA-01 directly held; DR-01/DR-02 synthetically; PB-01/PB-02 listed | SD-05.12 Commodity Exposure Management + SD-04.10 NR operating mode | None — three routes, all covered. |
+| Hedge funds / active strategies | PM-01 fund-of-hedge-funds route; liquid-alt as PB-01; DR-01/DR-02 strategy instruments | SD-05.9 Alternative-Strategy Book + SD-09.9 Hedge-Fund / Absolute-Return Performance Analytics | None — covered across public, private and derivatives forms. |
+
+No C6 gap: the entity specialisation packs and the E-09 asset-class taxonomy tell the same story across all nine classes. No C8 asymmetry is unexplained: the size differences across packs (PB 11, FO 12, PM 14, DR 5, RA 5) reflect concept density by form and the CDM deferral respectively, each defended in the entity INDEX pack-sizes section and in the derivatives pack README.
+
+> **Sources:** E-09 Asset Class; entity INDEX pack-sizes section; derivatives pack README (overlay-manager derivation table); asset-class balance reviewer C6/C8 criteria.

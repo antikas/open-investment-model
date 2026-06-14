@@ -13,9 +13,9 @@ Start at [`service-domains/INDEX.md`](service-domains/INDEX.md).
 The canonical data model — the *things* an institutional investor keeps records about. It has two layers:
 
 - A **generalised core** (`entities/core/`, 38 entities) — Legal Entity, Instrument / Asset, Portfolio / Mandate, Holding / Position, Transaction, Cash Flow, Valuation, the reference entities, the risk entities, the computed-result and metadata entities, the operational entities and the strategy entities. True of every institutional investor, whatever it invests in.
-- **Specialisation packs** (`entities/specialisations/`) — four packs that specialise the core by the form a holding takes (instrument family and access route), orthogonal to the asset-class taxonomy: private-markets (the private / illiquid / no-universal-ID shape — the fund route plus directly-originated private credit, 14 entities), public-markets (listed securities, 11), derivatives (the derivative instrument family, 5) and real-assets (directly-held physical assets, 5) — 35 specialisation entities, 73 with the core.
+- **Specialisation packs** (`entities/specialisations/`) — five packs that specialise the core by the form a holding or operation takes (instrument family, access route, or issuing role), orthogonal to the asset-class taxonomy: public-markets (listed securities, 11), fund-operations (the issued-fund / fund-operator form, 12), private-markets (the private / illiquid / no-universal-ID shape — the fund route plus directly-originated private credit, 14), derivatives (the derivative instrument family, 5), and real-assets (directly-held physical assets, 5) — 47 specialisation entities, 85 with the core.
 
-Designed for the no-universal-identifier reality of private markets, and aligned to FIBO for legal-entity and instrument semantics.
+Designed for the full breadth of the buy-side — the firm that *issues* funds (UCITS, mutual funds, hedge funds) and the one that *allocates* into them (sovereign, pension, insurer) alike, each activating the subset it needs — with entity resolution as a first-class assumption (acute in private markets, useful across any cross-feed reconciliation) and aligned to FIBO for legal-entity and instrument semantics.
 
 Start at [`entities/INDEX.md`](entities/INDEX.md).
 

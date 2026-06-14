@@ -39,7 +39,7 @@ A Cash Flow Event is the cash *consequence* of a Transaction (E-05); the two are
 ## Owned and consumed by
 
 - **Owned by:** SD-12.1 Investment Book of Record (IBOR).
-- **Consumed by:** SD-09.1 Performance Measurement (the IRR input series), SD-09.8 Private-Markets Performance Analytics, SD-11.1 Cash Management, SD-12.7 Income & Distribution Processing, SD-12.10 Reconciliation, SD-17.4 Investment & Portfolio Tax.
+- **Consumed by:** SD-09.1 Performance Measurement (the IRR input series), SD-09.8 Private-Markets Performance Analytics, SD-11.1 Cash Management, SD-12.7 Income & Distribution Processing, SD-12.10 Reconciliation, SD-12.15 Transfer Agency & Investor Dealing (the subscription and redemption settlement cash flows), SD-17.4 Investment & Portfolio Tax.
 
 ## Open extensions
 

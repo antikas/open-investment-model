@@ -226,7 +226,7 @@ def count_entities() -> tuple[int, int]:
         for pack in spec.iterdir():
             if pack.is_dir():
                 n_spec += len([p for p in pack.glob("*.md")
-                               if re.match(r"(PM|PB|DR|RA)-\d+-", p.name)])
+                               if re.match(r"(PM|PB|DR|RA|FO)-\d+-", p.name)])
     return n_core, n_spec
 
 
@@ -485,7 +485,7 @@ def check_ownership_map() -> None:
         for p in d.glob("*.md"):
             if p.name in {"README.md", "INDEX.md"}:
                 continue
-            if not re.match(r"(E|PM|PB|DR|RA)-\d+-", p.name):
+            if not re.match(r"(E|PM|PB|DR|RA|FO)-\d+-", p.name):
                 continue
             text = p.read_text(encoding="utf-8")
             if "**Owned by:**" not in text:
@@ -508,7 +508,7 @@ def parse_ownership_map() -> dict[str, list[tuple[str, str]]]:
     #   | E-NN ...     | <owner-cell> | <pattern> |
     # The first column starts with the entity ID; the cell may be bolded.
     pattern_row = re.compile(
-        r"^\|\s*\**((?:E|PM|PB|DR|RA)-\d+)[^|]*\|([^|]+)\|([^|]+)\|",
+        r"^\|\s*\**((?:E|PM|PB|DR|RA|FO)-\d+)[^|]*\|([^|]+)\|([^|]+)\|",
         re.M,
     )
     for m in pattern_row.finditer(text):
@@ -602,8 +602,8 @@ PARTITIONED_ENTITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "E-14": ("partition", "instrument-side", "entity-side", "fund-side"),
     # E-19 Risk Measurement — partitioned by `risk_type` (market / credit / counterparty / liquidity / concentration / scenario / stress / climate).
     "E-19": ("risk_type",),
-    # E-25 Account — partitioned by `account_type` (SD-12.5 safekeeping vs SD-11.7 cash).
-    "E-25": ("account_type", "safekeeping", "cash"),
+    # E-25 Account — partitioned by `account_type` (SD-12.5 safekeeping / SD-11.7 cash / SD-15.4 register).
+    "E-25": ("account_type", "safekeeping", "cash", "register"),
     # E-29 Allocation Plan — partitioned by `plan_type` (SD-01.4 strategic, SD-01.6 reference_portfolio, SD-01.10 commitment_pacing).
     "E-29": ("plan_type", "strategic", "reference_portfolio", "commitment_pacing"),
 }
@@ -662,7 +662,7 @@ def check_consuming_side_partitions() -> None:
                     window = block[m_id.end():m_id.end() + 240]
                     # Stop the window at the next entity ID in the line, so a
                     # later E-NN's partition doesn't satisfy this E-NN's check.
-                    next_entity = re.search(r"\b(E|PM|PB|DR|RA)-\d+\b", window)
+                    next_entity = re.search(r"\b(E|PM|PB|DR|RA|FO)-\d+\b", window)
                     if next_entity:
                         window = window[:next_entity.start()]
                     if not any(kw in window for kw in keywords):
@@ -730,7 +730,7 @@ def check_sd_name_resolution() -> None:
             files.extend(sorted(
                 p for p in pack.glob("*.md")
                 if p.name not in {"README.md", "INDEX.md"}
-                and re.match(r"(PM|PB|DR|RA)-\d+-", p.name)
+                and re.match(r"(PM|PB|DR|RA|FO)-\d+-", p.name)
             ))
     for bd in bd_dirs():
         files.extend(sorted(bd.glob("SD-*.md")))
@@ -1100,6 +1100,530 @@ def check_close_out_audited_consistency() -> None:
                    f"the close-out announced a flip the SSOT does not carry)")
 
 
+# ---------------------------------------------------------------------------
+# OIM-212 — Three new checks (ADR-0067):
+#   1. check_count_surface_agreement — HARD defect: entity counts across
+#      README.md, model/README.md, model/entities/INDEX.md (table + gloss +
+#      Pack-sizes prose), model/ownership-map.md, docs/adr/INDEX.md, and
+#      all model/diagrams/ .md + .d2 files.
+#   2. check_two_sided_edges — WARNING (pending remediation of the pre-existing
+#      latent set; hardens to DEFECT once OIM-213 remediation pass is complete):
+#      entity **Consumed by** ↔ SD **Consumes** bidirectional consistency.
+#   3. check_deferral_language — advisory WARNING: stale deferral phrasing in
+#      reader-facing model prose.
+#
+# These three checks REUSE tools/diagrams/parser/ for entity/edge extraction
+# (SSOT — no re-implementation of entity or SD parsing here).  The parser is
+# imported lazily inside each check so the validator can still run if
+# tools/diagrams/ is absent (e.g. in a stripped distribution).
+# ---------------------------------------------------------------------------
+
+
+def _load_parser_models() -> "tuple | None":
+    """Attempt to import and parse the entity and service-domain models.
+
+    Returns (EntityModel, ServiceDomainModel) on success, or None if the
+    parser package is unavailable (distribution tree without tools/diagrams/).
+    Errors during parsing are surfaced as WARNINGs — a parser failure must not
+    silently suppress the checks.
+    """
+    try:
+        import sys as _sys
+        tools_path = str(REPO / "tools")
+        if tools_path not in _sys.path:
+            _sys.path.insert(0, tools_path)
+        from diagrams.parser.entities import parse_entities
+        from diagrams.parser.service_domains import parse_service_domains
+        em = parse_entities(REPO)
+        sdm = parse_service_domains(REPO)
+        return em, sdm
+    except ImportError:
+        warn("check_count_surface_agreement / check_two_sided_edges: "
+             "tools/diagrams/parser/ not importable — checks skipped")
+        return None
+    except Exception as exc:  # noqa: BLE001
+        warn(f"check_count_surface_agreement / check_two_sided_edges: "
+             f"parser raised {type(exc).__name__}: {exc} — checks skipped")
+        return None
+
+
+def _derive_entity_counts(em: "object") -> "dict":
+    """Derive the canonical counts from the parsed EntityModel.
+
+    Returns a dict with keys:
+      core      — number of core entities (E-NN)
+      per_pack  — {pack_name: count}
+      total_spec — sum of specialisation counts
+      total     — core + total_spec
+
+    Pack names are the canonical lowercase slugs ('public-markets', etc.).
+    """
+    by_pack = em.by_pack()
+    core_count = len(by_pack.get("core", []))
+    pack_counts: dict[str, int] = {}
+    total_spec = 0
+    for pack_name, entities in by_pack.items():
+        if pack_name == "core":
+            continue
+        pack_counts[pack_name] = len(entities)
+        total_spec += len(entities)
+    return {
+        "core": core_count,
+        "per_pack": pack_counts,
+        "total_spec": total_spec,
+        "total": core_count + total_spec,
+    }
+
+
+def _scan_entity_count_tokens(
+    text: str,
+    rel: str,
+    counts: dict,
+    *,
+    skip_table_lines: bool = False,
+) -> None:
+    """Scan `text` for entity / pack count tokens and emit defects on mismatch.
+
+    Targeted patterns only — each pattern must anchor to a specific phrasing
+    that appears in reader-facing current-state prose, not in sub-counts or
+    historical table rows. The full list of matched phrasings is:
+
+    Total entity count (current-state assertions):
+      - `**NN entities**:` (README.md canonical data model sentence)
+      - `NN with the core` (README.md, model/README.md, entities/INDEX.md)
+      - `**NN entities**` (entities/INDEX.md standalone bolded total)
+      - `has NN entities —` (ownership-map.md "the canonical entity model has NN entities")
+      - `NN entities —` in an OpenIM entity model label (diagrams)
+      - `NN entities (NN core + N specialisation` (d2 layer-stack label)
+
+    Core count:
+      - `generalised core of NN` (README.md, ownership-map.md)
+      - `core of NN entities` (README.md)
+      - `NN core entities` (entities/INDEX.md)
+      - `NN core + N specialisation` (d2 layer-stack label)
+
+    Specialisation total:
+      - `**NN specialisation entities**` (entities/INDEX.md)
+      - `NN specialisation entities` (README.md inline)
+      - `NN with the core` (multiple files — the "NN spec, NN with the core" form)
+
+    Per-pack counts (Pack-sizes prose paragraph + table row in entities/INDEX.md):
+      - `public-markets NN` / `fund-operations NN` / etc. (Pack-sizes prose)
+      - The parenthesised gloss `(NN + NN + NN + NN + NN)` with PB/FO/PM/DR/RA order
+
+    skip_table_lines: when True, lines beginning with `|` (markdown table rows)
+    are excluded before scanning.  Used for docs/adr/INDEX.md where the
+    per-ADR "Model after" column carries historical entity counts.
+
+    Normalisation: D2 label strings store newlines as the literal two-character
+    escape `\\n` (backslash + "n"), and HTML diagram labels use `<br/>`.
+    Either sequence immediately before a digit prevents the `\\b` word-boundary
+    pattern from firing (because "n" is a word character).  The scan_text is
+    normalised — literal `\\n` and `<br/>` are replaced with a space — so that
+    every count token in diagram surfaces is correctly detected regardless of
+    the escape form used by the authoring tool.
+    """
+    total = counts["total"]
+    core = counts["core"]
+    spec = counts["total_spec"]
+    per_pack = counts["per_pack"]
+
+    scan_text = text
+    if skip_table_lines:
+        scan_text = "\n".join(
+            line for line in text.splitlines()
+            if not line.lstrip().startswith("|")
+        )
+
+    # Normalise D2/HTML escape sequences that suppress word-boundary matching.
+    # Literal `\n` (backslash + n, as stored in .d2 label strings) and
+    # `<br/>` / `<br />` (Mermaid/HTML label line-breaks) are replaced with a
+    # single space so the `\b` boundary before a digit fires correctly.
+    # This is scan_text-only; the original `text` is kept for line-number
+    # lookups via `_line_of` below.
+    scan_text = re.sub(r'\\n', ' ', scan_text)
+    scan_text = re.sub(r'<br\s*/?>', ' ', scan_text, flags=re.IGNORECASE)
+
+    def _line_of(m: re.Match) -> int:
+        # Line number in the *original* text (not the filtered scan_text).
+        # Re-search the original text for the matched string to get the
+        # real line number, falling back to the scan_text offset.
+        return text.count("\n", 0, text.find(m.group(0))) + 1 if m.group(0) in text else 1
+
+    # ── 1. Total entity count ──────────────────────────────────────────────
+    total_patterns: list[tuple[str, str]] = [
+        # `**NN entities**:` — README.md "A canonical data model of **81 entities**:".
+        # Only bold-total assertions; "**38 entities**" does not appear as a total.
+        (r"\*\*(\d+)\s+entities\*\*\s*[:(—]", "bold-total **NN entities**:"),
+        # `NN with the core` — "43 specialisation entities, 81 with the core".
+        (r"\b(\d+)\s+with\s+the\s+core\b", "NN with the core"),
+        # `has NN entities` — ownership-map.md "canonical entity model has 81 entities —".
+        (r"\bhas\s+(\d+)\s+entities\b", "has NN entities"),
+        # `NN entities —` or `NN entities (NN core` — diagram label forms in layer-stack.md
+        # and d2/layer-stack.d2. Negative lookbehind on `(` prevents matching
+        # per-pack parentheticals like "(11 entities)".
+        (r"(?<!\()\b(\d+)\s+entities\s+[—(]", "NN entities — or ( (diagram label)"),
+        # `OpenIM entity model is **NN entities**` — a specific phrasing.
+        (r"entity model is \*\*(\d+)\s+entities", "entity model is **NN entities**"),
+        # `NN entities\n` at end of a Mermaid label line, e.g.:
+        # `M2["Canonical entity model<br/>81 entities — core + 5 specialisation packs...`
+        # (already caught by the `NN entities —` pattern above)
+    ]
+    for pat, label in total_patterns:
+        for m in re.finditer(pat, scan_text, re.IGNORECASE):
+            found = int(m.group(1))
+            if found != total:
+                defect(f"{rel}:{_line_of(m)}: entity total says {found} ({label}); "
+                       f"derived total is {total}")
+
+    # ── 2. Core count ─────────────────────────────────────────────────────
+    core_patterns: list[tuple[str, str]] = [
+        # `generalised core of NN` — README.md, ownership-map.md.
+        (r"\bgeneralised core of (\d+)\b", "generalised core of NN"),
+        # `core of NN entities` — README.md inline.
+        (r"\bcore of (\d+)\s+entit", "core of NN entities"),
+        # `NN core entities` — entities/INDEX.md "with the 38 core entities".
+        (r"\b(\d+)\s+core\s+entities\b", "NN core entities"),
+        # `NN core + N specialisation` — d2 label form.
+        (r"\b(\d+)\s+core\s*\+\s*\d+\s+specialisation", "NN core + N specialisation (d2)"),
+    ]
+    for pat, label in core_patterns:
+        for m in re.finditer(pat, scan_text, re.IGNORECASE):
+            found = int(m.group(1))
+            if found != core:
+                defect(f"{rel}:{_line_of(m)}: core entity count says {found} ({label}); "
+                       f"derived core count is {core}")
+
+    # ── 3. Specialisation total ───────────────────────────────────────────
+    spec_patterns: list[tuple[str, str]] = [
+        # `**NN specialisation entities**` — entities/INDEX.md bolded total.
+        (r"\*\*(\d+)\s+specialisation\s+entit", "**NN specialisation entities**"),
+        # `NN specialisation entities` — README.md inline.
+        (r"\b(\d+)\s+specialisation\s+entities\b", "NN specialisation entities"),
+    ]
+    for pat, label in spec_patterns:
+        for m in re.finditer(pat, scan_text, re.IGNORECASE):
+            found = int(m.group(1))
+            if found != spec:
+                defect(f"{rel}:{_line_of(m)}: specialisation entity count says {found} ({label}); "
+                       f"derived spec count is {spec}")
+
+    # ── 4. Per-pack counts ────────────────────────────────────────────────
+    # Pack-sizes prose paragraph: "public-markets NN, fund-operations NN, ..."
+    # The pack name appears immediately before a space+number.
+    pack_label_map = {
+        "public-markets": "public-markets",
+        "fund-operations": "fund-operations",
+        "private-markets": "private-markets",
+        "derivatives": "derivatives",
+        "real-assets": "real-assets",
+    }
+    # OIM-212 MN-3 carry (OIM-210): tighten the per-pack count pattern so it
+    # only fires when the number is followed by a comma, period, space-and-word,
+    # or end-of-string — not when followed by a hyphen (e.g. "derivatives 5-year"
+    # would be a latent false-positive with the bare \b pattern).
+    for pack_slug, canonical in pack_label_map.items():
+        pat = rf"\b{re.escape(pack_slug)}\s+(\d+)(?=[,.\s]|$)"
+        for m in re.finditer(pat, scan_text, re.IGNORECASE):
+            expected = per_pack.get(canonical)
+            if expected is None:
+                continue
+            found = int(m.group(1))
+            if found != expected:
+                defect(f"{rel}:{_line_of(m)}: pack '{canonical}' count says {found}; "
+                       f"derived count is {expected}")
+
+    # Parenthesised gloss `(NN + NN + NN + NN + NN)` — the five-pack
+    # addition form in entities/INDEX.md "All five specialisation packs are
+    # built. **47 specialisation entities** across the five (11 + 12 + 14 + 5 + 5)".
+    # Order is canonical PB→FO→PM→DR→RA per ADR-0063.
+    gloss_pat = re.compile(
+        r"\((\d+)\s*\+\s*(\d+)\s*\+\s*(\d+)\s*\+\s*(\d+)\s*\+\s*(\d+)\)"
+    )
+    for m in gloss_pat.finditer(scan_text):
+        found_vals = [int(m.group(i)) for i in range(1, 6)]
+        expected_vals = [
+            per_pack.get("public-markets", 0),
+            per_pack.get("fund-operations", 0),
+            per_pack.get("private-markets", 0),
+            per_pack.get("derivatives", 0),
+            per_pack.get("real-assets", 0),
+        ]
+        if found_vals != expected_vals:
+            defect(f"{rel}:{_line_of(m)}: parenthesised pack-size gloss says "
+                   f"({' + '.join(str(v) for v in found_vals)}); "
+                   f"derived pack sizes are "
+                   f"({' + '.join(str(v) for v in expected_vals)}) "
+                   f"(public-markets + fund-operations + private-markets + derivatives + real-assets)")
+
+
+def _scan_entity_index_table(
+    text: str,
+    rel: str,
+    per_pack: dict,
+) -> None:
+    """Check the | Pack | Entities | ... table in entities/INDEX.md.
+
+    The table rows look like:
+    | **[public-markets/](...) (`PB-NN`)** | 11 | What it covers |
+    """
+    pack_row_pat = re.compile(
+        r"^\|\s*\*?\*?\[?(public-markets|fund-operations|private-markets|derivatives|real-assets)"
+        r"[^\|]*\|\s*(\d+)\s*\|",
+        re.M | re.IGNORECASE,
+    )
+    for m in pack_row_pat.finditer(text):
+        pack_name = m.group(1).lower()
+        found = int(m.group(2))
+        expected = per_pack.get(pack_name)
+        if expected is None:
+            continue
+        line_no = text.count("\n", 0, m.start()) + 1
+        if found != expected:
+            defect(f"{rel}:{line_no}: entity INDEX table row '{pack_name}' says {found}; "
+                   f"derived count is {expected}")
+
+
+def check_count_surface_agreement(em: "object") -> None:
+    """HARD defect: every entity/pack count token across all reader-facing surfaces
+    must agree with the filesystem-derived canonical counts.
+
+    Surfaces scanned:
+      - README.md
+      - model/README.md
+      - model/entities/INDEX.md  (table + gloss + Pack-sizes prose paragraph)
+      - model/ownership-map.md
+      - docs/adr/INDEX.md
+      - model/diagrams/*.md  (all diagram .md files)
+      - model/diagrams/d2/*.d2  (all D2 source files, incl. layer-stack.d2)
+
+    Added: OIM-212 / ADR-0067.  Closes the OIM-204 d2-count blind spot, the
+    OIM-206 d2-count blind spot, and the OIM-207 Pack-sizes prose blind spot.
+    """
+    counts = _derive_entity_counts(em)
+
+    # Surfaces to scan for entity count tokens.
+    surfaces: list[str] = [
+        "README.md",
+        "model/README.md",
+        "model/entities/INDEX.md",
+        "model/ownership-map.md",
+    ]
+    if BUILD_TRAIL_PRESENT:
+        surfaces.append("docs/adr/INDEX.md")
+
+    for rel in surfaces:
+        path = REPO / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        # docs/adr/INDEX.md has historical counts in per-row table cells;
+        # skip table lines so only the current-state prose header is scanned.
+        skip_table = rel == "docs/adr/INDEX.md"
+        _scan_entity_count_tokens(text, rel, counts, skip_table_lines=skip_table)
+        # Per-pack entity table check (only relevant for entities/INDEX.md).
+        if rel == "model/entities/INDEX.md":
+            _scan_entity_index_table(text, rel, counts["per_pack"])
+
+    # Diagram surfaces — every .md and .d2 under model/diagrams/.
+    diag_dir = REPO / "model" / "diagrams"
+    if diag_dir.is_dir():
+        for diag_file in sorted(diag_dir.rglob("*")):
+            if diag_file.suffix not in {".md", ".d2"}:
+                continue
+            if not diag_file.is_file():
+                continue
+            rel = str(diag_file.relative_to(REPO)).replace("\\", "/")
+            text = diag_file.read_text(encoding="utf-8")
+            _scan_entity_count_tokens(text, rel, counts)
+
+
+def _load_two_sided_edge_baseline() -> "set[tuple[str, str]] | None":
+    """Load the grandfathered asymmetric-edge baseline from
+    `tools/openim-validate/two_sided_edge_baseline.json`.
+
+    Returns a set of (entity_id, sd_id) pairs that are in the baseline
+    (grandfathered — exempt from the hard-defect gate).  Returns None
+    if the file does not exist (which is itself a defect — the baseline
+    must be present for the ratchet to be operational).
+    """
+    baseline_path = Path(__file__).parent / "two_sided_edge_baseline.json"
+    if not baseline_path.exists():
+        defect("check_two_sided_edges: two_sided_edge_baseline.json missing — "
+               "the ratchet baseline must be present for the edge gate to run "
+               "(OIM-212 / ADR-0067)")
+        return None
+    try:
+        import json
+        data = json.loads(baseline_path.read_text(encoding="utf-8"))
+        return {(entry["entity_id"], entry["sd_id"]) for entry in data.get("entries", [])}
+    except Exception as exc:  # noqa: BLE001
+        defect(f"check_two_sided_edges: could not parse two_sided_edge_baseline.json: {exc}")
+        return None
+
+
+def check_two_sided_edges(em: "object", sdm: "object") -> None:
+    """HARD DEFECT (ratchet): every entity **Consumed by** SD must have a
+    matching **Consumes** entry on the SD, and vice versa.
+
+    Grandfathered pre-existing asymmetric edges (the latent set of 659 pairs
+    that existed as of OIM-212 cycle-2) are listed in
+    `tools/openim-validate/two_sided_edge_baseline.json`.  Edges in the
+    baseline are allowed (they emit WARNINGs so the debt remains visible) but
+    do NOT block the build.  Any NEW asymmetric edge that is NOT in the
+    baseline is a HARD DEFECT — this is the gate that prevents OIM-208/209
+    from adding new one-sided edges.
+
+    The baseline must only shrink.  OIM-216 tracks the burn-down of the
+    grandfathered set to empty (true bidirectionality).  When the baseline
+    reaches zero entries, delete the file and remove the `_load_two_sided_edge_baseline()`
+    call here; the check becomes a pure HARD DEFECT with no exceptions.
+
+    The check REUSES tools/diagrams/parser/ for edge extraction (SSOT — the
+    entity parser's `consumed_by` list and the SD parser's `consumes_entities`
+    list are the ground truth).  The `consumed_by` list is extracted only from
+    the structured consumer list in entity files, not from any trailing prose
+    clarification sentence (e.g. the FO-08↔SD-13.2 read-from-master prose is
+    correctly excluded by the parser after the OIM-212 cycle-2 M2 fix).
+
+    Added: OIM-212 / ADR-0067.  Hardened from WARNING to HARD DEFECT ratchet:
+    OIM-212 cycle-2 (true count 659; baseline snapshot 2026-06-14).
+    Would have caught: OIM-204 one-sided edges; OIM-207 SD-13.2 mislabel.
+    """
+    baseline = _load_two_sided_edge_baseline()
+    if baseline is None:
+        return  # baseline load failed; defect already emitted
+
+    # Build maps.
+    entity_consumed_by: dict[str, set[str]] = {}
+    for e in em.entities:
+        entity_consumed_by[e.id] = set(e.consumed_by)
+
+    sd_consumes: dict[str, set[str]] = {}
+    for sd in sdm.all_sds():
+        sd_consumes[sd.id] = set(sd.consumes_entities)
+
+    # Direction 1: entity says "Consumed by SD-X" but SD-X doesn't list entity in Consumes.
+    for eid, sds in sorted(entity_consumed_by.items()):
+        for sid in sorted(sds):
+            if sid not in sd_consumes:
+                # SD doesn't exist — already caught by check_index_links / parse errors.
+                continue
+            if eid not in sd_consumes[sid]:
+                if (eid, sid) in baseline:
+                    # Grandfathered — warn so the debt remains visible but do not block.
+                    warn(f"check_two_sided_edges: {eid} declares '**Consumed by:** {sid}' "
+                         f"but {sid} '**Consumes:**' does not list {eid} "
+                         f"(grandfathered in OIM-212 baseline; OIM-216 burn-down)")
+                else:
+                    defect(f"check_two_sided_edges: {eid} declares '**Consumed by:** {sid}' "
+                           f"but {sid} '**Consumes:**' does not list {eid} "
+                           f"(new asymmetric edge — not in the OIM-212 ratchet baseline; "
+                           f"this is a HARD DEFECT)")
+
+    # Direction 2: SD says "Consumes entity-X" but entity-X doesn't list SD in Consumed by.
+    for sid, eids in sorted(sd_consumes.items()):
+        for eid in sorted(eids):
+            if eid not in entity_consumed_by:
+                # Entity doesn't exist — already caught by parse errors.
+                continue
+            if sid not in entity_consumed_by[eid]:
+                if (eid, sid) in baseline:
+                    warn(f"check_two_sided_edges: {sid} declares '**Consumes:** {eid}' "
+                         f"but {eid} '**Consumed by:**' does not list {sid} "
+                         f"(grandfathered in OIM-212 baseline; OIM-216 burn-down)")
+                else:
+                    defect(f"check_two_sided_edges: {sid} declares '**Consumes:** {eid}' "
+                           f"but {eid} '**Consumed by:**' does not list {sid} "
+                           f"(new asymmetric edge — not in the OIM-212 ratchet baseline; "
+                           f"this is a HARD DEFECT)")
+
+
+# Deferral-language patterns scanned across reader-facing model prose.
+# Advisory WARNING only — some deferral language is legitimate (genuine future
+# extensions); this surfaces stale instances (e.g. a "later addition" that is
+# now built) for human review.
+#
+# OIM-212 MN-2 carry (OIM-210): bare r"\bdeferred\b" generated false-positives
+# on legitimate domain terms ("deferred tax", "deferred compensation",
+# "deferred to the accounting layer", "deferred to the next dealing cycle",
+# "deferred to ISDA CDM").  Replaced with build-state-specific phrasings
+# that only fire on stale model-build language, not on operational or
+# domain usage.  OIM-212 MN-3 carry: per-pack count pattern tightened below.
+_DEFERRAL_PATTERNS: list[str] = [
+    r"a? ?later additions?",
+    r"a later entity",
+    r"\bdeferred to (?:a later|OIM-\d+|the next (?:item|cycle|build))\b",
+    r"\bdeferred (?:extension|entity|item|to be built)\b",
+    r"not yet modelled",
+    r"future extension",
+    r"\bforthcoming\b",
+]
+
+# Reader-facing model directories / files scanned for deferral language.
+# Builder-facing surfaces (docs/, CLAUDE.md, tools/) are NOT scanned.
+_DEFERRAL_SCAN_DIRS: list[str] = [
+    "model/entities",
+    "model/service-domains",
+    "model/diagrams",
+]
+_DEFERRAL_SCAN_ROOTS: list[str] = [
+    "model/README.md",
+    "README.md",
+]
+
+
+def check_deferral_language() -> None:
+    """Advisory WARNING (not a defect): scan reader-facing model prose for
+    deferral phrasing that may describe a now-built entity or capability.
+
+    Patterns flagged: 'a later addition', 'a later entity', build-state
+    deferral forms ('deferred to OIM-NN', 'deferred to a later ...', etc.),
+    'not yet modelled', 'future extension', 'forthcoming'.
+
+    Bare 'deferred' is NOT flagged — it fires false-positives on legitimate
+    domain terms ('deferred tax', 'deferred compensation', 'deferred to
+    the accounting layer', 'deferred to ISDA CDM', 'deferred to the next
+    dealing cycle').  Only build-state-specific phrasings are flagged.
+
+    A WARNING listing the file:line is emitted for each hit. Human review
+    determines whether the phrasing is legitimate (a genuine future extension)
+    or stale (an already-built entity still described as 'a later addition',
+    the OIM-207 residual pattern).
+
+    Added: OIM-212 / ADR-0067. Deferral-pattern narrowed in OIM-210 cycle-1
+    (MN-2 carry) to remove the bare r'\\bdeferred\\b' false-positive source.
+    Would have surfaced: OIM-207 residual — FO-02:73, fund-operations/README.md:26.
+    """
+    combined_re = re.compile(
+        "|".join(f"(?:{p})" for p in _DEFERRAL_PATTERNS),
+        re.IGNORECASE,
+    )
+
+    def _scan_file(path: Path) -> None:
+        if not path.is_file():
+            return
+        try:
+            text = path.read_text(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            return
+        for m in combined_re.finditer(text):
+            line_no = text.count("\n", 0, m.start()) + 1
+            rel = str(path.relative_to(REPO)).replace("\\", "/")
+            warn(f"check_deferral_language: {rel}:{line_no}: "
+                 f"deferral phrasing {m.group()!r} — review for stale built-state")
+
+    for dir_rel in _DEFERRAL_SCAN_DIRS:
+        scan_dir = REPO / dir_rel
+        if not scan_dir.is_dir():
+            continue
+        for md_file in sorted(scan_dir.rglob("*.md")):
+            _scan_file(md_file)
+
+    for file_rel in _DEFERRAL_SCAN_ROOTS:
+        _scan_file(REPO / file_rel)
+
+
 def check_diagram_render_coverage() -> None:
     """Hybrid D generator coverage gate.
 
@@ -1180,11 +1704,11 @@ def check_diagram_render_coverage() -> None:
     # Per-entity files + FK targets — parsed shallow from each entity .md.
     entity_fks: dict[str, list[str]] = {}
     if ENTITY_DIR.is_dir():
-        fk_re = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA)[_-]?\d{2,3})", re.IGNORECASE)
+        fk_re = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA|FO)[_-]?\d{2,3})", re.IGNORECASE)
         for ent_path in sorted(ENTITY_DIR.rglob("*.md")):
             if ent_path.name.upper().startswith("README") or ent_path.name == "INDEX.md":
                 continue
-            em = re.match(r"^(E|PM|PB|DR|RA)-(\d{2})-", ent_path.name)
+            em = re.match(r"^(E|PM|PB|DR|RA|FO)-(\d{2})-", ent_path.name)
             if not em:
                 continue
             ent_id = f"{em.group(1)}-{em.group(2)}"
@@ -1198,8 +1722,8 @@ def check_diagram_render_coverage() -> None:
                     pfx, num = raw.split("-", 1)
                     fk = f"{pfx}-{num.zfill(2)}"
                 else:
-                    # Strip leading prefix letters (E / PM / PB / DR / RA).
-                    for pfx in ("PM", "PB", "DR", "RA"):
+                    # Strip leading prefix letters (E / PM / PB / DR / RA / FO).
+                    for pfx in ("PM", "PB", "DR", "RA", "FO"):
                         if raw.startswith(pfx):
                             fk = f"{pfx}-{raw[len(pfx):].zfill(2)}"
                             break
@@ -1447,6 +1971,13 @@ def main() -> int:
         check_adr_status_progression()
         check_dispatch_scope_completeness()
         check_close_out_audited_consistency()
+    # OIM-212 / ADR-0067 — three new checks.
+    parser_models = _load_parser_models()
+    if parser_models is not None:
+        _em, _sdm = parser_models
+        check_count_surface_agreement(_em)
+        check_two_sided_edges(_em, _sdm)
+    check_deferral_language()
     check_diagram_render_coverage()
 
     print(f"OpenIM structural-integrity validator — "

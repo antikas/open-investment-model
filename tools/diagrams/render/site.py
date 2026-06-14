@@ -285,9 +285,14 @@ def render_site(
     # ---- ERD ----
     erd_dot_src = dot_gen.entity_erd_dot(entity_model)
     erd_svg = _svg_wrap(layout.render_svg(erd_dot_src, engine="dot"))
+    _packs_by_model = entity_model.by_pack()
+    _spec_packs = [p for p in _packs_by_model if p != "core"]
+    _spec_count = len(_spec_packs)
+    _spec_list = ", ".join(_spec_packs)
+    _spec_word = "pack" if _spec_count == 1 else "packs"
     erd_body = f"""
 <h2>Entity ERD — pack-grouped overview</h2>
-<p class='meta'>The {len(entity_model.entities)}-entity canonical model — core plus the four specialisation packs (private-markets, public-markets, derivatives, real-assets). Solid arrows are foreign keys; dashed arrows are <code>Specialises</code> declarations. Each entity links to its full attribute schema. The attribute-level ERD of the core is rendered separately by D2 — see <a href='./entities/core/core-erd.svg'>core-erd.svg</a> when the D2 build step has populated it.</p>
+<p class='meta'>The {len(entity_model.entities)}-entity canonical model — core plus {_spec_count} specialisation {_spec_word} ({_spec_list}). Solid arrows are foreign keys; dashed arrows are <code>Specialises</code> declarations. Each entity links to its full attribute schema. The attribute-level ERD of the core is rendered separately by D2 — see <a href='./entities/core/core-erd.svg'>core-erd.svg</a> when the D2 build step has populated it.</p>
 <div class='diagram'>{erd_svg}</div>
 """
     (dist / "erd.html").write_text(

@@ -17,7 +17,7 @@ flowchart TB
     subgraph MODEL[OpenIM — the reference model]
         direction TB
         M1["Service-domain model<br/>17 Business Domains / 171 Service Domains<br/><i>what the firm does</i>"]:::openim
-        M2["Canonical entity model<br/>73 entities — core + 4 specialisation packs<br/><i>what the firm knows</i>"]:::openim
+        M2["Canonical entity model<br/>85 entities — core + 5 specialisation packs<br/><i>what the firm knows</i>"]:::openim
     end
 
     subgraph BELOW[Layers OpenIM reuses or aligns to]

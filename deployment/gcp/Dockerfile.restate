@@ -1,17 +1,28 @@
 # Dockerfile for the Restate substrate container.
-# This image should host the pinned Restate binary and expose admin + ingress ports internally.
+# Downloads and installs the pinned Restate binary, then runs the server.
 FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl ca-certificates xz-utils && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/restate
 
-# Placeholder: copy or download restate-server binary into /opt/restate/
-# Example: COPY tools/restate-server /opt/restate/restate-server
-# Ensure the binary is executable.
+# Restate version pin (must match reference/scripts/install-restate.mjs)
+ENV RESTATE_VERSION=1.6.2
+ENV RESTATE_ARCH=x86_64-unknown-linux-musl
+
+# Download and extract the Restate binary
+RUN curl -fsSL "https://github.com/restatedev/restate/releases/download/v${RESTATE_VERSION}/restate-server-${RESTATE_ARCH}.tar.xz" \
+  | tar -xJf - -C /opt/restate && \
+  mv restate-server /opt/restate/restate-server && \
+  chmod +x /opt/restate/restate-server
+
+# Copy the Restate config
+COPY reference/config/restate-dev.toml /opt/restate/restate-dev.toml
 
 ENV RESTATE_ADMIN_URL=http://127.0.0.1:9070
 ENV RESTATE_INGRESS_URL=http://127.0.0.1:8080
+ENV RESTATE_PORT=8080
+ENV RESTATE_BASE_DIR=/tmp/restate
 
 EXPOSE 9070 8080 5122
 

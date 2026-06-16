@@ -1,0 +1,18 @@
+# Dockerfile for the TypeScript agentINVEST endpoint.
+FROM node:22-alpine
+
+WORKDIR /app
+COPY reference/ts/package.json reference/ts/package-lock.json* ./
+COPY reference/ts/pnpm-workspace.yaml ./
+COPY reference/ts/tsconfig.json ./
+COPY reference/ts/ .
+
+RUN npm install --legacy-peer-deps
+
+ENV RESTATE_ADMIN_URL=http://localhost:9070
+ENV RESTATE_INGRESS_URL=http://localhost:8080
+ENV AGENTINVEST_ENDPOINT_PORT=9090
+
+EXPOSE 9090
+
+CMD ["npx", "tsx", "src/cli/agentinvest-cli.ts", "serve"]

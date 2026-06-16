@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentinvest-py-endpoint
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentinvest-py-endpoint
+  template:
+    metadata:
+      labels:
+        app: agentinvest-py-endpoint
+    spec:
+      containers:
+        - name: py-endpoint
+          image: gcr.io/<PROJECT_ID>/agentinvest-py-endpoint:latest
+          ports:
+            - containerPort: 9091
+          env:
+            - name: RESTATE_ADMIN_URL
+              value: "http://restate-service:9070"
+            - name: AGENTINVEST_PY_ENDPOINT_PORT
+              value: "9091"
+            - name: AGENTINVEST_PY_DEPLOY_URL
+              value: "http://agentinvest-py-endpoint-service:9091"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentinvest-py-endpoint-service
+spec:
+  selector:
+    app: agentinvest-py-endpoint
+  ports:
+    - port: 9091
+      targetPort: 9091
+  type: ClusterIP

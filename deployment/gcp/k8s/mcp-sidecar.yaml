@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentinvest-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentinvest-mcp
+  template:
+    metadata:
+      labels:
+        app: agentinvest-mcp
+    spec:
+      containers:
+        - name: mcp-server
+          image: gcr.io/<PROJECT_ID>/agentinvest-mcp:latest
+          env:
+            - name: AGENTINVEST_RESTATE_INGRESS_URL
+              value: "http://restate-service:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentinvest-mcp-service
+spec:
+  selector:
+    app: agentinvest-mcp
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP

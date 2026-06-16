@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: restate-admin
+spec:
+  selector:
+    app: restate
+  ports:
+    - name: admin
+      port: 9070
+      targetPort: 9070
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restate-ingress
+spec:
+  selector:
+    app: restate
+  ports:
+    - name: ingress
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

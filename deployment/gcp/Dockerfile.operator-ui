@@ -1,0 +1,13 @@
+# Dockerfile for the operator UI.
+FROM node:22-alpine
+
+WORKDIR /app
+COPY reference/operator-ui/package.json reference/operator-ui/package-lock.json* ./
+COPY reference/operator-ui/ .
+
+RUN npm install --legacy-peer-deps
+RUN npm run build
+
+EXPOSE 4180
+
+CMD ["npm", "run", "start"]

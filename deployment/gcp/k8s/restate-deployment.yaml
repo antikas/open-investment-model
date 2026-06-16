@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restate-server
+  labels:
+    app: restate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restate
+  template:
+    metadata:
+      labels:
+        app: restate
+    spec:
+      containers:
+        - name: restate
+          image: gcr.io/<PROJECT_ID>/restate-server:latest
+          ports:
+            - containerPort: 9070
+            - containerPort: 8080
+            - containerPort: 5122
+          env:
+            - name: RESTATE_ADMIN_URL
+              value: "http://127.0.0.1:9070"
+            - name: RESTATE_INGRESS_URL
+              value: "http://127.0.0.1:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restate-service
+spec:
+  selector:
+    app: restate
+  ports:
+    - name: admin
+      port: 9070
+      targetPort: 9070
+    - name: ingress
+      port: 8080
+      targetPort: 8080
+    - name: node
+      port: 5122
+      targetPort: 5122
+  type: ClusterIP

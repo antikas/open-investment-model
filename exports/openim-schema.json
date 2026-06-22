@@ -1,0 +1,5404 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/openim/schema/openim-schema.json",
+  "title": "OpenIM — Open Investment Model canonical entity schema",
+  "description": "A consolidated, self-contained JSON Schema bundle of the OpenIM canonical entity model — the buy-side reference model's master data, generated from the model. Every entity is a definition under $defs; foreign keys are in-document $ref cross-references. Self-contained (no external $ref at runtime) for agent / MCP consumption. The entity model aligns to FIBO (the lower layer) via the companion OWL ontology export.",
+  "$defs": {
+    "E-01": {
+      "type": "object",
+      "title": "E-01 Legal Entity",
+      "description": "The universal party master. Every organisation OpenIM holds a record of is a Legal Entity — the investing institution itself, the issuers of the securities it holds, its trading and service counterparties, the managers it allocates to, its custodians, its index providers, the private companies it holds through funds. There is one master for all of them, and what distinguishes them is the **role** each plays, not a separate entity.",
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "entity_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "entity_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "domicile": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "parent_entity_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → self)."
+        },
+        "known_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        }
+      },
+      "required": [
+        "entity_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-02": {
+      "type": "object",
+      "title": "E-02 Instrument / Asset",
+      "description": "The universal \"thing an investor can hold.\" Every position (E-04) is a position in an Instrument / Asset. The entity spans the full span of what an institutional investor holds — listed equity, government and corporate debt, structured credit, listed and OTC derivatives, fund interests, loans, real assets held directly, cash and money-market instruments.",
+      "properties": {
+        "instrument_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "instrument_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "instrument_class": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: int (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "issuer_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "isin": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "figi": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-03": {
+      "type": "object",
+      "title": "E-03 Portfolio / Mandate",
+      "description": "The container. An institutional investor's capital is organised into portfolios — and a portfolio is governed by a mandate that sets its objective, its benchmark and its constraints. Every holding (E-04) sits in a portfolio.",
+      "properties": {
+        "portfolio_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "parent_portfolio_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → self)."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: int (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "mandate_objective": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "benchmark_id": {
+          "description": "Foreign key to E-10 (declared type: varchar (FK → E-10)).",
+          "$ref": "#/$defs/E-10"
+        },
+        "base_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "managed_by_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "inception_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "portfolio_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-04": {
+      "type": "object",
+      "title": "E-04 Holding / Position",
+      "description": "What the investor owns: a position in an instrument or asset (E-02), within a portfolio (E-03), at a point in time. The entity every exposure, risk and performance calculation ultimately reads from. Held at two grains — the real-time **IBOR** view and the official accounting-basis **ABOR** view.",
+      "properties": {
+        "position_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "book": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "commitment_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cost_basis_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "market_value_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "accrued_income_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        }
+      },
+      "required": [
+        "book",
+        "position_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-05": {
+      "type": "object",
+      "title": "E-05 Transaction",
+      "description": "The universal investment event — anything that changes a holding. A trade, a fund subscription, a capital call, a distribution, a corporate action, a transfer. The event record from which positions (E-04) are derived and cash flows (E-06) arise.",
+      "properties": {
+        "transaction_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "transaction_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "trade_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "amount_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "counterparty_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "transaction_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-06": {
+      "type": "object",
+      "title": "E-06 Cash Flow Event",
+      "description": "A dated movement of cash between the investor and a portfolio, instrument, fund, vehicle or counterparty. The granular cash record that performance is computed from.",
+      "properties": {
+        "cash_flow_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "transaction_id": {
+          "description": "Foreign key to E-05 (declared type: varchar (FK → E-05)).",
+          "$ref": "#/$defs/E-05"
+        },
+        "cash_flow_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "cash_flow_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "direction": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "cash_flow_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-07": {
+      "type": "object",
+      "title": "E-07 Valuation",
+      "description": "A point-in-time value of a holding (E-04) — and the record of *how* that value was arrived at. Every holding is valued; the difference across asset classes is the method, not the entity.",
+      "properties": {
+        "valuation_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "position_id": {
+          "description": "Foreign key to E-04 (declared type: varchar (FK → E-04)).",
+          "$ref": "#/$defs/E-04"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "unit_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "units_in_issue": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "valuation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "value_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "valuation_level": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "confidence_score": {
+          "type": "number",
+          "description": "Declared type: float."
+        }
+      },
+      "required": [
+        "valuation_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-08": {
+      "type": "object",
+      "title": "E-08 Price & Market Data",
+      "description": "Observed market data for an instrument (E-02) — prices, yields, rates, spreads, FX. The observable inputs that value liquid holdings and feed risk and analytics.",
+      "properties": {
+        "market_data_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "data_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "observation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "market_data_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-09": {
+      "type": "object",
+      "title": "E-09 Asset Class",
+      "description": "The asset-class taxonomy — the reference structure that classifies what an institutional investor invests in, across public and private markets.",
+      "properties": {
+        "asset_class_key": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "asset_class_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class_label": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "strategy_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "sub_strategy_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "markets": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        }
+      },
+      "required": [
+        "asset_class_key"
+      ],
+      "additionalProperties": false
+    },
+    "E-10": {
+      "type": "object",
+      "title": "E-10 Benchmark / Index",
+      "description": "A benchmark or index, and its constituents, held as managed reference data. The comparator a portfolio or holding's performance is measured against.",
+      "properties": {
+        "benchmark_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "benchmark_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "benchmark_kind": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: varchar (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "vintage_year": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "methodology": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        }
+      },
+      "required": [
+        "benchmark_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-11": {
+      "type": "object",
+      "title": "E-11 Classification Type & Value",
+      "description": "The extensible taxonomy behind time-varying classifications — the definition of *what classifiers exist* and *what values are valid within each*. The reference data that E-12 Classification History records against.",
+      "properties": {
+        "classification_type_key": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "classification_type_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "description": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "classification_value_key": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "value_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "value_label": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "superseded_by_key": {
+          "type": "integer",
+          "description": "Declared type: int (FK → self)."
+        }
+      },
+      "required": [
+        "classification_type_key",
+        "classification_value_key"
+      ],
+      "additionalProperties": false
+    },
+    "E-12": {
+      "type": "object",
+      "title": "E-12 Classification History",
+      "description": "The bi-temporal record of time-varying classifications on a holding or investment — which department holds it, its credit rating, its sector, its strategy, its geography — with every change dated, so an aggregation is correct at *any* point in time, not only now.",
+      "properties": {
+        "classification_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "classification_type": {
+          "description": "Foreign key to E-11 (declared type: varchar (FK → E-11)).",
+          "$ref": "#/$defs/E-11"
+        },
+        "classification_value": {
+          "description": "Foreign key to E-11 (declared type: varchar (FK → E-11)).",
+          "$ref": "#/$defs/E-11"
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "confidence_tier": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "source_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "classification_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-13": {
+      "type": "object",
+      "title": "E-13 Entity Alias",
+      "description": "A name a master record has been seen under. The structure that makes entity resolution work — fed by the resolution feedback loop, read by it on the next cycle.",
+      "properties": {
+        "alias_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "alias_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "confirmed_by": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "alias_id",
+        "subject_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-14": {
+      "type": "object",
+      "title": "E-14 External Identifier",
+      "description": "A cross-reference from a master record's golden key to an identifier in an external system or data vendor. The structure that lets OpenIM enrich and reconcile against the outside world without surrendering its own key.",
+      "properties": {
+        "external_id_record": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_system": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "id_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        }
+      },
+      "required": [
+        "external_id_record",
+        "subject_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-15": {
+      "type": "object",
+      "title": "E-15 Document Metadata",
+      "description": "The metadata and provenance of a source document — a manager report, a capital-account statement, an LPA, an IC paper, a trade confirmation, a prospectus. Links a source document to the durable record it concerns.",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "document_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "filing_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "storage_path": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "document_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-16": {
+      "type": "object",
+      "title": "E-16 Risk Limit",
+      "description": "A configured constraint on risk — the threshold a measured risk must stay within. The limit framework an institutional investor governs itself by: market-risk limits, credit and counterparty limits, concentration limits, liquidity limits.",
+      "properties": {
+        "limit_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "limit_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "measure": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "scope_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "scope_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "threshold": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "warning_level": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "enforcement": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "approved_by": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "limit_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-17": {
+      "type": "object",
+      "title": "E-17 Scenario",
+      "description": "A defined stress or hypothetical scenario — a named set of market shocks and assumptions applied across the portfolio to ask \"what would happen if.\" The definition a stress test or scenario analysis runs against.",
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "scenario_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "scenario_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "description": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "shock_set": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "horizon": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "scenario_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-18": {
+      "type": "object",
+      "title": "E-18 Limit Breach",
+      "description": "An event: a measured risk crossed a Risk Limit (E-16). The record of the breach, its severity, and its resolution.",
+      "properties": {
+        "breach_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "limit_id": {
+          "description": "Foreign key to E-16 (declared type: varchar (FK → E-16)).",
+          "$ref": "#/$defs/E-16"
+        },
+        "measurement_id": {
+          "description": "Foreign key to E-19 (declared type: varchar (FK → E-19)).",
+          "$ref": "#/$defs/E-19"
+        },
+        "breach_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "observed_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "threshold_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "breach_severity": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "resolved_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "resolution_note": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "breach_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-19": {
+      "type": "object",
+      "title": "E-19 Risk Measurement",
+      "description": "A point-in-time risk result — a VaR figure, an exposure, a sensitivity, a stress-test loss — and the record of how it was produced. The risk analogue of Valuation (E-07): a measured number, stored, with its method and confidence.",
+      "properties": {
+        "measurement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "risk_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "measure_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "scenario_id": {
+          "description": "Foreign key to E-17 (declared type: varchar (FK → E-17)).",
+          "$ref": "#/$defs/E-17"
+        },
+        "model_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "confidence_score": {
+          "type": "number",
+          "description": "Declared type: float."
+        }
+      },
+      "required": [
+        "measurement_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-20": {
+      "type": "object",
+      "title": "E-20 Performance Result",
+      "description": "A stored point-in-time return figure — a portfolio's return for a period, on a stated basis — with the inputs, methodology version and provenance behind it. The performance analogue of Valuation (E-07) and Risk Measurement (E-19): a computed number, stored, with how it was produced.",
+      "properties": {
+        "performance_result_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "return_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "return_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "return_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "metric_definition_id": {
+          "description": "Foreign key to E-22 (declared type: varchar (FK → E-22)).",
+          "$ref": "#/$defs/E-22"
+        },
+        "composite_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "valuation_source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "confidence_score": {
+          "type": "number",
+          "description": "Declared type: float."
+        }
+      },
+      "required": [
+        "performance_result_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-21": {
+      "type": "object",
+      "title": "E-21 ESG Measurement",
+      "description": "A point-in-time ESG, sustainability or emissions data point for a subject — a score, a rating, an emissions figure, a taxonomy-alignment percentage — from a named provider, with its as-of date and methodology. The ESG analogue of Price & Market Data (E-08): an observed, multi-provider, time-series data point.",
+      "properties": {
+        "esg_measurement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "pillar": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "measure_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "rating_label": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "methodology": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "esg_measurement_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-22": {
+      "type": "object",
+      "title": "E-22 Metric Definition",
+      "description": "The governed definition of a metric — its formula, inputs, conventions and variant forms, owned and versioned. The single authoritative statement of *how a number is defined*, that the stored results computed to it (E-20, E-19) reference.",
+      "properties": {
+        "metric_definition_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "metric_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "metric_family": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "formula_spec": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "input_metrics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "currency_convention": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "period_convention": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "metric_definition_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-23": {
+      "type": "object",
+      "title": "E-23 Extraction Record",
+      "description": "The versioned record of what was parsed from a source manager document — the extracted fields, their validation status and confidence, and a reference to the source document (E-15). The provenance entity for data captured from unstructured manager reports.",
+      "properties": {
+        "extraction_record_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "document_id": {
+          "description": "Foreign key to E-15 (declared type: varchar (FK → E-15)).",
+          "$ref": "#/$defs/E-15"
+        },
+        "source_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_period": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "extracted_fields": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "extraction_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "model_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "confidence_score": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "validation_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "extracted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        }
+      },
+      "required": [
+        "extraction_record_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-24": {
+      "type": "object",
+      "title": "E-24 Reconciliation Break",
+      "description": "An event: two records of the same thing disagree. The owned, aged record of a reconciliation difference — the two sides, the difference, its cause, and its resolution lifecycle.",
+      "properties": {
+        "break_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "reconciliation_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "record_a_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "record_b_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "identified_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "difference_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "difference_qty": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cause_classification": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "materiality": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "age_days": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "resolved_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "resolution_note": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "correcting_entry_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "break_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-25": {
+      "type": "object",
+      "title": "E-25 Account",
+      "description": "The account structure portfolios are held and settled through — custody and safekeeping accounts on one side, bank and cash accounts on another, and register/nominee accounts for fund-distribution intermediaries on a third. One shared account master, key-partitioned by `account_type`, aligned to the FIBO Account concept.",
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "account_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "account_number": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "holder_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "portfolio_links": {
+          "description": "Foreign key to E-03 (declared type: array (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "account_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "segregation": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "signatory_mandate": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "settlement_instruction_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "opened_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "closed_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        }
+      },
+      "required": [
+        "account_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-26": {
+      "type": "object",
+      "title": "E-26 Collateral Position",
+      "description": "The generic record of collateral posted or received against a relationship — the asset, the direction, its valuation and haircut, its eligibility, and the counterparty. The shared collateral abstraction that derivatives margining (DR-04) and securities lending (PB-10) both reference.",
+      "properties": {
+        "collateral_position_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "relationship_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "relationship_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "direction": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "collateral_instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "market_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "haircut_pct": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "collateral_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "eligibility_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "counterparty_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "segregated": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        }
+      },
+      "required": [
+        "collateral_position_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-27": {
+      "type": "object",
+      "title": "E-27 Liability Profile",
+      "description": "The actuarially-projected stream of future benefit or claim payments a liability-relative strategy is built against — the projected cash flows and their sensitivity to interest rates and inflation. The subject a liability-driven or insurance strategy targets, made first-class.",
+      "properties": {
+        "liability_profile_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "projection_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cash_flows": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "pv01": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "key_rate_durations": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "inflation_sensitivity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "discount_curve_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "present_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "actuary_source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "liability_profile_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-28": {
+      "type": "object",
+      "title": "E-28 Risk Budget",
+      "description": "A risk allowance allocated to a strategy, pod or portfolio manager — the allocated amount, its basis, and the allocation lifecycle. Distinct from a Risk Limit (E-16): a deliberate share of a finite risk pool handed to a team, not a ceiling a measured risk must stay within.",
+      "properties": {
+        "risk_budget_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "budget_measure": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "allocated_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "total_pool_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "leverage_limit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "drawdown_trigger": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "allocated_by": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "risk_budget_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-29": {
+      "type": "object",
+      "title": "E-29 Allocation Plan",
+      "description": "A versioned plan that governs how capital is allocated — a strategic asset allocation, a reference-portfolio and factor risk budget, or a commitment-pacing plan — so a decision traces to the plan in force when it was taken. Key-partitioned by `plan_type`.",
+      "properties": {
+        "plan_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "plan_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "plan_content": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "approved_by": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "approval_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "plan_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-30": {
+      "type": "object",
+      "title": "E-30 Goal",
+      "description": "A client's investment objective — a target value to reach by a target date, at a priority, with a required probability of success. The unit the goals-based paradigm allocates against: a household has many goals, each funded by its own sub-portfolio.",
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "household_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "goal_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "goal_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "priority_layer": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "target_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "target_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "target_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "required_probability_of_success": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "funding_portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "goal_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-31": {
+      "type": "object",
+      "title": "E-31 Goal Progress Measurement",
+      "description": "A stored point-in-time measure of the probability of meeting a goal — the figure SD-09.5 computes for a goal, on a stated basis, with the assumptions and provenance behind it. The goals-based analogue of Risk Measurement (E-19) and Performance Result (E-20): a computed number, stored, with how it was produced.",
+      "properties": {
+        "goal_progress_measurement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "goal_id": {
+          "description": "Foreign key to E-30 (declared type: varchar (FK → E-30)).",
+          "$ref": "#/$defs/E-30"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "probability_of_success": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "funding_adequacy": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "projected_value_at_target": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cma_set_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "metric_definition_id": {
+          "description": "Foreign key to E-22 (declared type: varchar (FK → E-22)).",
+          "$ref": "#/$defs/E-22"
+        },
+        "computed_by_sd": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "goal_progress_measurement_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-32": {
+      "type": "object",
+      "title": "E-32 Tax Lot",
+      "description": "The per-(client, instrument, acquisition-tranche) tax-lot record — the lot-level grain underneath a holding, carrying its cost basis, acquisition date, lot-relief eligibility and wash-sale-adjustment history. Append-only on the lot grain; supersession by lot-close.",
+      "properties": {
+        "tax_lot_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "client_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "acquisition_transaction_id": {
+          "description": "Foreign key to E-05 (declared type: varchar (FK → E-05)).",
+          "$ref": "#/$defs/E-05"
+        },
+        "acquisition_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cost_basis_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cost_basis_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "lot_relief_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "wash_sale_adjustment_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "holding_period_class": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "disposal_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "realised_gain_loss_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "tax_lot_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-33": {
+      "type": "object",
+      "title": "E-33 Financial Plan",
+      "description": "The structured, versioned multi-year financial plan a wealth manager builds and maintains for a household — the comprehensive advisory artefact the planning review consumes, with the goal hierarchy, the cash-flow model, the retirement and decumulation strategy, the insurance and risk-protection strategy and the estate / wealth-transfer strategy organised into one stored record.",
+      "properties": {
+        "financial_plan_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "household_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "plan_content": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "goal_set": {
+          "description": "Foreign key to E-30 (declared type: array (FK → E-30)).",
+          "$ref": "#/$defs/E-30"
+        },
+        "approved_by_advisor": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "approval_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "financial_plan_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-34": {
+      "type": "object",
+      "title": "E-34 Investment Authorisation",
+      "description": "The Investment Committee's authorisation record — the recommendation memorandum the committee saw, the decision, the conditions, the authority-and-mandate verification and the dissent. One concept, two co-equal owning routes: the fund-commitment IC (SD-03.9) and the direct-investment IC (SD-04.5).",
+      "properties": {
+        "authorisation_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investment_route": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "ic_memorandum_ref": {
+          "description": "Foreign key to E-15 (declared type: varchar (FK → E-15)).",
+          "$ref": "#/$defs/E-15"
+        },
+        "decision": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "conditions": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "committee_meeting_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "dissent_record": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "authority_verification_note": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "mandate_fit_note": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "recommended_commitment_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "approved_commitment_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "approval_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "authorisation_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-35": {
+      "type": "object",
+      "title": "E-35 Complaint Record",
+      "description": "The regulated complaint record — the complaint, the acknowledgement, the investigation, the final response, the FOS-referral note, the redress, the root-cause categorisation and the systemic-finding flag. The FCA DISP record an inspection runs against, and the Consumer-Duty outcomes-evidence record.",
+      "properties": {
+        "complaint_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "client_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "complaint_received_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "complaint_category": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "complaint_text": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "acknowledgement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "investigation_outcome": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "final_response_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "final_response_text": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "fos_referral_provided": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "redress_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "root_cause_classification": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "is_systemic_finding": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "complaint_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-36": {
+      "type": "object",
+      "title": "E-36 Oversight Exception",
+      "description": "The structured exception record from the firm's oversight of an outsourced administrator — the shadow-NAV difference, the fee-calculation variance, the reconciliation-process gap, the breach-resolution lag — with its severity, monetary impact, investigation and resolution. The audit-trail record evidencing continuous control over delegated processing.",
+      "properties": {
+        "oversight_exception_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "administrator_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "exception_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "exception_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "exception_description": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "monetary_impact_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "investigation_note": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "resolution_action": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "resolution_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "oversight_exception_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-37": {
+      "type": "object",
+      "title": "E-37 ESG Compliance Result",
+      "description": "A stored point-in-time ESG-compliance result — the SFDR Article 6/8/9 classification, the EU Taxonomy alignment percentage, the PAI indicators, the mandate ESG-screen pass/fail, the stewardship-code disclosure conformance — for one subject, as of one date, on a stated methodology version. The ESG analogue of Risk Measurement (E-19) and Performance Result (E-20): append-only, with provenance.",
+      "properties": {
+        "esg_compliance_result_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "sfdr_article_classification": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "taxonomy_alignment_percentage": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "pai_indicators": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "mandate_esg_screen_result": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "breach_details": {
+          "type": "string",
+          "description": "Declared type: text."
+        },
+        "metric_definition_id": {
+          "description": "Foreign key to E-22 (declared type: varchar (FK → E-22)).",
+          "$ref": "#/$defs/E-22"
+        },
+        "computed_by_sd": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "esg_compliance_result_id"
+      ],
+      "additionalProperties": false
+    },
+    "E-38": {
+      "type": "object",
+      "title": "E-38 Internal Credit Rating",
+      "description": "The firm's own methodology-driven internal credit rating — the issuer or instrument, the rating, the rating methodology version, the analyst, the committee date, the change reason and the watch status. Versioned through rating-change events; the firm's independent credit view, distinct from and cross-checked against the external rating agencies.",
+      "properties": {
+        "internal_credit_rating_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rating_scale": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rating_value": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rating_methodology_id": {
+          "description": "Foreign key to E-22 (declared type: varchar (FK → E-22)).",
+          "$ref": "#/$defs/E-22"
+        },
+        "rating_analyst": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rating_committee_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "rating_change_reason": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rating_watch_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        }
+      },
+      "required": [
+        "internal_credit_rating_id"
+      ],
+      "additionalProperties": false
+    },
+    "DR-01": {
+      "type": "object",
+      "title": "DR-01 Listed Derivative",
+      "description": "An exchange-traded derivative — a future or an exchange-listed option — held by an institutional investor for hedging, overlay management, cash equitisation or efficient exposure. A standardised, fungible contract traded on an organised exchange and cleared through that exchange's central counterparty.",
+      "properties": {
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "derivative_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "underlying_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "underlying_instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "underlying_reference": {
+          "description": "Foreign key to E-10 (declared type: varchar (FK → E-10)).",
+          "$ref": "#/$defs/E-10"
+        },
+        "exchange_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "ccp_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "contract_multiplier": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "expiry_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "settlement_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "option_right": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "strike_price": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "exercise_style": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "tick_size": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "exchange_symbol": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "DR-02": {
+      "type": "object",
+      "title": "DR-02 OTC Derivative",
+      "description": "A bilaterally negotiated over-the-counter derivative — an interest-rate, cross-currency or equity swap, a forward, or an OTC option — held by an institutional investor for hedging, overlay management or as an instrument in its own right. Unlike a listed derivative, the contract is privately negotiated between two parties and its terms are bespoke.",
+      "properties": {
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "derivative_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "derivative_sub_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "underlying_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "underlying_instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "underlying_reference": {
+          "description": "Foreign key to E-10 (declared type: varchar (FK → E-10)).",
+          "$ref": "#/$defs/E-10"
+        },
+        "counterparty_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "master_agreement_id": {
+          "description": "Foreign key to DR-03 (declared type: varchar (FK → DR-03)).",
+          "$ref": "#/$defs/DR-03"
+        },
+        "notional_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "notional_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "trade_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "maturity_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "pay_leg": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "receive_leg": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "clearing_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cdm_trade_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "DR-03": {
+      "type": "object",
+      "title": "DR-03 Master Agreement & Collateral Terms",
+      "description": "The bilateral legal framework governing an institutional investor's OTC derivative relationship with a counterparty — the ISDA Master Agreement, its Schedule, and the Credit Support Annex (CSA) or equivalent credit-support document that sets the collateral terms. One DR-03 record per (investor, counterparty) master-agreement relationship.",
+      "properties": {
+        "master_agreement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "counterparty_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "agreement_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "agreement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "governing_law": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "netting_enforceable": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "csa_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "csa_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "csa_law_form": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "margin_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "direction": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "threshold_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "minimum_transfer_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "independent_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "eligible_collateral": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "base_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "valuation_agent": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "csa_id",
+        "master_agreement_id"
+      ],
+      "additionalProperties": false
+    },
+    "DR-04": {
+      "type": "object",
+      "title": "DR-04 Margin & Collateral Balance",
+      "description": "The operational margining position of a derivatives relationship — the collateral posted and received, and the initial and variation margin owed, against a master-agreement set (DR-03) or a clearing relationship (DR-05) at a point in time. The entity that answers \"how much collateral are we exposed for, and is the relationship adequately margined right now.\"",
+      "properties": {
+        "balance_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "relationship_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "master_agreement_id": {
+          "description": "Foreign key to DR-03 (declared type: varchar (FK → DR-03)).",
+          "$ref": "#/$defs/DR-03"
+        },
+        "clearing_relationship_id": {
+          "description": "Foreign key to DR-05 (declared type: varchar (FK → DR-05)).",
+          "$ref": "#/$defs/DR-05"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "margin_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "net_exposure_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "margin_required_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "collateral_posted_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "collateral_received_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "margin_call_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "collateral_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "disputed": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "segregated": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        }
+      },
+      "required": [
+        "balance_id"
+      ],
+      "additionalProperties": false
+    },
+    "DR-05": {
+      "type": "object",
+      "title": "DR-05 Clearing Relationship",
+      "description": "The relationship through which an institutional investor's centrally cleared derivatives are cleared — the central counterparty (CCP), the clearing broker the investor accesses it through, and the clearing account that holds the cleared positions. One DR-05 record per (investor, clearing broker, CCP) clearing arrangement.",
+      "properties": {
+        "clearing_relationship_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "clearing_broker_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "ccp_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "clearing_model": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class_scope": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "clearing_account_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "clearing_agreement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "margin_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "clearing_relationship_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-01": {
+      "type": "object",
+      "title": "FO-01 Fund Product",
+      "description": "The fund as a product the manager *issues* — the collective investment vehicle the manager registers, prices and distributes. FO-01 is the golden record of an issued fund from the issuer's perspective, the manager-side complement to PM-01 Fund & Vehicle (which models the same fund from the *allocator's* commitment view). Where PM-01 records `committed_capital_usd` — the investor's commitment to a specific vehicle — FO-01 records the product-lifecycle, dealing-terms and regulatory-authorisation attributes that govern how the fund operates as an offered, priced and distributed product.",
+      "properties": {
+        "fund_product_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "legal_structure": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_form": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "regulatory_wrapper": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "domicile": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "base_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "launch_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "umbrella_fund_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → FO-01)."
+        },
+        "manager_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "dealing_frequency": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "dealing_cut_off": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "pricing_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "settlement_cycle": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "lock_up": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "redemption_gate": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "swing_pricing": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: int (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        }
+      },
+      "required": [
+        "fund_product_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-02": {
+      "type": "object",
+      "title": "FO-02 Share / Unit Class",
+      "description": "The class grain at which a fund's economics attach — one FO-01 fund issues many classes. Each class carries its own ISIN, fee schedule, distribution policy, currency and investor category. FO-02 is the authoritative reference record of a share or unit class as the issuing manager maintains it: the class the investor subscribes to, the class the NAV per unit is struck for, the class whose fee is accrued and disclosed, and the class whose currency-hedging programme — for a hedged class — is configured.",
+      "properties": {
+        "share_class_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "class_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "class_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "distribution_policy": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "class_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "hedged": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "investor_category": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "class_fee_schedule": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "min_investment": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "min_subsequent_investment": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "isin": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: int (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        }
+      },
+      "required": [
+        "share_class_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-03": {
+      "type": "object",
+      "title": "FO-03 Investor Unitholding",
+      "description": "The per-investor, per-share-class record of units held in an open-ended fund — the open-ended parallel to PM-06 LP Commitment.",
+      "properties": {
+        "unitholding_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "units_held": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "cost_basis": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "class_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "account_reference": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "unitholding_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-04": {
+      "type": "object",
+      "title": "FO-04 Dealing Order",
+      "description": "A subscription, redemption, transfer or switch instruction submitted by or on behalf of an investor in an open-ended fund — the event at which the investor register moves.",
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "unitholding_id": {
+          "description": "Foreign key to FO-03 (declared type: varchar (FK → FO-03)).",
+          "$ref": "#/$defs/FO-03"
+        },
+        "order_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "deal_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "cut_off": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "valuation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "struck_nav_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "units": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "class_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "dilution_adjustment": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        }
+      },
+      "required": [
+        "order_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-05": {
+      "type": "object",
+      "title": "FO-05 Fund Distribution Event",
+      "description": "The fund's formal declaration and payment of income or capital gains to its own unitholders — the open-ended-fund-to-unitholder distribution lifecycle (declaration / ex-date / record date / pay date), with the per-unit income amount and equalisation treatment.",
+      "properties": {
+        "distribution_event_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "declaration_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "ex_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "record_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "pay_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "distribution_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "class_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "distribution_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "equalisation_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "equalisation_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "ex_date_nav_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        }
+      },
+      "required": [
+        "distribution_event_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-06": {
+      "type": "object",
+      "title": "FO-06 Fee Accrual",
+      "description": "The computed fee figure of record for a fund or share/unit class over a period — the amount that management, performance or expense fees accrued to, as calculated by the fee-and-expense processing function, with full provenance back to the in-force fee definition that produced it. The difference between the gross accrual and the net charge after expense-cap, fee-waiver and reimbursement application makes the disclosed ongoing charges figure (OCF) reconstructable from stored artefacts. The OCF (the UCITS KIID / PRIIPs KID cost-disclosure figure: management fee plus OCF-eligible operating expenses, performance fees and transaction costs excluded) and the TER (total expense ratio, an older and broader disclosure measure with a different scope) are distinct; FO-06 supports reconstruction of both but they are not synonymous.",
+      "properties": {
+        "fee_accrual_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: int (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "fee_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "accrued_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "crystallised_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "waiver_cap_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "reimbursement_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "net_charge": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "definition_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "formula_spec_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "methodology_version": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "hwm_applied": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "hurdle_applied": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "crystallisation_trigger": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "record_created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "provenance": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "fee_accrual_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-07": {
+      "type": "object",
+      "title": "FO-07 Investor Tax Statement",
+      "description": "The issued-and-filed tax reporting document the fund or its transfer agent produces for an investor at the close of a tax year — the filed artefact of record for investor-level tax reporting obligations (1099-DIV/B, K-1, 1042-S, UK tax vouchers, FATCA/CRS per-investor classification reports, and equivalents).",
+      "properties": {
+        "tax_statement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "unitholding_id": {
+          "description": "Foreign key to FO-03 (declared type: varchar (FK → FO-03)).",
+          "$ref": "#/$defs/FO-03"
+        },
+        "form_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "tax_year": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "filing_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "filing_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "corrects_statement_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → FO-07, self-ref)."
+        },
+        "submission_reference": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "tax_classification": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "total_ordinary_income": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "total_qualified_income": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "total_capital_gain": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cost_basis_reported": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "withholding_reported": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "record_created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        }
+      },
+      "required": [
+        "tax_statement_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-08": {
+      "type": "object",
+      "title": "FO-08 Service-Provider Appointment",
+      "description": "The first-class record of which E-01 Legal Entity is appointed to which FO-01 Fund Product in which service-provider role, and over which dates. One row per (fund-product, service provider, role): a fund with a custodian, a depositary, an administrator, a transfer agent, a trustee, an auditor, a prime broker, a ManCo/AIFM and an investment manager carries nine appointment rows, each with its own lifecycle.",
+      "properties": {
+        "appointment_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "provider_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "role": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "delegates_to_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01, nullable)).",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/E-01"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appointed_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "terminated_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Declared type: date (nullable)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "appointment_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-09": {
+      "type": "object",
+      "title": "FO-09 Omnibus Account",
+      "description": "The account record an intermediary — a distributor, platform, nominee, or sub-transfer agent — holds at the fund's register. The fund sees a single registered position per share class per intermediary; the intermediary keeps the per-investor accounts behind its own register. FO-09 is the fund-side account master for that relationship: the account identification, the underlying unit-class link, and the servicing fee terms (12b-1 distribution fee, sub-TA fee, revenue-share, platform fee) the manager pays the intermediary for investor servicing within the omnibus.",
+      "properties": {
+        "omnibus_account_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "intermediary_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "register_account_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "account_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "opened_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "closed_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "servicing_fee_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "servicing_fee_rate": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "fee_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fee_effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "fee_effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "definition_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "formula_spec_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "look_through_available": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "look_through_arrangement_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "omnibus_account_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-10": {
+      "type": "object",
+      "title": "FO-10 ETF Creation/Redemption Order",
+      "description": "The primary-market dealing event in which an authorised participant (AP) creates or redeems a block of ETF shares by exchanging an in-kind basket of underlying securities (FO-11 ETF Creation Basket) for fund shares, or the reverse. One order record per creation or redemption instruction submitted by an AP against a specific ETF share class.",
+      "properties": {
+        "creation_redemption_order_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "ap_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "ap_agreement_id": {
+          "description": "Foreign key to FO-12 (declared type: varchar (FK → FO-12)).",
+          "$ref": "#/$defs/FO-12"
+        },
+        "basket_id": {
+          "description": "Foreign key to FO-11 (declared type: varchar (FK → FO-11)).",
+          "$ref": "#/$defs/FO-11"
+        },
+        "order_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "num_creation_units": {
+          "type": "integer",
+          "description": "Declared type: integer."
+        },
+        "creation_unit_size": {
+          "type": "integer",
+          "description": "Declared type: integer."
+        },
+        "settlement_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "valuation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "struck_nav_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "inav_ref": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "total_shares": {
+          "type": "integer",
+          "description": "Declared type: integer."
+        },
+        "settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "cash_residual": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "basket_leg_settlement_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "basket_leg_settlement_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Declared type: date (nullable)."
+        },
+        "units_leg_settlement_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "units_leg_settlement_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Declared type: date (nullable)."
+        },
+        "partial_settlement_flag": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "cash_in_lieu_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: varchar[]."
+        }
+      },
+      "required": [
+        "creation_redemption_order_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-11": {
+      "type": "object",
+      "title": "FO-11 ETF Creation Basket (Portfolio Composition File)",
+      "description": "The daily-published composition record that specifies exactly what an authorised participant must deliver (or will receive) when creating (or redeeming) one creation unit in an ETF — the set of `(instrument, quantity)` line items plus the cash balancing component that together constitute the in-kind exchange for one creation unit on a given dealing date.",
+      "properties": {
+        "basket_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "share_class_id": {
+          "description": "Foreign key to FO-02 (declared type: varchar (FK → FO-02)).",
+          "$ref": "#/$defs/FO-02"
+        },
+        "dealing_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "basket_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "ap_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01, nullable)).",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/E-01"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "quantity_per_creation_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "market": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cash_component": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cash_component_currency": {
+          "type": "string",
+          "description": "Declared type: char(3)."
+        },
+        "estimated_cash": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "total_basket_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "creation_unit_size": {
+          "type": "integer",
+          "description": "Declared type: integer."
+        }
+      },
+      "required": [
+        "basket_id",
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "FO-12": {
+      "type": "object",
+      "title": "FO-12 ETF Authorised-Participant Agreement",
+      "description": "The standing, dated record of a broker-dealer's or market-maker's right to create and redeem ETF creation units against a specific fund product — the AP Agreement relationship between the fund (FO-01) and an authorised participant (E-01). One record per (fund, AP) with its own lifecycle: the AP is authorised from `authorised_date`, may restrict or terminate its access (`terminated_date` nullable), and may operate under defined settlement-basis permissions.",
+      "properties": {
+        "ap_agreement_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_product_id": {
+          "description": "Foreign key to FO-01 (declared type: varchar (FK → FO-01)).",
+          "$ref": "#/$defs/FO-01"
+        },
+        "ap_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "authorised_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "terminated_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Declared type: date (nullable)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "permitted_settlement_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "credit_standing": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "trading_limit_creation_units": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Declared type: integer (nullable)."
+        },
+        "creation_fee_basis_points": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Declared type: decimal (nullable)."
+        },
+        "redemption_fee_basis_points": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Declared type: decimal (nullable)."
+        },
+        "fail_fee_basis_points": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Declared type: decimal (nullable)."
+        }
+      },
+      "required": [
+        "ap_agreement_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-01": {
+      "type": "object",
+      "title": "PM-01 Fund & Vehicle",
+      "description": "The golden record of an investment fund and the legal vehicles that make it up — the primary commitment vehicle for an investor that invests through external managers. Includes the **Fund Family / Group** grouping that ties the related vehicles of a single raise together.",
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_family_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → Fund Family)."
+        },
+        "vehicle_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "gp_id": {
+          "description": "Foreign key to PM-02 (declared type: varchar (FK → PM-02)).",
+          "$ref": "#/$defs/PM-02"
+        },
+        "administrator_id": {
+          "description": "Foreign key to PM-03 (declared type: varchar (FK → PM-03)).",
+          "$ref": "#/$defs/PM-03"
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: varchar (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "vintage_year": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "committed_capital_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "domicile": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "known_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "last_reviewed_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "family_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "total_committed_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "vehicle_count": {
+          "type": "integer",
+          "description": "Declared type: int."
+        }
+      },
+      "required": [
+        "fund_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-02": {
+      "type": "object",
+      "title": "PM-02 GP / Management Company",
+      "description": "The external manager an investor commits capital to in the private-markets model. Well-known as an entity, but structurally subtle.",
+      "properties": {
+        "gp_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "gp_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "known_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "domicile": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "relationship_start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        }
+      },
+      "required": [
+        "gp_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-03": {
+      "type": "object",
+      "title": "PM-03 Fund Administrator",
+      "description": "A fund administrator, and the operational metadata of dealing with one. A **counterparty master**, not a lookup table.",
+      "properties": {
+        "admin_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "admin_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "delivery_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "data_quality_tier": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "funds_administered": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "primary_contact": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "admin_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-04": {
+      "type": "object",
+      "title": "PM-04 Portfolio Company",
+      "description": "The underlying operating company an investor holds exposure to — directly, through one or more funds, or both. The unit of **look-through exposure**, and the hardest master in OpenIM.",
+      "properties": {
+        "company_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "company_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "known_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "sector": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "sub_sector": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "country": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "successor_company_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → self)."
+        },
+        "gp_relationships": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Declared type: array."
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "last_reviewed_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "reviewed_by": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "company_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-05": {
+      "type": "object",
+      "title": "PM-05 Legal Vehicle / SPV",
+      "description": "The legal structure through which an investor holds a private investment — the layer between the fund investment (PM-09) and the cash flows. Cash flows are recorded at vehicle grain and aggregate up to the investment.",
+      "properties": {
+        "vehicle_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investment_id": {
+          "description": "Foreign key to PM-09 (declared type: varchar (FK → PM-09)).",
+          "$ref": "#/$defs/PM-09"
+        },
+        "vehicle_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "vehicle_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "jurisdiction": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "incorporation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "lei": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "vehicle_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-06": {
+      "type": "object",
+      "title": "PM-06 LP Commitment",
+      "description": "A commitment of capital by a limited partner to a fund (PM-01). The foundational private-markets relationship: the LP pledges an amount, the fund draws it down over time through capital calls (PM-07).",
+      "properties": {
+        "commitment_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "lp_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "committed_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "commitment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        }
+      },
+      "required": [
+        "commitment_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-07": {
+      "type": "object",
+      "title": "PM-07 Capital Call",
+      "description": "A drawdown event against a commitment (PM-06) — the fund calling part of the capital the LP pledged.",
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "commitment_id": {
+          "description": "Foreign key to PM-06 (declared type: varchar (FK → PM-06)).",
+          "$ref": "#/$defs/PM-06"
+        },
+        "call_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "amount_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "call_number": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "cumulative_called_pct": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "call_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-08": {
+      "type": "object",
+      "title": "PM-08 Distribution",
+      "description": "A return of capital or gain from a fund (PM-01) to its LPs — the cash-in side of the private-markets relationship.",
+      "properties": {
+        "dist_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "commitment_id": {
+          "description": "Foreign key to PM-06 (declared type: varchar (FK → PM-06)).",
+          "$ref": "#/$defs/PM-06"
+        },
+        "dist_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "amount_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "dist_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "recallable": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "dist_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-09": {
+      "type": "object",
+      "title": "PM-09 Fund Investment",
+      "description": "A fund's holding in something it has deployed capital into — a portfolio company, or, for a fund-of-funds, another fund. One row per (fund, holding) pair. The entity that connects a fund (PM-01) to what it holds, and the unit at which look-through exposure is computed.",
+      "properties": {
+        "investment_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "holding_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "target_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "investment_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "entry_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "exit_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "invested_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "realised_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "unrealised_nav_usd": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "moic": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "gross_irr": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "exit_route": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "investment_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-10": {
+      "type": "object",
+      "title": "PM-10 Fund Terms",
+      "description": "The economic terms of a fund as set by its Limited Partnership Agreement (LPA) — hurdle, management fee, carried interest, clawback, preferred return. Modelled as **computation-as-data**: each term is a first-class entity carrying a *definition* the platform can evaluate, not a scalar the platform hopes is right. Versioned by effective date.",
+      "properties": {
+        "terms_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "version": {
+          "type": "integer",
+          "description": "Declared type: int."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "hurdle_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "definition_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fixed_rate": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "formula_spec": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        }
+      },
+      "required": [
+        "hurdle_id",
+        "terms_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-11": {
+      "type": "object",
+      "title": "PM-11 Manager Succession Event",
+      "description": "A change in the manager entity behind a fund — a merger, rebrand or acquisition. Links a predecessor GP / management company (PM-02) to a successor, with a typed event and an effective date.",
+      "properties": {
+        "succession_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "predecessor_gp_id": {
+          "description": "Foreign key to PM-02 (declared type: varchar (FK → PM-02)).",
+          "$ref": "#/$defs/PM-02"
+        },
+        "successor_gp_id": {
+          "description": "Foreign key to PM-02 (declared type: varchar (FK → PM-02)).",
+          "$ref": "#/$defs/PM-02"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "succession_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-12": {
+      "type": "object",
+      "title": "PM-12 Benchmark Cross-Reference",
+      "description": "The mapping between an investor's own funds and the external benchmark and peer-universe identifiers used to evaluate them.",
+      "properties": {
+        "cross_reference_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "benchmark_id": {
+          "description": "Foreign key to E-10 (declared type: varchar (FK → E-10)).",
+          "$ref": "#/$defs/E-10"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "provider_fund_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_class": {
+          "description": "Foreign key to E-09 (declared type: varchar (FK → E-09)).",
+          "$ref": "#/$defs/E-09"
+        },
+        "vintage_year": {
+          "type": "integer",
+          "description": "Declared type: int."
+        }
+      },
+      "required": [
+        "cross_reference_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-13": {
+      "type": "object",
+      "title": "PM-13 Investor Capital Account",
+      "description": "The manager-side per-investor capital account in a fund the institution *operates* — the running record of one investor's contributions, distributions, allocated income and gain, and closing balance. The ILPA Capital Account Statement made first-class.",
+      "properties": {
+        "capital_account_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fund_id": {
+          "description": "Foreign key to PM-01 (declared type: varchar (FK → PM-01)).",
+          "$ref": "#/$defs/PM-01"
+        },
+        "investor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "period": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "opening_balance": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "contributions": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "distributions": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "allocated_income": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "allocated_gain": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "management_fee": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "carried_interest": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "closing_balance": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        }
+      },
+      "required": [
+        "capital_account_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-14": {
+      "type": "object",
+      "title": "PM-14 Direct Loan",
+      "description": "A directly-originated private loan — the borrower, the facility terms, the covenants, the drawn / undrawn position, the interest accrual, the workout state. The post-close lifecycle entity for direct private credit, modelling the loan as it lives between origination and either repayment or recovery.",
+      "properties": {
+        "direct_loan_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "borrower_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "originator_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "facility_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "facility_commitment_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "drawn_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "undrawn_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "interest_rate_structure": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "maturity_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "covenants": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "payment_schedule": {
+          "type": "object",
+          "description": "Declared type: document (JSON)."
+        },
+        "seniority_rank": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "collateral_pool_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "workout_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "recovery_estimate": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        }
+      },
+      "required": [
+        "direct_loan_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-01": {
+      "type": "object",
+      "title": "PB-01 Listed Equity",
+      "description": "A share in a company admitted to trading on a regulated exchange or multilateral trading venue — the equity-class instrument an institutional investor holds directly or through a separately managed account.",
+      "properties": {
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "issuer_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "share_class": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "primary_listing_mic": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "local_code": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "isin": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cusip": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "sedol": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "figi": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "trading_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "country_of_incorporation": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "shares_outstanding": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "free_float_pct": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "gics_sector": {
+          "description": "Foreign key to E-11 (declared type: varchar (FK → E-11)).",
+          "$ref": "#/$defs/E-11"
+        },
+        "voting_rights_per_share": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-02": {
+      "type": "object",
+      "title": "PB-02 Debt Instrument",
+      "description": "A tradable debt security — a government, supranational, agency or corporate bond, a note or a money-market instrument — held directly or through a separately managed account.",
+      "properties": {
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "issuer_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "debt_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "seniority": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "isin": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cusip": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "figi": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "face_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "issue_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "maturity_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "coupon_rate": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "coupon_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "coupon_frequency": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "day_count_convention": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "reference_rate": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "callable": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "credit_rating": {
+          "description": "Foreign key to E-11 (declared type: varchar (FK → E-11)).",
+          "$ref": "#/$defs/E-11"
+        },
+        "amortising": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "instrument_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-03": {
+      "type": "object",
+      "title": "PB-03 Order",
+      "description": "An instruction to buy or sell a listed instrument — the first event of the trade lifecycle, raised by the investment decision and routed to the trading desk and the market.",
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "transaction_id": {
+          "description": "Foreign key to E-05 (declared type: varchar (FK → E-05)).",
+          "$ref": "#/$defs/E-05"
+        },
+        "parent_order_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → self)."
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "side": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "limit_price": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "time_in_force": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_datetime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "broker_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "execution_venue": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "filled_quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "pre_trade_compliance_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "order_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-04": {
+      "type": "object",
+      "title": "PB-04 Execution",
+      "description": "A fill — a quantity of an order traded in the market at a price, on a venue, at a time. The event that actually moves a position.",
+      "properties": {
+        "execution_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_id": {
+          "description": "Foreign key to PB-03 (declared type: varchar (FK → PB-03)).",
+          "$ref": "#/$defs/PB-03"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "side": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "executed_quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "executed_price": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "execution_datetime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        },
+        "execution_venue": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "broker_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "trade_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "gross_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "commission": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "taxes_and_fees": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "net_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "accrued_interest": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "execution_capacity": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "last_liquidity_indicator": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "execution_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-05": {
+      "type": "object",
+      "title": "PB-05 Allocation",
+      "description": "The apportionment of an executed trade across the portfolios and accounts it was traded for — the step that turns a market fill into per-portfolio positions.",
+      "properties": {
+        "allocation_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "order_id": {
+          "description": "Foreign key to PB-03 (declared type: varchar (FK → PB-03)).",
+          "$ref": "#/$defs/PB-03"
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "side": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "allocated_quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "average_price": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "gross_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "commission": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "taxes_and_fees": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "net_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "allocation_method": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "allocation_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "custodian_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "allocation_datetime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Declared type: timestamp."
+        }
+      },
+      "required": [
+        "allocation_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-06": {
+      "type": "object",
+      "title": "PB-06 Settlement Instruction",
+      "description": "The instruction to exchange securities for cash and complete a trade — the final stage of the trade lifecycle, sent to a custodian or settlement agent and matched against the counterparty.",
+      "properties": {
+        "settlement_instruction_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "allocation_id": {
+          "description": "Foreign key to PB-05 (declared type: varchar (FK → PB-05)).",
+          "$ref": "#/$defs/PB-05"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "settlement_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "direction": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "settlement_amount": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "settlement_currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "contractual_settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "actual_settlement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "custodian_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "counterparty_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "place_of_settlement": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "settlement_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "fail_reason": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "ssi_reference": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "settlement_instruction_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-07": {
+      "type": "object",
+      "title": "PB-07 Corporate Action",
+      "description": "An event initiated by a security's issuer that changes the security, the holding in it, or both — a dividend, a split, a merger, a rights issue, a tender offer.",
+      "properties": {
+        "corporate_action_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "transaction_id": {
+          "description": "Foreign key to E-05 (declared type: varchar (FK → E-05)).",
+          "$ref": "#/$defs/E-05"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "mandatory_voluntary": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "announcement_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "ex_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "record_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "payment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "election_deadline": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "terms_ratio": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "resulting_instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "cash_rate": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "event_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "corporate_action_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-08": {
+      "type": "object",
+      "title": "PB-08 Income Schedule",
+      "description": "The forward calendar of contractual or expected income payments on an instrument — the coupon stream of a bond, the dividend stream of an equity — held as dated reference data.",
+      "properties": {
+        "income_schedule_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "income_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "period_start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "period_end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "scheduled_payment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "rate": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "amount_per_unit": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "is_projected": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "reset_rate_observed": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "schedule_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "income_schedule_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-09": {
+      "type": "object",
+      "title": "PB-09 Index Constituent",
+      "description": "A membership of an instrument in a market index — the instrument, its weight, and the period that membership and weight were effective, as the index rebalances and reconstitutes.",
+      "properties": {
+        "index_constituent_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "benchmark_id": {
+          "description": "Foreign key to E-10 (declared type: varchar (FK → E-10)).",
+          "$ref": "#/$defs/E-10"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "effective_to": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "index_weight": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "weight_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "shares_in_index": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "capping_applied": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "inclusion_event": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "index_constituent_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-10": {
+      "type": "object",
+      "title": "PB-10 Securities Loan",
+      "description": "A per-loan record of a lent security — the borrower, the quantity, the fee, the term, the recall status, and the collateral held against it. The loan as a relationship with its own lifecycle, which a holding's lent flag cannot carry.",
+      "properties": {
+        "loan_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "position_id": {
+          "description": "Foreign key to E-04 (declared type: varchar (FK → E-04)).",
+          "$ref": "#/$defs/E-04"
+        },
+        "instrument_id": {
+          "description": "Foreign key to E-02 (declared type: varchar (FK → E-02)).",
+          "$ref": "#/$defs/E-02"
+        },
+        "borrower_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "lent_quantity": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "fee_rate": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "loan_start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "term": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "recall_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "collateral_position_id": {
+          "description": "Foreign key to E-26 (declared type: varchar (FK → E-26)).",
+          "$ref": "#/$defs/E-26"
+        },
+        "revenue_accrued": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "loan_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "master_agreement_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "loan_id"
+      ],
+      "additionalProperties": false
+    },
+    "PB-11": {
+      "type": "object",
+      "title": "PB-11 Proxy Vote",
+      "description": "A per-(meeting, resolution, portfolio) record of a vote cast at a shareholder meeting — the recommendation, the vote cast, and its rationale. The structured, auditable form of the firm's voting record that stewardship-code disclosure requires.",
+      "properties": {
+        "vote_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "meeting_id": {
+          "description": "Foreign key to PB-07 (declared type: varchar (FK → PB-07)).",
+          "$ref": "#/$defs/PB-07"
+        },
+        "resolution_ref": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "portfolio_id": {
+          "description": "Foreign key to E-03 (declared type: varchar (FK → E-03)).",
+          "$ref": "#/$defs/E-03"
+        },
+        "holding_qty_at_record_date": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "recommended_vote": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "proxy_adviser_rec": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "cast_vote": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "policy_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "conflict_flag": {
+          "type": "boolean",
+          "description": "Declared type: boolean."
+        },
+        "lodged_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "confirmation_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "vote_id"
+      ],
+      "additionalProperties": false
+    },
+    "RA-01": {
+      "type": "object",
+      "title": "RA-01 Direct Real Asset",
+      "description": "The golden record of a physical asset an investor holds **directly** — a building, a toll road, a wind farm, a forest — owned outright or through a joint venture / SPV, rather than through a fund.",
+      "properties": {
+        "real_asset_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_category": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "asset_subtype": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "country": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "location": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "tenure": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "holding_vehicle_id": {
+          "description": "Foreign key to PM-05 (declared type: varchar (FK → PM-05)).",
+          "$ref": "#/$defs/PM-05"
+        },
+        "ownership_pct": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "lifecycle_stage": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "physical_size": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "size_unit": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "acquisition_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "external_ids": {
+          "type": "object",
+          "description": "Declared type: map."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "real_asset_id"
+      ],
+      "additionalProperties": false
+    },
+    "RA-02": {
+      "type": "object",
+      "title": "RA-02 Asset Operating Record",
+      "description": "The periodic operating data of a real asset (RA-01) — occupancy, throughput, generation, net operating income — the data that drives the asset's value and performance. One record per asset per reporting period.",
+      "properties": {
+        "operating_record_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "real_asset_id": {
+          "description": "Foreign key to RA-01 (declared type: varchar (FK → RA-01)).",
+          "$ref": "#/$defs/RA-01"
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "gross_income": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "operating_expense": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "net_operating_income": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "occupancy_rate": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "throughput": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "throughput_unit": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "availability_pct": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "capacity_utilisation": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "capex_incurred": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "revenue_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "operating_record_id"
+      ],
+      "additionalProperties": false
+    },
+    "RA-03": {
+      "type": "object",
+      "title": "RA-03 Lease / Tenancy",
+      "description": "A lease over a real-estate asset (RA-01) — the contract between the investor as landlord and a tenant that produces the asset's income. One record per lease; the set of leases over an asset is its tenancy schedule.",
+      "properties": {
+        "lease_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "real_asset_id": {
+          "description": "Foreign key to RA-01 (declared type: varchar (FK → RA-01)).",
+          "$ref": "#/$defs/RA-01"
+        },
+        "tenant_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "demised_area": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "lease_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "lease_expiry": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "break_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "passing_rent": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "rent_review_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "next_review_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "lease_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "tenant_covenant": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "lease_status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "lease_id"
+      ],
+      "additionalProperties": false
+    },
+    "RA-04": {
+      "type": "object",
+      "title": "RA-04 Development Project",
+      "description": "The construction or development lifecycle of a real asset (RA-01) — the period before the asset is operational, and, for infrastructure, the concession that frames its whole life. One record per development undertaking on an asset.",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "real_asset_id": {
+          "description": "Foreign key to RA-01 (declared type: varchar (FK → RA-01)).",
+          "$ref": "#/$defs/RA-01"
+        },
+        "development_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "project_phase": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "construction_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "target_completion": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "actual_completion": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "total_development_cost": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "cost_incurred_to_date": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "contractor_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "concession_grantor_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "concession_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "concession_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "revenue_model": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "status": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "RA-05": {
+      "type": "object",
+      "title": "RA-05 Asset Appraisal",
+      "description": "An appraisal-based valuation of a directly-held real asset (RA-01) — a professional opinion of value produced by a qualified valuer to a recognised standard. The real-assets specialisation of how a real asset's value is determined.",
+      "properties": {
+        "appraisal_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "real_asset_id": {
+          "description": "Foreign key to RA-01 (declared type: varchar (FK → RA-01)).",
+          "$ref": "#/$defs/RA-01"
+        },
+        "valuation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "appraised_value": {
+          "type": "number",
+          "description": "Declared type: decimal."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Declared type: char."
+        },
+        "valuation_approach": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "basis_of_value": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "reporting_basis": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "valuation_standard": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "valuer_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "valuer_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "discount_rate": {
+          "type": "number",
+          "description": "Declared type: float."
+        },
+        "inspection_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "confidence_score": {
+          "type": "number",
+          "description": "Declared type: float."
+        }
+      },
+      "required": [
+        "appraisal_id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

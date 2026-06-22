@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+    xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+    xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    id="defs-nav-strike"
+    targetNamespace="https://w3id.org/openim/exports/bpmn"
+    exporter="OpenIM illustrative reference process (hand-authored)"
+    exporterVersion="1.0">
+
+  <bpmn:process id="Process_NavStrike" name="NAV-strike governed workflow (illustrative)" isExecutable="false">
+
+    <bpmn:documentation>NON-NORMATIVE / ILLUSTRATIVE / HAND-AUTHORED. OpenIM is the operating-model and entity layer for institutional investment management, not a process library. This BPMN is NOT generated from the model (the model carries no process-sequence data) and is NOT a maintained parallel model. It is a hand-authored illustration of the governed-NAV pattern: a deterministic NAV engine strikes the figure of record and a human operator approves the high-stakes publish. It is grounded in the fund-accounting and NAV capability (NAV calculation; NAV review and sign-off) and the valuation entity. It is not normative process guidance and firm-specific process detail is deliberately out of scope.</bpmn:documentation>
+
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_NavEngine" name="NAV Engine (deterministic calculation)">
+        <bpmn:flowNodeRef>StartEvent_PeriodClose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_StrikeNav</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PublishNav</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_NavPublished</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Operator" name="Operator (human approver)">
+        <bpmn:flowNodeRef>Task_ReviewStruckNav</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ApprovalDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_StrikeAborted</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_PeriodClose" name="Period-close trigger">
+      <bpmn:outgoing>Flow_Start_to_Strike</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_StrikeNav" name="Strike the NAV (gross market value + accrued income &#8722; fees + hedge P&amp;L)">
+      <bpmn:incoming>Flow_Start_to_Strike</bpmn:incoming>
+      <bpmn:outgoing>Flow_Strike_to_Review</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_ReviewStruckNav" name="Operator reviews the struck NAV (high-stakes approval gate)">
+      <bpmn:incoming>Flow_Strike_to_Review</bpmn:incoming>
+      <bpmn:outgoing>Flow_Review_to_Gateway</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_ApprovalDecision" name="Approve the publish?">
+      <bpmn:incoming>Flow_Review_to_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Reject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_PublishNav" name="Publish the NAV (exactly-once, journaled)">
+      <bpmn:incoming>Flow_Approve</bpmn:incoming>
+      <bpmn:outgoing>Flow_Publish_to_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_NavPublished" name="NAV published">
+      <bpmn:incoming>Flow_Publish_to_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_StrikeAborted" name="Strike aborted &#8212; no publish">
+      <bpmn:incoming>Flow_Reject</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_to_Strike" sourceRef="StartEvent_PeriodClose" targetRef="Task_StrikeNav" />
+    <bpmn:sequenceFlow id="Flow_Strike_to_Review" sourceRef="Task_StrikeNav" targetRef="Task_ReviewStruckNav" />
+    <bpmn:sequenceFlow id="Flow_Review_to_Gateway" sourceRef="Task_ReviewStruckNav" targetRef="Gateway_ApprovalDecision" />
+    <bpmn:sequenceFlow id="Flow_Approve" name="Approve" sourceRef="Gateway_ApprovalDecision" targetRef="Task_PublishNav" />
+    <bpmn:sequenceFlow id="Flow_Reject" name="Reject" sourceRef="Gateway_ApprovalDecision" targetRef="EndEvent_StrikeAborted" />
+    <bpmn:sequenceFlow id="Flow_Publish_to_End" sourceRef="Task_PublishNav" targetRef="EndEvent_NavPublished" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_NavStrike">
+
+      <bpmndi:BPMNShape id="Shape_Lane_NavEngine" bpmnElement="Lane_NavEngine" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1080" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Operator" bpmnElement="Lane_Operator" isHorizontal="true">
+        <dc:Bounds x="160" y="240" width="1080" height="160" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_PeriodClose" bpmnElement="StartEvent_PeriodClose">
+        <dc:Bounds x="212" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_StrikeNav" bpmnElement="Task_StrikeNav">
+        <dc:Bounds x="300" y="120" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_PublishNav" bpmnElement="Task_PublishNav">
+        <dc:Bounds x="900" y="120" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_NavPublished" bpmnElement="EndEvent_NavPublished">
+        <dc:Bounds x="1102" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ReviewStruckNav" bpmnElement="Task_ReviewStruckNav">
+        <dc:Bounds x="490" y="280" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_ApprovalDecision" bpmnElement="Gateway_ApprovalDecision" isMarkerVisible="true">
+        <dc:Bounds x="725" y="295" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EndEvent_StrikeAborted" bpmnElement="EndEvent_StrikeAborted">
+        <dc:Bounds x="732" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_Start_to_Strike" bpmnElement="Flow_Start_to_Strike">
+        <di:waypoint x="248" y="160" />
+        <di:waypoint x="300" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Strike_to_Review" bpmnElement="Flow_Strike_to_Review">
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="370" y="320" />
+        <di:waypoint x="490" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Review_to_Gateway" bpmnElement="Flow_Review_to_Gateway">
+        <di:waypoint x="630" y="320" />
+        <di:waypoint x="725" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Approve" bpmnElement="Flow_Approve">
+        <di:waypoint x="750" y="295" />
+        <di:waypoint x="750" y="160" />
+        <di:waypoint x="900" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Reject" bpmnElement="Flow_Reject">
+        <di:waypoint x="750" y="295" />
+        <di:waypoint x="750" y="178" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Publish_to_End" bpmnElement="Flow_Publish_to_End">
+        <di:waypoint x="1040" y="160" />
+        <di:waypoint x="1102" y="160" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

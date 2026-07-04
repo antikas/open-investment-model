@@ -172,10 +172,6 @@ open-investment-model/
     └── diagrams/                Generator for the rendered static-site view of the model
 ```
 
-## Status
-
-Model version 0.2: the service-domain decomposition and the canonical entity model are complete at this version, including the fund-operations pack (FO-01 through FO-12). agentINVEST is in active build; its status is stated honestly under *What OpenIM is* above.
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards, and [GOVERNANCE.md](GOVERNANCE.md) for how the project is governed.

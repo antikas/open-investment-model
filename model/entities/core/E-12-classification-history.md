@@ -1,6 +1,6 @@
 # E-12 — Classification History
 
-The bi-temporal record of time-varying classifications on a holding or investment — which department holds it, its credit rating, its sector, its strategy, its geography — with every change dated, so an aggregation is correct at *any* point in time, not only now.
+The bi-temporal record of time-varying classifications on a holding, investment or deal record — which department holds it, its credit rating, its sector, its strategy, its geography, its pipeline stage — with every change dated, so an aggregation is correct at *any* point in time, not only now.
 
 ## The problem this entity solves
 
@@ -28,8 +28,8 @@ Where no historical signal exists for a period, the classification is set to the
 | Column | Type | Definition |
 |---|---|---|
 | `classification_id` | varchar | Primary key. |
-| `subject_type` | varchar | What is being classified — `holding` (E-04) or, in the private-markets pack, `fund_investment` (PM-09). |
-| `subject_id` | varchar | The identifier of the holding or investment being classified. |
+| `subject_type` | varchar | What is being classified — `holding` (E-04) or, in the private-markets pack, `fund_investment` (PM-09) or `deal` (PM-15). |
+| `subject_id` | varchar | The identifier of the holding, investment or deal being classified. |
 | `classification_type` | varchar (FK → E-11) | The classifier — department, credit rating, sector, strategy, geography. |
 | `classification_value` | varchar (FK → E-11) | The value within that classifier; the reserved `UNKNOWN` value where no signal exists. |
 | `effective_from` | date | When this classification became true in the business. |

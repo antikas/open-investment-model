@@ -16,7 +16,8 @@ The entity is **one concept, two co-equal owning routes** — the second co-owne
 |---|---|---|
 | `authorisation_id` | varchar | Primary key. |
 | `investment_route` | varchar | The IC route the authorisation came from — `fund_commitment` (SD-03.9) / `direct_investment` (SD-04.5). The route, not a partition key. |
-| `subject_id` | varchar | The subject of the authorisation — for `fund_commitment`, FK → PM-01 (the fund); for `direct_investment`, FK → PM-04 (the portfolio company) or RA-01 (the real asset). |
+| `subject_type` | varchar | What `subject_id` resolves against — `fund` (PM-01) on the fund-commitment route; `deal` (PM-15), `portfolio_company` (PM-04) or `real_asset` (RA-01) on the direct route. |
+| `subject_id` | varchar | The subject of the authorisation — for `fund_commitment`, FK → PM-01 (the fund); for `direct_investment`, FK → PM-15 (the deal / investment opportunity the committee is deciding), PM-04 (the portfolio company) or RA-01 (the real asset). |
 | `ic_memorandum_ref` | varchar (FK → E-15) | The IC memorandum the committee saw, referenced through Document Metadata. |
 | `decision` | varchar | The IC's decision — `approve` / `approve_with_conditions` / `decline` / `defer`. |
 | `conditions` | text | The conditions attached to an `approve_with_conditions` decision — side-letter outcomes, structuring revisions, diligence items that must close before execution proceeds. |
@@ -31,6 +32,7 @@ The entity is **one concept, two co-equal owning routes** — the second co-owne
 
 ## Notes
 
+- **The subject set, per route.** Each owning route reads the same `subject_id` contract from its own side. For the **fund-commitment route (SD-03.9)** the subject is the fund (PM-01) — unchanged by the deal-record extension. For the **direct-investment route (SD-04.5)** the subject set includes the deal itself (PM-15 Deal / Investment Opportunity) — the natural subject now that the pipeline record is first-class, since the IC decides *a deal*, and may do so before the target is mastered — alongside the portfolio company (PM-04) and the real asset (RA-01) for authorisations framed directly against a mastered target. Extending the subject set is a change to the shared schema both co-owners hold jointly; neither route's own subjects were altered by it. Because the subject set spans four masters, `subject_type` is the discriminator that names which master a given `subject_id` resolves against — the same typed-reference pattern E-12 (`subject_type` / `subject_id`) and PM-09 (`holding_type` / `target_id`) carry.
 - **Co-owned by SD-03.9 and SD-04.5.** One concept, two co-equal owners, the fund-commitment view and the direct-investment view of the same kind of governance record. There is no key attribute that assigns an instance to one owner or the other — `investment_route` records which route an authorisation came from, but it is not a partition key in the E-04 / E-25 / E-29 sense (no schema authority is split). The full pattern is documented in [`ownership-map.md`](../../ownership-map.md), and is the same pattern E-27 Liability Profile follows.
 - **The IC memorandum is the load-bearing artefact.** The memorandum (referenced through `ic_memorandum_ref`) is the synthesis document the committee was asked to decide against — the GP / deal summary, the thesis, the diligence findings, the proposed structure, the recommended commitment. The authorisation record points at the memorandum the committee actually saw; a revised memorandum after the decision is a new memorandum, not a mutation of this one.
 - **`recommended_commitment_amount` and `approved_commitment_amount` carry the as-decided record.** Where the committee scales a recommendation, both numbers are stored — the audit answers "what was the firm recommending versus what was the firm approving" from a record.
@@ -42,6 +44,7 @@ The entity is **one concept, two co-equal owning routes** — the second co-owne
 - The legal close the authorisation enables — that is the SD-03.5 (fund commitment) / SD-04.6 (deal closing) operation; E-34 is the authority the close runs under, not the close itself.
 - The commitment record on the funds-flow side — that is PM-06 LP Commitment (for fund commitments) or the post-close direct holding (for direct investments); E-34 is the authorisation behind the commitment, not the commitment record itself.
 - The IC pipeline and cadence — those are SD-03.9 / SD-04.5's operational artefacts; E-34 is the as-decided record of one IC decision, not the pipeline of decisions.
+- The deal record the direct route decides on — that is PM-15 Deal / Investment Opportunity, referenced through `subject_id`; E-34 is the decision *against* the deal, not the deal itself.
 
 ## Owned and consumed by
 

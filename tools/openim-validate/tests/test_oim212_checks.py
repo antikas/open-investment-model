@@ -202,7 +202,7 @@ class TestCountSurfaceAgreement(unittest.TestCase):
         em = _FakeEntityModelWithPacks()  # total = 82
         counts = self._derived_counts(em)
 
-        # Read the actual d2 file and mutate the total token 85 → 79.
+        # Read the actual d2 file and mutate the total token 86 → 79.
         # This reproduces the exact on-disk bytes the check must scan.
         # The fake model derives total=82; the injected stale token is 79 — the
         # validator must catch the 79 vs 82 mismatch.
@@ -211,9 +211,9 @@ class TestCountSurfaceAgreement(unittest.TestCase):
             self.skipTest("layer-stack.d2 not found — skipping real-bytes d2 negative test")
         real_d2 = d2_path.read_text(encoding="utf-8")
 
-        # The literal backslash-n followed by "85" is the token: r'\n85 entities'
+        # The literal backslash-n followed by "86" is the token: r'\n86 entities'
         import re as _re
-        stale_d2 = _re.sub(r'\\n85 entities', r'\\n79 entities', real_d2)
+        stale_d2 = _re.sub(r'\\n86 entities', r'\\n79 entities', real_d2)
         self.assertIn(
             r"\n79 entities",
             stale_d2,

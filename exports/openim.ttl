@@ -2630,6 +2630,12 @@
     rdfs:domain openim:E-34 ;
     rdfs:range xsd:string .
 
+<https://w3id.org/openim/ontology/E-34#subject_type> a owl:DatatypeProperty ;
+    rdfs:label "subject_type" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:E-34 ;
+    rdfs:range xsd:string .
+
 <https://w3id.org/openim/ontology/E-35#acknowledgement_date> a owl:DatatypeProperty ;
     rdfs:label "acknowledgement_date" ;
     rdfs:comment "Declared type: date." ;
@@ -5906,6 +5912,66 @@
     rdfs:domain openim:PM-14 ;
     rdfs:range xsd:string .
 
+<https://w3id.org/openim/ontology/PM-15#converted_record_id> a owl:DatatypeProperty ;
+    rdfs:label "converted_record_id" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#converted_record_type> a owl:DatatypeProperty ;
+    rdfs:label "converted_record_type" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#deal_id> a owl:DatatypeProperty ;
+    rdfs:label "deal_id" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#deal_name> a owl:DatatypeProperty ;
+    rdfs:label "deal_name" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#originating_team> a owl:DatatypeProperty ;
+    rdfs:label "originating_team" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#source_channel> a owl:DatatypeProperty ;
+    rdfs:label "source_channel" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#sourced_date> a owl:DatatypeProperty ;
+    rdfs:label "sourced_date" ;
+    rdfs:comment "Declared type: date." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:date .
+
+<https://w3id.org/openim/ontology/PM-15#strategy> a owl:DatatypeProperty ;
+    rdfs:label "strategy" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#structure> a owl:DatatypeProperty ;
+    rdfs:label "structure" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/PM-15#target_entity_id> a owl:ObjectProperty ;
+    rdfs:label "target_entity_id" ;
+    rdfs:comment "Declared type: varchar (FK → E-01)." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range openim:E-01 .
+
 <https://w3id.org/openim/ontology/RA-01#acquisition_date> a owl:DatatypeProperty ;
     rdfs:label "acquisition_date" ;
     rdfs:comment "Declared type: date." ;
@@ -6415,7 +6481,7 @@ openim:PM-08 a owl:Class ;
 
 openim:E-12 a owl:Class ;
     rdfs:label "E-12 Classification History" ;
-    rdfs:comment "The bi-temporal record of time-varying classifications on a holding or investment — which department holds it, its credit rating, its sector, its strategy, its geography — with every change dated, so an aggregation is correct at *any* point in time, not only now." .
+    rdfs:comment "The bi-temporal record of time-varying classifications on a holding, investment or deal record — which department holds it, its credit rating, its sector, its strategy, its geography, its pipeline stage — with every change dated, so an aggregation is correct at *any* point in time, not only now." .
 
 openim:E-31 a owl:Class ;
     rdfs:label "E-31 Goal Progress Measurement" ;
@@ -6460,6 +6526,10 @@ openim:PM-07 a owl:Class ;
 openim:PM-10 a owl:Class ;
     rdfs:label "PM-10 Fund Terms" ;
     rdfs:comment "The economic terms of a fund as set by its Limited Partnership Agreement (LPA) — hurdle, management fee, carried interest, clawback, preferred return. Modelled as **computation-as-data**: each term is a first-class entity carrying a *definition* the platform can evaluate, not a scalar the platform hopes is right. Versioned by effective date." .
+
+openim:PM-15 a owl:Class ;
+    rdfs:label "PM-15 Deal / Investment Opportunity" ;
+    rdfs:comment "The first-class record of a direct-investment opportunity — the deal — from the moment it is sourced to the moment it either dies or converts into a post-close record on the book. One row per opportunity; the record the BD-04 deal chain works on." .
 
 openim:DR-05 a owl:Class ;
     rdfs:label "DR-05 Clearing Relationship" ;
@@ -6571,10 +6641,6 @@ openim:E-32 a owl:Class ;
     rdfs:label "E-32 Tax Lot" ;
     rdfs:comment "The per-(client, instrument, acquisition-tranche) tax-lot record — the lot-level grain underneath a holding, carrying its cost basis, acquisition date, lot-relief eligibility and wash-sale-adjustment history. Append-only on the lot grain; supersession by lot-close." .
 
-openim:E-34 a owl:Class ;
-    rdfs:label "E-34 Investment Authorisation" ;
-    rdfs:comment "The Investment Committee's authorisation record — the recommendation memorandum the committee saw, the decision, the conditions, the authority-and-mandate verification and the dissent. One concept, two co-equal owning routes: the fund-commitment IC (SD-03.9) and the direct-investment IC (SD-04.5)." .
-
 openim:E-35 a owl:Class ;
     rdfs:label "E-35 Complaint Record" ;
     rdfs:comment "The regulated complaint record — the complaint, the acknowledgement, the investigation, the final response, the FOS-referral note, the redress, the root-cause categorisation and the systemic-finding flag. The FCA DISP record an inspection runs against, and the Consumer-Duty outcomes-evidence record." .
@@ -6607,6 +6673,10 @@ openim:E-10 a owl:Class ;
 openim:E-24 a owl:Class ;
     rdfs:label "E-24 Reconciliation Break" ;
     rdfs:comment "An event: two records of the same thing disagree. The owned, aged record of a reconciliation difference — the two sides, the difference, its cause, and its resolution lifecycle." .
+
+openim:E-34 a owl:Class ;
+    rdfs:label "E-34 Investment Authorisation" ;
+    rdfs:comment "The Investment Committee's authorisation record — the recommendation memorandum the committee saw, the decision, the conditions, the authority-and-mandate verification and the dissent. One concept, two co-equal owning routes: the fund-commitment IC (SD-03.9) and the direct-investment IC (SD-04.5)." .
 
 openim:FO-04 a owl:Class ;
     rdfs:label "FO-04 Dealing Order" ;

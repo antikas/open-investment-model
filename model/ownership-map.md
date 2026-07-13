@@ -4,13 +4,13 @@ The consolidated map of which Service Domain is the **authoritative source** for
 
 This map is the **SSOT for entity ownership.** Each entity file's `Owned by` line is reconciled to it; the Tier-0 validator enforces the consistency. The map answers two questions for every entity: who is the authoritative source (the *system of record* — for agentINVEST, the write-path), and which Service Domains consume it.
 
-The model has 17 Business Domains and 171 Service Domains; the canonical entity model has 85 entities — a generalised core of 38 (`E-NN`) plus five specialisation packs (`PB-NN`, `FO-NN`, `PM-NN`, `DR-NN`, `RA-NN`).
+The model has 17 Business Domains and 171 Service Domains; the canonical entity model has 86 entities — a generalised core of 38 (`E-NN`) plus five specialisation packs (`PB-NN`, `FO-NN`, `PM-NN`, `DR-NN`, `RA-NN`).
 
 ## The four ownership patterns
 
-The model's default is **one entity, one owning Service Domain.** 75 of 85 entities follow this default. The remaining ten are not defects — they are entities whose shape genuinely admits more than one authoritative source. This map declares the pattern that applies to each, so the ownership is *explicit* rather than implicit.
+The model's default is **one entity, one owning Service Domain.** 76 of 86 entities follow this default. The remaining ten are not defects — they are entities whose shape genuinely admits more than one authoritative source. This map declares the pattern that applies to each, so the ownership is *explicit* rather than implicit.
 
-**1. Single owner.** One Service Domain is the authoritative source for every instance. The vast majority (75 of 85 entities). *Example:* SD-13.1 owns E-02 Instrument / Asset.
+**1. Single owner.** One Service Domain is the authoritative source for every instance. The vast majority (76 of 86 entities). *Example:* SD-13.1 owns E-02 Instrument / Asset.
 
 **2. Key-partitioned ownership.** One entity type whose instances are partitioned by a key attribute — different attribute values are produced by different, co-equal Service Domains. The model's rule generalises naturally: *one authoritative source per (entity, key partition).* The schema is shared; the instance set is partitioned; no Service Domain is subordinate to another. Used where a key attribute determines which Service Domain is the system of record for that instance — most acutely for **E-04 Holding / Position**, where the `book` attribute records two genuinely-different position numbers that are reconciled against each other. Also used for **E-25 Account** (partitioned by `account_type`: safekeeping / cash / register) and **E-29 Allocation Plan** (partitioned by `plan_type`: strategic vs reference-portfolio vs commitment-pacing).
 
@@ -18,7 +18,7 @@ The model's default is **one entity, one owning Service Domain.** 75 of 85 entit
 
 **4. Co-ownership.** One entity, one concept, two co-equal owning Service Domains — neither partitioned by a key nor split into facets, but a single shared concept that two Service Domains are jointly the authoritative source for because they are two views of the same thing. Used for **E-27 Liability Profile**: the pension-scheme view (SD-01.7) and the insurance-book view (SD-01.8) of the same kind of actuarially-projected liability stream; and **E-34 Investment Authorisation**: the fund-commitment IC view (SD-03.9) and the direct-investment IC view (SD-04.5) of the same kind of governance record. Distinct from key-partitioned ownership — there is no key attribute that assigns an instance to one owner or the other; the two Service Domains co-own the entity outright.
 
-## The 85 entities
+## The 86 entities
 
 ### Generalised core — `model/entities/core/`
 
@@ -81,6 +81,7 @@ The model's default is **one entity, one owning Service Domain.** 75 of 85 entit
 | PM-12 Benchmark Cross-Reference | SD-13.5 Benchmark & Index Data Management | Single owner |
 | PM-13 Investor Capital Account | SD-12.9 Fund Accounting & NAV | Single owner |
 | PM-14 Direct Loan | SD-04.12 Loan Monitoring & Workout | Single owner |
+| PM-15 Deal / Investment Opportunity | SD-04.1 Deal Origination & Sourcing | Single owner |
 
 ### Public-markets pack — `model/entities/specialisations/public-markets/`
 

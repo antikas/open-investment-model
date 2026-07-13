@@ -573,7 +573,7 @@
     "E-12": {
       "type": "object",
       "title": "E-12 Classification History",
-      "description": "The bi-temporal record of time-varying classifications on a holding or investment — which department holds it, its credit rating, its sector, its strategy, its geography — with every change dated, so an aggregation is correct at *any* point in time, not only now.",
+      "description": "The bi-temporal record of time-varying classifications on a holding, investment or deal record — which department holds it, its credit rating, its sector, its strategy, its geography, its pipeline stage — with every change dated, so an aggregation is correct at *any* point in time, not only now.",
       "properties": {
         "classification_id": {
           "type": "string",
@@ -1829,6 +1829,10 @@
           "description": "Declared type: varchar."
         },
         "investment_route": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "subject_type": {
           "type": "string",
           "description": "Declared type: varchar."
         },
@@ -4206,6 +4210,58 @@
       },
       "required": [
         "direct_loan_id"
+      ],
+      "additionalProperties": false
+    },
+    "PM-15": {
+      "type": "object",
+      "title": "PM-15 Deal / Investment Opportunity",
+      "description": "The first-class record of a direct-investment opportunity — the deal — from the moment it is sourced to the moment it either dies or converts into a post-close record on the book. One row per opportunity; the record the BD-04 deal chain works on.",
+      "properties": {
+        "deal_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "target_entity_id": {
+          "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
+          "$ref": "#/$defs/E-01"
+        },
+        "deal_name": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "originating_team": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "source_channel": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "sourced_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Declared type: date."
+        },
+        "structure": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "converted_record_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
+        "converted_record_id": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        }
+      },
+      "required": [
+        "deal_id"
       ],
       "additionalProperties": false
     },

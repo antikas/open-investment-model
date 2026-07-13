@@ -594,7 +594,8 @@ openim-shapes:E-34Shape a sh:NodeShape ;
         <https://w3id.org/openim/shapes/E-34Shape/mandate_fit_note>,
         <https://w3id.org/openim/shapes/E-34Shape/recommended_commitment_amount>,
         <https://w3id.org/openim/shapes/E-34Shape/status>,
-        <https://w3id.org/openim/shapes/E-34Shape/subject_id> ;
+        <https://w3id.org/openim/shapes/E-34Shape/subject_id>,
+        <https://w3id.org/openim/shapes/E-34Shape/subject_type> ;
     sh:targetClass openim:E-34 .
 
 openim-shapes:E-35Shape a sh:NodeShape ;
@@ -1306,6 +1307,20 @@ openim-shapes:PM-14Shape a sh:NodeShape ;
         <https://w3id.org/openim/shapes/PM-14Shape/undrawn_amount>,
         <https://w3id.org/openim/shapes/PM-14Shape/workout_status> ;
     sh:targetClass openim:PM-14 .
+
+openim-shapes:PM-15Shape a sh:NodeShape ;
+    rdfs:label "PM-15 Deal / Investment Opportunity shape" ;
+    sh:property <https://w3id.org/openim/shapes/PM-15Shape/converted_record_id>,
+        <https://w3id.org/openim/shapes/PM-15Shape/converted_record_type>,
+        <https://w3id.org/openim/shapes/PM-15Shape/deal_id>,
+        <https://w3id.org/openim/shapes/PM-15Shape/deal_name>,
+        <https://w3id.org/openim/shapes/PM-15Shape/originating_team>,
+        <https://w3id.org/openim/shapes/PM-15Shape/source_channel>,
+        <https://w3id.org/openim/shapes/PM-15Shape/sourced_date>,
+        <https://w3id.org/openim/shapes/PM-15Shape/strategy>,
+        <https://w3id.org/openim/shapes/PM-15Shape/structure>,
+        <https://w3id.org/openim/shapes/PM-15Shape/target_entity_id> ;
+    sh:targetClass openim:PM-15 .
 
 openim-shapes:RA-01Shape a sh:NodeShape ;
     rdfs:label "RA-01 Direct Real Asset shape" ;
@@ -4054,6 +4069,12 @@ openim-shapes:RA-05Shape a sh:NodeShape ;
     sh:maxCount 1 ;
     sh:name "subject_id" ;
     sh:path <https://w3id.org/openim/ontology/E-34#subject_id> .
+
+<https://w3id.org/openim/shapes/E-34Shape/subject_type> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "subject_type" ;
+    sh:path <https://w3id.org/openim/ontology/E-34#subject_type> .
 
 <https://w3id.org/openim/shapes/E-35Shape/acknowledgement_date> a sh:PropertyShape ;
     sh:datatype xsd:date ;
@@ -7358,6 +7379,67 @@ openim-shapes:RA-05Shape a sh:NodeShape ;
     sh:maxCount 1 ;
     sh:name "workout_status" ;
     sh:path <https://w3id.org/openim/ontology/PM-14#workout_status> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/converted_record_id> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "converted_record_id" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#converted_record_id> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/converted_record_type> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "converted_record_type" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#converted_record_type> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/deal_id> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:name "deal_id" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#deal_id> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/deal_name> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "deal_name" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#deal_name> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/originating_team> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "originating_team" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#originating_team> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/source_channel> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "source_channel" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#source_channel> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/sourced_date> a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:maxCount 1 ;
+    sh:name "sourced_date" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#sourced_date> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/strategy> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "strategy" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#strategy> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/structure> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "structure" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#structure> .
+
+<https://w3id.org/openim/shapes/PM-15Shape/target_entity_id> a sh:PropertyShape ;
+    sh:class openim:E-01 ;
+    sh:maxCount 1 ;
+    sh:name "target_entity_id" ;
+    sh:path <https://w3id.org/openim/ontology/PM-15#target_entity_id> .
 
 <https://w3id.org/openim/shapes/RA-01Shape/acquisition_date> a sh:PropertyShape ;
     sh:datatype xsd:date ;

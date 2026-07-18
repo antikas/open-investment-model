@@ -51,6 +51,20 @@ This is the one piece of genuine buy-side prior art, and OpenIM names it openly.
 
 OpenIM is, in spirit, the maintained, vendor-neutral, service-domain-first, agent-native successor to what `glue` attempted. Pretending `glue` never existed would be the dishonest move; citing it is the honest one.
 
+### Quadra — a current, open buy-side effort converging independently — *the closest living adjacent work*
+
+Where `glue` proves the idea is not novel, Quadra proves it is happening again, now, and independently. Quadra is a new open buy-side platform from Stuart Plane, the founder of Cadis and Matrix and a long-standing practitioner in buy-side enterprise data management and security mastering. It starts from an open, git-native data model with the operating engines built on top of it, and like OpenIM it treats that model as the foundation its agents run on, with the deterministic core kept out of the numbers-of-record.
+
+Quadra is the closest current, credible, adjacent prior art OpenIM has found, and the convergence is the substance of the point. Two efforts, arrived at separately, have landed on the same core convictions: open and git-native, model-first, agent-native, an institutional operating layer that spans public and private markets, and entity resolution taken seriously rather than assumed away. Independent agreement of that kind is evidence the open buy-side model thesis is right, not a threat to it.
+
+The difference is one of kind, not of camp. Quadra is a platform, a runnable system built to operate a firm. OpenIM is a vendor-neutral reference model, a service-domain and master-data decomposition published under MIT and meant to be read and built on by anyone, platforms included. A reference model and an implementing platform sit at different layers and can share a vocabulary rather than compete for one. Naming Quadra, and naming it as convergent rather than rival, is the honest posture.
+
+### Open-source retail quant platforms — *a different scope, and a different kind of artefact*
+
+A class of open-source projects assembles quantitative-finance libraries — portfolio optimisation, volatility modelling, backtesting, broker execution — into an end-to-end workflow for retail investors and independent quants. A current example is [`menonf/InvestmentManagement`](https://github.com/menonf/InvestmentManagement): a Python toolkit over SQL Server / Databricks that loads public market data, backtests strategies, constructs and executes portfolios, measures performance and risk, and adds an LLM layer for natural-language querying and strategy generation.
+
+These are **code toolkits, not reference models**, and they cover the **public-markets front office** — data, signal, optimisation, execution — not the institutional middle and back office (fund accounting, NAV, capital calls, LP servicing, custody) and not private markets. Their security masters assume one clean public-market identifier per instrument, with no entity-resolution or golden-key layer. And where they reach for AI, the model sits in the decision path (strategy generation). OpenIM sits elsewhere on all three axes: a vendor-neutral service-domain and master-data **reference model** for the **institutional** buy-side across **public and private** markets, with the model kept out of the numbers-of-record by design.
+
 ### ILPA reporting templates — *consumed by OpenIM's LP service domains*
 
 ILPA's quarterly reporting templates (the 2025 Reporting Template v2.0 and Performance Template) standardise the **format and field-level content** of GP-to-LP reporting in private equity. They standardise what a capital-call notice contains; they do not standardise the *identity* of the entities within it ("is this the same fund as last quarter?"). That identity and master-data gap is exactly OpenIM territory. OpenIM's private-markets service domains consume and produce ILPA-format reporting.

@@ -1,18 +1,21 @@
 @prefix openim: <https://w3id.org/openim/ontology/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <https://w3id.org/openim/ontology> a owl:Ontology ;
     rdfs:label "OpenIM — Open Investment Model canonical entity ontology" ;
-    rdfs:comment "A FIBO-aligned OWL ontology of the OpenIM canonical entity model — the buy-side reference model's master data, generated from the model. Entities are owl:Class; specialisations are rdfs:subClassOf; attributes are datatype/object properties. FIBO is the lower layer the entity model aligns to (owl:equivalentClass / skos:closeMatch); this ontology expresses a reference model and does not declare OpenIM a standard." .
+    rdfs:comment "A FIBO-aligned OWL ontology of the OpenIM canonical entity model — the buy-side reference model's master data, generated from the model. Entities are owl:Class; specialisations are rdfs:subClassOf; attributes are datatype/object properties. FIBO is the lower layer the entity model aligns to (owl:equivalentClass / skos:closeMatch); this ontology expresses a reference model and does not declare OpenIM a standard." ;
+    owl:versionInfo "0.2.0" .
 
 <https://w3id.org/openim/ontology/DR-01#ccp_entity_id> a owl:ObjectProperty ;
     rdfs:label "ccp_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-01 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:cleared-through .
 
 <https://w3id.org/openim/ontology/DR-01#contract_multiplier> a owl:DatatypeProperty ;
     rdfs:label "contract_multiplier" ;
@@ -30,7 +33,8 @@
     rdfs:label "exchange_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-01 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:listed-on .
 
 <https://w3id.org/openim/ontology/DR-01#exchange_symbol> a owl:DatatypeProperty ;
     rdfs:label "exchange_symbol" ;
@@ -54,7 +58,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-01 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/DR-01#option_right> a owl:DatatypeProperty ;
     rdfs:label "option_right" ;
@@ -84,13 +89,15 @@
     rdfs:label "underlying_instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-01 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:underlying-is .
 
 <https://w3id.org/openim/ontology/DR-01#underlying_reference> a owl:ObjectProperty ;
     rdfs:label "underlying_reference" ;
     rdfs:comment "Declared type: varchar (FK → E-10)." ;
     rdfs:domain openim:DR-01 ;
-    rdfs:range openim:E-10 .
+    rdfs:range openim:E-10 ;
+    rdfs:subPropertyOf openim:underlying-index-is .
 
 <https://w3id.org/openim/ontology/DR-01#underlying_type> a owl:DatatypeProperty ;
     rdfs:label "underlying_type" ;
@@ -114,7 +121,8 @@
     rdfs:label "counterparty_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-02 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-counterparty .
 
 <https://w3id.org/openim/ontology/DR-02#derivative_sub_type> a owl:DatatypeProperty ;
     rdfs:label "derivative_sub_type" ;
@@ -138,13 +146,15 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-02 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/DR-02#master_agreement_id> a owl:ObjectProperty ;
     rdfs:label "master_agreement_id" ;
     rdfs:comment "Declared type: varchar (FK → DR-03)." ;
     rdfs:domain openim:DR-02 ;
-    rdfs:range openim:DR-03 .
+    rdfs:range openim:DR-03 ;
+    rdfs:subPropertyOf openim:under-master-agreement .
 
 <https://w3id.org/openim/ontology/DR-02#maturity_date> a owl:DatatypeProperty ;
     rdfs:label "maturity_date" ;
@@ -186,13 +196,15 @@
     rdfs:label "underlying_instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-02 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:underlying-is .
 
 <https://w3id.org/openim/ontology/DR-02#underlying_reference> a owl:ObjectProperty ;
     rdfs:label "underlying_reference" ;
     rdfs:comment "Declared type: varchar (FK → E-10)." ;
     rdfs:domain openim:DR-02 ;
-    rdfs:range openim:E-10 .
+    rdfs:range openim:E-10 ;
+    rdfs:subPropertyOf openim:underlying-index-is .
 
 <https://w3id.org/openim/ontology/DR-02#underlying_type> a owl:DatatypeProperty ;
     rdfs:label "underlying_type" ;
@@ -222,7 +234,8 @@
     rdfs:label "counterparty_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-counterparty .
 
 <https://w3id.org/openim/ontology/DR-03#csa_id> a owl:DatatypeProperty ;
     rdfs:label "csa_id" ;
@@ -270,7 +283,8 @@
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/DR-03#margin_type> a owl:DatatypeProperty ;
     rdfs:label "margin_type" ;
@@ -330,7 +344,8 @@
     rdfs:label "clearing_relationship_id" ;
     rdfs:comment "Declared type: varchar (FK → DR-05)." ;
     rdfs:domain openim:DR-04 ;
-    rdfs:range openim:DR-05 .
+    rdfs:range openim:DR-05 ;
+    rdfs:subPropertyOf openim:under-clearing-relationship .
 
 <https://w3id.org/openim/ontology/DR-04#collateral_currency> a owl:DatatypeProperty ;
     rdfs:label "collateral_currency" ;
@@ -378,7 +393,8 @@
     rdfs:label "master_agreement_id" ;
     rdfs:comment "Declared type: varchar (FK → DR-03)." ;
     rdfs:domain openim:DR-04 ;
-    rdfs:range openim:DR-03 .
+    rdfs:range openim:DR-03 ;
+    rdfs:subPropertyOf openim:under-master-agreement .
 
 <https://w3id.org/openim/ontology/DR-04#net_exposure_usd> a owl:DatatypeProperty ;
     rdfs:label "net_exposure_usd" ;
@@ -408,7 +424,8 @@
     rdfs:label "ccp_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:cleared-through .
 
 <https://w3id.org/openim/ontology/DR-05#clearing_account_ref> a owl:DatatypeProperty ;
     rdfs:label "clearing_account_ref" ;
@@ -426,7 +443,8 @@
     rdfs:label "clearing_broker_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-clearing-broker .
 
 <https://w3id.org/openim/ontology/DR-05#clearing_model> a owl:DatatypeProperty ;
     rdfs:label "clearing_model" ;
@@ -444,7 +462,8 @@
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:DR-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/DR-05#margin_basis> a owl:DatatypeProperty ;
     rdfs:label "margin_basis" ;
@@ -512,6 +531,18 @@
     rdfs:domain openim:E-01 ;
     rdfs:range xsd:string .
 
+<https://w3id.org/openim/ontology/E-01#party_relationship_type> a owl:DatatypeProperty ;
+    rdfs:label "party_relationship_type" ;
+    rdfs:comment "Declared type: varchar." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range xsd:string .
+
+<https://w3id.org/openim/ontology/E-01#related_entity_id> a owl:DatatypeProperty ;
+    rdfs:label "related_entity_id" ;
+    rdfs:comment "Declared type: varchar (FK → self)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range xsd:string .
+
 <https://w3id.org/openim/ontology/E-01#status> a owl:DatatypeProperty ;
     rdfs:label "status" ;
     rdfs:comment "Declared type: varchar." ;
@@ -522,7 +553,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: int (FK → E-09)." ;
     rdfs:domain openim:E-02 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/E-02#currency> a owl:DatatypeProperty ;
     rdfs:label "currency" ;
@@ -570,7 +602,8 @@
     rdfs:label "issuer_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-02 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:issued-by .
 
 <https://w3id.org/openim/ontology/E-02#status> a owl:DatatypeProperty ;
     rdfs:label "status" ;
@@ -582,7 +615,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: int (FK → E-09)." ;
     rdfs:domain openim:E-03 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/E-03#base_currency> a owl:DatatypeProperty ;
     rdfs:label "base_currency" ;
@@ -594,7 +628,15 @@
     rdfs:label "benchmark_id" ;
     rdfs:comment "Declared type: varchar (FK → E-10)." ;
     rdfs:domain openim:E-03 ;
-    rdfs:range openim:E-10 .
+    rdfs:range openim:E-10 ;
+    rdfs:subPropertyOf openim:benchmarked-to .
+
+<https://w3id.org/openim/ontology/E-03#governing_plan_id> a owl:ObjectProperty ;
+    rdfs:label "governing_plan_id" ;
+    rdfs:comment "Declared type: varchar (FK → E-29)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-29 ;
+    rdfs:subPropertyOf openim:governed-by-plan .
 
 <https://w3id.org/openim/ontology/E-03#inception_date> a owl:DatatypeProperty ;
     rdfs:label "inception_date" ;
@@ -606,7 +648,8 @@
     rdfs:label "managed_by_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:managed-by .
 
 <https://w3id.org/openim/ontology/E-03#mandate_objective> a owl:DatatypeProperty ;
     rdfs:label "mandate_objective" ;
@@ -684,7 +727,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-04 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:position-in .
 
 <https://w3id.org/openim/ontology/E-04#market_value_usd> a owl:DatatypeProperty ;
     rdfs:label "market_value_usd" ;
@@ -696,7 +740,8 @@
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:E-04 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/E-04#position_id> a owl:DatatypeProperty ;
     rdfs:label "position_id" ;
@@ -720,19 +765,22 @@
     rdfs:label "counterparty_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-counterparty .
 
 <https://w3id.org/openim/ontology/E-05#instrument_id> a owl:ObjectProperty ;
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-05 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-05#portfolio_id> a owl:ObjectProperty ;
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:E-05 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/E-05#quantity> a owl:DatatypeProperty ;
     rdfs:label "quantity" ;
@@ -816,13 +864,15 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-06 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-06#portfolio_id> a owl:ObjectProperty ;
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:E-06 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/E-06#source> a owl:DatatypeProperty ;
     rdfs:label "source" ;
@@ -834,7 +884,8 @@
     rdfs:label "transaction_id" ;
     rdfs:comment "Declared type: varchar (FK → E-05)." ;
     rdfs:domain openim:E-06 ;
-    rdfs:range openim:E-05 .
+    rdfs:range openim:E-05 ;
+    rdfs:subPropertyOf openim:from-transaction .
 
 <https://w3id.org/openim/ontology/E-07#confidence_score> a owl:DatatypeProperty ;
     rdfs:label "confidence_score" ;
@@ -846,7 +897,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-07 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-07#method> a owl:DatatypeProperty ;
     rdfs:label "method" ;
@@ -858,7 +910,8 @@
     rdfs:label "position_id" ;
     rdfs:comment "Declared type: varchar (FK → E-04)." ;
     rdfs:domain openim:E-07 ;
-    rdfs:range openim:E-04 .
+    rdfs:range openim:E-04 ;
+    rdfs:subPropertyOf openim:valuation-of .
 
 <https://w3id.org/openim/ontology/E-07#source> a owl:DatatypeProperty ;
     rdfs:label "source" ;
@@ -870,7 +923,8 @@
     rdfs:label "unit_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:E-07 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/E-07#units_in_issue> a owl:DatatypeProperty ;
     rdfs:label "units_in_issue" ;
@@ -918,7 +972,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-08 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-08#market_data_id> a owl:DatatypeProperty ;
     rdfs:label "market_data_id" ;
@@ -996,7 +1051,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: varchar (FK → E-09)." ;
     rdfs:domain openim:E-10 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/E-10#benchmark_id> a owl:DatatypeProperty ;
     rdfs:label "benchmark_id" ;
@@ -1110,13 +1166,15 @@
     rdfs:label "classification_type" ;
     rdfs:comment "Declared type: varchar (FK → E-11)." ;
     rdfs:domain openim:E-12 ;
-    rdfs:range openim:E-11 .
+    rdfs:range openim:E-11 ;
+    rdfs:subPropertyOf openim:has-classification-type .
 
 <https://w3id.org/openim/ontology/E-12#classification_value> a owl:ObjectProperty ;
     rdfs:label "classification_value" ;
     rdfs:comment "Declared type: varchar (FK → E-11)." ;
     rdfs:domain openim:E-12 ;
-    rdfs:range openim:E-11 .
+    rdfs:range openim:E-11 ;
+    rdfs:subPropertyOf openim:has-classification-value .
 
 <https://w3id.org/openim/ontology/E-12#confidence_tier> a owl:DatatypeProperty ;
     rdfs:label "confidence_tier" ;
@@ -1276,7 +1334,7 @@
 
 <https://w3id.org/openim/ontology/E-15#subject_id> a owl:DatatypeProperty ;
     rdfs:label "subject_id" ;
-    rdfs:comment "Declared type: varchar." ;
+    rdfs:comment "Declared type: varchar (FK → {E-01, E-02, E-03, E-04, PM-01, PM-09})." ;
     rdfs:domain openim:E-15 ;
     rdfs:range xsd:string .
 
@@ -1434,13 +1492,15 @@
     rdfs:label "limit_id" ;
     rdfs:comment "Declared type: varchar (FK → E-16)." ;
     rdfs:domain openim:E-18 ;
-    rdfs:range openim:E-16 .
+    rdfs:range openim:E-16 ;
+    rdfs:subPropertyOf openim:breach-of-limit .
 
 <https://w3id.org/openim/ontology/E-18#measurement_id> a owl:ObjectProperty ;
     rdfs:label "measurement_id" ;
     rdfs:comment "Declared type: varchar (FK → E-19)." ;
     rdfs:domain openim:E-18 ;
-    rdfs:range openim:E-19 .
+    rdfs:range openim:E-19 ;
+    rdfs:subPropertyOf openim:detected-by-measurement .
 
 <https://w3id.org/openim/ontology/E-18#observed_value> a owl:DatatypeProperty ;
     rdfs:label "observed_value" ;
@@ -1524,7 +1584,8 @@
     rdfs:label "scenario_id" ;
     rdfs:comment "Declared type: varchar (FK → E-17)." ;
     rdfs:domain openim:E-19 ;
-    rdfs:range openim:E-17 .
+    rdfs:range openim:E-17 ;
+    rdfs:subPropertyOf openim:under-scenario .
 
 <https://w3id.org/openim/ontology/E-19#subject_id> a owl:DatatypeProperty ;
     rdfs:label "subject_id" ;
@@ -1566,7 +1627,8 @@
     rdfs:label "metric_definition_id" ;
     rdfs:comment "Declared type: varchar (FK → E-22)." ;
     rdfs:domain openim:E-20 ;
-    rdfs:range openim:E-22 .
+    rdfs:range openim:E-22 ;
+    rdfs:subPropertyOf openim:computed-per-metric .
 
 <https://w3id.org/openim/ontology/E-20#performance_result_id> a owl:DatatypeProperty ;
     rdfs:label "performance_result_id" ;
@@ -1776,7 +1838,8 @@
     rdfs:label "document_id" ;
     rdfs:comment "Declared type: varchar (FK → E-15)." ;
     rdfs:domain openim:E-23 ;
-    rdfs:range openim:E-15 .
+    rdfs:range openim:E-15 ;
+    rdfs:subPropertyOf openim:extracted-from .
 
 <https://w3id.org/openim/ontology/E-23#extracted_at> a owl:DatatypeProperty ;
     rdfs:label "extracted_at" ;
@@ -1956,7 +2019,8 @@
     rdfs:label "holder_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-25 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:held-by .
 
 <https://w3id.org/openim/ontology/E-25#opened_date> a owl:DatatypeProperty ;
     rdfs:label "opened_date" ;
@@ -1968,7 +2032,8 @@
     rdfs:label "portfolio_links" ;
     rdfs:comment "Declared type: array (FK → E-03)." ;
     rdfs:domain openim:E-25 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:linked-to-portfolio .
 
 <https://w3id.org/openim/ontology/E-25#segregation> a owl:DatatypeProperty ;
     rdfs:label "segregation" ;
@@ -1998,7 +2063,8 @@
     rdfs:label "collateral_instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-26 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-26#collateral_position_id> a owl:DatatypeProperty ;
     rdfs:label "collateral_position_id" ;
@@ -2016,7 +2082,8 @@
     rdfs:label "counterparty_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-26 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-counterparty .
 
 <https://w3id.org/openim/ontology/E-26#direction> a owl:DatatypeProperty ;
     rdfs:label "direction" ;
@@ -2274,7 +2341,8 @@
     rdfs:label "subject_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:E-29 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:applies-to-portfolio .
 
 <https://w3id.org/openim/ontology/E-29#version> a owl:DatatypeProperty ;
     rdfs:label "version" ;
@@ -2286,7 +2354,8 @@
     rdfs:label "funding_portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:E-30 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:funded-by-portfolio .
 
 <https://w3id.org/openim/ontology/E-30#goal_id> a owl:DatatypeProperty ;
     rdfs:label "goal_id" ;
@@ -2310,7 +2379,8 @@
     rdfs:label "household_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-30 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:for-party .
 
 <https://w3id.org/openim/ontology/E-30#priority_layer> a owl:DatatypeProperty ;
     rdfs:label "priority_layer" ;
@@ -2376,7 +2446,8 @@
     rdfs:label "goal_id" ;
     rdfs:comment "Declared type: varchar (FK → E-30)." ;
     rdfs:domain openim:E-31 ;
-    rdfs:range openim:E-30 .
+    rdfs:range openim:E-30 ;
+    rdfs:subPropertyOf openim:measures-goal .
 
 <https://w3id.org/openim/ontology/E-31#goal_progress_measurement_id> a owl:DatatypeProperty ;
     rdfs:label "goal_progress_measurement_id" ;
@@ -2388,7 +2459,8 @@
     rdfs:label "metric_definition_id" ;
     rdfs:comment "Declared type: varchar (FK → E-22)." ;
     rdfs:domain openim:E-31 ;
-    rdfs:range openim:E-22 .
+    rdfs:range openim:E-22 ;
+    rdfs:subPropertyOf openim:computed-per-metric .
 
 <https://w3id.org/openim/ontology/E-31#probability_of_success> a owl:DatatypeProperty ;
     rdfs:label "probability_of_success" ;
@@ -2412,13 +2484,15 @@
     rdfs:label "acquisition_transaction_id" ;
     rdfs:comment "Declared type: varchar (FK → E-05)." ;
     rdfs:domain openim:E-32 ;
-    rdfs:range openim:E-05 .
+    rdfs:range openim:E-05 ;
+    rdfs:subPropertyOf openim:acquired-via .
 
 <https://w3id.org/openim/ontology/E-32#client_entity_id> a owl:ObjectProperty ;
     rdfs:label "client_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-32 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:for-party .
 
 <https://w3id.org/openim/ontology/E-32#cost_basis_amount> a owl:DatatypeProperty ;
     rdfs:label "cost_basis_amount" ;
@@ -2448,7 +2522,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:E-32 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/E-32#lot_relief_method> a owl:DatatypeProperty ;
     rdfs:label "lot_relief_method" ;
@@ -2520,13 +2595,15 @@
     rdfs:label "goal_set" ;
     rdfs:comment "Declared type: array (FK → E-30)." ;
     rdfs:domain openim:E-33 ;
-    rdfs:range openim:E-30 .
+    rdfs:range openim:E-30 ;
+    rdfs:subPropertyOf openim:includes-goal .
 
 <https://w3id.org/openim/ontology/E-33#household_entity_id> a owl:ObjectProperty ;
     rdfs:label "household_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-33 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:for-party .
 
 <https://w3id.org/openim/ontology/E-33#plan_content> a owl:DatatypeProperty ;
     rdfs:label "plan_content" ;
@@ -2598,7 +2675,8 @@
     rdfs:label "ic_memorandum_ref" ;
     rdfs:comment "Declared type: varchar (FK → E-15)." ;
     rdfs:domain openim:E-34 ;
-    rdfs:range openim:E-15 .
+    rdfs:range openim:E-15 ;
+    rdfs:subPropertyOf openim:has-document .
 
 <https://w3id.org/openim/ontology/E-34#investment_route> a owl:DatatypeProperty ;
     rdfs:label "investment_route" ;
@@ -2646,7 +2724,8 @@
     rdfs:label "client_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-35 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:for-party .
 
 <https://w3id.org/openim/ontology/E-35#complaint_category> a owl:DatatypeProperty ;
     rdfs:label "complaint_category" ;
@@ -2724,7 +2803,8 @@
     rdfs:label "administrator_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:E-36 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:administered-by .
 
 <https://w3id.org/openim/ontology/E-36#exception_date> a owl:DatatypeProperty ;
     rdfs:label "exception_date" ;
@@ -2820,7 +2900,8 @@
     rdfs:label "metric_definition_id" ;
     rdfs:comment "Declared type: varchar (FK → E-22)." ;
     rdfs:domain openim:E-37 ;
-    rdfs:range openim:E-22 .
+    rdfs:range openim:E-22 ;
+    rdfs:subPropertyOf openim:computed-per-metric .
 
 <https://w3id.org/openim/ontology/E-37#pai_indicators> a owl:DatatypeProperty ;
     rdfs:label "pai_indicators" ;
@@ -2892,7 +2973,8 @@
     rdfs:label "rating_methodology_id" ;
     rdfs:comment "Declared type: varchar (FK → E-22)." ;
     rdfs:domain openim:E-38 ;
-    rdfs:range openim:E-22 .
+    rdfs:range openim:E-22 ;
+    rdfs:subPropertyOf openim:computed-per-metric .
 
 <https://w3id.org/openim/ontology/E-38#rating_scale> a owl:DatatypeProperty ;
     rdfs:label "rating_scale" ;
@@ -2928,7 +3010,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: int (FK → E-09)." ;
     rdfs:domain openim:FO-01 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/FO-01#base_currency> a owl:DatatypeProperty ;
     rdfs:label "base_currency" ;
@@ -3006,7 +3089,8 @@
     rdfs:label "manager_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-01 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:managed-by .
 
 <https://w3id.org/openim/ontology/FO-01#pricing_basis> a owl:DatatypeProperty ;
     rdfs:label "pricing_basis" ;
@@ -3054,7 +3138,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: int (FK → E-09)." ;
     rdfs:domain openim:FO-02 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/FO-02#class_code> a owl:DatatypeProperty ;
     rdfs:label "class_code" ;
@@ -3090,7 +3175,8 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-02 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-02#hedged> a owl:DatatypeProperty ;
     rdfs:label "hedged" ;
@@ -3156,13 +3242,15 @@
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/FO-03#share_class_id> a owl:ObjectProperty ;
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-03 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-03#unitholding_id> a owl:DatatypeProperty ;
     rdfs:label "unitholding_id" ;
@@ -3210,7 +3298,8 @@
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-04 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/FO-04#order_id> a owl:DatatypeProperty ;
     rdfs:label "order_id" ;
@@ -3234,7 +3323,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-04 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-04#status> a owl:DatatypeProperty ;
     rdfs:label "status" ;
@@ -3252,7 +3342,8 @@
     rdfs:label "unitholding_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-03)." ;
     rdfs:domain openim:FO-04 ;
-    rdfs:range openim:FO-03 .
+    rdfs:range openim:FO-03 ;
+    rdfs:subPropertyOf openim:on-unitholding .
 
 <https://w3id.org/openim/ontology/FO-04#units> a owl:DatatypeProperty ;
     rdfs:label "units" ;
@@ -3336,7 +3427,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-05 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-06#accrued_amount> a owl:DatatypeProperty ;
     rdfs:label "accrued_amount" ;
@@ -3348,7 +3440,8 @@
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: int (FK → E-09)." ;
     rdfs:domain openim:FO-06 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/FO-06#crystallisation_trigger> a owl:DatatypeProperty ;
     rdfs:label "crystallisation_trigger" ;
@@ -3408,7 +3501,8 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-06 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-06#hurdle_applied> a owl:DatatypeProperty ;
     rdfs:label "hurdle_applied" ;
@@ -3468,7 +3562,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-06 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-06#waiver_cap_amount> a owl:DatatypeProperty ;
     rdfs:label "waiver_cap_amount" ;
@@ -3516,13 +3611,15 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-07 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-07#investor_entity_id> a owl:ObjectProperty ;
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-07 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/FO-07#issued_at> a owl:DatatypeProperty ;
     rdfs:label "issued_at" ;
@@ -3582,7 +3679,8 @@
     rdfs:label "unitholding_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-03)." ;
     rdfs:domain openim:FO-07 ;
-    rdfs:range openim:FO-03 .
+    rdfs:range openim:FO-03 ;
+    rdfs:subPropertyOf openim:on-unitholding .
 
 <https://w3id.org/openim/ontology/FO-07#withholding_reported> a owl:DatatypeProperty ;
     rdfs:label "withholding_reported" ;
@@ -3606,19 +3704,22 @@
     rdfs:label "delegates_to_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01, nullable)." ;
     rdfs:domain openim:FO-08 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:delegates-to .
 
 <https://w3id.org/openim/ontology/FO-08#fund_product_id> a owl:ObjectProperty ;
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-08 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-08#provider_entity_id> a owl:ObjectProperty ;
     rdfs:label "provider_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-08 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:provided-by .
 
 <https://w3id.org/openim/ontology/FO-08#role> a owl:DatatypeProperty ;
     rdfs:label "role" ;
@@ -3684,13 +3785,15 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-09 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-09#intermediary_entity_id> a owl:ObjectProperty ;
     rdfs:label "intermediary_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-09 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:via-intermediary .
 
 <https://w3id.org/openim/ontology/FO-09#look_through_arrangement_ref> a owl:DatatypeProperty ;
     rdfs:label "look_through_arrangement_ref" ;
@@ -3738,25 +3841,29 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-09 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-10#ap_agreement_id> a owl:ObjectProperty ;
     rdfs:label "ap_agreement_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-12)." ;
     rdfs:domain openim:FO-10 ;
-    rdfs:range openim:FO-12 .
+    rdfs:range openim:FO-12 ;
+    rdfs:subPropertyOf openim:under-ap-agreement .
 
 <https://w3id.org/openim/ontology/FO-10#ap_entity_id> a owl:ObjectProperty ;
     rdfs:label "ap_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-10 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-authorised-participant .
 
 <https://w3id.org/openim/ontology/FO-10#basket_id> a owl:ObjectProperty ;
     rdfs:label "basket_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-11)." ;
     rdfs:domain openim:FO-10 ;
-    rdfs:range openim:FO-11 .
+    rdfs:range openim:FO-11 ;
+    rdfs:subPropertyOf openim:uses-basket .
 
 <https://w3id.org/openim/ontology/FO-10#basket_leg_settlement_date> a owl:DatatypeProperty ;
     rdfs:label "basket_leg_settlement_date" ;
@@ -3840,7 +3947,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-10 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-10#status> a owl:DatatypeProperty ;
     rdfs:label "status" ;
@@ -3882,7 +3990,8 @@
     rdfs:label "ap_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01, nullable)." ;
     rdfs:domain openim:FO-11 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-authorised-participant .
 
 <https://w3id.org/openim/ontology/FO-11#basket_id> a owl:DatatypeProperty ;
     rdfs:label "basket_id" ;
@@ -3930,13 +4039,15 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-11 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-11#instrument_id> a owl:ObjectProperty ;
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:FO-11 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/FO-11#market> a owl:DatatypeProperty ;
     rdfs:label "market" ;
@@ -3960,7 +4071,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-02)." ;
     rdfs:domain openim:FO-11 ;
-    rdfs:range openim:FO-02 .
+    rdfs:range openim:FO-02 ;
+    rdfs:subPropertyOf openim:of-share-class .
 
 <https://w3id.org/openim/ontology/FO-11#total_basket_value> a owl:DatatypeProperty ;
     rdfs:label "total_basket_value" ;
@@ -3978,7 +4090,8 @@
     rdfs:label "ap_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:FO-12 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-authorised-participant .
 
 <https://w3id.org/openim/ontology/FO-12#authorised_date> a owl:DatatypeProperty ;
     rdfs:label "authorised_date" ;
@@ -4008,7 +4121,8 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar (FK → FO-01)." ;
     rdfs:domain openim:FO-12 ;
-    rdfs:range openim:FO-01 .
+    rdfs:range openim:FO-01 ;
+    rdfs:subPropertyOf openim:belongs-to-fund-product .
 
 <https://w3id.org/openim/ontology/FO-12#permitted_settlement_basis> a owl:DatatypeProperty ;
     rdfs:label "permitted_settlement_basis" ;
@@ -4068,13 +4182,15 @@
     rdfs:label "gics_sector" ;
     rdfs:comment "Declared type: varchar (FK → E-11)." ;
     rdfs:domain openim:PB-01 ;
-    rdfs:range openim:E-11 .
+    rdfs:range openim:E-11 ;
+    rdfs:subPropertyOf openim:classified-as .
 
 <https://w3id.org/openim/ontology/PB-01#instrument_id> a owl:ObjectProperty ;
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-01 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-01#isin> a owl:DatatypeProperty ;
     rdfs:label "isin" ;
@@ -4086,7 +4202,8 @@
     rdfs:label "issuer_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-01 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:issued-by .
 
 <https://w3id.org/openim/ontology/PB-01#local_code> a owl:DatatypeProperty ;
     rdfs:label "local_code" ;
@@ -4170,7 +4287,8 @@
     rdfs:label "credit_rating" ;
     rdfs:comment "Declared type: varchar (FK → E-11)." ;
     rdfs:domain openim:PB-02 ;
-    rdfs:range openim:E-11 .
+    rdfs:range openim:E-11 ;
+    rdfs:subPropertyOf openim:classified-as .
 
 <https://w3id.org/openim/ontology/PB-02#currency> a owl:DatatypeProperty ;
     rdfs:label "currency" ;
@@ -4212,7 +4330,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-02 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-02#isin> a owl:DatatypeProperty ;
     rdfs:label "isin" ;
@@ -4230,7 +4349,8 @@
     rdfs:label "issuer_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-02 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:issued-by .
 
 <https://w3id.org/openim/ontology/PB-02#maturity_date> a owl:DatatypeProperty ;
     rdfs:label "maturity_date" ;
@@ -4260,7 +4380,8 @@
     rdfs:label "broker_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:via-broker .
 
 <https://w3id.org/openim/ontology/PB-03#execution_venue> a owl:DatatypeProperty ;
     rdfs:label "execution_venue" ;
@@ -4278,7 +4399,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-03 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-03#limit_price> a owl:DatatypeProperty ;
     rdfs:label "limit_price" ;
@@ -4326,7 +4448,8 @@
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:PB-03 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/PB-03#pre_trade_compliance_status> a owl:DatatypeProperty ;
     rdfs:label "pre_trade_compliance_status" ;
@@ -4356,7 +4479,8 @@
     rdfs:label "transaction_id" ;
     rdfs:comment "Declared type: varchar (FK → E-05)." ;
     rdfs:domain openim:PB-03 ;
-    rdfs:range openim:E-05 .
+    rdfs:range openim:E-05 ;
+    rdfs:subPropertyOf openim:booked-as .
 
 <https://w3id.org/openim/ontology/PB-04#accrued_interest> a owl:DatatypeProperty ;
     rdfs:label "accrued_interest" ;
@@ -4368,7 +4492,8 @@
     rdfs:label "broker_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-04 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:via-broker .
 
 <https://w3id.org/openim/ontology/PB-04#commission> a owl:DatatypeProperty ;
     rdfs:label "commission" ;
@@ -4422,7 +4547,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-04 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-04#last_liquidity_indicator> a owl:DatatypeProperty ;
     rdfs:label "last_liquidity_indicator" ;
@@ -4440,7 +4566,8 @@
     rdfs:label "order_id" ;
     rdfs:comment "Declared type: varchar (FK → PB-03)." ;
     rdfs:domain openim:PB-04 ;
-    rdfs:range openim:PB-03 .
+    rdfs:range openim:PB-03 ;
+    rdfs:subPropertyOf openim:for-order .
 
 <https://w3id.org/openim/ontology/PB-04#settlement_date> a owl:DatatypeProperty ;
     rdfs:label "settlement_date" ;
@@ -4512,7 +4639,8 @@
     rdfs:label "custodian_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-custodian .
 
 <https://w3id.org/openim/ontology/PB-05#gross_amount> a owl:DatatypeProperty ;
     rdfs:label "gross_amount" ;
@@ -4524,7 +4652,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-05 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-05#net_amount> a owl:DatatypeProperty ;
     rdfs:label "net_amount" ;
@@ -4536,13 +4665,15 @@
     rdfs:label "order_id" ;
     rdfs:comment "Declared type: varchar (FK → PB-03)." ;
     rdfs:domain openim:PB-05 ;
-    rdfs:range openim:PB-03 .
+    rdfs:range openim:PB-03 ;
+    rdfs:subPropertyOf openim:for-order .
 
 <https://w3id.org/openim/ontology/PB-05#portfolio_id> a owl:ObjectProperty ;
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:PB-05 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/PB-05#side> a owl:DatatypeProperty ;
     rdfs:label "side" ;
@@ -4566,7 +4697,8 @@
     rdfs:label "allocation_id" ;
     rdfs:comment "Declared type: varchar (FK → PB-05)." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range openim:PB-05 .
+    rdfs:range openim:PB-05 ;
+    rdfs:subPropertyOf openim:for-allocation .
 
 <https://w3id.org/openim/ontology/PB-06#contractual_settlement_date> a owl:DatatypeProperty ;
     rdfs:label "contractual_settlement_date" ;
@@ -4578,13 +4710,15 @@
     rdfs:label "counterparty_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-counterparty .
 
 <https://w3id.org/openim/ontology/PB-06#custodian_entity_id> a owl:ObjectProperty ;
     rdfs:label "custodian_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-custodian .
 
 <https://w3id.org/openim/ontology/PB-06#direction> a owl:DatatypeProperty ;
     rdfs:label "direction" ;
@@ -4602,7 +4736,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-06#place_of_settlement> a owl:DatatypeProperty ;
     rdfs:label "place_of_settlement" ;
@@ -4614,7 +4749,8 @@
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/PB-06#quantity> a owl:DatatypeProperty ;
     rdfs:label "quantity" ;
@@ -4710,7 +4846,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-07 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-07#mandatory_voluntary> a owl:DatatypeProperty ;
     rdfs:label "mandatory_voluntary" ;
@@ -4734,7 +4871,8 @@
     rdfs:label "resulting_instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-07 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:results-in-instrument .
 
 <https://w3id.org/openim/ontology/PB-07#source> a owl:DatatypeProperty ;
     rdfs:label "source" ;
@@ -4752,7 +4890,8 @@
     rdfs:label "transaction_id" ;
     rdfs:comment "Declared type: varchar (FK → E-05)." ;
     rdfs:domain openim:PB-07 ;
-    rdfs:range openim:E-05 .
+    rdfs:range openim:E-05 ;
+    rdfs:subPropertyOf openim:from-transaction .
 
 <https://w3id.org/openim/ontology/PB-08#amount_per_unit> a owl:DatatypeProperty ;
     rdfs:label "amount_per_unit" ;
@@ -4782,7 +4921,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-08 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-08#is_projected> a owl:DatatypeProperty ;
     rdfs:label "is_projected" ;
@@ -4830,7 +4970,8 @@
     rdfs:label "benchmark_id" ;
     rdfs:comment "Declared type: varchar (FK → E-10)." ;
     rdfs:domain openim:PB-09 ;
-    rdfs:range openim:E-10 .
+    rdfs:range openim:E-10 ;
+    rdfs:subPropertyOf openim:constituent-of .
 
 <https://w3id.org/openim/ontology/PB-09#capping_applied> a owl:DatatypeProperty ;
     rdfs:label "capping_applied" ;
@@ -4872,7 +5013,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-09 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-09#provider> a owl:DatatypeProperty ;
     rdfs:label "provider" ;
@@ -4896,13 +5038,15 @@
     rdfs:label "borrower_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PB-10 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-borrower .
 
 <https://w3id.org/openim/ontology/PB-10#collateral_position_id> a owl:ObjectProperty ;
     rdfs:label "collateral_position_id" ;
     rdfs:comment "Declared type: varchar (FK → E-26)." ;
     rdfs:domain openim:PB-10 ;
-    rdfs:range openim:E-26 .
+    rdfs:range openim:E-26 ;
+    rdfs:subPropertyOf openim:collateralised-by .
 
 <https://w3id.org/openim/ontology/PB-10#fee_rate> a owl:DatatypeProperty ;
     rdfs:label "fee_rate" ;
@@ -4914,7 +5058,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-10 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PB-10#lent_quantity> a owl:DatatypeProperty ;
     rdfs:label "lent_quantity" ;
@@ -4950,7 +5095,8 @@
     rdfs:label "position_id" ;
     rdfs:comment "Declared type: varchar (FK → E-04)." ;
     rdfs:domain openim:PB-10 ;
-    rdfs:range openim:E-04 .
+    rdfs:range openim:E-04 ;
+    rdfs:subPropertyOf openim:lends-position .
 
 <https://w3id.org/openim/ontology/PB-10#recall_status> a owl:DatatypeProperty ;
     rdfs:label "recall_status" ;
@@ -5004,7 +5150,8 @@
     rdfs:label "meeting_id" ;
     rdfs:comment "Declared type: varchar (FK → PB-07)." ;
     rdfs:domain openim:PB-11 ;
-    rdfs:range openim:PB-07 .
+    rdfs:range openim:PB-07 ;
+    rdfs:subPropertyOf openim:at-meeting .
 
 <https://w3id.org/openim/ontology/PB-11#policy_basis> a owl:DatatypeProperty ;
     rdfs:label "policy_basis" ;
@@ -5016,7 +5163,8 @@
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar (FK → E-03)." ;
     rdfs:domain openim:PB-11 ;
-    rdfs:range openim:E-03 .
+    rdfs:range openim:E-03 ;
+    rdfs:subPropertyOf openim:in-portfolio .
 
 <https://w3id.org/openim/ontology/PB-11#proxy_adviser_rec> a owl:DatatypeProperty ;
     rdfs:label "proxy_adviser_rec" ;
@@ -5052,13 +5200,15 @@
     rdfs:label "administrator_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-03)." ;
     rdfs:domain openim:PM-01 ;
-    rdfs:range openim:PM-03 .
+    rdfs:range openim:PM-03 ;
+    rdfs:subPropertyOf openim:has-fund-administrator .
 
 <https://w3id.org/openim/ontology/PM-01#asset_class> a owl:ObjectProperty ;
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: varchar (FK → E-09)." ;
     rdfs:domain openim:PM-01 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/PM-01#committed_capital_usd> a owl:DatatypeProperty ;
     rdfs:label "committed_capital_usd" ;
@@ -5118,7 +5268,8 @@
     rdfs:label "gp_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-02)." ;
     rdfs:domain openim:PM-01 ;
-    rdfs:range openim:PM-02 .
+    rdfs:range openim:PM-02 ;
+    rdfs:subPropertyOf openim:managed-by-gp .
 
 <https://w3id.org/openim/ontology/PM-01#known_aliases> a owl:DatatypeProperty ;
     rdfs:label "known_aliases" ;
@@ -5346,7 +5497,8 @@
     rdfs:label "investment_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-09)." ;
     rdfs:domain openim:PM-05 ;
-    rdfs:range openim:PM-09 .
+    rdfs:range openim:PM-09 ;
+    rdfs:subPropertyOf openim:for-investment .
 
 <https://w3id.org/openim/ontology/PM-05#jurisdiction> a owl:DatatypeProperty ;
     rdfs:label "jurisdiction" ;
@@ -5406,13 +5558,15 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-06 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-06#lp_entity_id> a owl:ObjectProperty ;
     rdfs:label "lp_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PM-06 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/PM-07#amount_usd> a owl:DatatypeProperty ;
     rdfs:label "amount_usd" ;
@@ -5442,7 +5596,8 @@
     rdfs:label "commitment_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-06)." ;
     rdfs:domain openim:PM-07 ;
-    rdfs:range openim:PM-06 .
+    rdfs:range openim:PM-06 ;
+    rdfs:subPropertyOf openim:against-commitment .
 
 <https://w3id.org/openim/ontology/PM-07#cumulative_called_pct> a owl:DatatypeProperty ;
     rdfs:label "cumulative_called_pct" ;
@@ -5460,7 +5615,8 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-07 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-07#purpose> a owl:DatatypeProperty ;
     rdfs:label "purpose" ;
@@ -5484,7 +5640,8 @@
     rdfs:label "commitment_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-06)." ;
     rdfs:domain openim:PM-08 ;
-    rdfs:range openim:PM-06 .
+    rdfs:range openim:PM-06 ;
+    rdfs:subPropertyOf openim:against-commitment .
 
 <https://w3id.org/openim/ontology/PM-08#dist_date> a owl:DatatypeProperty ;
     rdfs:label "dist_date" ;
@@ -5508,7 +5665,8 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-08 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-08#recallable> a owl:DatatypeProperty ;
     rdfs:label "recallable" ;
@@ -5544,7 +5702,8 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-09 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-09#gross_irr> a owl:DatatypeProperty ;
     rdfs:label "gross_irr" ;
@@ -5590,7 +5749,7 @@
 
 <https://w3id.org/openim/ontology/PM-09#target_id> a owl:DatatypeProperty ;
     rdfs:label "target_id" ;
-    rdfs:comment "Declared type: varchar." ;
+    rdfs:comment "Declared type: varchar (FK → {PM-04, PM-01})." ;
     rdfs:domain openim:PM-09 ;
     rdfs:range xsd:string .
 
@@ -5634,7 +5793,8 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-10 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-10#hurdle_id> a owl:DatatypeProperty ;
     rdfs:label "hurdle_id" ;
@@ -5676,7 +5836,8 @@
     rdfs:label "predecessor_gp_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-02)." ;
     rdfs:domain openim:PM-11 ;
-    rdfs:range openim:PM-02 .
+    rdfs:range openim:PM-02 ;
+    rdfs:subPropertyOf openim:has-predecessor-gp .
 
 <https://w3id.org/openim/ontology/PM-11#source> a owl:DatatypeProperty ;
     rdfs:label "source" ;
@@ -5694,19 +5855,22 @@
     rdfs:label "successor_gp_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-02)." ;
     rdfs:domain openim:PM-11 ;
-    rdfs:range openim:PM-02 .
+    rdfs:range openim:PM-02 ;
+    rdfs:subPropertyOf openim:has-successor-gp .
 
 <https://w3id.org/openim/ontology/PM-12#asset_class> a owl:ObjectProperty ;
     rdfs:label "asset_class" ;
     rdfs:comment "Declared type: varchar (FK → E-09)." ;
     rdfs:domain openim:PM-12 ;
-    rdfs:range openim:E-09 .
+    rdfs:range openim:E-09 ;
+    rdfs:subPropertyOf openim:classified-as-asset-class .
 
 <https://w3id.org/openim/ontology/PM-12#benchmark_id> a owl:ObjectProperty ;
     rdfs:label "benchmark_id" ;
     rdfs:comment "Declared type: varchar (FK → E-10)." ;
     rdfs:domain openim:PM-12 ;
-    rdfs:range openim:E-10 .
+    rdfs:range openim:E-10 ;
+    rdfs:subPropertyOf openim:references-benchmark .
 
 <https://w3id.org/openim/ontology/PM-12#cross_reference_id> a owl:DatatypeProperty ;
     rdfs:label "cross_reference_id" ;
@@ -5718,7 +5882,8 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-12 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-12#provider> a owl:DatatypeProperty ;
     rdfs:label "provider" ;
@@ -5790,13 +5955,15 @@
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-01)." ;
     rdfs:domain openim:PM-13 ;
-    rdfs:range openim:PM-01 .
+    rdfs:range openim:PM-01 ;
+    rdfs:subPropertyOf openim:of-fund .
 
 <https://w3id.org/openim/ontology/PM-13#investor_entity_id> a owl:ObjectProperty ;
     rdfs:label "investor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PM-13 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-investor .
 
 <https://w3id.org/openim/ontology/PM-13#management_fee> a owl:DatatypeProperty ;
     rdfs:label "management_fee" ;
@@ -5820,7 +5987,8 @@
     rdfs:label "borrower_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PM-14 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-borrower .
 
 <https://w3id.org/openim/ontology/PM-14#collateral_pool_ref> a owl:DatatypeProperty ;
     rdfs:label "collateral_pool_ref" ;
@@ -5844,7 +6012,8 @@
     rdfs:label "direct_loan_id" ;
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PM-14 ;
-    rdfs:range openim:E-02 .
+    rdfs:range openim:E-02 ;
+    rdfs:subPropertyOf openim:on-instrument .
 
 <https://w3id.org/openim/ontology/PM-14#drawn_amount> a owl:DatatypeProperty ;
     rdfs:label "drawn_amount" ;
@@ -5880,7 +6049,8 @@
     rdfs:label "originator_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PM-14 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:originated-by .
 
 <https://w3id.org/openim/ontology/PM-14#payment_schedule> a owl:DatatypeProperty ;
     rdfs:label "payment_schedule" ;
@@ -5970,7 +6140,8 @@
     rdfs:label "target_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:PM-15 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-target-party .
 
 <https://w3id.org/openim/ontology/RA-01#acquisition_date> a owl:DatatypeProperty ;
     rdfs:label "acquisition_date" ;
@@ -6018,7 +6189,8 @@
     rdfs:label "holding_vehicle_id" ;
     rdfs:comment "Declared type: varchar (FK → PM-05)." ;
     rdfs:domain openim:RA-01 ;
-    rdfs:range openim:PM-05 .
+    rdfs:range openim:PM-05 ;
+    rdfs:subPropertyOf openim:held-through-vehicle .
 
 <https://w3id.org/openim/ontology/RA-01#lifecycle_stage> a owl:DatatypeProperty ;
     rdfs:label "lifecycle_stage" ;
@@ -6138,7 +6310,8 @@
     rdfs:label "real_asset_id" ;
     rdfs:comment "Declared type: varchar (FK → RA-01)." ;
     rdfs:domain openim:RA-02 ;
-    rdfs:range openim:RA-01 .
+    rdfs:range openim:RA-01 ;
+    rdfs:subPropertyOf openim:on-real-asset .
 
 <https://w3id.org/openim/ontology/RA-02#revenue_basis> a owl:DatatypeProperty ;
     rdfs:label "revenue_basis" ;
@@ -6228,7 +6401,8 @@
     rdfs:label "real_asset_id" ;
     rdfs:comment "Declared type: varchar (FK → RA-01)." ;
     rdfs:domain openim:RA-03 ;
-    rdfs:range openim:RA-01 .
+    rdfs:range openim:RA-01 ;
+    rdfs:subPropertyOf openim:on-real-asset .
 
 <https://w3id.org/openim/ontology/RA-03#rent_review_basis> a owl:DatatypeProperty ;
     rdfs:label "rent_review_basis" ;
@@ -6252,7 +6426,8 @@
     rdfs:label "tenant_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:RA-03 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-tenant .
 
 <https://w3id.org/openim/ontology/RA-04#actual_completion> a owl:DatatypeProperty ;
     rdfs:label "actual_completion" ;
@@ -6270,7 +6445,8 @@
     rdfs:label "concession_grantor_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:RA-04 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-concession-grantor .
 
 <https://w3id.org/openim/ontology/RA-04#concession_start> a owl:DatatypeProperty ;
     rdfs:label "concession_start" ;
@@ -6288,7 +6464,8 @@
     rdfs:label "contractor_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:RA-04 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:has-contractor .
 
 <https://w3id.org/openim/ontology/RA-04#cost_incurred_to_date> a owl:DatatypeProperty ;
     rdfs:label "cost_incurred_to_date" ;
@@ -6324,7 +6501,8 @@
     rdfs:label "real_asset_id" ;
     rdfs:comment "Declared type: varchar (FK → RA-01)." ;
     rdfs:domain openim:RA-04 ;
-    rdfs:range openim:RA-01 .
+    rdfs:range openim:RA-01 ;
+    rdfs:subPropertyOf openim:on-real-asset .
 
 <https://w3id.org/openim/ontology/RA-04#revenue_model> a owl:DatatypeProperty ;
     rdfs:label "revenue_model" ;
@@ -6396,7 +6574,8 @@
     rdfs:label "real_asset_id" ;
     rdfs:comment "Declared type: varchar (FK → RA-01)." ;
     rdfs:domain openim:RA-05 ;
-    rdfs:range openim:RA-01 .
+    rdfs:range openim:RA-01 ;
+    rdfs:subPropertyOf openim:on-real-asset .
 
 <https://w3id.org/openim/ontology/RA-05#reporting_basis> a owl:DatatypeProperty ;
     rdfs:label "reporting_basis" ;
@@ -6426,7 +6605,8 @@
     rdfs:label "valuer_entity_id" ;
     rdfs:comment "Declared type: varchar (FK → E-01)." ;
     rdfs:domain openim:RA-05 ;
-    rdfs:range openim:E-01 .
+    rdfs:range openim:E-01 ;
+    rdfs:subPropertyOf openim:valued-by .
 
 <https://w3id.org/openim/ontology/RA-05#valuer_type> a owl:DatatypeProperty ;
     rdfs:label "valuer_type" ;
@@ -6434,14 +6614,1249 @@
     rdfs:domain openim:RA-05 ;
     rdfs:range xsd:string .
 
-openim:PM-11 a owl:Class ;
-    rdfs:label "PM-11 Manager Succession Event" ;
-    rdfs:comment "A change in the manager entity behind a fund — a merger, rebrand or acquisition. Links a predecessor GP / management company (PM-02) to a successor, with a typed event and an effective date." .
+openim:acquires a owl:ObjectProperty ;
+    rdfs:label "ACQUIRES" ;
+    rdfs:comment "Inverse of openim:acquired-via (reference, n-to-1)." ;
+    rdfs:domain openim:E-05 ;
+    rdfs:range openim:E-32 ;
+    owl:inverseOf openim:acquired-via .
 
-openim:E-08 a owl:Class ;
-    rdfs:label "E-08 Price & Market Data" ;
-    rdfs:comment "Observed market data for an instrument (E-02) — prices, yields, rates, spreads, FX. The observable inputs that value liquid holdings and feed risk and analytics." ;
-    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-ind-ir-ir/> .
+openim:administers a owl:ObjectProperty ;
+    rdfs:label "ADMINISTERS" ;
+    rdfs:comment "Inverse of openim:administered-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-36 ;
+    owl:inverseOf openim:administered-by .
+
+openim:allocation-settled-by a owl:ObjectProperty ;
+    rdfs:label "ALLOCATION_SETTLED_BY" ;
+    rdfs:comment "Inverse of openim:for-allocation (reference, n-to-1)." ;
+    rdfs:domain openim:PB-05 ;
+    rdfs:range openim:PB-06 ;
+    owl:inverseOf openim:for-allocation .
+
+openim:annexed-to a owl:ObjectProperty ;
+    rdfs:label "ANNEXED_TO" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: HAS_ANNEX." ;
+    rdfs:domain openim:DR-03 ;
+    rdfs:range openim:DR-03 ;
+    owl:inverseOf openim:has-annex .
+
+openim:ap-agreement-for a owl:ObjectProperty ;
+    rdfs:label "AP_AGREEMENT_FOR" ;
+    rdfs:comment "Inverse of openim:under-ap-agreement (reference, n-to-1)." ;
+    rdfs:domain openim:FO-12 ;
+    rdfs:range openim:FO-10 ;
+    owl:inverseOf openim:under-ap-agreement .
+
+openim:asset-class-of a owl:ObjectProperty ;
+    rdfs:label "ASSET_CLASS_OF" ;
+    rdfs:comment "Inverse of openim:classified-as-asset-class (reference, n-to-1)." ;
+    rdfs:domain openim:E-09 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-02 openim:E-03 openim:E-10 openim:FO-01 openim:FO-02 openim:FO-06 openim:PM-01 openim:PM-12 ) ] ;
+    owl:inverseOf openim:classified-as-asset-class .
+
+openim:authorised-participant-for a owl:ObjectProperty ;
+    rdfs:label "AUTHORISED_PARTICIPANT_FOR" ;
+    rdfs:comment "Inverse of openim:has-authorised-participant (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:FO-10 openim:FO-11 openim:FO-12 ) ] ;
+    owl:inverseOf openim:has-authorised-participant .
+
+openim:basket-for a owl:ObjectProperty ;
+    rdfs:label "BASKET_FOR" ;
+    rdfs:comment "Inverse of openim:uses-basket (reference, n-to-1)." ;
+    rdfs:domain openim:FO-11 ;
+    rdfs:range openim:FO-10 ;
+    owl:inverseOf openim:uses-basket .
+
+openim:benchmark-for a owl:ObjectProperty ;
+    rdfs:label "BENCHMARK_FOR" ;
+    rdfs:comment "Inverse of openim:benchmarked-to (reference, n-to-1)." ;
+    rdfs:domain openim:E-10 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:benchmarked-to .
+
+openim:benchmark-referenced-by a owl:ObjectProperty ;
+    rdfs:label "BENCHMARK_REFERENCED_BY" ;
+    rdfs:comment "Inverse of openim:references-benchmark (reference, n-to-1)." ;
+    rdfs:domain openim:E-10 ;
+    rdfs:range openim:PM-12 ;
+    owl:inverseOf openim:references-benchmark .
+
+openim:books a owl:ObjectProperty ;
+    rdfs:label "BOOKS" ;
+    rdfs:comment "Inverse of openim:booked-as (reference, n-to-1)." ;
+    rdfs:domain openim:E-05 ;
+    rdfs:range openim:PB-03 ;
+    owl:inverseOf openim:booked-as .
+
+openim:borrower-in a owl:ObjectProperty ;
+    rdfs:label "BORROWER_IN" ;
+    rdfs:comment "Inverse of openim:has-borrower (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PB-10 openim:PM-14 ) ] ;
+    owl:inverseOf openim:has-borrower .
+
+openim:broker-for a owl:ObjectProperty ;
+    rdfs:label "BROKER_FOR" ;
+    rdfs:comment "Inverse of openim:via-broker (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PB-03 openim:PB-04 ) ] ;
+    owl:inverseOf openim:via-broker .
+
+openim:child-order-of a owl:ObjectProperty ;
+    rdfs:label "CHILD_ORDER_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: PARENT_ORDER_OF." ;
+    rdfs:domain openim:PB-03 ;
+    rdfs:range openim:PB-03 ;
+    owl:inverseOf openim:parent-order-of .
+
+openim:classification-type-of a owl:ObjectProperty ;
+    rdfs:label "CLASSIFICATION_TYPE_OF" ;
+    rdfs:comment "Inverse of openim:has-classification-type (reference, n-to-1)." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-12 ;
+    owl:inverseOf openim:has-classification-type .
+
+openim:classification-value-of a owl:ObjectProperty ;
+    rdfs:label "CLASSIFICATION_VALUE_OF" ;
+    rdfs:comment "Inverse of openim:has-classification-value (reference, n-to-1)." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-12 ;
+    owl:inverseOf openim:has-classification-value .
+
+openim:classifies a owl:ObjectProperty ;
+    rdfs:label "CLASSIFIES" ;
+    rdfs:comment "Inverse of openim:classified-as (reference, n-to-1)." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PB-01 openim:PB-02 ) ] ;
+    owl:inverseOf openim:classified-as .
+
+openim:clearing-broker-for a owl:ObjectProperty ;
+    rdfs:label "CLEARING_BROKER_FOR" ;
+    rdfs:comment "Inverse of openim:has-clearing-broker (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:DR-05 ;
+    owl:inverseOf openim:has-clearing-broker .
+
+openim:clearing-relationship-covers a owl:ObjectProperty ;
+    rdfs:label "CLEARING_RELATIONSHIP_COVERS" ;
+    rdfs:comment "Inverse of openim:under-clearing-relationship (reference, n-to-1)." ;
+    rdfs:domain openim:DR-05 ;
+    rdfs:range openim:DR-04 ;
+    owl:inverseOf openim:under-clearing-relationship .
+
+openim:clears a owl:ObjectProperty ;
+    rdfs:label "CLEARS" ;
+    rdfs:comment "Inverse of openim:cleared-through (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-05 ) ] ;
+    owl:inverseOf openim:cleared-through .
+
+openim:collateral-for a owl:ObjectProperty ;
+    rdfs:label "COLLATERAL_FOR" ;
+    rdfs:comment "Inverse of openim:collateralised-by (reference, n-to-1)." ;
+    rdfs:domain openim:E-26 ;
+    rdfs:range openim:PB-10 ;
+    owl:inverseOf openim:collateralised-by .
+
+openim:commitment-has a owl:ObjectProperty ;
+    rdfs:label "COMMITMENT_HAS" ;
+    rdfs:comment "Inverse of openim:against-commitment (reference, n-to-1)." ;
+    rdfs:domain openim:PM-06 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PM-07 openim:PM-08 ) ] ;
+    owl:inverseOf openim:against-commitment .
+
+openim:concession-grantor-for a owl:ObjectProperty ;
+    rdfs:label "CONCESSION_GRANTOR_FOR" ;
+    rdfs:comment "Inverse of openim:has-concession-grantor (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:RA-04 ;
+    owl:inverseOf openim:has-concession-grantor .
+
+openim:contractor-for a owl:ObjectProperty ;
+    rdfs:label "CONTRACTOR_FOR" ;
+    rdfs:comment "Inverse of openim:has-contractor (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:RA-04 ;
+    owl:inverseOf openim:has-contractor .
+
+openim:corrected-by a owl:ObjectProperty ;
+    rdfs:label "CORRECTED_BY" ;
+    rdfs:comment "Inverse of openim:corrects (reference, n-to-1)." ;
+    rdfs:domain openim:FO-07 ;
+    rdfs:range openim:FO-07 ;
+    owl:inverseOf openim:corrects .
+
+openim:corrects a owl:ObjectProperty ;
+    rdfs:label "CORRECTS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: CORRECTED_BY." ;
+    rdfs:domain openim:FO-07 ;
+    rdfs:range openim:FO-07 ;
+    owl:inverseOf openim:corrected-by .
+
+openim:counterparty-in a owl:ObjectProperty ;
+    rdfs:label "COUNTERPARTY_IN" ;
+    rdfs:comment "Inverse of openim:has-counterparty (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-02 openim:DR-03 openim:E-05 openim:E-26 openim:PB-06 ) ] ;
+    owl:inverseOf openim:has-counterparty .
+
+openim:custodian-for a owl:ObjectProperty ;
+    rdfs:label "CUSTODIAN_FOR" ;
+    rdfs:comment "Inverse of openim:has-custodian (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PB-05 openim:PB-06 ) ] ;
+    owl:inverseOf openim:has-custodian .
+
+openim:delegated-from a owl:ObjectProperty ;
+    rdfs:label "DELEGATED_FROM" ;
+    rdfs:comment "Inverse of openim:delegates-to (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:FO-08 ;
+    owl:inverseOf openim:delegates-to .
+
+openim:document-for a owl:ObjectProperty ;
+    rdfs:label "DOCUMENT_FOR" ;
+    rdfs:comment "Inverse of openim:has-document (reference, n-to-1)." ;
+    rdfs:domain openim:E-15 ;
+    rdfs:range openim:E-34 ;
+    owl:inverseOf openim:has-document .
+
+openim:family-includes a owl:ObjectProperty ;
+    rdfs:label "FAMILY_INCLUDES" ;
+    rdfs:comment "Inverse of openim:in-fund-family (composition, n-to-1)." ;
+    rdfs:domain openim:PM-01 ;
+    rdfs:range openim:PM-01 ;
+    owl:inverseOf openim:in-fund-family .
+
+openim:fund-administrator-of a owl:ObjectProperty ;
+    rdfs:label "FUND_ADMINISTRATOR_OF" ;
+    rdfs:comment "Inverse of openim:has-fund-administrator (role, n-to-1)." ;
+    rdfs:domain openim:PM-03 ;
+    rdfs:range openim:PM-01 ;
+    owl:inverseOf openim:has-fund-administrator .
+
+openim:fund-includes a owl:ObjectProperty ;
+    rdfs:label "FUND_INCLUDES" ;
+    rdfs:comment "Inverse of openim:of-fund (reference, n-to-1)." ;
+    rdfs:domain openim:PM-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PM-06 openim:PM-07 openim:PM-08 openim:PM-09 openim:PM-10 openim:PM-12 openim:PM-13 ) ] ;
+    owl:inverseOf openim:of-fund .
+
+openim:fund-product-includes a owl:ObjectProperty ;
+    rdfs:label "FUND_PRODUCT_INCLUDES" ;
+    rdfs:comment "Inverse of openim:belongs-to-fund-product (composition, n-to-1)." ;
+    rdfs:domain openim:FO-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:FO-02 openim:FO-06 openim:FO-07 openim:FO-08 openim:FO-09 openim:FO-11 openim:FO-12 ) ] ;
+    owl:inverseOf openim:belongs-to-fund-product .
+
+openim:funds-goal a owl:ObjectProperty ;
+    rdfs:label "FUNDS_GOAL" ;
+    rdfs:comment "Inverse of openim:funded-by-portfolio (reference, n-to-1)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-30 ;
+    owl:inverseOf openim:funded-by-portfolio .
+
+openim:generates a owl:ObjectProperty ;
+    rdfs:label "GENERATES" ;
+    rdfs:comment "Inverse of openim:from-transaction (reference, n-to-1)." ;
+    rdfs:domain openim:E-05 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-06 openim:PB-07 ) ] ;
+    owl:inverseOf openim:from-transaction .
+
+openim:goal-in-plan a owl:ObjectProperty ;
+    rdfs:label "GOAL_IN_PLAN" ;
+    rdfs:comment "Inverse of openim:includes-goal (reference, n-to-n)." ;
+    rdfs:domain openim:E-30 ;
+    rdfs:range openim:E-33 ;
+    owl:inverseOf openim:includes-goal .
+
+openim:gp-manages a owl:ObjectProperty ;
+    rdfs:label "GP_MANAGES" ;
+    rdfs:comment "Inverse of openim:managed-by-gp (role, n-to-1)." ;
+    rdfs:domain openim:PM-02 ;
+    rdfs:range openim:PM-01 ;
+    owl:inverseOf openim:managed-by-gp .
+
+openim:has-allocation-plan a owl:ObjectProperty ;
+    rdfs:label "HAS_ALLOCATION_PLAN" ;
+    rdfs:comment "Inverse of openim:applies-to-portfolio (reference, n-to-1)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-29 ;
+    owl:inverseOf openim:applies-to-portfolio .
+
+openim:has-annex a owl:ObjectProperty ;
+    rdfs:label "HAS_ANNEX" ;
+    rdfs:comment "Inverse of openim:annexed-to (composition, n-to-1)." ;
+    rdfs:domain openim:DR-03 ;
+    rdfs:range openim:DR-03 ;
+    owl:inverseOf openim:annexed-to .
+
+openim:has-breach a owl:ObjectProperty ;
+    rdfs:label "HAS_BREACH" ;
+    rdfs:comment "Inverse of openim:breach-of-limit (reference, n-to-1)." ;
+    rdfs:domain openim:E-16 ;
+    rdfs:range openim:E-18 ;
+    owl:inverseOf openim:breach-of-limit .
+
+openim:has-constituent a owl:ObjectProperty ;
+    rdfs:label "HAS_CONSTITUENT" ;
+    rdfs:comment "Inverse of openim:constituent-of (reference, n-to-1)." ;
+    rdfs:domain openim:E-10 ;
+    rdfs:range openim:PB-09 ;
+    owl:inverseOf openim:constituent-of .
+
+openim:has-extraction-record a owl:ObjectProperty ;
+    rdfs:label "HAS_EXTRACTION_RECORD" ;
+    rdfs:comment "Inverse of openim:extracted-from (reference, n-to-1)." ;
+    rdfs:domain openim:E-15 ;
+    rdfs:range openim:E-23 ;
+    owl:inverseOf openim:extracted-from .
+
+openim:has-position a owl:ObjectProperty ;
+    rdfs:label "HAS_POSITION" ;
+    rdfs:comment "Inverse of openim:position-in (reference, n-to-1)." ;
+    rdfs:domain openim:E-02 ;
+    rdfs:range openim:E-04 ;
+    owl:inverseOf openim:position-in .
+
+openim:has-progress-measurement a owl:ObjectProperty ;
+    rdfs:label "HAS_PROGRESS_MEASUREMENT" ;
+    rdfs:comment "Inverse of openim:measures-goal (reference, n-to-1)." ;
+    rdfs:domain openim:E-30 ;
+    rdfs:range openim:E-31 ;
+    owl:inverseOf openim:measures-goal .
+
+openim:has-subject a owl:ObjectProperty ;
+    rdfs:label "HAS_SUBJECT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: SUBJECT_OF." ;
+    rdfs:domain openim:E-15 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-01 openim:E-02 openim:E-03 openim:E-04 openim:PM-01 openim:PM-09 ) ] ;
+    owl:inverseOf openim:subject-of .
+
+openim:has-valuation a owl:ObjectProperty ;
+    rdfs:label "HAS_VALUATION" ;
+    rdfs:comment "Inverse of openim:valuation-of (reference, n-to-1)." ;
+    rdfs:domain openim:E-04 ;
+    rdfs:range openim:E-07 ;
+    owl:inverseOf openim:valuation-of .
+
+openim:held-via-investment a owl:ObjectProperty ;
+    rdfs:label "HELD_VIA_INVESTMENT" ;
+    rdfs:comment "Inverse of openim:holds-interest-in (reference, n-to-1)." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PM-01 openim:PM-04 ) ] ;
+    rdfs:range openim:PM-09 ;
+    owl:inverseOf openim:holds-interest-in .
+
+openim:holder-of a owl:ObjectProperty ;
+    rdfs:label "HOLDER_OF" ;
+    rdfs:comment "Inverse of openim:held-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-25 ;
+    owl:inverseOf openim:held-by .
+
+openim:holds-interest-in a owl:ObjectProperty ;
+    rdfs:label "HOLDS_INTEREST_IN" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HELD_VIA_INVESTMENT." ;
+    rdfs:domain openim:PM-09 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PM-01 openim:PM-04 ) ] ;
+    owl:inverseOf openim:held-via-investment .
+
+openim:in-fund-family a owl:ObjectProperty ;
+    rdfs:label "IN_FUND_FAMILY" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: FAMILY_INCLUDES." ;
+    rdfs:domain openim:PM-01 ;
+    rdfs:range openim:PM-01 ;
+    owl:inverseOf openim:family-includes .
+
+openim:instrument-in a owl:ObjectProperty ;
+    rdfs:label "INSTRUMENT_IN" ;
+    rdfs:comment "Inverse of openim:on-instrument (reference, n-to-1)." ;
+    rdfs:domain openim:E-02 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 openim:E-05 openim:E-06 openim:E-07 openim:E-08 openim:E-26 openim:E-32 openim:FO-11 openim:PB-01 openim:PB-02 openim:PB-03 openim:PB-04 openim:PB-05 openim:PB-06 openim:PB-07 openim:PB-08 openim:PB-09 openim:PB-10 openim:PM-14 ) ] ;
+    owl:inverseOf openim:on-instrument .
+
+openim:intermediary-for a owl:ObjectProperty ;
+    rdfs:label "INTERMEDIARY_FOR" ;
+    rdfs:comment "Inverse of openim:via-intermediary (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:FO-09 ;
+    owl:inverseOf openim:via-intermediary .
+
+openim:investment-held-via a owl:ObjectProperty ;
+    rdfs:label "INVESTMENT_HELD_VIA" ;
+    rdfs:comment "Inverse of openim:for-investment (reference, n-to-1)." ;
+    rdfs:domain openim:PM-09 ;
+    rdfs:range openim:PM-05 ;
+    owl:inverseOf openim:for-investment .
+
+openim:investor-in a owl:ObjectProperty ;
+    rdfs:label "INVESTOR_IN" ;
+    rdfs:comment "Inverse of openim:has-investor (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-03 openim:DR-05 openim:FO-03 openim:FO-04 openim:FO-07 openim:PM-06 openim:PM-13 ) ] ;
+    owl:inverseOf openim:has-investor .
+
+openim:issuer-of a owl:ObjectProperty ;
+    rdfs:label "ISSUER_OF" ;
+    rdfs:comment "Inverse of openim:issued-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-02 openim:PB-01 openim:PB-02 ) ] ;
+    owl:inverseOf openim:issued-by .
+
+openim:lists a owl:ObjectProperty ;
+    rdfs:label "LISTS" ;
+    rdfs:comment "Inverse of openim:listed-on (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:DR-01 ;
+    owl:inverseOf openim:listed-on .
+
+openim:manages a owl:ObjectProperty ;
+    rdfs:label "MANAGES" ;
+    rdfs:comment "Inverse of openim:managed-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-03 openim:FO-01 ) ] ;
+    owl:inverseOf openim:managed-by .
+
+openim:master-agreement-governs a owl:ObjectProperty ;
+    rdfs:label "MASTER_AGREEMENT_GOVERNS" ;
+    rdfs:comment "Inverse of openim:under-master-agreement (reference, n-to-1)." ;
+    rdfs:domain openim:DR-03 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-02 openim:DR-04 ) ] ;
+    owl:inverseOf openim:under-master-agreement .
+
+openim:measurement-triggers a owl:ObjectProperty ;
+    rdfs:label "MEASUREMENT_TRIGGERS" ;
+    rdfs:comment "Inverse of openim:detected-by-measurement (reference, n-to-1)." ;
+    rdfs:domain openim:E-19 ;
+    rdfs:range openim:E-18 ;
+    owl:inverseOf openim:detected-by-measurement .
+
+openim:meeting-has-vote a owl:ObjectProperty ;
+    rdfs:label "MEETING_HAS_VOTE" ;
+    rdfs:comment "Inverse of openim:at-meeting (reference, n-to-1)." ;
+    rdfs:domain openim:PB-07 ;
+    rdfs:range openim:PB-11 ;
+    owl:inverseOf openim:at-meeting .
+
+openim:metric-for a owl:ObjectProperty ;
+    rdfs:label "METRIC_FOR" ;
+    rdfs:comment "Inverse of openim:computed-per-metric (reference, n-to-1)." ;
+    rdfs:domain openim:E-22 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-20 openim:E-31 openim:E-37 openim:E-38 ) ] ;
+    owl:inverseOf openim:computed-per-metric .
+
+openim:order-fulfilled-by a owl:ObjectProperty ;
+    rdfs:label "ORDER_FULFILLED_BY" ;
+    rdfs:comment "Inverse of openim:for-order (reference, n-to-1)." ;
+    rdfs:domain openim:PB-03 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:PB-04 openim:PB-05 ) ] ;
+    owl:inverseOf openim:for-order .
+
+openim:originated a owl:ObjectProperty ;
+    rdfs:label "ORIGINATED" ;
+    rdfs:comment "Inverse of openim:originated-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:PM-14 ;
+    owl:inverseOf openim:originated-by .
+
+openim:parent-entity-of a owl:ObjectProperty ;
+    rdfs:label "PARENT_ENTITY_OF" ;
+    rdfs:comment "Inverse of openim:subsidiary-of (reference, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:subsidiary-of .
+
+openim:parent-order-of a owl:ObjectProperty ;
+    rdfs:label "PARENT_ORDER_OF" ;
+    rdfs:comment "Inverse of openim:child-order-of (reference, n-to-1)." ;
+    rdfs:domain openim:PB-03 ;
+    rdfs:range openim:PB-03 ;
+    owl:inverseOf openim:child-order-of .
+
+openim:parent-portfolio-of a owl:ObjectProperty ;
+    rdfs:label "PARENT_PORTFOLIO_OF" ;
+    rdfs:comment "Inverse of openim:sub-portfolio-of (reference, n-to-1)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:sub-portfolio-of .
+
+openim:party-of a owl:ObjectProperty ;
+    rdfs:label "PARTY_OF" ;
+    rdfs:comment "Inverse of openim:for-party (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-30 openim:E-32 openim:E-33 openim:E-35 ) ] ;
+    owl:inverseOf openim:for-party .
+
+openim:plan-governs a owl:ObjectProperty ;
+    rdfs:label "PLAN_GOVERNS" ;
+    rdfs:comment "Inverse of openim:governed-by-plan (reference, n-to-1)." ;
+    rdfs:domain openim:E-29 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:governed-by-plan .
+
+openim:portfolio-includes a owl:ObjectProperty ;
+    rdfs:label "PORTFOLIO_INCLUDES" ;
+    rdfs:comment "Inverse of openim:in-portfolio (reference, n-to-1)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-04 openim:E-05 openim:E-06 openim:PB-03 openim:PB-05 openim:PB-06 openim:PB-11 ) ] ;
+    owl:inverseOf openim:in-portfolio .
+
+openim:portfolio-linked-to a owl:ObjectProperty ;
+    rdfs:label "PORTFOLIO_LINKED_TO" ;
+    rdfs:comment "Inverse of openim:linked-to-portfolio (reference, n-to-n)." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-25 ;
+    owl:inverseOf openim:linked-to-portfolio .
+
+openim:position-lent-as a owl:ObjectProperty ;
+    rdfs:label "POSITION_LENT_AS" ;
+    rdfs:comment "Inverse of openim:lends-position (reference, n-to-1)." ;
+    rdfs:domain openim:E-04 ;
+    rdfs:range openim:PB-10 ;
+    owl:inverseOf openim:lends-position .
+
+openim:predecessor-gp-in a owl:ObjectProperty ;
+    rdfs:label "PREDECESSOR_GP_IN" ;
+    rdfs:comment "Inverse of openim:has-predecessor-gp (role, n-to-1)." ;
+    rdfs:domain openim:PM-02 ;
+    rdfs:range openim:PM-11 ;
+    owl:inverseOf openim:has-predecessor-gp .
+
+openim:provides a owl:ObjectProperty ;
+    rdfs:label "PROVIDES" ;
+    rdfs:comment "Inverse of openim:provided-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:FO-08 ;
+    owl:inverseOf openim:provided-by .
+
+openim:real-asset-has a owl:ObjectProperty ;
+    rdfs:label "REAL_ASSET_HAS" ;
+    rdfs:comment "Inverse of openim:on-real-asset (reference, n-to-1)." ;
+    rdfs:domain openim:RA-01 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:RA-02 openim:RA-03 openim:RA-04 openim:RA-05 ) ] ;
+    owl:inverseOf openim:on-real-asset .
+
+openim:related-party-of a owl:ObjectProperty ;
+    rdfs:label "RELATED_PARTY_OF" ;
+    rdfs:comment "Inverse of openim:related-to-party (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:related-to-party .
+
+openim:related-to-party a owl:ObjectProperty ;
+    rdfs:label "RELATED_TO_PARTY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: RELATED_PARTY_OF." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:related-party-of ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-be-oac-cctl/isAffiliateOf> .
+
+openim:result-instrument-of a owl:ObjectProperty ;
+    rdfs:label "RESULT_INSTRUMENT_OF" ;
+    rdfs:comment "Inverse of openim:results-in-instrument (reference, n-to-1)." ;
+    rdfs:domain openim:E-02 ;
+    rdfs:range openim:PB-07 ;
+    owl:inverseOf openim:results-in-instrument .
+
+openim:scenario-for a owl:ObjectProperty ;
+    rdfs:label "SCENARIO_FOR" ;
+    rdfs:comment "Inverse of openim:under-scenario (reference, n-to-1)." ;
+    rdfs:domain openim:E-17 ;
+    rdfs:range openim:E-19 ;
+    owl:inverseOf openim:under-scenario .
+
+openim:share-class-includes a owl:ObjectProperty ;
+    rdfs:label "SHARE_CLASS_INCLUDES" ;
+    rdfs:comment "Inverse of openim:of-share-class (composition, n-to-1)." ;
+    rdfs:domain openim:FO-02 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-07 openim:FO-03 openim:FO-04 openim:FO-05 openim:FO-06 openim:FO-09 openim:FO-10 openim:FO-11 ) ] ;
+    owl:inverseOf openim:of-share-class .
+
+openim:specialised-by a owl:ObjectProperty ;
+    rdfs:label "SPECIALISED_BY" ;
+    rdfs:comment "Inverse of openim:specialises (is-a, n-to-1)." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-01 openim:E-02 openim:E-03 openim:E-04 openim:E-05 openim:E-07 openim:E-10 openim:E-15 openim:E-25 ) ] ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 openim:FO-01 openim:FO-02 openim:FO-03 openim:FO-04 openim:FO-05 openim:FO-06 openim:FO-07 openim:FO-09 openim:FO-10 openim:PB-01 openim:PB-02 openim:PB-03 openim:PB-04 openim:PB-05 openim:PB-06 openim:PB-07 openim:PB-08 openim:PB-09 openim:PB-10 openim:PB-11 openim:PM-01 openim:PM-02 openim:PM-03 openim:PM-04 openim:PM-07 openim:PM-08 openim:PM-09 openim:PM-12 openim:PM-13 openim:PM-14 openim:RA-01 openim:RA-05 ) ] ;
+    owl:inverseOf openim:specialises .
+
+openim:specialises a owl:ObjectProperty ;
+    rdfs:label "SPECIALISES" ;
+    rdfs:comment "OpenIM relation verb — is-a, n-to-1. Inverse: SPECIALISED_BY." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 openim:FO-01 openim:FO-02 openim:FO-03 openim:FO-04 openim:FO-05 openim:FO-06 openim:FO-07 openim:FO-09 openim:FO-10 openim:PB-01 openim:PB-02 openim:PB-03 openim:PB-04 openim:PB-05 openim:PB-06 openim:PB-07 openim:PB-08 openim:PB-09 openim:PB-10 openim:PB-11 openim:PM-01 openim:PM-02 openim:PM-03 openim:PM-04 openim:PM-07 openim:PM-08 openim:PM-09 openim:PM-12 openim:PM-13 openim:PM-14 openim:RA-01 openim:RA-05 ) ] ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:E-01 openim:E-02 openim:E-03 openim:E-04 openim:E-05 openim:E-07 openim:E-10 openim:E-15 openim:E-25 ) ] ;
+    owl:inverseOf openim:specialised-by .
+
+openim:sub-portfolio-of a owl:ObjectProperty ;
+    rdfs:label "SUB_PORTFOLIO_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: PARENT_PORTFOLIO_OF." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:parent-portfolio-of .
+
+openim:subfund-of a owl:ObjectProperty ;
+    rdfs:label "SUBFUND_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: UMBRELLA_OF." ;
+    rdfs:domain openim:FO-01 ;
+    rdfs:range openim:FO-01 ;
+    owl:equivalentProperty <https://spec.edmcouncil.org/fibo/ontology/fibo-sec-fund-fund/isSubFundOf> ;
+    owl:inverseOf openim:umbrella-of .
+
+openim:subject-of a owl:ObjectProperty ;
+    rdfs:label "SUBJECT_OF" ;
+    rdfs:comment "Inverse of openim:has-subject (reference, n-to-1)." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-01 openim:E-02 openim:E-03 openim:E-04 openim:PM-01 openim:PM-09 ) ] ;
+    rdfs:range openim:E-15 ;
+    owl:inverseOf openim:has-subject .
+
+openim:subsidiary-of a owl:ObjectProperty ;
+    rdfs:label "SUBSIDIARY_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: PARENT_ENTITY_OF." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:parent-entity-of ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-be-oac-cctl/isSubsidiaryOf> .
+
+openim:succeeded-by a owl:ObjectProperty ;
+    rdfs:label "SUCCEEDED_BY" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: SUCCEEDS." ;
+    rdfs:domain openim:PM-04 ;
+    rdfs:range openim:PM-04 ;
+    owl:inverseOf openim:succeeds .
+
+openim:succeeds a owl:ObjectProperty ;
+    rdfs:label "SUCCEEDS" ;
+    rdfs:comment "Inverse of openim:succeeded-by (reference, n-to-1)." ;
+    rdfs:domain openim:PM-04 ;
+    rdfs:range openim:PM-04 ;
+    owl:inverseOf openim:succeeded-by .
+
+openim:successor-gp-in a owl:ObjectProperty ;
+    rdfs:label "SUCCESSOR_GP_IN" ;
+    rdfs:comment "Inverse of openim:has-successor-gp (role, n-to-1)." ;
+    rdfs:domain openim:PM-02 ;
+    rdfs:range openim:PM-11 ;
+    owl:inverseOf openim:has-successor-gp .
+
+openim:superseded-by a owl:ObjectProperty ;
+    rdfs:label "SUPERSEDED_BY" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: SUPERSEDES." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:supersedes .
+
+openim:supersedes a owl:ObjectProperty ;
+    rdfs:label "SUPERSEDES" ;
+    rdfs:comment "Inverse of openim:superseded-by (reference, n-to-1)." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:superseded-by .
+
+openim:target-party-in a owl:ObjectProperty ;
+    rdfs:label "TARGET_PARTY_IN" ;
+    rdfs:comment "Inverse of openim:has-target-party (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:PM-15 ;
+    owl:inverseOf openim:has-target-party .
+
+openim:tenant-of a owl:ObjectProperty ;
+    rdfs:label "TENANT_OF" ;
+    rdfs:comment "Inverse of openim:has-tenant (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:RA-03 ;
+    owl:inverseOf openim:has-tenant .
+
+openim:terms-version-has a owl:ObjectProperty ;
+    rdfs:label "TERMS_VERSION_HAS" ;
+    rdfs:comment "Inverse of openim:under-terms-version (composition, n-to-1)." ;
+    rdfs:domain openim:PM-10 ;
+    rdfs:range openim:PM-10 ;
+    owl:inverseOf openim:under-terms-version .
+
+openim:type-has-value a owl:ObjectProperty ;
+    rdfs:label "TYPE_HAS_VALUE" ;
+    rdfs:comment "Inverse of openim:value-of-type (composition, n-to-1)." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:value-of-type .
+
+openim:umbrella-of a owl:ObjectProperty ;
+    rdfs:label "UMBRELLA_OF" ;
+    rdfs:comment "Inverse of openim:subfund-of (reference, n-to-1)." ;
+    rdfs:domain openim:FO-01 ;
+    rdfs:range openim:FO-01 ;
+    owl:inverseOf openim:subfund-of .
+
+openim:under-terms-version a owl:ObjectProperty ;
+    rdfs:label "UNDER_TERMS_VERSION" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: TERMS_VERSION_HAS." ;
+    rdfs:domain openim:PM-10 ;
+    rdfs:range openim:PM-10 ;
+    owl:inverseOf openim:terms-version-has .
+
+openim:underlying-index-of a owl:ObjectProperty ;
+    rdfs:label "UNDERLYING_INDEX_OF" ;
+    rdfs:comment "Inverse of openim:underlying-index-is (reference, n-to-1)." ;
+    rdfs:domain openim:E-10 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 ) ] ;
+    owl:inverseOf openim:underlying-index-is .
+
+openim:underlying-instrument-of a owl:ObjectProperty ;
+    rdfs:label "UNDERLYING_INSTRUMENT_OF" ;
+    rdfs:comment "Inverse of openim:underlying-is (reference, n-to-1)." ;
+    rdfs:domain openim:E-02 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 ) ] ;
+    owl:inverseOf openim:underlying-is .
+
+openim:unitholding-has a owl:ObjectProperty ;
+    rdfs:label "UNITHOLDING_HAS" ;
+    rdfs:comment "Inverse of openim:on-unitholding (reference, n-to-1)." ;
+    rdfs:domain openim:FO-03 ;
+    rdfs:range [ a owl:Class ;
+            owl:unionOf ( openim:FO-04 openim:FO-07 ) ] ;
+    owl:inverseOf openim:on-unitholding .
+
+openim:value-of-type a owl:ObjectProperty ;
+    rdfs:label "VALUE_OF_TYPE" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: TYPE_HAS_VALUE." ;
+    rdfs:domain openim:E-11 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:type-has-value .
+
+openim:valuer-of a owl:ObjectProperty ;
+    rdfs:label "VALUER_OF" ;
+    rdfs:comment "Inverse of openim:valued-by (role, n-to-1)." ;
+    rdfs:domain openim:E-01 ;
+    rdfs:range openim:RA-05 ;
+    owl:inverseOf openim:valued-by .
+
+openim:vehicle-holds a owl:ObjectProperty ;
+    rdfs:label "VEHICLE_HOLDS" ;
+    rdfs:comment "Inverse of openim:held-through-vehicle (reference, n-to-1)." ;
+    rdfs:domain openim:PM-05 ;
+    rdfs:range openim:RA-01 ;
+    owl:inverseOf openim:held-through-vehicle .
+
+openim:acquired-via a owl:ObjectProperty ;
+    rdfs:label "ACQUIRED_VIA" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: ACQUIRES." ;
+    rdfs:domain openim:E-32 ;
+    rdfs:range openim:E-05 ;
+    owl:inverseOf openim:acquires .
+
+openim:administered-by a owl:ObjectProperty ;
+    rdfs:label "ADMINISTERED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: ADMINISTERS." ;
+    rdfs:domain openim:E-36 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:administers .
+
+openim:applies-to-portfolio a owl:ObjectProperty ;
+    rdfs:label "APPLIES_TO_PORTFOLIO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_ALLOCATION_PLAN." ;
+    rdfs:domain openim:E-29 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:has-allocation-plan .
+
+openim:at-meeting a owl:ObjectProperty ;
+    rdfs:label "AT_MEETING" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: MEETING_HAS_VOTE." ;
+    rdfs:domain openim:PB-11 ;
+    rdfs:range openim:PB-07 ;
+    owl:inverseOf openim:meeting-has-vote .
+
+openim:benchmarked-to a owl:ObjectProperty ;
+    rdfs:label "BENCHMARKED_TO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: BENCHMARK_FOR." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-10 ;
+    owl:inverseOf openim:benchmark-for .
+
+openim:booked-as a owl:ObjectProperty ;
+    rdfs:label "BOOKED_AS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: BOOKS." ;
+    rdfs:domain openim:PB-03 ;
+    rdfs:range openim:E-05 ;
+    owl:inverseOf openim:books .
+
+openim:breach-of-limit a owl:ObjectProperty ;
+    rdfs:label "BREACH_OF_LIMIT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_BREACH." ;
+    rdfs:domain openim:E-18 ;
+    rdfs:range openim:E-16 ;
+    owl:inverseOf openim:has-breach .
+
+openim:collateralised-by a owl:ObjectProperty ;
+    rdfs:label "COLLATERALISED_BY" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: COLLATERAL_FOR." ;
+    rdfs:domain openim:PB-10 ;
+    rdfs:range openim:E-26 ;
+    owl:inverseOf openim:collateral-for .
+
+openim:constituent-of a owl:ObjectProperty ;
+    rdfs:label "CONSTITUENT_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_CONSTITUENT." ;
+    rdfs:domain openim:PB-09 ;
+    rdfs:range openim:E-10 ;
+    owl:inverseOf openim:has-constituent .
+
+openim:delegates-to a owl:ObjectProperty ;
+    rdfs:label "DELEGATES_TO" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: DELEGATED_FROM." ;
+    rdfs:domain openim:FO-08 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:delegated-from .
+
+openim:detected-by-measurement a owl:ObjectProperty ;
+    rdfs:label "DETECTED_BY_MEASUREMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: MEASUREMENT_TRIGGERS." ;
+    rdfs:domain openim:E-18 ;
+    rdfs:range openim:E-19 ;
+    owl:inverseOf openim:measurement-triggers .
+
+openim:extracted-from a owl:ObjectProperty ;
+    rdfs:label "EXTRACTED_FROM" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_EXTRACTION_RECORD." ;
+    rdfs:domain openim:E-23 ;
+    rdfs:range openim:E-15 ;
+    owl:inverseOf openim:has-extraction-record .
+
+openim:for-allocation a owl:ObjectProperty ;
+    rdfs:label "FOR_ALLOCATION" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: ALLOCATION_SETTLED_BY." ;
+    rdfs:domain openim:PB-06 ;
+    rdfs:range openim:PB-05 ;
+    owl:inverseOf openim:allocation-settled-by .
+
+openim:for-investment a owl:ObjectProperty ;
+    rdfs:label "FOR_INVESTMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: INVESTMENT_HELD_VIA." ;
+    rdfs:domain openim:PM-05 ;
+    rdfs:range openim:PM-09 ;
+    owl:inverseOf openim:investment-held-via .
+
+openim:funded-by-portfolio a owl:ObjectProperty ;
+    rdfs:label "FUNDED_BY_PORTFOLIO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: FUNDS_GOAL." ;
+    rdfs:domain openim:E-30 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:funds-goal .
+
+openim:governed-by-plan a owl:ObjectProperty ;
+    rdfs:label "GOVERNED_BY_PLAN" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: PLAN_GOVERNS." ;
+    rdfs:domain openim:E-03 ;
+    rdfs:range openim:E-29 ;
+    owl:inverseOf openim:plan-governs .
+
+openim:has-classification-type a owl:ObjectProperty ;
+    rdfs:label "HAS_CLASSIFICATION_TYPE" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: CLASSIFICATION_TYPE_OF." ;
+    rdfs:domain openim:E-12 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:classification-type-of .
+
+openim:has-classification-value a owl:ObjectProperty ;
+    rdfs:label "HAS_CLASSIFICATION_VALUE" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: CLASSIFICATION_VALUE_OF." ;
+    rdfs:domain openim:E-12 ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:classification-value-of .
+
+openim:has-clearing-broker a owl:ObjectProperty ;
+    rdfs:label "HAS_CLEARING_BROKER" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: CLEARING_BROKER_FOR." ;
+    rdfs:domain openim:DR-05 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:clearing-broker-for .
+
+openim:has-concession-grantor a owl:ObjectProperty ;
+    rdfs:label "HAS_CONCESSION_GRANTOR" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: CONCESSION_GRANTOR_FOR." ;
+    rdfs:domain openim:RA-04 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:concession-grantor-for .
+
+openim:has-contractor a owl:ObjectProperty ;
+    rdfs:label "HAS_CONTRACTOR" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: CONTRACTOR_FOR." ;
+    rdfs:domain openim:RA-04 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:contractor-for .
+
+openim:has-document a owl:ObjectProperty ;
+    rdfs:label "HAS_DOCUMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: DOCUMENT_FOR." ;
+    rdfs:domain openim:E-34 ;
+    rdfs:range openim:E-15 ;
+    owl:inverseOf openim:document-for .
+
+openim:has-fund-administrator a owl:ObjectProperty ;
+    rdfs:label "HAS_FUND_ADMINISTRATOR" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: FUND_ADMINISTRATOR_OF." ;
+    rdfs:domain openim:PM-01 ;
+    rdfs:range openim:PM-03 ;
+    owl:inverseOf openim:fund-administrator-of .
+
+openim:has-predecessor-gp a owl:ObjectProperty ;
+    rdfs:label "HAS_PREDECESSOR_GP" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: PREDECESSOR_GP_IN." ;
+    rdfs:domain openim:PM-11 ;
+    rdfs:range openim:PM-02 ;
+    owl:inverseOf openim:predecessor-gp-in .
+
+openim:has-successor-gp a owl:ObjectProperty ;
+    rdfs:label "HAS_SUCCESSOR_GP" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: SUCCESSOR_GP_IN." ;
+    rdfs:domain openim:PM-11 ;
+    rdfs:range openim:PM-02 ;
+    owl:inverseOf openim:successor-gp-in .
+
+openim:has-target-party a owl:ObjectProperty ;
+    rdfs:label "HAS_TARGET_PARTY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: TARGET_PARTY_IN." ;
+    rdfs:domain openim:PM-15 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:target-party-in .
+
+openim:has-tenant a owl:ObjectProperty ;
+    rdfs:label "HAS_TENANT" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: TENANT_OF." ;
+    rdfs:domain openim:RA-03 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:tenant-of .
+
+openim:held-by a owl:ObjectProperty ;
+    rdfs:label "HELD_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: HOLDER_OF." ;
+    rdfs:domain openim:E-25 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:holder-of ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-rel-rel/isHeldBy> .
+
+openim:held-through-vehicle a owl:ObjectProperty ;
+    rdfs:label "HELD_THROUGH_VEHICLE" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: VEHICLE_HOLDS." ;
+    rdfs:domain openim:RA-01 ;
+    rdfs:range openim:PM-05 ;
+    owl:inverseOf openim:vehicle-holds .
+
+openim:includes-goal a owl:ObjectProperty ;
+    rdfs:label "INCLUDES_GOAL" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-n. Inverse: GOAL_IN_PLAN." ;
+    rdfs:domain openim:E-33 ;
+    rdfs:range openim:E-30 ;
+    owl:inverseOf openim:goal-in-plan .
+
+openim:lends-position a owl:ObjectProperty ;
+    rdfs:label "LENDS_POSITION" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: POSITION_LENT_AS." ;
+    rdfs:domain openim:PB-10 ;
+    rdfs:range openim:E-04 ;
+    owl:inverseOf openim:position-lent-as .
+
+openim:linked-to-portfolio a owl:ObjectProperty ;
+    rdfs:label "LINKED_TO_PORTFOLIO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-n. Inverse: PORTFOLIO_LINKED_TO." ;
+    rdfs:domain openim:E-25 ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:portfolio-linked-to .
+
+openim:listed-on a owl:ObjectProperty ;
+    rdfs:label "LISTED_ON" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: LISTS." ;
+    rdfs:domain openim:DR-01 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:lists .
+
+openim:managed-by-gp a owl:ObjectProperty ;
+    rdfs:label "MANAGED_BY_GP" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: GP_MANAGES." ;
+    rdfs:domain openim:PM-01 ;
+    rdfs:range openim:PM-02 ;
+    owl:inverseOf openim:gp-manages .
+
+openim:measures-goal a owl:ObjectProperty ;
+    rdfs:label "MEASURES_GOAL" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_PROGRESS_MEASUREMENT." ;
+    rdfs:domain openim:E-31 ;
+    rdfs:range openim:E-30 ;
+    owl:inverseOf openim:has-progress-measurement .
+
+openim:originated-by a owl:ObjectProperty ;
+    rdfs:label "ORIGINATED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: ORIGINATED." ;
+    rdfs:domain openim:PM-14 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:originated .
+
+openim:position-in a owl:ObjectProperty ;
+    rdfs:label "POSITION_IN" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_POSITION." ;
+    rdfs:domain openim:E-04 ;
+    rdfs:range openim:E-02 ;
+    owl:inverseOf openim:has-position .
+
+openim:provided-by a owl:ObjectProperty ;
+    rdfs:label "PROVIDED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: PROVIDES." ;
+    rdfs:domain openim:FO-08 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:provides .
+
+openim:references-benchmark a owl:ObjectProperty ;
+    rdfs:label "REFERENCES_BENCHMARK" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: BENCHMARK_REFERENCED_BY." ;
+    rdfs:domain openim:PM-12 ;
+    rdfs:range openim:E-10 ;
+    owl:inverseOf openim:benchmark-referenced-by .
+
+openim:results-in-instrument a owl:ObjectProperty ;
+    rdfs:label "RESULTS_IN_INSTRUMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: RESULT_INSTRUMENT_OF." ;
+    rdfs:domain openim:PB-07 ;
+    rdfs:range openim:E-02 ;
+    owl:inverseOf openim:result-instrument-of .
+
+openim:under-ap-agreement a owl:ObjectProperty ;
+    rdfs:label "UNDER_AP_AGREEMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: AP_AGREEMENT_FOR." ;
+    rdfs:domain openim:FO-10 ;
+    rdfs:range openim:FO-12 ;
+    owl:inverseOf openim:ap-agreement-for .
+
+openim:under-clearing-relationship a owl:ObjectProperty ;
+    rdfs:label "UNDER_CLEARING_RELATIONSHIP" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: CLEARING_RELATIONSHIP_COVERS." ;
+    rdfs:domain openim:DR-04 ;
+    rdfs:range openim:DR-05 ;
+    owl:inverseOf openim:clearing-relationship-covers .
+
+openim:under-scenario a owl:ObjectProperty ;
+    rdfs:label "UNDER_SCENARIO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: SCENARIO_FOR." ;
+    rdfs:domain openim:E-19 ;
+    rdfs:range openim:E-17 ;
+    owl:inverseOf openim:scenario-for .
+
+openim:uses-basket a owl:ObjectProperty ;
+    rdfs:label "USES_BASKET" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: BASKET_FOR." ;
+    rdfs:domain openim:FO-10 ;
+    rdfs:range openim:FO-11 ;
+    owl:inverseOf openim:basket-for .
+
+openim:valuation-of a owl:ObjectProperty ;
+    rdfs:label "VALUATION_OF" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: HAS_VALUATION." ;
+    rdfs:domain openim:E-07 ;
+    rdfs:range openim:E-04 ;
+    owl:inverseOf openim:has-valuation .
+
+openim:valued-by a owl:ObjectProperty ;
+    rdfs:label "VALUED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: VALUER_OF." ;
+    rdfs:domain openim:RA-05 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:valuer-of .
+
+openim:via-intermediary a owl:ObjectProperty ;
+    rdfs:label "VIA_INTERMEDIARY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: INTERMEDIARY_FOR." ;
+    rdfs:domain openim:FO-09 ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:intermediary-for .
+
+openim:against-commitment a owl:ObjectProperty ;
+    rdfs:label "AGAINST_COMMITMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: COMMITMENT_HAS." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PM-07 openim:PM-08 ) ] ;
+    rdfs:range openim:PM-06 ;
+    owl:inverseOf openim:commitment-has .
+
+openim:classified-as a owl:ObjectProperty ;
+    rdfs:label "CLASSIFIED_AS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: CLASSIFIES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PB-01 openim:PB-02 ) ] ;
+    rdfs:range openim:E-11 ;
+    owl:inverseOf openim:classifies .
+
+openim:cleared-through a owl:ObjectProperty ;
+    rdfs:label "CLEARED_THROUGH" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: CLEARS." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-05 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:clears .
+
+openim:for-order a owl:ObjectProperty ;
+    rdfs:label "FOR_ORDER" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: ORDER_FULFILLED_BY." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PB-04 openim:PB-05 ) ] ;
+    rdfs:range openim:PB-03 ;
+    owl:inverseOf openim:order-fulfilled-by .
+
+openim:from-transaction a owl:ObjectProperty ;
+    rdfs:label "FROM_TRANSACTION" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: GENERATES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-06 openim:PB-07 ) ] ;
+    rdfs:range openim:E-05 ;
+    owl:inverseOf openim:generates ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-rel-rel/isGeneratedBy> .
+
+openim:has-borrower a owl:ObjectProperty ;
+    rdfs:label "HAS_BORROWER" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: BORROWER_IN." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PB-10 openim:PM-14 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:borrower-in .
+
+openim:has-custodian a owl:ObjectProperty ;
+    rdfs:label "HAS_CUSTODIAN" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: CUSTODIAN_FOR." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PB-05 openim:PB-06 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:custodian-for .
+
+openim:managed-by a owl:ObjectProperty ;
+    rdfs:label "MANAGED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: MANAGES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-03 openim:FO-01 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:manages .
+
+openim:on-unitholding a owl:ObjectProperty ;
+    rdfs:label "ON_UNITHOLDING" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: UNITHOLDING_HAS." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:FO-04 openim:FO-07 ) ] ;
+    rdfs:range openim:FO-03 ;
+    owl:inverseOf openim:unitholding-has .
+
+openim:under-master-agreement a owl:ObjectProperty ;
+    rdfs:label "UNDER_MASTER_AGREEMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: MASTER_AGREEMENT_GOVERNS." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-02 openim:DR-04 ) ] ;
+    rdfs:range openim:DR-03 ;
+    owl:inverseOf openim:master-agreement-governs .
+
+openim:underlying-index-is a owl:ObjectProperty ;
+    rdfs:label "UNDERLYING_INDEX_IS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: UNDERLYING_INDEX_OF." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 ) ] ;
+    rdfs:range openim:E-10 ;
+    owl:inverseOf openim:underlying-index-of .
+
+openim:underlying-is a owl:ObjectProperty ;
+    rdfs:label "UNDERLYING_IS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: UNDERLYING_INSTRUMENT_OF." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 ) ] ;
+    rdfs:range openim:E-02 ;
+    owl:inverseOf openim:underlying-instrument-of ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fbc-fi-fi/hasUnderlier> .
+
+openim:via-broker a owl:ObjectProperty ;
+    rdfs:label "VIA_BROKER" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: BROKER_FOR." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PB-03 openim:PB-04 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:broker-for .
+
+openim:has-authorised-participant a owl:ObjectProperty ;
+    rdfs:label "HAS_AUTHORISED_PARTICIPANT" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: AUTHORISED_PARTICIPANT_FOR." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:FO-10 openim:FO-11 openim:FO-12 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:authorised-participant-for .
+
+openim:issued-by a owl:ObjectProperty ;
+    rdfs:label "ISSUED_BY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: ISSUER_OF." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-02 openim:PB-01 openim:PB-02 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:issuer-of ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-rel-rel/isIssuedBy> .
+
+openim:computed-per-metric a owl:ObjectProperty ;
+    rdfs:label "COMPUTED_PER_METRIC" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: METRIC_FOR." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-20 openim:E-31 openim:E-37 openim:E-38 ) ] ;
+    rdfs:range openim:E-22 ;
+    owl:inverseOf openim:metric-for .
+
+openim:for-party a owl:ObjectProperty ;
+    rdfs:label "FOR_PARTY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: PARTY_OF." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-30 openim:E-32 openim:E-33 openim:E-35 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:party-of .
+
+openim:on-real-asset a owl:ObjectProperty ;
+    rdfs:label "ON_REAL_ASSET" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: REAL_ASSET_HAS." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:RA-02 openim:RA-03 openim:RA-04 openim:RA-05 ) ] ;
+    rdfs:range openim:RA-01 ;
+    owl:inverseOf openim:real-asset-has .
+
+openim:has-counterparty a owl:ObjectProperty ;
+    rdfs:label "HAS_COUNTERPARTY" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: COUNTERPARTY_IN." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-02 openim:DR-03 openim:E-05 openim:E-26 openim:PB-06 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:counterparty-in ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-agr-ctr/hasCounterparty> .
 
 openim:E-13 a owl:Class ;
     rdfs:label "E-13 Entity Alias" ;
@@ -6452,14 +7867,74 @@ openim:E-14 a owl:Class ;
     rdfs:comment "A cross-reference from a master record's golden key to an identifier in an external system or data vendor. The structure that lets OpenIM enrich and reconcile against the outside world without surrendering its own key." ;
     skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-be-le-lei/LegalEntityIdentifier> .
 
-openim:PM-12 a owl:Class ;
-    rdfs:label "PM-12 Benchmark Cross-Reference" ;
-    rdfs:comment "The mapping between an investor's own funds and the external benchmark and peer-universe identifiers used to evaluate them." ;
-    rdfs:subClassOf openim:E-10 .
+openim:belongs-to-fund-product a owl:ObjectProperty ;
+    rdfs:label "BELONGS_TO_FUND_PRODUCT" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: FUND_PRODUCT_INCLUDES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:FO-02 openim:FO-06 openim:FO-07 openim:FO-08 openim:FO-09 openim:FO-11 openim:FO-12 ) ] ;
+    rdfs:range openim:FO-01 ;
+    owl:inverseOf openim:fund-product-includes .
 
-openim:FO-08 a owl:Class ;
-    rdfs:label "FO-08 Service-Provider Appointment" ;
-    rdfs:comment "The first-class record of which E-01 Legal Entity is appointed to which FO-01 Fund Product in which service-provider role, and over which dates. One row per (fund-product, service provider, role): a fund with a custodian, a depositary, an administrator, a transfer agent, a trustee, an auditor, a prime broker, a ManCo/AIFM and an investment manager carries nine appointment rows, each with its own lifecycle." .
+openim:has-investor a owl:ObjectProperty ;
+    rdfs:label "HAS_INVESTOR" ;
+    rdfs:comment "OpenIM relation verb — role, n-to-1. Inverse: INVESTOR_IN." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-03 openim:DR-05 openim:FO-03 openim:FO-04 openim:FO-07 openim:PM-06 openim:PM-13 ) ] ;
+    rdfs:range openim:E-01 ;
+    owl:inverseOf openim:investor-in .
+
+openim:in-portfolio a owl:ObjectProperty ;
+    rdfs:label "IN_PORTFOLIO" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: PORTFOLIO_INCLUDES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-04 openim:E-05 openim:E-06 openim:PB-03 openim:PB-05 openim:PB-06 openim:PB-11 ) ] ;
+    rdfs:range openim:E-03 ;
+    owl:inverseOf openim:portfolio-includes .
+
+openim:of-fund a owl:ObjectProperty ;
+    rdfs:label "OF_FUND" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: FUND_INCLUDES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:PM-06 openim:PM-07 openim:PM-08 openim:PM-09 openim:PM-10 openim:PM-12 openim:PM-13 ) ] ;
+    rdfs:range openim:PM-01 ;
+    owl:inverseOf openim:fund-includes .
+
+openim:E-08 a owl:Class ;
+    rdfs:label "E-08 Price & Market Data" ;
+    rdfs:comment "Observed market data for an instrument (E-02) — prices, yields, rates, spreads, FX. The observable inputs that value liquid holdings and feed risk and analytics." ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-ind-ir-ir/> .
+
+openim:classified-as-asset-class a owl:ObjectProperty ;
+    rdfs:label "CLASSIFIED_AS_ASSET_CLASS" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: ASSET_CLASS_OF." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-02 openim:E-03 openim:E-10 openim:FO-01 openim:FO-02 openim:FO-06 openim:PM-01 openim:PM-12 ) ] ;
+    rdfs:range openim:E-09 ;
+    owl:inverseOf openim:asset-class-of .
+
+openim:of-share-class a owl:ObjectProperty ;
+    rdfs:label "OF_SHARE_CLASS" ;
+    rdfs:comment "OpenIM relation verb — composition, n-to-1. Inverse: SHARE_CLASS_INCLUDES." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:E-07 openim:FO-03 openim:FO-04 openim:FO-05 openim:FO-06 openim:FO-09 openim:FO-10 openim:FO-11 ) ] ;
+    rdfs:range openim:FO-02 ;
+    owl:inverseOf openim:share-class-includes .
+
+openim:PM-11 a owl:Class ;
+    rdfs:label "PM-11 Manager Succession Event" ;
+    rdfs:comment "A change in the manager entity behind a fund — a merger, rebrand or acquisition. Links a predecessor GP / management company (PM-02) to a successor, with a typed event and an effective date." .
+
+openim:E-21 a owl:Class ;
+    rdfs:label "E-21 ESG Measurement" ;
+    rdfs:comment "A point-in-time ESG, sustainability or emissions data point for a subject — a score, a rating, an emissions figure, a taxonomy-alignment percentage — from a named provider, with its as-of date and methodology. The ESG analogue of Price & Market Data (E-08): an observed, multi-provider, time-series data point." .
+
+openim:E-17 a owl:Class ;
+    rdfs:label "E-17 Scenario" ;
+    rdfs:comment "A defined stress or hypothetical scenario — a named set of market shocks and assumptions applied across the portfolio to ask \"what would happen if.\" The definition a stress test or scenario analysis runs against." .
+
+openim:E-28 a owl:Class ;
+    rdfs:label "E-28 Risk Budget" ;
+    rdfs:comment "A risk allowance allocated to a strategy, pod or portfolio manager — the allocated amount, its basis, and the allocation lifecycle. Distinct from a Risk Limit (E-16): a deliberate share of a finite risk pool handed to a team, not a ceiling a measured risk must stay within." .
 
 openim:PM-03 a owl:Class ;
     rdfs:label "PM-03 Fund Administrator" ;
@@ -6470,82 +7945,21 @@ openim:PM-05 a owl:Class ;
     rdfs:label "PM-05 Legal Vehicle / SPV" ;
     rdfs:comment "The legal structure through which an investor holds a private investment — the layer between the fund investment (PM-09) and the cash flows. Cash flows are recorded at vehicle grain and aggregate up to the investment." .
 
-openim:PM-06 a owl:Class ;
-    rdfs:label "PM-06 LP Commitment" ;
-    rdfs:comment "A commitment of capital by a limited partner to a fund (PM-01). The foundational private-markets relationship: the LP pledges an amount, the fund draws it down over time through capital calls (PM-07)." .
-
-openim:PM-08 a owl:Class ;
-    rdfs:label "PM-08 Distribution" ;
-    rdfs:comment "A return of capital or gain from a fund (PM-01) to its LPs — the cash-in side of the private-markets relationship." ;
-    rdfs:subClassOf openim:E-05 .
+openim:PM-15 a owl:Class ;
+    rdfs:label "PM-15 Deal / Investment Opportunity" ;
+    rdfs:comment "The first-class record of a direct-investment opportunity — the deal — from the moment it is sourced to the moment it either dies or converts into a post-close record on the book. One row per opportunity; the record the BD-04 deal chain works on." .
 
 openim:E-12 a owl:Class ;
     rdfs:label "E-12 Classification History" ;
     rdfs:comment "The bi-temporal record of time-varying classifications on a holding, investment or deal record — which department holds it, its credit rating, its sector, its strategy, its geography, its pipeline stage — with every change dated, so an aggregation is correct at *any* point in time, not only now." .
 
-openim:E-31 a owl:Class ;
-    rdfs:label "E-31 Goal Progress Measurement" ;
-    rdfs:comment "A stored point-in-time measure of the probability of meeting a goal — the figure SD-09.5 computes for a goal, on a stated basis, with the assumptions and provenance behind it. The goals-based analogue of Risk Measurement (E-19) and Performance Result (E-20): a computed number, stored, with how it was produced." .
-
-openim:E-06 a owl:Class ;
-    rdfs:label "E-06 Cash Flow Event" ;
-    rdfs:comment "A dated movement of cash between the investor and a portfolio, instrument, fund, vehicle or counterparty. The granular cash record that performance is computed from." ;
-    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-acc-cur/MonetaryAmount> .
-
-openim:E-17 a owl:Class ;
-    rdfs:label "E-17 Scenario" ;
-    rdfs:comment "A defined stress or hypothetical scenario — a named set of market shocks and assumptions applied across the portfolio to ask \"what would happen if.\" The definition a stress test or scenario analysis runs against." .
-
-openim:E-18 a owl:Class ;
-    rdfs:label "E-18 Limit Breach" ;
-    rdfs:comment "An event: a measured risk crossed a Risk Limit (E-16). The record of the breach, its severity, and its resolution." .
-
-openim:E-29 a owl:Class ;
-    rdfs:label "E-29 Allocation Plan" ;
-    rdfs:comment "A versioned plan that governs how capital is allocated — a strategic asset allocation, a reference-portfolio and factor risk budget, or a commitment-pacing plan — so a decision traces to the plan in force when it was taken. Key-partitioned by `plan_type`." .
-
-openim:E-33 a owl:Class ;
-    rdfs:label "E-33 Financial Plan" ;
-    rdfs:comment "The structured, versioned multi-year financial plan a wealth manager builds and maintains for a household — the comprehensive advisory artefact the planning review consumes, with the goal hierarchy, the cash-flow model, the retirement and decumulation strategy, the insurance and risk-protection strategy and the estate / wealth-transfer strategy organised into one stored record." .
-
-openim:FO-03 a owl:Class ;
-    rdfs:label "FO-03 Investor Unitholding" ;
-    rdfs:comment "The per-investor, per-share-class record of units held in an open-ended fund — the open-ended parallel to PM-06 LP Commitment." ;
-    rdfs:subClassOf openim:E-04 .
-
-openim:PM-02 a owl:Class ;
-    rdfs:label "PM-02 GP / Management Company" ;
-    rdfs:comment "The external manager an investor commits capital to in the private-markets model. Well-known as an entity, but structurally subtle." ;
-    rdfs:subClassOf openim:E-01 .
-
-openim:PM-07 a owl:Class ;
-    rdfs:label "PM-07 Capital Call" ;
-    rdfs:comment "A drawdown event against a commitment (PM-06) — the fund calling part of the capital the LP pledged." ;
-    rdfs:subClassOf openim:E-05 .
-
-openim:PM-10 a owl:Class ;
-    rdfs:label "PM-10 Fund Terms" ;
-    rdfs:comment "The economic terms of a fund as set by its Limited Partnership Agreement (LPA) — hurdle, management fee, carried interest, clawback, preferred return. Modelled as **computation-as-data**: each term is a first-class entity carrying a *definition* the platform can evaluate, not a scalar the platform hopes is right. Versioned by effective date." .
-
-openim:PM-15 a owl:Class ;
-    rdfs:label "PM-15 Deal / Investment Opportunity" ;
-    rdfs:comment "The first-class record of a direct-investment opportunity — the deal — from the moment it is sourced to the moment it either dies or converts into a post-close record on the book. One row per opportunity; the record the BD-04 deal chain works on." .
-
-openim:DR-05 a owl:Class ;
-    rdfs:label "DR-05 Clearing Relationship" ;
-    rdfs:comment "The relationship through which an institutional investor's centrally cleared derivatives are cleared — the central counterparty (CCP), the clearing broker the investor accesses it through, and the clearing account that holds the cleared positions. One DR-05 record per (investor, clearing broker, CCP) clearing arrangement." .
-
-openim:E-15 a owl:Class ;
-    rdfs:label "E-15 Document Metadata" ;
-    rdfs:comment "The metadata and provenance of a source document — a manager report, a capital-account statement, an LPA, an IC paper, a trade confirmation, a prospectus. Links a source document to the durable record it concerns." .
-
-openim:E-21 a owl:Class ;
-    rdfs:label "E-21 ESG Measurement" ;
-    rdfs:comment "A point-in-time ESG, sustainability or emissions data point for a subject — a score, a rating, an emissions figure, a taxonomy-alignment percentage — from a named provider, with its as-of date and methodology. The ESG analogue of Price & Market Data (E-08): an observed, multi-provider, time-series data point." .
-
 openim:E-23 a owl:Class ;
     rdfs:label "E-23 Extraction Record" ;
     rdfs:comment "The versioned record of what was parsed from a source manager document — the extracted fields, their validation status and confidence, and a reference to the source document (E-15). The provenance entity for data captured from unstructured manager reports." .
+
+openim:E-31 a owl:Class ;
+    rdfs:label "E-31 Goal Progress Measurement" ;
+    rdfs:comment "A stored point-in-time measure of the probability of meeting a goal — the figure SD-09.5 computes for a goal, on a stated basis, with the assumptions and provenance behind it. The goals-based analogue of Risk Measurement (E-19) and Performance Result (E-20): a computed number, stored, with how it was produced." .
 
 openim:E-36 a owl:Class ;
     rdfs:label "E-36 Oversight Exception" ;
@@ -6555,18 +7969,64 @@ openim:E-37 a owl:Class ;
     rdfs:label "E-37 ESG Compliance Result" ;
     rdfs:comment "A stored point-in-time ESG-compliance result — the SFDR Article 6/8/9 classification, the EU Taxonomy alignment percentage, the PAI indicators, the mandate ESG-screen pass/fail, the stewardship-code disclosure conformance — for one subject, as of one date, on a stated methodology version. The ESG analogue of Risk Measurement (E-19) and Performance Result (E-20): append-only, with provenance." .
 
-openim:PB-09 a owl:Class ;
-    rdfs:label "PB-09 Index Constituent" ;
-    rdfs:comment "A membership of an instrument in a market index — the instrument, its weight, and the period that membership and weight were effective, as the index rebalances and reconstitutes." ;
-    rdfs:subClassOf openim:E-10 .
+openim:E-18 a owl:Class ;
+    rdfs:label "E-18 Limit Breach" ;
+    rdfs:comment "An event: a measured risk crossed a Risk Limit (E-16). The record of the breach, its severity, and its resolution." .
 
-openim:E-28 a owl:Class ;
-    rdfs:label "E-28 Risk Budget" ;
-    rdfs:comment "A risk allowance allocated to a strategy, pod or portfolio manager — the allocated amount, its basis, and the allocation lifecycle. Distinct from a Risk Limit (E-16): a deliberate share of a finite risk pool handed to a team, not a ceiling a measured risk must stay within." .
+openim:E-27 a owl:Class ;
+    rdfs:label "E-27 Liability Profile" ;
+    rdfs:comment "The actuarially-projected stream of future benefit or claim payments a liability-relative strategy is built against — the projected cash flows and their sensitivity to interest rates and inflation. The subject a liability-driven or insurance strategy targets, made first-class." .
+
+openim:E-33 a owl:Class ;
+    rdfs:label "E-33 Financial Plan" ;
+    rdfs:comment "The structured, versioned multi-year financial plan a wealth manager builds and maintains for a household — the comprehensive advisory artefact the planning review consumes, with the goal hierarchy, the cash-flow model, the retirement and decumulation strategy, the insurance and risk-protection strategy and the estate / wealth-transfer strategy organised into one stored record." .
 
 openim:E-38 a owl:Class ;
     rdfs:label "E-38 Internal Credit Rating" ;
     rdfs:comment "The firm's own methodology-driven internal credit rating — the issuer or instrument, the rating, the rating methodology version, the analyst, the committee date, the change reason and the watch status. Versioned through rating-change events; the firm's independent credit view, distinct from and cross-checked against the external rating agencies." .
+
+openim:FO-08 a owl:Class ;
+    rdfs:label "FO-08 Service-Provider Appointment" ;
+    rdfs:comment "The first-class record of which E-01 Legal Entity is appointed to which FO-01 Fund Product in which service-provider role, and over which dates. One row per (fund-product, service provider, role): a fund with a custodian, a depositary, an administrator, a transfer agent, a trustee, an auditor, a prime broker, a ManCo/AIFM and an investment manager carries nine appointment rows, each with its own lifecycle." .
+
+openim:PM-06 a owl:Class ;
+    rdfs:label "PM-06 LP Commitment" ;
+    rdfs:comment "A commitment of capital by a limited partner to a fund (PM-01). The foundational private-markets relationship: the LP pledges an amount, the fund draws it down over time through capital calls (PM-07)." .
+
+openim:PM-08 a owl:Class ;
+    rdfs:label "PM-08 Distribution" ;
+    rdfs:comment "A return of capital or gain from a fund (PM-01) to its LPs — the cash-in side of the private-markets relationship." ;
+    rdfs:subClassOf openim:E-05 .
+
+openim:E-16 a owl:Class ;
+    rdfs:label "E-16 Risk Limit" ;
+    rdfs:comment "A configured constraint on risk — the threshold a measured risk must stay within. The limit framework an institutional investor governs itself by: market-risk limits, credit and counterparty limits, concentration limits, liquidity limits." .
+
+openim:E-20 a owl:Class ;
+    rdfs:label "E-20 Performance Result" ;
+    rdfs:comment "A stored point-in-time return figure — a portfolio's return for a period, on a stated basis — with the inputs, methodology version and provenance behind it. The performance analogue of Valuation (E-07) and Risk Measurement (E-19): a computed number, stored, with how it was produced." .
+
+openim:E-24 a owl:Class ;
+    rdfs:label "E-24 Reconciliation Break" ;
+    rdfs:comment "An event: two records of the same thing disagree. The owned, aged record of a reconciliation difference — the two sides, the difference, its cause, and its resolution lifecycle." .
+
+openim:E-29 a owl:Class ;
+    rdfs:label "E-29 Allocation Plan" ;
+    rdfs:comment "A versioned plan that governs how capital is allocated — a strategic asset allocation, a reference-portfolio and factor risk budget, or a commitment-pacing plan — so a decision traces to the plan in force when it was taken. Key-partitioned by `plan_type`." .
+
+openim:PM-12 a owl:Class ;
+    rdfs:label "PM-12 Benchmark Cross-Reference" ;
+    rdfs:comment "The mapping between an investor's own funds and the external benchmark and peer-universe identifiers used to evaluate them." ;
+    rdfs:subClassOf openim:E-10 .
+
+openim:E-06 a owl:Class ;
+    rdfs:label "E-06 Cash Flow Event" ;
+    rdfs:comment "A dated movement of cash between the investor and a portfolio, instrument, fund, vehicle or counterparty. The granular cash record that performance is computed from." ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fnd-acc-cur/MonetaryAmount> .
+
+openim:E-35 a owl:Class ;
+    rdfs:label "E-35 Complaint Record" ;
+    rdfs:comment "The regulated complaint record — the complaint, the acknowledgement, the investigation, the final response, the FOS-referral note, the redress, the root-cause categorisation and the systemic-finding flag. The FCA DISP record an inspection runs against, and the Consumer-Duty outcomes-evidence record." .
 
 openim:FO-05 a owl:Class ;
     rdfs:label "FO-05 Fund Distribution Event" ;
@@ -6578,38 +8038,69 @@ openim:PB-08 a owl:Class ;
     rdfs:comment "The forward calendar of contractual or expected income payments on an instrument — the coupon stream of a bond, the dividend stream of an equity — held as dated reference data." ;
     rdfs:subClassOf openim:E-02 .
 
-openim:E-07 a owl:Class ;
-    rdfs:label "E-07 Valuation" ;
-    rdfs:comment "A point-in-time value of a holding (E-04) — and the record of *how* that value was arrived at. Every holding is valued; the difference across asset classes is the method, not the entity." .
+openim:PM-07 a owl:Class ;
+    rdfs:label "PM-07 Capital Call" ;
+    rdfs:comment "A drawdown event against a commitment (PM-06) — the fund calling part of the capital the LP pledged." ;
+    rdfs:subClassOf openim:E-05 .
 
-openim:E-16 a owl:Class ;
-    rdfs:label "E-16 Risk Limit" ;
-    rdfs:comment "A configured constraint on risk — the threshold a measured risk must stay within. The limit framework an institutional investor governs itself by: market-risk limits, credit and counterparty limits, concentration limits, liquidity limits." .
+openim:PM-10 a owl:Class ;
+    rdfs:label "PM-10 Fund Terms" ;
+    rdfs:comment "The economic terms of a fund as set by its Limited Partnership Agreement (LPA) — hurdle, management fee, carried interest, clawback, preferred return. Modelled as **computation-as-data**: each term is a first-class entity carrying a *definition* the platform can evaluate, not a scalar the platform hopes is right. Versioned by effective date." .
 
 openim:E-19 a owl:Class ;
     rdfs:label "E-19 Risk Measurement" ;
     rdfs:comment "A point-in-time risk result — a VaR figure, an exposure, a sensitivity, a stress-test loss — and the record of how it was produced. The risk analogue of Valuation (E-07): a measured number, stored, with its method and confidence." .
 
-openim:E-20 a owl:Class ;
-    rdfs:label "E-20 Performance Result" ;
-    rdfs:comment "A stored point-in-time return figure — a portfolio's return for a period, on a stated basis — with the inputs, methodology version and provenance behind it. The performance analogue of Valuation (E-07) and Risk Measurement (E-19): a computed number, stored, with how it was produced." .
+openim:E-34 a owl:Class ;
+    rdfs:label "E-34 Investment Authorisation" ;
+    rdfs:comment "The Investment Committee's authorisation record — the recommendation memorandum the committee saw, the decision, the conditions, the authority-and-mandate verification and the dissent. One concept, two co-equal owning routes: the fund-commitment IC (SD-03.9) and the direct-investment IC (SD-04.5)." .
+
+openim:PB-09 a owl:Class ;
+    rdfs:label "PB-09 Index Constituent" ;
+    rdfs:comment "A membership of an instrument in a market index — the instrument, its weight, and the period that membership and weight were effective, as the index rebalances and reconstitutes." ;
+    rdfs:subClassOf openim:E-10 .
+
+openim:DR-04 a owl:Class ;
+    rdfs:label "DR-04 Margin & Collateral Balance" ;
+    rdfs:comment "The operational margining position of a derivatives relationship — the collateral posted and received, and the initial and variation margin owed, against a master-agreement set (DR-03) or a clearing relationship (DR-05) at a point in time. The entity that answers \"how much collateral are we exposed for, and is the relationship adequately margined right now.\"" .
+
+openim:E-09 a owl:Class ;
+    rdfs:label "E-09 Asset Class" ;
+    rdfs:comment "The asset-class taxonomy — the reference structure that classifies what an institutional investor invests in, across public and private markets." .
+
+openim:E-22 a owl:Class ;
+    rdfs:label "E-22 Metric Definition" ;
+    rdfs:comment "The governed definition of a metric — its formula, inputs, conventions and variant forms, owned and versioned. The single authoritative statement of *how a number is defined*, that the stored results computed to it (E-20, E-19) reference." .
+
+openim:FO-03 a owl:Class ;
+    rdfs:label "FO-03 Investor Unitholding" ;
+    rdfs:comment "The per-investor, per-share-class record of units held in an open-ended fund — the open-ended parallel to PM-06 LP Commitment." ;
+    rdfs:subClassOf openim:E-04 .
+
+openim:PM-02 a owl:Class ;
+    rdfs:label "PM-02 GP / Management Company" ;
+    rdfs:comment "The external manager an investor commits capital to in the private-markets model. Well-known as an entity, but structurally subtle." ;
+    rdfs:subClassOf openim:E-01 .
+
+openim:RA-02 a owl:Class ;
+    rdfs:label "RA-02 Asset Operating Record" ;
+    rdfs:comment "The periodic operating data of a real asset (RA-01) — occupancy, throughput, generation, net operating income — the data that drives the asset's value and performance. One record per asset per reporting period." .
+
+openim:DR-05 a owl:Class ;
+    rdfs:label "DR-05 Clearing Relationship" ;
+    rdfs:comment "The relationship through which an institutional investor's centrally cleared derivatives are cleared — the central counterparty (CCP), the clearing broker the investor accesses it through, and the clearing account that holds the cleared positions. One DR-05 record per (investor, clearing broker, CCP) clearing arrangement." .
+
+openim:E-15 a owl:Class ;
+    rdfs:label "E-15 Document Metadata" ;
+    rdfs:comment "The metadata and provenance of a source document — a manager report, a capital-account statement, an LPA, an IC paper, a trade confirmation, a prospectus. Links a source document to the durable record it concerns." .
 
 openim:E-25 a owl:Class ;
     rdfs:label "E-25 Account" ;
     rdfs:comment "The account structure portfolios are held and settled through — custody and safekeeping accounts on one side, bank and cash accounts on another, and register/nominee accounts for fund-distribution intermediaries on a third. One shared account master, key-partitioned by `account_type`, aligned to the FIBO Account concept." .
 
-openim:E-30 a owl:Class ;
-    rdfs:label "E-30 Goal" ;
-    rdfs:comment "A client's investment objective — a target value to reach by a target date, at a priority, with a required probability of success. The unit the goals-based paradigm allocates against: a household has many goals, each funded by its own sub-portfolio." .
-
 openim:FO-12 a owl:Class ;
     rdfs:label "FO-12 ETF Authorised-Participant Agreement" ;
     rdfs:comment "The standing, dated record of a broker-dealer's or market-maker's right to create and redeem ETF creation units against a specific fund product — the AP Agreement relationship between the fund (FO-01) and an authorised participant (E-01). One record per (fund, AP) with its own lifecycle: the AP is authorised from `authorised_date`, may restrict or terminate its access (`terminated_date` nullable), and may operate under defined settlement-basis permissions." .
-
-openim:PB-10 a owl:Class ;
-    rdfs:label "PB-10 Securities Loan" ;
-    rdfs:comment "A per-loan record of a lent security — the borrower, the quantity, the fee, the term, the recall status, and the collateral held against it. The loan as a relationship with its own lifecycle, which a holding's lent flag cannot carry." ;
-    rdfs:subClassOf openim:E-04 .
 
 openim:PB-11 a owl:Class ;
     rdfs:label "PB-11 Proxy Vote" ;
@@ -6621,44 +8112,91 @@ openim:PM-13 a owl:Class ;
     rdfs:comment "The manager-side per-investor capital account in a fund the institution *operates* — the running record of one investor's contributions, distributions, allocated income and gain, and closing balance. The ILPA Capital Account Statement made first-class." ;
     rdfs:subClassOf openim:E-03 .
 
-openim:DR-04 a owl:Class ;
-    rdfs:label "DR-04 Margin & Collateral Balance" ;
-    rdfs:comment "The operational margining position of a derivatives relationship — the collateral posted and received, and the initial and variation margin owed, against a master-agreement set (DR-03) or a clearing relationship (DR-05) at a point in time. The entity that answers \"how much collateral are we exposed for, and is the relationship adequately margined right now.\"" .
-
-openim:E-11 a owl:Class ;
-    rdfs:label "E-11 Classification Type & Value" ;
-    rdfs:comment "The extensible taxonomy behind time-varying classifications — the definition of *what classifiers exist* and *what values are valid within each*. The reference data that E-12 Classification History records against." .
+openim:RA-03 a owl:Class ;
+    rdfs:label "RA-03 Lease / Tenancy" ;
+    rdfs:comment "A lease over a real-estate asset (RA-01) — the contract between the investor as landlord and a tenant that produces the asset's income. One record per lease; the set of leases over an asset is its tenancy schedule." .
 
 openim:E-26 a owl:Class ;
     rdfs:label "E-26 Collateral Position" ;
     rdfs:comment "The generic record of collateral posted or received against a relationship — the asset, the direction, its valuation and haircut, its eligibility, and the counterparty. The shared collateral abstraction that derivatives margining (DR-04) and securities lending (PB-10) both reference." .
 
-openim:E-27 a owl:Class ;
-    rdfs:label "E-27 Liability Profile" ;
-    rdfs:comment "The actuarially-projected stream of future benefit or claim payments a liability-relative strategy is built against — the projected cash flows and their sensitivity to interest rates and inflation. The subject a liability-driven or insurance strategy targets, made first-class." .
-
 openim:E-32 a owl:Class ;
     rdfs:label "E-32 Tax Lot" ;
     rdfs:comment "The per-(client, instrument, acquisition-tranche) tax-lot record — the lot-level grain underneath a holding, carrying its cost basis, acquisition date, lot-relief eligibility and wash-sale-adjustment history. Append-only on the lot grain; supersession by lot-close." .
 
-openim:E-35 a owl:Class ;
-    rdfs:label "E-35 Complaint Record" ;
-    rdfs:comment "The regulated complaint record — the complaint, the acknowledgement, the investigation, the final response, the FOS-referral note, the redress, the root-cause categorisation and the systemic-finding flag. The FCA DISP record an inspection runs against, and the Consumer-Duty outcomes-evidence record." .
+openim:RA-05 a owl:Class ;
+    rdfs:label "RA-05 Asset Appraisal" ;
+    rdfs:comment "An appraisal-based valuation of a directly-held real asset (RA-01) — a professional opinion of value produced by a qualified valuer to a recognised standard. The real-assets specialisation of how a real asset's value is determined." ;
+    rdfs:subClassOf openim:E-07 .
+
+openim:E-07 a owl:Class ;
+    rdfs:label "E-07 Valuation" ;
+    rdfs:comment "A point-in-time value of a holding (E-04) — and the record of *how* that value was arrived at. Every holding is valued; the difference across asset classes is the method, not the entity." .
+
+openim:E-30 a owl:Class ;
+    rdfs:label "E-30 Goal" ;
+    rdfs:comment "A client's investment objective — a target value to reach by a target date, at a priority, with a required probability of success. The unit the goals-based paradigm allocates against: a household has many goals, each funded by its own sub-portfolio." .
+
+openim:on-instrument a owl:ObjectProperty ;
+    rdfs:label "ON_INSTRUMENT" ;
+    rdfs:comment "OpenIM relation verb — reference, n-to-1. Inverse: INSTRUMENT_IN." ;
+    rdfs:domain [ a owl:Class ;
+            owl:unionOf ( openim:DR-01 openim:DR-02 openim:E-05 openim:E-06 openim:E-07 openim:E-08 openim:E-26 openim:E-32 openim:FO-11 openim:PB-01 openim:PB-02 openim:PB-03 openim:PB-04 openim:PB-05 openim:PB-06 openim:PB-07 openim:PB-08 openim:PB-09 openim:PB-10 openim:PM-14 ) ] ;
+    rdfs:range openim:E-02 ;
+    owl:inverseOf openim:instrument-in .
 
 openim:PM-04 a owl:Class ;
     rdfs:label "PM-04 Portfolio Company" ;
     rdfs:comment "The underlying operating company an investor holds exposure to — directly, through one or more funds, or both. The unit of **look-through exposure**, and the hardest master in OpenIM." ;
     rdfs:subClassOf openim:E-01 .
 
+openim:RA-04 a owl:Class ;
+    rdfs:label "RA-04 Development Project" ;
+    rdfs:comment "The construction or development lifecycle of a real asset (RA-01) — the period before the asset is operational, and, for infrastructure, the concession that frames its whole life. One record per development undertaking on an asset." .
+
+openim:FO-04 a owl:Class ;
+    rdfs:label "FO-04 Dealing Order" ;
+    rdfs:comment "A subscription, redemption, transfer or switch instruction submitted by or on behalf of an investor in an open-ended fund — the event at which the investor register moves." ;
+    rdfs:subClassOf openim:E-05 .
+
+openim:PB-10 a owl:Class ;
+    rdfs:label "PB-10 Securities Loan" ;
+    rdfs:comment "A per-loan record of a lent security — the borrower, the quantity, the fee, the term, the recall status, and the collateral held against it. The loan as a relationship with its own lifecycle, which a holding's lent flag cannot carry." ;
+    rdfs:subClassOf openim:E-04 .
+
+openim:PB-01 a owl:Class ;
+    rdfs:label "PB-01 Listed Equity" ;
+    rdfs:comment "A share in a company admitted to trading on a regulated exchange or multilateral trading venue — the equity-class instrument an institutional investor holds directly or through a separately managed account." ;
+    rdfs:subClassOf openim:E-02 .
+
 openim:PM-09 a owl:Class ;
     rdfs:label "PM-09 Fund Investment" ;
     rdfs:comment "A fund's holding in something it has deployed capital into — a portfolio company, or, for a fund-of-funds, another fund. One row per (fund, holding) pair. The entity that connects a fund (PM-01) to what it holds, and the unit at which look-through exposure is computed." ;
     rdfs:subClassOf openim:E-04 .
 
-openim:RA-05 a owl:Class ;
-    rdfs:label "RA-05 Asset Appraisal" ;
-    rdfs:comment "An appraisal-based valuation of a directly-held real asset (RA-01) — a professional opinion of value produced by a qualified valuer to a recognised standard. The real-assets specialisation of how a real asset's value is determined." ;
-    rdfs:subClassOf openim:E-07 .
+openim:PM-14 a owl:Class ;
+    rdfs:label "PM-14 Direct Loan" ;
+    rdfs:comment "A directly-originated private loan — the borrower, the facility terms, the covenants, the drawn / undrawn position, the interest accrual, the workout state. The post-close lifecycle entity for direct private credit, modelling the loan as it lives between origination and either repayment or recovery." ;
+    rdfs:subClassOf openim:E-02 .
+
+openim:FO-09 a owl:Class ;
+    rdfs:label "FO-09 Omnibus Account" ;
+    rdfs:comment "The account record an intermediary — a distributor, platform, nominee, or sub-transfer agent — holds at the fund's register. The fund sees a single registered position per share class per intermediary; the intermediary keeps the per-investor accounts behind its own register. FO-09 is the fund-side account master for that relationship: the account identification, the underlying unit-class link, and the servicing fee terms (12b-1 distribution fee, sub-TA fee, revenue-share, platform fee) the manager pays the intermediary for investor servicing within the omnibus." ;
+    rdfs:subClassOf openim:E-25 .
+
+openim:FO-11 a owl:Class ;
+    rdfs:label "FO-11 ETF Creation Basket (Portfolio Composition File)" ;
+    rdfs:comment "The daily-published composition record that specifies exactly what an authorised participant must deliver (or will receive) when creating (or redeeming) one creation unit in an ETF — the set of `(instrument, quantity)` line items plus the cash balancing component that together constitute the in-kind exchange for one creation unit on a given dealing date." .
+
+openim:PB-04 a owl:Class ;
+    rdfs:label "PB-04 Execution" ;
+    rdfs:comment "A fill — a quantity of an order traded in the market at a price, on a venue, at a time. The event that actually moves a position." ;
+    rdfs:subClassOf openim:E-05 .
+
+openim:RA-01 a owl:Class ;
+    rdfs:label "RA-01 Direct Real Asset" ;
+    rdfs:comment "The golden record of a physical asset an investor holds **directly** — a building, a toll road, a wind farm, a forest — owned outright or through a joint venture / SPV, rather than through a fund." ;
+    rdfs:subClassOf openim:E-02 .
 
 openim:DR-01 a owl:Class ;
     rdfs:label "DR-01 Listed Derivative" ;
@@ -6670,43 +8208,23 @@ openim:E-10 a owl:Class ;
     rdfs:comment "A benchmark or index, and its constituents, held as managed reference data. The comparator a portfolio or holding's performance is measured against." ;
     skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-ind-mkt-bas/> .
 
-openim:E-24 a owl:Class ;
-    rdfs:label "E-24 Reconciliation Break" ;
-    rdfs:comment "An event: two records of the same thing disagree. The owned, aged record of a reconciliation difference — the two sides, the difference, its cause, and its resolution lifecycle." .
-
-openim:E-34 a owl:Class ;
-    rdfs:label "E-34 Investment Authorisation" ;
-    rdfs:comment "The Investment Committee's authorisation record — the recommendation memorandum the committee saw, the decision, the conditions, the authority-and-mandate verification and the dissent. One concept, two co-equal owning routes: the fund-commitment IC (SD-03.9) and the direct-investment IC (SD-04.5)." .
-
-openim:FO-04 a owl:Class ;
-    rdfs:label "FO-04 Dealing Order" ;
-    rdfs:comment "A subscription, redemption, transfer or switch instruction submitted by or on behalf of an investor in an open-ended fund — the event at which the investor register moves." ;
+openim:PB-07 a owl:Class ;
+    rdfs:label "PB-07 Corporate Action" ;
+    rdfs:comment "An event initiated by a security's issuer that changes the security, the holding in it, or both — a dividend, a split, a merger, a rights issue, a tender offer." ;
     rdfs:subClassOf openim:E-05 .
-
-openim:RA-03 a owl:Class ;
-    rdfs:label "RA-03 Lease / Tenancy" ;
-    rdfs:comment "A lease over a real-estate asset (RA-01) — the contract between the investor as landlord and a tenant that produces the asset's income. One record per lease; the set of leases over an asset is its tenancy schedule." .
 
 openim:E-04 a owl:Class ;
     rdfs:label "E-04 Holding / Position" ;
     rdfs:comment "What the investor owns: a position in an instrument or asset (E-02), within a portfolio (E-03), at a point in time. The entity every exposure, risk and performance calculation ultimately reads from. Held at two grains — the real-time **IBOR** view and the official accounting-basis **ABOR** view." ;
     skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-sec-fund-fund/FundHolding> .
 
-openim:E-09 a owl:Class ;
-    rdfs:label "E-09 Asset Class" ;
-    rdfs:comment "The asset-class taxonomy — the reference structure that classifies what an institutional investor invests in, across public and private markets." .
+openim:E-11 a owl:Class ;
+    rdfs:label "E-11 Classification Type & Value" ;
+    rdfs:comment "The extensible taxonomy behind time-varying classifications — the definition of *what classifiers exist* and *what values are valid within each*. The reference data that E-12 Classification History records against." .
 
-openim:E-22 a owl:Class ;
-    rdfs:label "E-22 Metric Definition" ;
-    rdfs:comment "The governed definition of a metric — its formula, inputs, conventions and variant forms, owned and versioned. The single authoritative statement of *how a number is defined*, that the stored results computed to it (E-20, E-19) reference." .
-
-openim:FO-11 a owl:Class ;
-    rdfs:label "FO-11 ETF Creation Basket (Portfolio Composition File)" ;
-    rdfs:comment "The daily-published composition record that specifies exactly what an authorised participant must deliver (or will receive) when creating (or redeeming) one creation unit in an ETF — the set of `(instrument, quantity)` line items plus the cash balancing component that together constitute the in-kind exchange for one creation unit on a given dealing date." .
-
-openim:PB-01 a owl:Class ;
-    rdfs:label "PB-01 Listed Equity" ;
-    rdfs:comment "A share in a company admitted to trading on a regulated exchange or multilateral trading venue — the equity-class instrument an institutional investor holds directly or through a separately managed account." ;
+openim:PB-02 a owl:Class ;
+    rdfs:label "PB-02 Debt Instrument" ;
+    rdfs:comment "A tradable debt security — a government, supranational, agency or corporate bond, a note or a money-market instrument — held directly or through a separately managed account." ;
     rdfs:subClassOf openim:E-02 .
 
 openim:PB-05 a owl:Class ;
@@ -6714,87 +8232,44 @@ openim:PB-05 a owl:Class ;
     rdfs:comment "The apportionment of an executed trade across the portfolios and accounts it was traded for — the step that turns a market fill into per-portfolio positions." ;
     rdfs:subClassOf openim:E-05 .
 
-openim:PM-14 a owl:Class ;
-    rdfs:label "PM-14 Direct Loan" ;
-    rdfs:comment "A directly-originated private loan — the borrower, the facility terms, the covenants, the drawn / undrawn position, the interest accrual, the workout state. The post-close lifecycle entity for direct private credit, modelling the loan as it lives between origination and either repayment or recovery." ;
-    rdfs:subClassOf openim:E-02 .
-
-openim:RA-02 a owl:Class ;
-    rdfs:label "RA-02 Asset Operating Record" ;
-    rdfs:comment "The periodic operating data of a real asset (RA-01) — occupancy, throughput, generation, net operating income — the data that drives the asset's value and performance. One record per asset per reporting period." .
-
-openim:RA-04 a owl:Class ;
-    rdfs:label "RA-04 Development Project" ;
-    rdfs:comment "The construction or development lifecycle of a real asset (RA-01) — the period before the asset is operational, and, for infrastructure, the concession that frames its whole life. One record per development undertaking on an asset." .
-
 openim:DR-02 a owl:Class ;
     rdfs:label "DR-02 OTC Derivative" ;
     rdfs:comment "A bilaterally negotiated over-the-counter derivative — an interest-rate, cross-currency or equity swap, a forward, or an OTC option — held by an institutional investor for hedging, overlay management or as an instrument in its own right. Unlike a listed derivative, the contract is privately negotiated between two parties and its terms are bespoke." ;
     rdfs:subClassOf openim:E-02 .
 
-openim:FO-09 a owl:Class ;
-    rdfs:label "FO-09 Omnibus Account" ;
-    rdfs:comment "The account record an intermediary — a distributor, platform, nominee, or sub-transfer agent — holds at the fund's register. The fund sees a single registered position per share class per intermediary; the intermediary keeps the per-investor accounts behind its own register. FO-09 is the fund-side account master for that relationship: the account identification, the underlying unit-class link, and the servicing fee terms (12b-1 distribution fee, sub-TA fee, revenue-share, platform fee) the manager pays the intermediary for investor servicing within the omnibus." ;
-    rdfs:subClassOf openim:E-25 .
+openim:FO-02 a owl:Class ;
+    rdfs:label "FO-02 Share / Unit Class" ;
+    rdfs:comment "The class grain at which a fund's economics attach — one FO-01 fund issues many classes. Each class carries its own ISIN, fee schedule, distribution policy, currency and investor category. FO-02 is the authoritative reference record of a share or unit class as the issuing manager maintains it: the class the investor subscribes to, the class the NAV per unit is struck for, the class whose fee is accrued and disclosed, and the class whose currency-hedging programme — for a hedged class — is configured." ;
+    rdfs:subClassOf openim:E-02 ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-sec-fund-fund/CollectiveInvestmentVehicle> .
 
 openim:PB-06 a owl:Class ;
     rdfs:label "PB-06 Settlement Instruction" ;
     rdfs:comment "The instruction to exchange securities for cash and complete a trade — the final stage of the trade lifecycle, sent to a custodian or settlement agent and matched against the counterparty." ;
     rdfs:subClassOf openim:E-05 .
 
-openim:PB-07 a owl:Class ;
-    rdfs:label "PB-07 Corporate Action" ;
-    rdfs:comment "An event initiated by a security's issuer that changes the security, the holding in it, or both — a dividend, a split, a merger, a rights issue, a tender offer." ;
-    rdfs:subClassOf openim:E-05 .
-
-openim:PB-04 a owl:Class ;
-    rdfs:label "PB-04 Execution" ;
-    rdfs:comment "A fill — a quantity of an order traded in the market at a price, on a venue, at a time. The event that actually moves a position." ;
-    rdfs:subClassOf openim:E-05 .
-
-openim:FO-07 a owl:Class ;
-    rdfs:label "FO-07 Investor Tax Statement" ;
-    rdfs:comment "The issued-and-filed tax reporting document the fund or its transfer agent produces for an investor at the close of a tax year — the filed artefact of record for investor-level tax reporting obligations (1099-DIV/B, K-1, 1042-S, UK tax vouchers, FATCA/CRS per-investor classification reports, and equivalents)." ;
-    rdfs:subClassOf openim:E-15 .
-
-openim:PB-03 a owl:Class ;
-    rdfs:label "PB-03 Order" ;
-    rdfs:comment "An instruction to buy or sell a listed instrument — the first event of the trade lifecycle, raised by the investment decision and routed to the trading desk and the market." ;
-    rdfs:subClassOf openim:E-05 .
-
-openim:PB-02 a owl:Class ;
-    rdfs:label "PB-02 Debt Instrument" ;
-    rdfs:comment "A tradable debt security — a government, supranational, agency or corporate bond, a note or a money-market instrument — held directly or through a separately managed account." ;
-    rdfs:subClassOf openim:E-02 .
-
-openim:RA-01 a owl:Class ;
-    rdfs:label "RA-01 Direct Real Asset" ;
-    rdfs:comment "The golden record of a physical asset an investor holds **directly** — a building, a toll road, a wind farm, a forest — owned outright or through a joint venture / SPV, rather than through a fund." ;
-    rdfs:subClassOf openim:E-02 .
-
 openim:DR-03 a owl:Class ;
     rdfs:label "DR-03 Master Agreement & Collateral Terms" ;
     rdfs:comment "The bilateral legal framework governing an institutional investor's OTC derivative relationship with a counterparty — the ISDA Master Agreement, its Schedule, and the Credit Support Annex (CSA) or equivalent credit-support document that sets the collateral terms. One DR-03 record per (investor, counterparty) master-agreement relationship." .
-
-openim:FO-02 a owl:Class ;
-    rdfs:label "FO-02 Share / Unit Class" ;
-    rdfs:comment "The class grain at which a fund's economics attach — one FO-01 fund issues many classes. Each class carries its own ISIN, fee schedule, distribution policy, currency and investor category. FO-02 is the authoritative reference record of a share or unit class as the issuing manager maintains it: the class the investor subscribes to, the class the NAV per unit is struck for, the class whose fee is accrued and disclosed, and the class whose currency-hedging programme — for a hedged class — is configured." ;
-    rdfs:subClassOf openim:E-02 ;
-    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-sec-fund-fund/FundShareClassUnit> .
-
-openim:E-03 a owl:Class ;
-    rdfs:label "E-03 Portfolio / Mandate" ;
-    rdfs:comment "The container. An institutional investor's capital is organised into portfolios — and a portfolio is governed by a mandate that sets its objective, its benchmark and its constraints. Every holding (E-04) sits in a portfolio." ;
-    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fbc-pas-caa/Account> .
 
 openim:FO-06 a owl:Class ;
     rdfs:label "FO-06 Fee Accrual" ;
     rdfs:comment "The computed fee figure of record for a fund or share/unit class over a period — the amount that management, performance or expense fees accrued to, as calculated by the fee-and-expense processing function, with full provenance back to the in-force fee definition that produced it. The difference between the gross accrual and the net charge after expense-cap, fee-waiver and reimbursement application makes the disclosed ongoing charges figure (OCF) reconstructable from stored artefacts. The OCF (the UCITS KIID / PRIIPs KID cost-disclosure figure: management fee plus OCF-eligible operating expenses, performance fees and transaction costs excluded) and the TER (total expense ratio, an older and broader disclosure measure with a different scope) are distinct; FO-06 supports reconstruction of both but they are not synonymous." ;
     rdfs:subClassOf openim:E-07 .
 
+openim:FO-07 a owl:Class ;
+    rdfs:label "FO-07 Investor Tax Statement" ;
+    rdfs:comment "The issued-and-filed tax reporting document the fund or its transfer agent produces for an investor at the close of a tax year — the filed artefact of record for investor-level tax reporting obligations (1099-DIV/B, K-1, 1042-S, UK tax vouchers, FATCA/CRS per-investor classification reports, and equivalents)." ;
+    rdfs:subClassOf openim:E-15 .
+
 openim:FO-10 a owl:Class ;
     rdfs:label "FO-10 ETF Creation/Redemption Order" ;
     rdfs:comment "The primary-market dealing event in which an authorised participant (AP) creates or redeems a block of ETF shares by exchanging an in-kind basket of underlying securities (FO-11 ETF Creation Basket) for fund shares, or the reverse. One order record per creation or redemption instruction submitted by an AP against a specific ETF share class." ;
+    rdfs:subClassOf openim:E-05 .
+
+openim:PB-03 a owl:Class ;
+    rdfs:label "PB-03 Order" ;
+    rdfs:comment "An instruction to buy or sell a listed instrument — the first event of the trade lifecycle, raised by the investment decision and routed to the trading desk and the market." ;
     rdfs:subClassOf openim:E-05 .
 
 openim:E-05 a owl:Class ;
@@ -6802,16 +8277,21 @@ openim:E-05 a owl:Class ;
     rdfs:comment "The universal investment event — anything that changes a holding. A trade, a fund subscription, a capital call, a distribution, a corporate action, a transfer. The event record from which positions (E-04) are derived and cash flows (E-06) arise." ;
     skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fbc-pas-caa/AccountingTransaction> .
 
-openim:PM-01 a owl:Class ;
-    rdfs:label "PM-01 Fund & Vehicle" ;
-    rdfs:comment "The golden record of an investment fund and the legal vehicles that make it up — the primary commitment vehicle for an investor that invests through external managers. Includes the **Fund Family / Group** grouping that ties the related vehicles of a single raise together." ;
-    rdfs:subClassOf openim:E-02 .
-
 openim:FO-01 a owl:Class ;
     rdfs:label "FO-01 Fund Product" ;
     rdfs:comment "The fund as a product the manager *issues* — the collective investment vehicle the manager registers, prices and distributes. FO-01 is the golden record of an issued fund from the issuer's perspective, the manager-side complement to PM-01 Fund & Vehicle (which models the same fund from the *allocator's* commitment view). Where PM-01 records `committed_capital_usd` — the investor's commitment to a specific vehicle — FO-01 records the product-lifecycle, dealing-terms and regulatory-authorisation attributes that govern how the fund operates as an offered, priced and distributed product." ;
     rdfs:subClassOf openim:E-02 ;
     skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-sec-fund-fund/CollectiveInvestmentVehicle> .
+
+openim:PM-01 a owl:Class ;
+    rdfs:label "PM-01 Fund & Vehicle" ;
+    rdfs:comment "The golden record of an investment fund and the legal vehicles that make it up — the primary commitment vehicle for an investor that invests through external managers. Includes the **Fund Family / Group** grouping that ties the related vehicles of a single raise together." ;
+    rdfs:subClassOf openim:E-02 .
+
+openim:E-03 a owl:Class ;
+    rdfs:label "E-03 Portfolio / Mandate" ;
+    rdfs:comment "The container. An institutional investor's capital is organised into portfolios — and a portfolio is governed by a mandate that sets its objective, its benchmark and its constraints. Every holding (E-04) sits in a portfolio." ;
+    skos:closeMatch <https://spec.edmcouncil.org/fibo/ontology/fibo-fbc-pas-caa/Account> .
 
 openim:E-02 a owl:Class ;
     rdfs:label "E-02 Instrument / Asset" ;

@@ -80,7 +80,7 @@ FO-12 is distinct from:
 
 **No published FIBO class for the ETF Authorised-Participant Agreement.** FIBO models party roles (broker-dealers, market-makers) and legal agreements at the conceptual level; it does not define a class for the ETF primary-market AP authorisation agreement in its published ontology.
 
-- The AP as a party is a Legal Entity in a broker-dealer role: FIBO's `fibo-be-le-lp:LegalEntity` aligns to the `ap_entity_id` FK → E-01 at the entity level.
+- The AP as a party is a Legal Entity in a broker-dealer role: `cmns-org:LegalEntity` (the OMG Commons base class FIBO imports and refines) aligns to the `ap_entity_id` FK → E-01 at the entity level.
 - The fund product the agreement grants access to is a collective investment vehicle: FIBO's collective-investment-vehicle framework aligns to FO-01 at the conceptual level.
 - The AP Agreement relationship itself, its lifecycle (authorised/suspended/terminated), and the settlement-basis access rights are OpenIM additions with no FIBO equivalent in the published ontology.
 

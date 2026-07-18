@@ -39,6 +39,8 @@ if str(ROOT / "tools") not in sys.path:
 # ---------------------------------------------------------------------------
 import importlib.util
 
+import pack_registry  # single source for the entity-prefix alternation (OIM-211)
+
 _VALIDATE_PY = ROOT / "tools" / "openim-validate" / "validate.py"
 _spec = importlib.util.spec_from_file_location("_validate", _VALIDATE_PY)
 _validate = importlib.util.module_from_spec(_spec)  # type: ignore[arg-type]
@@ -635,6 +637,132 @@ class TestDeferralPatternNarrowing(unittest.TestCase):
             matches, [],
             f"'deferred to the accounting layer' produced unexpected matches: "
             f"{[m.group() for m in matches]}.",
+        )
+
+
+# ---------------------------------------------------------------------------
+# 5. check_diagram_render_coverage — the export-only-dist refinement
+# ---------------------------------------------------------------------------
+
+class TestDiagramRenderCoverageExportOnlyDist(unittest.TestCase):
+    """check_diagram_render_coverage: the three dist/ states.
+
+    The refinement distinguishes "no diagram build was run" (a partial dist/
+    carrying only non-diagram output such as dist/exports/ from an export-only
+    run) from "a diagram build was run but is broken/incomplete". Only the
+    second is a defect; the first is a WARNING (the cycle-2 O1 finding — an
+    export-only dist/ used to false-defect ~276 missing pages).
+
+    Three states (no mutate-restore of the live tree — OIM-201 lesson; each
+    state uses an isolated synthetic dist/ via the OPENIM_DIST override):
+
+      (i)   dist/ absent                                  -> PASS + warn
+      (ii)  dist/ present, ONLY dist/exports/ (no diagram
+            HTML)                                         -> PASS + warn (the O1 fix)
+      (iii) a diagram render present but a declared
+            per-element page removed (broken build)       -> STILL a defect
+    """
+
+    def _expected_diagram_pages(self) -> set[str]:
+        """Re-derive the full set of expected page filenames exactly as the
+        check derives them from the live model on disk."""
+        pages = {"index.html", "landscape.html", "erd.html"}
+        for bd in _validate.bd_dirs():
+            m = re.match(r"BD-(\d+)-", bd.name)
+            if not m:
+                continue
+            n = int(m.group(1))
+            pages.add(f"bd-{n:02d}.html")
+            for sd in sorted(bd.glob("SD-*.md")):
+                sm = re.match(rf"SD-{n:02d}\.(\d+)-", sd.name)
+                if sm:
+                    pages.add(f"sd-{n:02d}.{sm.group(1)}.html")
+        if _validate.ENTITY_DIR.is_dir():
+            for ent in sorted(_validate.ENTITY_DIR.rglob("*.md")):
+                if ent.name.upper().startswith("README") or ent.name == "INDEX.md":
+                    continue
+                em = re.match(r"^(" + pack_registry.PREFIX_ALT + r")-(\d{2})-", ent.name)
+                if em:
+                    pages.add(f"entity-{em.group(1)}-{em.group(2)}.html")
+        return pages
+
+    def _run_with_dist(self, dist_path):
+        """Run check_diagram_render_coverage with OPENIM_DIST set to dist_path
+        (or unset if None), restoring the env afterwards."""
+        import os
+        orig = os.environ.get("OPENIM_DIST")
+        if dist_path is None:
+            os.environ.pop("OPENIM_DIST", None)
+        else:
+            os.environ["OPENIM_DIST"] = str(dist_path)
+        try:
+            return _run_scan(_validate.check_diagram_render_coverage)
+        finally:
+            if orig is None:
+                os.environ.pop("OPENIM_DIST", None)
+            else:
+                os.environ["OPENIM_DIST"] = orig
+
+    def test_state_i_dist_absent_is_warning_not_defect(self) -> None:
+        """(i) dist/ absent -> a WARNING, 0 defects (clean-clone; unchanged)."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            absent = Path(td) / "no-such-dist"
+            defects, warnings = self._run_with_dist(absent)
+        self.assertEqual(defects, [], f"dist-absent produced defects: {defects}")
+        self.assertTrue(
+            any("absent" in w for w in warnings),
+            f"expected an 'absent' warning; got: {warnings}",
+        )
+
+    def test_state_ii_export_only_dist_is_warning_not_defect(self) -> None:
+        """(ii) dist/ present with ONLY dist/exports/ (no diagram HTML) ->
+        a WARNING, 0 defects. This is the cycle-2 O1 fix — an export-only run
+        must not false-defect ~276 missing diagram pages."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            dist = Path(td) / "dist"
+            (dist / "exports").mkdir(parents=True)
+            # The export-only artefacts — NO diagram HTML at all.
+            (dist / "exports" / "openim.archimate").write_text("<x/>", encoding="utf-8")
+            (dist / "exports" / "openim-schema.json").write_text("{}", encoding="utf-8")
+            (dist / "exports" / "openim.ttl").write_text("# ttl\n", encoding="utf-8")
+            (dist / "exports" / "openim.shapes.ttl").write_text("# ttl\n", encoding="utf-8")
+            defects, warnings = self._run_with_dist(dist)
+        self.assertEqual(
+            defects, [],
+            f"export-only dist/ produced defects (the O1 regression): {defects}",
+        )
+        self.assertTrue(
+            any("no diagram render" in w for w in warnings),
+            f"expected a 'no diagram render' warning; got: {warnings}",
+        )
+
+    def test_state_iii_broken_diagram_build_still_defects(self) -> None:
+        """(iii) a diagram render present (landing pages + per-element pages) but
+        with one declared bd-*.html removed -> STILL a defect. The refinement
+        must not blind the check to a genuinely-broken / incomplete render."""
+        import tempfile
+        pages = self._expected_diagram_pages()
+        # Sanity: the model must declare at least one BD page to remove.
+        bd_pages = sorted(p for p in pages if re.match(r"bd-\d+\.html$", p))
+        self.assertTrue(bd_pages, "no bd-*.html pages derived from the model")
+        removed = bd_pages[0]
+        with tempfile.TemporaryDirectory() as td:
+            dist = Path(td) / "dist"
+            dist.mkdir(parents=True)
+            for p in pages:
+                # Minimal stub — filename-coverage runs before substantive checks,
+                # and a missing page short-circuits the substantive pass.
+                (dist / p).write_text("<html><body>stub</body></html>", encoding="utf-8")
+            # Also carry an exports/ subdir — a real dist often has both.
+            (dist / "exports").mkdir()
+            # Break the build: drop one declared per-element page.
+            (dist / removed).unlink()
+            defects, _warnings = self._run_with_dist(dist)
+        self.assertTrue(
+            any(removed in d for d in defects),
+            f"expected a defect about the missing {removed}; got: {defects}",
         )
 
 

@@ -21,7 +21,7 @@ Start at [`entities/INDEX.md`](entities/INDEX.md).
 
 ## How the two halves interlock
 
-The service-domain model decomposes *capability*; the entity model decomposes *data*. They join through ownership: each Service Domain owns a small set of entities (it is their authoritative source) and consumes others. The full ownership map is in [`ownership-map.md`](ownership-map.md).
+The service-domain model decomposes *capability*; the entity model decomposes *data*. They join through ownership: each Service Domain owns a small set of entities (it is their authoritative source) and consumes others. The full ownership map is in [`ownership-map.md`](ownership-map.md). The **relationships between the entities** — the typed, named edge set that makes the entity model a navigable graph — are declared in [`relations.md`](relations.md).
 
 ## Positioning
 
@@ -31,3 +31,5 @@ The model is a **reference model, not a standard** — a reference framework, in
 
 - [`glossary.md`](glossary.md) — plain-English definitions of the investment-management vocabulary the model uses (LP/GP, capital call, distribution, J-curve, IRR / TVPI / DPI / RVPI / MOIC / PME, four-lens NAV, IBOR / ABOR, LEI / FIGI / ISIN, golden key, side letter, MFN, waterfall, hurdle, carry, and the rest). Read first if a term is unfamiliar.
 - [`diagrams/`](diagrams/INDEX.md) — the visual companion to the model: a layer stack of OpenIM's position in the standards landscape, the Business Domain map, and the conceptual ERD of the core entities.
+- [`relations.md`](relations.md) — the **entity relation vocabulary**: the typed, named set of relationships between the entities (the edges), each with its direction, inverse, cardinality and kind, plus the mapping that binds every foreign-key column and specialisation line to a verb. Read to understand how the things the model records connect.
+- [`ontology-as-agent-map.md`](ontology-as-agent-map.md) — the **OpenIM realisation** of the first-class agentic-architecture concept *the ontology as the agent-navigation map*. How the OpenIM model serves as the map an agent navigates over structured + unstructured investment data: entities are the nodes, the (today-implicit) relationships the edges, projected two ways — a served query-map for NL→structured-query and a typed graph for brain-style retrieval — model kept out of the truth path. agentINVEST is the running seed.

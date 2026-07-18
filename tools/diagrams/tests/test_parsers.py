@@ -165,6 +165,46 @@ class TestCoOwnedEntity(unittest.TestCase):
         self.assertEqual(ent.specialises, "E-09")
 
 
+class TestSelfAndPolymorphicFK(unittest.TestCase):
+    """OIM-idf2 2a — brace-set union FKs and both self-FK notations parse.
+
+    The E-27 fixture carries: `parent_id` (literal `FK -> self`), `corrects_id`
+    (id-notation self-FK `FK -> E-27, self-ref`), and `subject_id` (a 3-member
+    polymorphic brace-set `FK -> {E-09, E-99, PM-99}`).
+    """
+
+    def _parse_e27(self) -> object:
+        return _parse_entity_file(
+            FIXT / "entities" / "core" / "E-27-sample-coowned.md", "E", 27,
+        )
+
+    def test_brace_set_resolves_n_greater_than_two_targets(self) -> None:
+        ent = self._parse_e27()
+        # N > 2 targets from one brace-set column — not hard-coded to 2.
+        self.assertEqual(sorted(ent.fk_targets), ["E-09", "E-99", "PM-99"])
+
+    def test_self_edge_both_notations_is_first_class(self) -> None:
+        ent = self._parse_e27()
+        # Both the literal `FK -> self` and the id-notation `FK -> E-27,
+        # self-ref` produce a first-class self-edge — no longer silently
+        # dropped — and neither ever pollutes the cross-entity fk_targets list.
+        self.assertTrue(ent.self_fk)
+        self.assertNotIn("E-27", ent.fk_targets)
+
+    def test_planted_malformed_brace_set_raises(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            bad = tmp / "E-27-sample-coowned.md"
+            text = (FIXT / "entities" / "core" / "E-27-sample-coowned.md").read_text(
+                encoding="utf-8")
+            text = text.replace(
+                "FK → {E-09, E-99, PM-99}", "FK → {E-09, ZZZ}")
+            bad.write_text(text, encoding="utf-8")
+            with self.assertRaises(ParseError) as ctx:
+                _parse_entity_file(bad, "E", 27)
+            self.assertIn("malformed FK brace-set member", str(ctx.exception))
+
+
 class TestOwnershipMap(unittest.TestCase):
     """Shape 7 — an ownership-map fragment parses to per-entity records."""
 

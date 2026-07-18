@@ -35,6 +35,19 @@ Each Service Domain below is its own file: the definition, its Service Operation
 
 *(BD-13's panel substitution is the "every-archetype, primarily-asset-class-driven" case under the panel-substitution discipline declared in [`service-domains/INDEX.md`](../INDEX.md), with SD-13.3's manager facet as the one archetype-driven activation exception.)*
 
+## Wider-source grounding
+
+The decomposition is grounded against external industry references:
+
+- The **DAMA-DMBOK** (Data Management Body of Knowledge) — the data-governance, stewardship and master-data-management disciplines behind SD-13.1 / SD-13.2 / SD-13.3 (the three masters) and SD-13.7 Data Quality & Governance.
+- The **EDM Council DCAM** (Data Management Capability Assessment Model) — the financial-services-specific data-management capability model; the closest external analogue to BD-13 as a whole, and the completeness cross-check for the domain's data-estate-to-reporting shape.
+- **GLEIF's Legal Entity Identifier, ISO 6166 ISIN, and the instrument-identifier ecosystem** (FIGI, CUSIP) — the identifier standards behind SD-13.1 Instrument & Security Master and SD-13.2 Entity & Counterparty Master, and the concrete evidence for the no-universal-identifier design driver noted below: these registries cover listed public-markets instruments and entities, but private-markets vehicles, GPs and unlisted assets routinely fall outside them, which is why resolution and alias structures are first-class here rather than an afterthought.
+- **ISO 20022 and SWIFT reference-data messaging** — the market-and-reference-data feed standards behind SD-13.4 Market & Reference Data Management.
+- The **CFA Institute Code of Ethics and Standards of Professional Conduct** — Standard V(B) Communication with Clients and Prospective Clients and Standard V(C) Record Retention — the record-keeping and client-reporting obligations behind SD-13.10 Investment Reporting & Dashboards and SD-13.11 Document & Content Management.
+- **FinDatEx's European ESG Template (EET)**, developed with EFAMA participation as the industry-standard data-exchange format for SFDR-related sustainability data between managers and distributors — behind SD-13.9 ESG & Sustainability Data.
+- **SFDR's Principal Adverse Impact indicators, the CSRD, and the ISSB's IFRS S1 / S2** — the source-side sustainability-disclosure regimes SD-13.9 sources issuer- and holding-level ESG and climate data against. This is distinct from BD-16's SD-16.5, which reports the *firm's own* disclosures under these same regimes — SD-13.9 is the data intake, SD-16.5 is the accountable output.
+- The buy-side platform data modules (Aladdin, SimCorp, State Street Alpha, SS&C / eFront) as a completeness cross-check on the master-data, reference-data and reporting sub-capability cluster.
+
 ## Non-overlap — where the boundaries run
 
 Service Domains are non-overlapping by construction. The boundaries inside and around BD-13 worth stating, because the topics look adjacent:

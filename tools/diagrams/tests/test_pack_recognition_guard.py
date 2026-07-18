@@ -1,19 +1,31 @@
-"""Mechanical guard — pack-recognition completeness across tools/diagrams/render/.
+"""Mechanical guard — pack-recognition completeness across tools/.
 
-This test converts the recurring class-walk-not-instance-grep defect (reproduced
-in OIM-201 cycles 1, 2 and 3) into a machine-enforced constraint:
+Background.  A recurring class-walk-not-instance-grep defect (reproduced in
+OIM-201 cycles 1, 2 and 3) came from the pack list being hardcoded independently
+in multiple consumers: adding a pack meant remembering every copy.  OIM-201
+cycle-3 installed a stopgap guard here that asserted against the literal
+`pack_colours` dict in dot_gen and a hardcoded slug list in site.py.
 
-1. Every pack known to the parsed entity model has a colour entry in
-   dot_gen.pack_colours.  Adding a sixth pack without extending pack_colours
-   causes this test to fail immediately — no brief author needs to remember.
+OIM-211 removed the underlying duplication: there is now one pack-registry SSOT
+at tools/pack_registry.py, and every consumer imports it.  With a single source
+there is no second copy to drift, so the old literal-parsing assertions are
+obsolete.  This test is kept as a belt-and-braces regression check, re-pointed
+at the SSOT:
 
-2. tools/diagrams/render/site.py MUST NOT contain a hardcoded exact four-slug
-   or five-slug specialisation-pack enumeration.  The ERD prose must be derived
-   from the parsed model, not a frozen literal list.
+1. The registry (`pack_registry.PACK_COLOURS`) covers every pack the parsed
+   entity model knows about.  Adding a pack directory without adding its row to
+   `PACKS` fails here — one edit, one place, enforced.
 
-Both assertions run against the LIVE entity model (parsed from the real repo)
-and the LIVE render-stage source files.  No Graphviz binary is required — the
-test only imports Python modules and reads source text.
+2. The diagram renderer is actually wired to the registry (dot_gen consumes
+   `pack_registry.PACK_COLOURS`, not a private copy), and every pack present in
+   the model renders with the registry's colour.
+
+3. site.py still derives its ERD prose from the parsed model, never a hardcoded
+   pack count / slug list.
+
+All assertions run against the LIVE entity model and the LIVE render-stage
+source.  No Graphviz binary is required — the test only imports Python modules
+and reads source text.
 
 To run (from the repo root):
     python -m pytest tools/diagrams/tests/test_pack_recognition_guard.py
@@ -32,44 +44,70 @@ ROOT = Path(__file__).resolve().parents[3]  # the repo root
 if str(ROOT / "tools") not in sys.path:
     sys.path.insert(0, str(ROOT / "tools"))
 
+import pack_registry
 from diagrams.parser import parse_entities
 from diagrams.render import dot_gen
 
 
-class TestPackColourCompleteness(unittest.TestCase):
-    """dot_gen.pack_colours must cover every pack the entity model knows about.
+class TestRegistryCoversModelPacks(unittest.TestCase):
+    """pack_registry.PACK_COLOURS must cover every pack the entity model knows.
 
-    Guards P-MAJ-NEW-1 / the recurring radius-was-wrong class: adding a new
-    specialisation pack without extending pack_colours now fails the test suite
-    rather than silently rendering the new pack in default grey.
+    Guards P-MAJ-NEW-1 / the class-walk-not-instance-grep class: adding a new
+    specialisation pack directory without adding its row to pack_registry.PACKS
+    now fails the test suite rather than silently rendering the new pack in
+    default grey.  With the registry as the single source, this is the ONE place
+    that has to stay in step with the model.
     """
 
-    def test_pack_colours_covers_all_model_packs(self) -> None:
-        """Every pack returned by entity_model.by_pack() has a colour entry."""
+    def test_registry_covers_all_model_packs(self) -> None:
+        """set(pack_registry.PACK_COLOURS) ⊇ set(entity_model.by_pack())."""
         em = parse_entities(ROOT)
         model_packs = set(em.by_pack().keys())
-        colour_packs = _extract_pack_colours()
-        missing = model_packs - colour_packs
+        registry_packs = set(pack_registry.PACK_COLOURS.keys())
+        missing = model_packs - registry_packs
         self.assertEqual(
             missing,
             set(),
-            f"dot_gen.pack_colours is missing entries for pack(s): {sorted(missing)}. "
-            f"Add a colour entry for each new pack to tools/diagrams/render/dot_gen.py "
-            f"'pack_colours' dict (OIM-211 will consolidate this into a pack-registry SSOT).",
+            f"pack_registry.PACK_COLOURS is missing entries for pack(s): "
+            f"{sorted(missing)}. Add the pack's row to PACKS in "
+            f"tools/pack_registry.py — the single source every consumer reads.",
         )
 
-    def test_pack_colours_is_superset_of_model_packs(self) -> None:
-        """Alias assertion: set(pack_colours) ⊇ set(entity_model.by_pack())."""
-        em = parse_entities(ROOT)
-        model_packs = set(em.by_pack().keys())
-        colour_packs = _extract_pack_colours()
-        self.assertTrue(
-            colour_packs.issuperset(model_packs),
-            f"pack_colours is not a superset of model packs.\n"
-            f"  model packs : {sorted(model_packs)}\n"
-            f"  colour packs: {sorted(colour_packs)}\n"
-            f"  missing     : {sorted(model_packs - colour_packs)}",
+
+class TestRendererWiredToRegistry(unittest.TestCase):
+    """dot_gen must consume the registry, not keep a private colour copy."""
+
+    def test_dot_gen_uses_registry_palette(self) -> None:
+        """dot_gen references pack_registry.PACK_COLOURS (no re-hardcoded dict)."""
+        src = Path(dot_gen.__file__).read_text(encoding="utf-8")
+        self.assertIn(
+            "pack_registry.PACK_COLOURS",
+            src,
+            "tools/diagrams/render/dot_gen.py must read the pack palette from "
+            "pack_registry.PACK_COLOURS (OIM-211 SSOT), not a local dict.",
         )
+        # Guard against a re-introduced private literal copy of the palette.
+        self.assertNotRegex(
+            src,
+            r"pack_colours\s*=\s*\{",
+            "dot_gen.py re-introduced a literal 'pack_colours = {...}' dict — "
+            "the palette must come from pack_registry.PACK_COLOURS.",
+        )
+
+    def test_erd_renders_registry_colours(self) -> None:
+        """Every pack present in the model renders with the registry's colour."""
+        em = parse_entities(ROOT)
+        dot = dot_gen.entity_erd_dot(em)
+        for pack in em.by_pack():
+            fill, stroke = pack_registry.PACK_COLOURS[pack]
+            self.assertIn(
+                fill, dot,
+                f"pack {pack!r} fill colour {fill} not found in ERD DOT output",
+            )
+            self.assertIn(
+                stroke, dot,
+                f"pack {pack!r} stroke colour {stroke} not found in ERD DOT output",
+            )
 
 
 class TestSitePyNoHardcodedPackEnumeration(unittest.TestCase):
@@ -79,21 +117,14 @@ class TestSitePyNoHardcodedPackEnumeration(unittest.TestCase):
     'four specialisation packs' (or 'five specialisation packs') as a literal
     string in the ERD prose, this test fails — the correct form derives from
     entity_model.by_pack() at render time.
-
-    The check is a source-level assertion (no Graphviz needed): it scans
-    tools/diagrams/render/site.py for the four known forbidden literal patterns.
     """
 
     SITE_PY = ROOT / "tools" / "diagrams" / "render" / "site.py"
 
     # Patterns that indicate a hardcoded pack enumeration in reader-facing prose.
-    # These are the exact strings that caused the P-MAJ-NEW-1 finding.
     FORBIDDEN_PATTERNS = [
-        # The original four-pack literal the cycle-2 audit caught:
         r"four specialisation packs",
-        # Guard against a naive 'fix' that just bumps the number:
         r"five specialisation packs",
-        # Guard against a hardcoded slug list in the ERD prose line:
         r"private-markets, public-markets, derivatives, real-assets\)",
     ]
 
@@ -110,37 +141,9 @@ class TestSitePyNoHardcodedPackEnumeration(unittest.TestCase):
             f"tools/diagrams/render/site.py contains hardcoded pack enumeration(s):\n"
             + "\n".join(f"  pattern: {p!r}" for p in violations)
             + "\n\nThe ERD prose must derive pack count and slug list from "
-            "entity_model.by_pack() — see the fix at the _packs_by_model / "
-            "_spec_packs derivation block in render_entities_and_erd().",
+            "entity_model.by_pack() — see the _packs_by_model / _spec_packs "
+            "derivation block in render_entities_and_erd().",
         )
-
-
-def _extract_pack_colours() -> set[str]:
-    """Read the pack_colours dict from dot_gen by executing entity_erd_dot
-    with a minimal stub model and capturing the colour keys from the dict
-    as defined in the source — without needing Graphviz.
-
-    Strategy: read the pack_colours dict directly from the dot_gen module
-    by introspecting the entity_erd_dot function source.  Since pack_colours
-    is a local dict inside the function, we parse it from the source text.
-    This is robust as long as the dict keeps the same form (one key per line).
-    """
-    src = Path(dot_gen.__file__).read_text(encoding="utf-8")
-    # Match every quoted string key in the pack_colours dict block.
-    # The dict opens with 'pack_colours = {' and closes with '}'.
-    m = re.search(
-        r'pack_colours\s*=\s*\{([^}]+)\}',
-        src,
-        re.DOTALL,
-    )
-    if not m:
-        raise AssertionError(
-            "Could not locate 'pack_colours' dict in tools/diagrams/render/dot_gen.py. "
-            "The guard test expects a dict literal named 'pack_colours' inside "
-            "entity_erd_dot(). Check that the function still uses this form."
-        )
-    keys = re.findall(r'"([^"]+)"\s*:', m.group(1))
-    return set(keys)
 
 
 if __name__ == "__main__":

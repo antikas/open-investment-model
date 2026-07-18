@@ -33,5 +33,8 @@ A private investment is often held through a legal vehicle — a special-purpose
 ## Open extensions
 
 - The SPV-nesting hierarchy — maximum depth and the parent-vehicle reference.
-- The relationship to PM-09 Fund Investment when one investment is held through several vehicles.
 - A separately managed account is also a kind of legal vehicle; the relationship between PM-05 and a public-markets SMA portfolio (E-03) is an open cross-pack question.
+
+## The multi-vehicle case is already backed
+
+One fund investment held through *several* vehicles needs no extra structure. `investment_id` is a many-to-one foreign key — many PM-05 vehicle rows may reference the same PM-09 investment — so the set of vehicles an investment is held through is exactly the vehicles whose `investment_id` resolves to that investment (the inverse traversal of this column). A column on PM-09 pointing back at PM-05 would be redundant, and a single foreign key could not hold the *set* of vehicles in any case. The relationship is the existing `investment_id` edge read in the one-investment-to-many-vehicles direction.

@@ -14,13 +14,29 @@ from pathlib import Path
 
 from .errors import ParseError
 
+import pack_registry
 
-_ENTITY_FILE_RE = re.compile(r"^(E|PM|PB|DR|RA|FO)-(\d{2})-(.+)\.md$")
-_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA|FO)-(\d{2})\b")
+# Entity-id prefix alternations are single-sourced from the pack registry so a
+# new pack is one edit there, not another regex to remember here (OIM-211).
+_PFX = pack_registry.PREFIX_ALT
+
+_ENTITY_FILE_RE = re.compile(r"^(" + _PFX + r")-(\d{2})-(.+)\.md$")
+_ENTITY_ID_RE = re.compile(r"\b(" + _PFX + r")-(\d{2})\b")
 _SD_ID_RE = re.compile(r"\bSD-(\d{2})\.(\d+)\b")
-_FK_RE = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA|FO)[_-]?\d{2,3})", re.IGNORECASE)
-_TITLE_RE = re.compile(r"^#\s+(E|PM|PB|DR|RA|FO)-(\d{2})\s+[—-]\s+(.+?)\s*$")
-_SPECIALISES_RE = re.compile(r"\*\*Specialises:\*\*\s*((?:E|PM|PB|DR|RA|FO)-\d{2})")
+# The FK target expression after `FK -> ` — extended additively (OIM-idf2 2a)
+# to also match a brace-set union `{A, B}` (polymorphic FK) and the literal
+# `self` (self-FK); the plain single-id branch also covers the id-notation
+# self-FK (`FK -> <own-entity-id>`, e.g. `FK -> FO-07, self-ref` or the bare
+# `FK -> FO-01` on FO-01 itself) — resolved against `ent_id` below. Mirrors
+# the exports parser's `_FK_ENTITY_RE` (`tools/exports/model_parse.py`).
+_FK_RE = re.compile(
+    r"FK\s*[\->→]+\s*"
+    r"(\{[^}]*\}|self\b|(?:" + _PFX + r")[_-]?\d{2,3})",
+    re.IGNORECASE)
+# One brace-set member, validated after the outer brace-set is captured.
+_FK_ID_TOKEN_RE = re.compile(r"^(?:" + _PFX + r")[_-]?\d{2,3}$", re.IGNORECASE)
+_TITLE_RE = re.compile(r"^#\s+(" + _PFX + r")-(\d{2})\s+[—-]\s+(.+?)\s*$")
+_SPECIALISES_RE = re.compile(r"\*\*Specialises:\*\*\s*((?:" + _PFX + r")-\d{2})")
 
 
 @dataclass
@@ -35,18 +51,21 @@ class Entity:
     owned_by: list[str] = field(default_factory=list)        # SD ids (one or several)
     consumed_by: list[str] = field(default_factory=list)     # SD ids
     fk_targets: list[str] = field(default_factory=list)       # entity ids referenced as FKs
+    # deduped cross-entity FK targets only — unchanged semantics: a brace-set
+    # union now contributes every non-self member here (additive, OIM-idf2
+    # 2a); a self-FK (either notation) never appears in this list, same as
+    # before — see `self_fk` below, which makes the self-edge first-class
+    # instead of silently dropping it.
+    self_fk: bool = False
+    # True when the entity carries at least one self-referential FK column,
+    # in either notation: the literal `FK -> self`, or the id-notation
+    # `FK -> <own-entity-id>` (e.g. `FK -> FO-07, self-ref` / bare `FK -> FO-01`
+    # on FO-01 itself).
 
     @property
     def pack(self) -> str:
         """`core` for E-NN, the pack-slug ("private-markets" etc.) for others."""
-        return {
-            "E": "core",
-            "PM": "private-markets",
-            "PB": "public-markets",
-            "DR": "derivatives",
-            "RA": "real-assets",
-            "FO": "fund-operations",
-        }[self.prefix]
+        return pack_registry.PREFIX_TO_SLUG[self.prefix]
 
 
 @dataclass
@@ -98,7 +117,7 @@ def _normalise_entity_id(raw: str) -> str:
     raw = raw.replace("_", "-")
     if "-" not in raw:
         # 'E09' -> 'E-09'
-        for prefix in ("PM", "PB", "DR", "RA", "FO"):
+        for prefix in pack_registry.SPEC_PREFIXES:
             if raw.upper().startswith(prefix):
                 return f"{prefix}-{raw[len(prefix):].zfill(2)}"
         return f"{raw[0].upper()}-{raw[1:].zfill(2)}"
@@ -148,11 +167,40 @@ def _parse_entity_file(path: Path, expected_prefix: str, expected_num: int) -> E
 
     # FK declarations — anywhere in the file (attribute schema tables).
     fk_targets: list[str] = []
+    self_fk = False
     for fk_m in _FK_RE.finditer(text):
-        target = _normalise_entity_id(fk_m.group(1))
-        if target != ent_id and target not in fk_targets:
+        expr = fk_m.group(1)
+        if expr.lower() == "self":
+            self_fk = True
+            continue
+        if expr.startswith("{"):
+            inner = expr[1:-1]
+            raw_tokens = [t.strip() for t in inner.split(",")]
+            if not inner.strip() or any(not t for t in raw_tokens):
+                raise ParseError(
+                    path, None,
+                    f"{ent_id} has a malformed FK brace-set '{expr}' — "
+                    f"empty or has an empty member")
+            for tok in raw_tokens:
+                if not _FK_ID_TOKEN_RE.match(tok):
+                    raise ParseError(
+                        path, None,
+                        f"{ent_id} has a malformed FK brace-set member "
+                        f"'{tok}' (from '{expr}') — not a recognised "
+                        f"entity id")
+                target = _normalise_entity_id(tok)
+                if target == ent_id:
+                    self_fk = True
+                elif target not in fk_targets:
+                    fk_targets.append(target)
+            continue
+        target = _normalise_entity_id(expr)
+        if target == ent_id:
+            self_fk = True
+        elif target not in fk_targets:
             fk_targets.append(target)
     ent.fk_targets = fk_targets
+    ent.self_fk = self_fk
 
     # Ownership / consumption.
     own_sect = _extract_section(text, "## Owned and consumed by")
@@ -235,17 +283,10 @@ def parse_entities(repo_root: Path) -> EntityModel:
         for pack_dir in sorted(spec_dir.iterdir()):
             if not pack_dir.is_dir():
                 continue
-            pack_prefix_map = {
-                "private-markets": "PM",
-                "public-markets": "PB",
-                "derivatives": "DR",
-                "real-assets": "RA",
-                "fund-operations": "FO",
-            }
-            if pack_dir.name not in pack_prefix_map:
+            if pack_dir.name not in pack_registry.SLUG_TO_PREFIX:
                 raise ParseError(pack_dir, None,
                                  f"unknown specialisation pack {pack_dir.name!r}")
-            expected_pfx = pack_prefix_map[pack_dir.name]
+            expected_pfx = pack_registry.SLUG_TO_PREFIX[pack_dir.name]
             for p in sorted(pack_dir.glob("*.md")):
                 if p.name.upper().startswith("README"):
                     continue

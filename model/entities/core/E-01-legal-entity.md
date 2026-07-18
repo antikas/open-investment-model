@@ -18,6 +18,8 @@ The generalised model has **one Legal Entity master** and a **role** model on to
 | `lei` | varchar | Legal Entity Identifier, where one exists. |
 | `domicile` | varchar | Primary jurisdiction. |
 | `parent_entity_id` | varchar (FK → self) | The parent in a corporate group; null at the top. Carries the hierarchy that group-level exposure aggregation needs. |
+| `related_entity_id` | varchar (FK → self) | A related legal entity *beyond* the corporate parent hierarchy — the party-to-party relationship the `party_relationship_type` discriminator names (manager-of-fund, successor-of, guarantor-of). Distinct from `parent_entity_id`, which carries only the ownership hierarchy; null where no such relationship is recorded. |
+| `party_relationship_type` | varchar | The kind of party-to-party relationship `related_entity_id` records — `manager_of` / `successor_of` / `guarantor_of` (extensible). The discriminator that gives the typed party relationship its meaning. |
 | `known_aliases` | array | Names the entity has been seen under (the in-record view of E-13 Entity Alias). |
 | `external_ids` | map | External-system identifiers (the in-record view of E-14 External Identifier). |
 | `status` | varchar | `active` / `inactive` / `merged` / `dissolved`. |
@@ -64,5 +66,5 @@ Legal entities resolve through the three-tier cascade common to every OpenIM mas
 
 - **Alias / external-identifier canonicality.** E-13 Entity Alias and E-14 External Identifier are canonical for the names and external identifiers a Legal Entity has been seen under; the in-record `known_aliases` array and `external_ids` map on E-01 are a declared denormalised read-cache, derivable from E-13 / E-14 and regenerated from them, not an independent source.
 - A standalone **Party Role** entity, if the inline role model proves too thin — roles with their own lifecycle (a counterparty relationship opening and closing) may warrant it.
-- **Party Relationship** — relationships between entities beyond the corporate parent hierarchy (manager-of-fund, successor-of, guarantor-of).
+- A standalone **Party Relationship** associative entity, if one entity needs to carry *several simultaneous* typed party relationships (both a guarantor-of and a successor-of at once) with their own lifecycle. At master grain the `related_entity_id` / `party_relationship_type` pair records one typed party relationship per entity; a many-relationships-per-entity requirement is the escalation path to an associative entity.
 - The concrete FIBO Business Entities concept mapping.

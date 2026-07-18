@@ -21,6 +21,7 @@ The **mandate** is the governing definition of a portfolio: its objective, retur
 | `benchmark_id` | varchar (FK → E-10) | The benchmark the portfolio is measured against. |
 | `base_currency` | char | The portfolio's reporting currency. |
 | `managed_by_entity_id` | varchar (FK → E-01) | The legal entity managing the portfolio in the *manager* role — internal, or an external manager for an SMA / mandate. |
+| `governing_plan_id` | varchar (FK → E-29) | The allocation-plan version **currently in force** governing this portfolio — the strategic asset allocation, reference-portfolio or commitment-pacing plan it is run to. The portfolio-grained pointer to the single in-force plan; distinct from `E-29.subject_id`, which every plan *version* carries pointing back at its subject (so the in-force plan is reached directly here rather than by scanning every version's effective window). Null before a plan is set. |
 | `inception_date` | date | When the portfolio was established. |
 | `status` | varchar | `active` / `closed` / `in_transition`. |
 
@@ -28,6 +29,7 @@ The **mandate** is the governing definition of a portfolio: its objective, retur
 
 - Portfolios form a **hierarchy** — the total fund at the top, asset-class portfolios beneath, sleeves and accounts below those. `parent_portfolio_id` carries it; exposure and performance roll up the hierarchy.
 - A portfolio managed by an external manager (an SMA, a segregated mandate) references that manager through `managed_by_entity_id` in the manager role of E-01.
+- The allocation the portfolio is run to is the **allocation plan in force** (E-29 Allocation Plan), reached through `governing_plan_id`. Two directions are modelled and are not the same edge: `governing_plan_id` (here) is the portfolio's pointer to its *single in-force* plan version; `E-29.subject_id` runs the other way, and every plan *version* — current and historical — carries it pointing back at the portfolio it governs. Traversing from the plan side yields the full version history; the pointer here yields only the version currently in force.
 - The constraints a mandate imposes — what the portfolio may and may not hold — are coded investment rules consumed by SD-10 Investment Compliance & Guideline Monitoring; the model names the objective and benchmark on the portfolio, and leaves the coded rule library to that domain.
 
 ## Out of scope
@@ -46,4 +48,3 @@ The **mandate** is the governing definition of a portfolio: its objective, retur
 
 - A standalone **Mandate** entity, if mandates need a lifecycle independent of the portfolio (amendment history, mandate versioning).
 - The coded **investment guideline / restriction** sub-model and its relationship to SD-10.
-- The relationship between a portfolio and the strategic / tactical asset allocation that sets its targets.

@@ -27,7 +27,21 @@ The mechanically-checkable subset of the model's quality criteria. The core chec
 | V7 | ADR files are uniquely numbered; a gap in the sequence is warned (OpenIM has one known intentional gap — no ADR-0003). |
 | V8 | `README.md` and `model/README.md` (plus `CLAUDE.md`, where present) agree with the model on the Business-Domain and Service-Domain counts. |
 
-Beyond the core set, the validator also reconciles prose counts and per-row tables against the model, enforces the entity-ownership contract declared in `model/ownership-map.md` (owner-side, producer-side, and consumer-side partition declarations), verifies that prose references name each Service Domain by its canonical H1, and — when a rendered diagram site exists under `dist/` — confirms full page and drill-down coverage.
+Beyond the core set, the validator also reconciles prose counts and per-row tables against the model, enforces the entity-ownership contract declared in `model/ownership-map.md` (owner-side, producer-side, and consumer-side partition declarations), verifies that prose references name each Service Domain by its canonical H1, checks FIBO-curie resolvability (below), and — when a rendered diagram site exists under `dist/` — confirms full page and drill-down coverage.
+
+## FIBO-curie resolvability
+
+Every `fibo-*:Class` / `cmns-*:Class` curie asserted anywhere under `model/` must resolve against **`fibo_curie_reference.json`** (alongside the script) — the verified list of ontology-prefix → class-name pairs. A curie not in the list is a HARD defect, and so is a missing reference file (the gate cannot be silently disabled). This closes the fabricated-FIBO-citation class: a plausible-but-invented class name under a real FIBO prefix now fails CI instead of relying on a reviewer to catch it.
+
+The validator never touches the network — it checks against the reference list only, staying deterministic and offline-runnable. Verification against the live ontology happens once, at reference-maintenance time.
+
+**Maintaining the reference.** To cite a new FIBO or Commons class in `model/`:
+
+1. Resolve it against the live published ontology first — fetch the module RDF from the [`edmcouncil/fibo`](https://github.com/edmcouncil/fibo) master branch (or [OMG Commons](https://www.omg.org/spec/Commons/) for `cmns-*`) and confirm the `owl:Class` declaration exists. The browsable spec is at [spec.edmcouncil.org/fibo](https://spec.edmcouncil.org/fibo/).
+2. Add the class name under its prefix in `fibo_curie_reference.json` (add the prefix block — namespace and module path — if the prefix is new).
+3. Re-run the validator.
+
+Never add a class that has not been resolved against the live source: the file asserts *verification*, not intention. Prefix-only module mentions (e.g. `` `fibo-ind-ir-ir` `` with no `:Class`) and deliberately non-specific forms (e.g. `fibo-cae-...:CorporateAction`) assert a module or concept area, not a resolvable class curie, and are not checked.
 
 ## Distribution awareness
 

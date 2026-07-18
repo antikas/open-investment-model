@@ -1,0 +1,2507 @@
+{
+  "graph": "openim_graph",
+  "node_label": "Entity",
+  "relationship_label": "Relationship",
+  "node_type_count": 86,
+  "relation_type_count": 88,
+  "node_types": [
+    {
+      "id": "DR-01",
+      "name": "Listed Derivative",
+      "pack": "derivatives",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "DR-02",
+      "name": "OTC Derivative",
+      "pack": "derivatives",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "DR-03",
+      "name": "Master Agreement & Collateral Terms",
+      "pack": "derivatives",
+      "owning_service_domain": "SD-14.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "DR-04",
+      "name": "Margin & Collateral Balance",
+      "pack": "derivatives",
+      "owning_service_domain": "SD-11.4",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "DR-05",
+      "name": "Clearing Relationship",
+      "pack": "derivatives",
+      "owning_service_domain": "SD-14.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-01",
+      "name": "Legal Entity",
+      "pack": "core",
+      "owning_service_domain": "SD-13.2",
+      "fibo_class": "cmns-org:LegalEntity",
+      "specialises": ""
+    },
+    {
+      "id": "E-02",
+      "name": "Instrument / Asset",
+      "pack": "core",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "fibo-fbc-fi-fi:FinancialInstrument",
+      "specialises": ""
+    },
+    {
+      "id": "E-03",
+      "name": "Portfolio / Mandate",
+      "pack": "core",
+      "owning_service_domain": "SD-05.2;SD-01.2;SD-05.1",
+      "fibo_class": "fibo-fbc-pas-caa:Account",
+      "specialises": ""
+    },
+    {
+      "id": "E-04",
+      "name": "Holding / Position",
+      "pack": "core",
+      "owning_service_domain": "SD-12.1;SD-12.2;SD-12.10;SD-12.9;SD-16.2;SD-16.3;SD-16.4;SD-14.7",
+      "fibo_class": "fibo-sec-fund-fund:FundHolding",
+      "specialises": ""
+    },
+    {
+      "id": "E-05",
+      "name": "Transaction",
+      "pack": "core",
+      "owning_service_domain": "SD-12.1",
+      "fibo_class": "fibo-fbc-pas-caa:AccountingTransaction",
+      "specialises": ""
+    },
+    {
+      "id": "E-06",
+      "name": "Cash Flow Event",
+      "pack": "core",
+      "owning_service_domain": "SD-12.1",
+      "fibo_class": "fibo-fnd-acc-cur:MonetaryAmount",
+      "specialises": ""
+    },
+    {
+      "id": "E-07",
+      "name": "Valuation",
+      "pack": "core",
+      "owning_service_domain": "SD-08.1;SD-08.2;SD-08.3;SD-12.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-08",
+      "name": "Price & Market Data",
+      "pack": "core",
+      "owning_service_domain": "SD-13.4",
+      "fibo_class": "fibo-ind-ir-ir",
+      "specialises": ""
+    },
+    {
+      "id": "E-09",
+      "name": "Asset Class",
+      "pack": "core",
+      "owning_service_domain": "SD-13.4",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-10",
+      "name": "Benchmark / Index",
+      "pack": "core",
+      "owning_service_domain": "SD-13.5",
+      "fibo_class": "fibo-ind-mkt-bas",
+      "specialises": ""
+    },
+    {
+      "id": "E-11",
+      "name": "Classification Type & Value",
+      "pack": "core",
+      "owning_service_domain": "SD-13.7",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-12",
+      "name": "Classification History",
+      "pack": "core",
+      "owning_service_domain": "SD-13.7",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-13",
+      "name": "Entity Alias",
+      "pack": "core",
+      "owning_service_domain": "SD-13.1;SD-13.2;SD-13.3",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-14",
+      "name": "External Identifier",
+      "pack": "core",
+      "owning_service_domain": "SD-13.1;SD-13.2;SD-13.3",
+      "fibo_class": "fibo-be-le-lei:LegalEntityIdentifier",
+      "specialises": ""
+    },
+    {
+      "id": "E-15",
+      "name": "Document Metadata",
+      "pack": "core",
+      "owning_service_domain": "SD-13.11",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-16",
+      "name": "Risk Limit",
+      "pack": "core",
+      "owning_service_domain": "SD-07.7",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-17",
+      "name": "Scenario",
+      "pack": "core",
+      "owning_service_domain": "SD-07.6",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-18",
+      "name": "Limit Breach",
+      "pack": "core",
+      "owning_service_domain": "SD-07.7",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-19",
+      "name": "Risk Measurement",
+      "pack": "core",
+      "owning_service_domain": "SD-07.1;SD-07.2;SD-07.3;SD-07.4;SD-07.6;SD-07.8;SD-07.7",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-20",
+      "name": "Performance Result",
+      "pack": "core",
+      "owning_service_domain": "SD-09.1",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-21",
+      "name": "ESG Measurement",
+      "pack": "core",
+      "owning_service_domain": "SD-13.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-22",
+      "name": "Metric Definition",
+      "pack": "core",
+      "owning_service_domain": "SD-13.8",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-23",
+      "name": "Extraction Record",
+      "pack": "core",
+      "owning_service_domain": "SD-13.6",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-24",
+      "name": "Reconciliation Break",
+      "pack": "core",
+      "owning_service_domain": "SD-12.10",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-25",
+      "name": "Account",
+      "pack": "core",
+      "owning_service_domain": "SD-12.5;SD-11.7;SD-15.4",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-26",
+      "name": "Collateral Position",
+      "pack": "core",
+      "owning_service_domain": "SD-11.5",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-27",
+      "name": "Liability Profile",
+      "pack": "core",
+      "owning_service_domain": "SD-01.7;SD-01.8",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-28",
+      "name": "Risk Budget",
+      "pack": "core",
+      "owning_service_domain": "SD-01.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-29",
+      "name": "Allocation Plan",
+      "pack": "core",
+      "owning_service_domain": "SD-01.4;SD-01.6;SD-01.10",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-30",
+      "name": "Goal",
+      "pack": "core",
+      "owning_service_domain": "SD-01.14",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-31",
+      "name": "Goal Progress Measurement",
+      "pack": "core",
+      "owning_service_domain": "SD-09.5",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-32",
+      "name": "Tax Lot",
+      "pack": "core",
+      "owning_service_domain": "SD-12.17",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-33",
+      "name": "Financial Plan",
+      "pack": "core",
+      "owning_service_domain": "SD-15.15",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-34",
+      "name": "Investment Authorisation",
+      "pack": "core",
+      "owning_service_domain": "SD-03.9;SD-04.5",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-35",
+      "name": "Complaint Record",
+      "pack": "core",
+      "owning_service_domain": "SD-15.16",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-36",
+      "name": "Oversight Exception",
+      "pack": "core",
+      "owning_service_domain": "SD-12.16",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-37",
+      "name": "ESG Compliance Result",
+      "pack": "core",
+      "owning_service_domain": "SD-10.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "E-38",
+      "name": "Internal Credit Rating",
+      "pack": "core",
+      "owning_service_domain": "SD-02.3",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "FO-01",
+      "name": "Fund Product",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-13.3",
+      "fibo_class": "fibo-sec-fund-fund:CollectiveInvestmentVehicle",
+      "specialises": "E-02"
+    },
+    {
+      "id": "FO-02",
+      "name": "Share / Unit Class",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-13.3",
+      "fibo_class": "fibo-sec-fund-fund:CollectiveInvestmentVehicle",
+      "specialises": "E-02"
+    },
+    {
+      "id": "FO-03",
+      "name": "Investor Unitholding",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.15",
+      "fibo_class": "",
+      "specialises": "E-04"
+    },
+    {
+      "id": "FO-04",
+      "name": "Dealing Order",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.15",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "FO-05",
+      "name": "Fund Distribution Event",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.7",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "FO-06",
+      "name": "Fee Accrual",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.11",
+      "fibo_class": "",
+      "specialises": "E-07"
+    },
+    {
+      "id": "FO-07",
+      "name": "Investor Tax Statement",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-17.4",
+      "fibo_class": "",
+      "specialises": "E-15"
+    },
+    {
+      "id": "FO-08",
+      "name": "Service-Provider Appointment",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-17.8",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "FO-09",
+      "name": "Omnibus Account",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-15.4",
+      "fibo_class": "",
+      "specialises": "E-25"
+    },
+    {
+      "id": "FO-10",
+      "name": "ETF Creation/Redemption Order",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.15",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "FO-11",
+      "name": "ETF Creation Basket (Portfolio Composition File)",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "FO-12",
+      "name": "ETF Authorised-Participant Agreement",
+      "pack": "fund-operations",
+      "owning_service_domain": "SD-12.15",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "PB-01",
+      "name": "Listed Equity",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "PB-02",
+      "name": "Debt Instrument",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "PB-03",
+      "name": "Order",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-06.1",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PB-04",
+      "name": "Execution",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-06.2",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PB-05",
+      "name": "Allocation",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-06.5",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PB-06",
+      "name": "Settlement Instruction",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-12.4",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PB-07",
+      "name": "Corporate Action",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-12.6",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PB-08",
+      "name": "Income Schedule",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "PB-09",
+      "name": "Index Constituent",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-13.5",
+      "fibo_class": "",
+      "specialises": "E-10"
+    },
+    {
+      "id": "PB-10",
+      "name": "Securities Loan",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-12.13",
+      "fibo_class": "",
+      "specialises": "E-04"
+    },
+    {
+      "id": "PB-11",
+      "name": "Proxy Vote",
+      "pack": "public-markets",
+      "owning_service_domain": "SD-12.12",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PM-01",
+      "name": "Fund & Vehicle",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.3",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "PM-02",
+      "name": "GP / Management Company",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.2",
+      "fibo_class": "",
+      "specialises": "E-01"
+    },
+    {
+      "id": "PM-03",
+      "name": "Fund Administrator",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.2",
+      "fibo_class": "",
+      "specialises": "E-01"
+    },
+    {
+      "id": "PM-04",
+      "name": "Portfolio Company",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.2",
+      "fibo_class": "",
+      "specialises": "E-01"
+    },
+    {
+      "id": "PM-05",
+      "name": "Legal Vehicle / SPV",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.3",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "PM-06",
+      "name": "LP Commitment",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-03.5",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "PM-07",
+      "name": "Capital Call",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-12.8",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PM-08",
+      "name": "Distribution",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-12.8",
+      "fibo_class": "",
+      "specialises": "E-05"
+    },
+    {
+      "id": "PM-09",
+      "name": "Fund Investment",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-12.1",
+      "fibo_class": "",
+      "specialises": "E-04"
+    },
+    {
+      "id": "PM-10",
+      "name": "Fund Terms",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.3",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "PM-11",
+      "name": "Manager Succession Event",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.2",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "PM-12",
+      "name": "Benchmark Cross-Reference",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-13.5",
+      "fibo_class": "",
+      "specialises": "E-10"
+    },
+    {
+      "id": "PM-13",
+      "name": "Investor Capital Account",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-12.9",
+      "fibo_class": "",
+      "specialises": "E-03"
+    },
+    {
+      "id": "PM-14",
+      "name": "Direct Loan",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-04.12",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "PM-15",
+      "name": "Deal / Investment Opportunity",
+      "pack": "private-markets",
+      "owning_service_domain": "SD-04.1",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "RA-01",
+      "name": "Direct Real Asset",
+      "pack": "real-assets",
+      "owning_service_domain": "SD-13.1",
+      "fibo_class": "",
+      "specialises": "E-02"
+    },
+    {
+      "id": "RA-02",
+      "name": "Asset Operating Record",
+      "pack": "real-assets",
+      "owning_service_domain": "SD-04.10",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "RA-03",
+      "name": "Lease / Tenancy",
+      "pack": "real-assets",
+      "owning_service_domain": "SD-04.10;SD-14.9",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "RA-04",
+      "name": "Development Project",
+      "pack": "real-assets",
+      "owning_service_domain": "SD-04.11",
+      "fibo_class": "",
+      "specialises": ""
+    },
+    {
+      "id": "RA-05",
+      "name": "Asset Appraisal",
+      "pack": "real-assets",
+      "owning_service_domain": "SD-08.3",
+      "fibo_class": "",
+      "specialises": "E-07"
+    }
+  ],
+  "relation_types": [
+    {
+      "type": "ACQUIRED_VIA",
+      "owl_name": "acquired-via",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "ACQUIRES",
+      "source_types": [
+        "E-32"
+      ],
+      "target_types": [
+        "E-05"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "ADMINISTERED_BY",
+      "owl_name": "administered-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "ADMINISTERS",
+      "source_types": [
+        "E-36"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "AGAINST_COMMITMENT",
+      "owl_name": "against-commitment",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "COMMITMENT_HAS",
+      "source_types": [
+        "PM-07",
+        "PM-08"
+      ],
+      "target_types": [
+        "PM-06"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "ANNEXED_TO",
+      "owl_name": "annexed-to",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_ANNEX",
+      "source_types": [
+        "DR-03"
+      ],
+      "target_types": [
+        "DR-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "APPLIES_TO_PORTFOLIO",
+      "owl_name": "applies-to-portfolio",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_ALLOCATION_PLAN",
+      "source_types": [
+        "E-29"
+      ],
+      "target_types": [
+        "E-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "AT_MEETING",
+      "owl_name": "at-meeting",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "MEETING_HAS_VOTE",
+      "source_types": [
+        "PB-11"
+      ],
+      "target_types": [
+        "PB-07"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "BELONGS_TO_FUND_PRODUCT",
+      "owl_name": "belongs-to-fund-product",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "FUND_PRODUCT_INCLUDES",
+      "source_types": [
+        "FO-02",
+        "FO-06",
+        "FO-07",
+        "FO-08",
+        "FO-09",
+        "FO-11",
+        "FO-12"
+      ],
+      "target_types": [
+        "FO-01"
+      ],
+      "edge_count": 7
+    },
+    {
+      "type": "BENCHMARKED_TO",
+      "owl_name": "benchmarked-to",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "BENCHMARK_FOR",
+      "source_types": [
+        "E-03"
+      ],
+      "target_types": [
+        "E-10"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "BOOKED_AS",
+      "owl_name": "booked-as",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "BOOKS",
+      "source_types": [
+        "PB-03"
+      ],
+      "target_types": [
+        "E-05"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "BREACH_OF_LIMIT",
+      "owl_name": "breach-of-limit",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_BREACH",
+      "source_types": [
+        "E-18"
+      ],
+      "target_types": [
+        "E-16"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "CHILD_ORDER_OF",
+      "owl_name": "child-order-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "PARENT_ORDER_OF",
+      "source_types": [
+        "PB-03"
+      ],
+      "target_types": [
+        "PB-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "CLASSIFIED_AS",
+      "owl_name": "classified-as",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "CLASSIFIES",
+      "source_types": [
+        "PB-01",
+        "PB-02"
+      ],
+      "target_types": [
+        "E-11"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "CLASSIFIED_AS_ASSET_CLASS",
+      "owl_name": "classified-as-asset-class",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "ASSET_CLASS_OF",
+      "source_types": [
+        "E-02",
+        "E-03",
+        "E-10",
+        "FO-01",
+        "FO-02",
+        "FO-06",
+        "PM-01",
+        "PM-12"
+      ],
+      "target_types": [
+        "E-09"
+      ],
+      "edge_count": 8
+    },
+    {
+      "type": "CLEARED_THROUGH",
+      "owl_name": "cleared-through",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "CLEARS",
+      "source_types": [
+        "DR-01",
+        "DR-05"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "COLLATERALISED_BY",
+      "owl_name": "collateralised-by",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "COLLATERAL_FOR",
+      "source_types": [
+        "PB-10"
+      ],
+      "target_types": [
+        "E-26"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "COMPUTED_PER_METRIC",
+      "owl_name": "computed-per-metric",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "METRIC_FOR",
+      "source_types": [
+        "E-20",
+        "E-31",
+        "E-37",
+        "E-38"
+      ],
+      "target_types": [
+        "E-22"
+      ],
+      "edge_count": 4
+    },
+    {
+      "type": "CONSTITUENT_OF",
+      "owl_name": "constituent-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_CONSTITUENT",
+      "source_types": [
+        "PB-09"
+      ],
+      "target_types": [
+        "E-10"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "CORRECTS",
+      "owl_name": "corrects",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "CORRECTED_BY",
+      "source_types": [
+        "FO-07"
+      ],
+      "target_types": [
+        "FO-07"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "DELEGATES_TO",
+      "owl_name": "delegates-to",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "DELEGATED_FROM",
+      "source_types": [
+        "FO-08"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "DETECTED_BY_MEASUREMENT",
+      "owl_name": "detected-by-measurement",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "MEASUREMENT_TRIGGERS",
+      "source_types": [
+        "E-18"
+      ],
+      "target_types": [
+        "E-19"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "EXTRACTED_FROM",
+      "owl_name": "extracted-from",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_EXTRACTION_RECORD",
+      "source_types": [
+        "E-23"
+      ],
+      "target_types": [
+        "E-15"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "FOR_ALLOCATION",
+      "owl_name": "for-allocation",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "ALLOCATION_SETTLED_BY",
+      "source_types": [
+        "PB-06"
+      ],
+      "target_types": [
+        "PB-05"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "FOR_INVESTMENT",
+      "owl_name": "for-investment",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "INVESTMENT_HELD_VIA",
+      "source_types": [
+        "PM-05"
+      ],
+      "target_types": [
+        "PM-09"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "FOR_ORDER",
+      "owl_name": "for-order",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "ORDER_FULFILLED_BY",
+      "source_types": [
+        "PB-04",
+        "PB-05"
+      ],
+      "target_types": [
+        "PB-03"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "FOR_PARTY",
+      "owl_name": "for-party",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "PARTY_OF",
+      "source_types": [
+        "E-30",
+        "E-32",
+        "E-33",
+        "E-35"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 4
+    },
+    {
+      "type": "FROM_TRANSACTION",
+      "owl_name": "from-transaction",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "GENERATES",
+      "source_types": [
+        "E-06",
+        "PB-07"
+      ],
+      "target_types": [
+        "E-05"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "FUNDED_BY_PORTFOLIO",
+      "owl_name": "funded-by-portfolio",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "FUNDS_GOAL",
+      "source_types": [
+        "E-30"
+      ],
+      "target_types": [
+        "E-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "GOVERNED_BY_PLAN",
+      "owl_name": "governed-by-plan",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "PLAN_GOVERNS",
+      "source_types": [
+        "E-03"
+      ],
+      "target_types": [
+        "E-29"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_AUTHORISED_PARTICIPANT",
+      "owl_name": "has-authorised-participant",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "AUTHORISED_PARTICIPANT_FOR",
+      "source_types": [
+        "FO-10",
+        "FO-11",
+        "FO-12"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 3
+    },
+    {
+      "type": "HAS_BORROWER",
+      "owl_name": "has-borrower",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "BORROWER_IN",
+      "source_types": [
+        "PB-10",
+        "PM-14"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "HAS_CLASSIFICATION_TYPE",
+      "owl_name": "has-classification-type",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "CLASSIFICATION_TYPE_OF",
+      "source_types": [
+        "E-12"
+      ],
+      "target_types": [
+        "E-11"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_CLASSIFICATION_VALUE",
+      "owl_name": "has-classification-value",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "CLASSIFICATION_VALUE_OF",
+      "source_types": [
+        "E-12"
+      ],
+      "target_types": [
+        "E-11"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_CLEARING_BROKER",
+      "owl_name": "has-clearing-broker",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "CLEARING_BROKER_FOR",
+      "source_types": [
+        "DR-05"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_CONCESSION_GRANTOR",
+      "owl_name": "has-concession-grantor",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "CONCESSION_GRANTOR_FOR",
+      "source_types": [
+        "RA-04"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_CONTRACTOR",
+      "owl_name": "has-contractor",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "CONTRACTOR_FOR",
+      "source_types": [
+        "RA-04"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_COUNTERPARTY",
+      "owl_name": "has-counterparty",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "COUNTERPARTY_IN",
+      "source_types": [
+        "DR-02",
+        "DR-03",
+        "E-05",
+        "E-26",
+        "PB-06"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 5
+    },
+    {
+      "type": "HAS_CUSTODIAN",
+      "owl_name": "has-custodian",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "CUSTODIAN_FOR",
+      "source_types": [
+        "PB-05",
+        "PB-06"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "HAS_DOCUMENT",
+      "owl_name": "has-document",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "DOCUMENT_FOR",
+      "source_types": [
+        "E-34"
+      ],
+      "target_types": [
+        "E-15"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_FUND_ADMINISTRATOR",
+      "owl_name": "has-fund-administrator",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "FUND_ADMINISTRATOR_OF",
+      "source_types": [
+        "PM-01"
+      ],
+      "target_types": [
+        "PM-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_INVESTOR",
+      "owl_name": "has-investor",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "INVESTOR_IN",
+      "source_types": [
+        "DR-03",
+        "DR-05",
+        "FO-03",
+        "FO-04",
+        "FO-07",
+        "PM-06",
+        "PM-13"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 7
+    },
+    {
+      "type": "HAS_PREDECESSOR_GP",
+      "owl_name": "has-predecessor-gp",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "PREDECESSOR_GP_IN",
+      "source_types": [
+        "PM-11"
+      ],
+      "target_types": [
+        "PM-02"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_SUBJECT",
+      "owl_name": "has-subject",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "SUBJECT_OF",
+      "source_types": [
+        "E-15"
+      ],
+      "target_types": [
+        "E-01",
+        "E-02",
+        "E-03",
+        "E-04",
+        "PM-01",
+        "PM-09"
+      ],
+      "edge_count": 6
+    },
+    {
+      "type": "HAS_SUCCESSOR_GP",
+      "owl_name": "has-successor-gp",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "SUCCESSOR_GP_IN",
+      "source_types": [
+        "PM-11"
+      ],
+      "target_types": [
+        "PM-02"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_TARGET_PARTY",
+      "owl_name": "has-target-party",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "TARGET_PARTY_IN",
+      "source_types": [
+        "PM-15"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HAS_TENANT",
+      "owl_name": "has-tenant",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "TENANT_OF",
+      "source_types": [
+        "RA-03"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HELD_BY",
+      "owl_name": "held-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "HOLDER_OF",
+      "source_types": [
+        "E-25"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HELD_THROUGH_VEHICLE",
+      "owl_name": "held-through-vehicle",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "VEHICLE_HOLDS",
+      "source_types": [
+        "RA-01"
+      ],
+      "target_types": [
+        "PM-05"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "HOLDS_INTEREST_IN",
+      "owl_name": "holds-interest-in",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HELD_VIA_INVESTMENT",
+      "source_types": [
+        "PM-09"
+      ],
+      "target_types": [
+        "PM-01",
+        "PM-04"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "INCLUDES_GOAL",
+      "owl_name": "includes-goal",
+      "kind": "reference",
+      "cardinality": "n-to-n",
+      "inverse": "GOAL_IN_PLAN",
+      "source_types": [
+        "E-33"
+      ],
+      "target_types": [
+        "E-30"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "IN_FUND_FAMILY",
+      "owl_name": "in-fund-family",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "FAMILY_INCLUDES",
+      "source_types": [
+        "PM-01"
+      ],
+      "target_types": [
+        "PM-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "IN_PORTFOLIO",
+      "owl_name": "in-portfolio",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "PORTFOLIO_INCLUDES",
+      "source_types": [
+        "E-04",
+        "E-05",
+        "E-06",
+        "PB-03",
+        "PB-05",
+        "PB-06",
+        "PB-11"
+      ],
+      "target_types": [
+        "E-03"
+      ],
+      "edge_count": 7
+    },
+    {
+      "type": "ISSUED_BY",
+      "owl_name": "issued-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "ISSUER_OF",
+      "source_types": [
+        "E-02",
+        "PB-01",
+        "PB-02"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 3
+    },
+    {
+      "type": "LENDS_POSITION",
+      "owl_name": "lends-position",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "POSITION_LENT_AS",
+      "source_types": [
+        "PB-10"
+      ],
+      "target_types": [
+        "E-04"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "LINKED_TO_PORTFOLIO",
+      "owl_name": "linked-to-portfolio",
+      "kind": "reference",
+      "cardinality": "n-to-n",
+      "inverse": "PORTFOLIO_LINKED_TO",
+      "source_types": [
+        "E-25"
+      ],
+      "target_types": [
+        "E-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "LISTED_ON",
+      "owl_name": "listed-on",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "LISTS",
+      "source_types": [
+        "DR-01"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "MANAGED_BY",
+      "owl_name": "managed-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "MANAGES",
+      "source_types": [
+        "E-03",
+        "FO-01"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "MANAGED_BY_GP",
+      "owl_name": "managed-by-gp",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "GP_MANAGES",
+      "source_types": [
+        "PM-01"
+      ],
+      "target_types": [
+        "PM-02"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "MEASURES_GOAL",
+      "owl_name": "measures-goal",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_PROGRESS_MEASUREMENT",
+      "source_types": [
+        "E-31"
+      ],
+      "target_types": [
+        "E-30"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "OF_FUND",
+      "owl_name": "of-fund",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "FUND_INCLUDES",
+      "source_types": [
+        "PM-06",
+        "PM-07",
+        "PM-08",
+        "PM-09",
+        "PM-10",
+        "PM-12",
+        "PM-13"
+      ],
+      "target_types": [
+        "PM-01"
+      ],
+      "edge_count": 7
+    },
+    {
+      "type": "OF_SHARE_CLASS",
+      "owl_name": "of-share-class",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "SHARE_CLASS_INCLUDES",
+      "source_types": [
+        "E-07",
+        "FO-03",
+        "FO-04",
+        "FO-05",
+        "FO-06",
+        "FO-09",
+        "FO-10",
+        "FO-11"
+      ],
+      "target_types": [
+        "FO-02"
+      ],
+      "edge_count": 8
+    },
+    {
+      "type": "ON_INSTRUMENT",
+      "owl_name": "on-instrument",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "INSTRUMENT_IN",
+      "source_types": [
+        "DR-01",
+        "DR-02",
+        "E-05",
+        "E-06",
+        "E-07",
+        "E-08",
+        "E-26",
+        "E-32",
+        "FO-11",
+        "PB-01",
+        "PB-02",
+        "PB-03",
+        "PB-04",
+        "PB-05",
+        "PB-06",
+        "PB-07",
+        "PB-08",
+        "PB-09",
+        "PB-10",
+        "PM-14"
+      ],
+      "target_types": [
+        "E-02"
+      ],
+      "edge_count": 20
+    },
+    {
+      "type": "ON_REAL_ASSET",
+      "owl_name": "on-real-asset",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "REAL_ASSET_HAS",
+      "source_types": [
+        "RA-02",
+        "RA-03",
+        "RA-04",
+        "RA-05"
+      ],
+      "target_types": [
+        "RA-01"
+      ],
+      "edge_count": 4
+    },
+    {
+      "type": "ON_UNITHOLDING",
+      "owl_name": "on-unitholding",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "UNITHOLDING_HAS",
+      "source_types": [
+        "FO-04",
+        "FO-07"
+      ],
+      "target_types": [
+        "FO-03"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "ORIGINATED_BY",
+      "owl_name": "originated-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "ORIGINATED",
+      "source_types": [
+        "PM-14"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "POSITION_IN",
+      "owl_name": "position-in",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_POSITION",
+      "source_types": [
+        "E-04"
+      ],
+      "target_types": [
+        "E-02"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "PROVIDED_BY",
+      "owl_name": "provided-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "PROVIDES",
+      "source_types": [
+        "FO-08"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "REFERENCES_BENCHMARK",
+      "owl_name": "references-benchmark",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "BENCHMARK_REFERENCED_BY",
+      "source_types": [
+        "PM-12"
+      ],
+      "target_types": [
+        "E-10"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "RELATED_TO_PARTY",
+      "owl_name": "related-to-party",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "RELATED_PARTY_OF",
+      "source_types": [
+        "E-01"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "RESULTS_IN_INSTRUMENT",
+      "owl_name": "results-in-instrument",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "RESULT_INSTRUMENT_OF",
+      "source_types": [
+        "PB-07"
+      ],
+      "target_types": [
+        "E-02"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "SPECIALISES",
+      "owl_name": "specialises",
+      "kind": "is-a",
+      "cardinality": "n-to-1",
+      "inverse": "SPECIALISED_BY",
+      "source_types": [
+        "DR-01",
+        "DR-02",
+        "FO-01",
+        "FO-02",
+        "FO-03",
+        "FO-04",
+        "FO-05",
+        "FO-06",
+        "FO-07",
+        "FO-09",
+        "FO-10",
+        "PB-01",
+        "PB-02",
+        "PB-03",
+        "PB-04",
+        "PB-05",
+        "PB-06",
+        "PB-07",
+        "PB-08",
+        "PB-09",
+        "PB-10",
+        "PB-11",
+        "PM-01",
+        "PM-02",
+        "PM-03",
+        "PM-04",
+        "PM-07",
+        "PM-08",
+        "PM-09",
+        "PM-12",
+        "PM-13",
+        "PM-14",
+        "RA-01",
+        "RA-05"
+      ],
+      "target_types": [
+        "E-01",
+        "E-02",
+        "E-03",
+        "E-04",
+        "E-05",
+        "E-07",
+        "E-10",
+        "E-15",
+        "E-25"
+      ],
+      "edge_count": 34
+    },
+    {
+      "type": "SUBFUND_OF",
+      "owl_name": "subfund-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "UMBRELLA_OF",
+      "source_types": [
+        "FO-01"
+      ],
+      "target_types": [
+        "FO-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "SUBSIDIARY_OF",
+      "owl_name": "subsidiary-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "PARENT_ENTITY_OF",
+      "source_types": [
+        "E-01"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "SUB_PORTFOLIO_OF",
+      "owl_name": "sub-portfolio-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "PARENT_PORTFOLIO_OF",
+      "source_types": [
+        "E-03"
+      ],
+      "target_types": [
+        "E-03"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "SUCCEEDED_BY",
+      "owl_name": "succeeded-by",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "SUCCEEDS",
+      "source_types": [
+        "PM-04"
+      ],
+      "target_types": [
+        "PM-04"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "SUPERSEDED_BY",
+      "owl_name": "superseded-by",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "SUPERSEDES",
+      "source_types": [
+        "E-11"
+      ],
+      "target_types": [
+        "E-11"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "UNDERLYING_INDEX_IS",
+      "owl_name": "underlying-index-is",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "UNDERLYING_INDEX_OF",
+      "source_types": [
+        "DR-01",
+        "DR-02"
+      ],
+      "target_types": [
+        "E-10"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "UNDERLYING_IS",
+      "owl_name": "underlying-is",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "UNDERLYING_INSTRUMENT_OF",
+      "source_types": [
+        "DR-01",
+        "DR-02"
+      ],
+      "target_types": [
+        "E-02"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "UNDER_AP_AGREEMENT",
+      "owl_name": "under-ap-agreement",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "AP_AGREEMENT_FOR",
+      "source_types": [
+        "FO-10"
+      ],
+      "target_types": [
+        "FO-12"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "UNDER_CLEARING_RELATIONSHIP",
+      "owl_name": "under-clearing-relationship",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "CLEARING_RELATIONSHIP_COVERS",
+      "source_types": [
+        "DR-04"
+      ],
+      "target_types": [
+        "DR-05"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "UNDER_MASTER_AGREEMENT",
+      "owl_name": "under-master-agreement",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "MASTER_AGREEMENT_GOVERNS",
+      "source_types": [
+        "DR-02",
+        "DR-04"
+      ],
+      "target_types": [
+        "DR-03"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "UNDER_SCENARIO",
+      "owl_name": "under-scenario",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "SCENARIO_FOR",
+      "source_types": [
+        "E-19"
+      ],
+      "target_types": [
+        "E-17"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "UNDER_TERMS_VERSION",
+      "owl_name": "under-terms-version",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "TERMS_VERSION_HAS",
+      "source_types": [
+        "PM-10"
+      ],
+      "target_types": [
+        "PM-10"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "USES_BASKET",
+      "owl_name": "uses-basket",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "BASKET_FOR",
+      "source_types": [
+        "FO-10"
+      ],
+      "target_types": [
+        "FO-11"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "VALUATION_OF",
+      "owl_name": "valuation-of",
+      "kind": "reference",
+      "cardinality": "n-to-1",
+      "inverse": "HAS_VALUATION",
+      "source_types": [
+        "E-07"
+      ],
+      "target_types": [
+        "E-04"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "VALUED_BY",
+      "owl_name": "valued-by",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "VALUER_OF",
+      "source_types": [
+        "RA-05"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "VALUE_OF_TYPE",
+      "owl_name": "value-of-type",
+      "kind": "composition",
+      "cardinality": "n-to-1",
+      "inverse": "TYPE_HAS_VALUE",
+      "source_types": [
+        "E-11"
+      ],
+      "target_types": [
+        "E-11"
+      ],
+      "edge_count": 1
+    },
+    {
+      "type": "VIA_BROKER",
+      "owl_name": "via-broker",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "BROKER_FOR",
+      "source_types": [
+        "PB-03",
+        "PB-04"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 2
+    },
+    {
+      "type": "VIA_INTERMEDIARY",
+      "owl_name": "via-intermediary",
+      "kind": "role",
+      "cardinality": "n-to-1",
+      "inverse": "INTERMEDIARY_FOR",
+      "source_types": [
+        "FO-09"
+      ],
+      "target_types": [
+        "E-01"
+      ],
+      "edge_count": 1
+    }
+  ],
+  "example_traversals": [
+    {
+      "source": "E-32",
+      "relation": "ACQUIRED_VIA",
+      "target": "E-05"
+    },
+    {
+      "source": "E-36",
+      "relation": "ADMINISTERED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "PM-07",
+      "relation": "AGAINST_COMMITMENT",
+      "target": "PM-06"
+    },
+    {
+      "source": "DR-03",
+      "relation": "ANNEXED_TO",
+      "target": "DR-03"
+    },
+    {
+      "source": "E-29",
+      "relation": "APPLIES_TO_PORTFOLIO",
+      "target": "E-03"
+    },
+    {
+      "source": "PB-11",
+      "relation": "AT_MEETING",
+      "target": "PB-07"
+    },
+    {
+      "source": "FO-02",
+      "relation": "BELONGS_TO_FUND_PRODUCT",
+      "target": "FO-01"
+    },
+    {
+      "source": "E-03",
+      "relation": "BENCHMARKED_TO",
+      "target": "E-10"
+    },
+    {
+      "source": "PB-03",
+      "relation": "BOOKED_AS",
+      "target": "E-05"
+    },
+    {
+      "source": "E-18",
+      "relation": "BREACH_OF_LIMIT",
+      "target": "E-16"
+    },
+    {
+      "source": "PB-03",
+      "relation": "CHILD_ORDER_OF",
+      "target": "PB-03"
+    },
+    {
+      "source": "PB-01",
+      "relation": "CLASSIFIED_AS",
+      "target": "E-11"
+    },
+    {
+      "source": "E-02",
+      "relation": "CLASSIFIED_AS_ASSET_CLASS",
+      "target": "E-09"
+    },
+    {
+      "source": "DR-01",
+      "relation": "CLEARED_THROUGH",
+      "target": "E-01"
+    },
+    {
+      "source": "PB-10",
+      "relation": "COLLATERALISED_BY",
+      "target": "E-26"
+    },
+    {
+      "source": "E-20",
+      "relation": "COMPUTED_PER_METRIC",
+      "target": "E-22"
+    },
+    {
+      "source": "PB-09",
+      "relation": "CONSTITUENT_OF",
+      "target": "E-10"
+    },
+    {
+      "source": "FO-07",
+      "relation": "CORRECTS",
+      "target": "FO-07"
+    },
+    {
+      "source": "FO-08",
+      "relation": "DELEGATES_TO",
+      "target": "E-01"
+    },
+    {
+      "source": "E-18",
+      "relation": "DETECTED_BY_MEASUREMENT",
+      "target": "E-19"
+    },
+    {
+      "source": "E-23",
+      "relation": "EXTRACTED_FROM",
+      "target": "E-15"
+    },
+    {
+      "source": "PB-06",
+      "relation": "FOR_ALLOCATION",
+      "target": "PB-05"
+    },
+    {
+      "source": "PM-05",
+      "relation": "FOR_INVESTMENT",
+      "target": "PM-09"
+    },
+    {
+      "source": "PB-04",
+      "relation": "FOR_ORDER",
+      "target": "PB-03"
+    },
+    {
+      "source": "E-30",
+      "relation": "FOR_PARTY",
+      "target": "E-01"
+    },
+    {
+      "source": "E-06",
+      "relation": "FROM_TRANSACTION",
+      "target": "E-05"
+    },
+    {
+      "source": "E-30",
+      "relation": "FUNDED_BY_PORTFOLIO",
+      "target": "E-03"
+    },
+    {
+      "source": "E-03",
+      "relation": "GOVERNED_BY_PLAN",
+      "target": "E-29"
+    },
+    {
+      "source": "FO-10",
+      "relation": "HAS_AUTHORISED_PARTICIPANT",
+      "target": "E-01"
+    },
+    {
+      "source": "PB-10",
+      "relation": "HAS_BORROWER",
+      "target": "E-01"
+    },
+    {
+      "source": "E-12",
+      "relation": "HAS_CLASSIFICATION_TYPE",
+      "target": "E-11"
+    },
+    {
+      "source": "E-12",
+      "relation": "HAS_CLASSIFICATION_VALUE",
+      "target": "E-11"
+    },
+    {
+      "source": "DR-05",
+      "relation": "HAS_CLEARING_BROKER",
+      "target": "E-01"
+    },
+    {
+      "source": "RA-04",
+      "relation": "HAS_CONCESSION_GRANTOR",
+      "target": "E-01"
+    },
+    {
+      "source": "RA-04",
+      "relation": "HAS_CONTRACTOR",
+      "target": "E-01"
+    },
+    {
+      "source": "DR-02",
+      "relation": "HAS_COUNTERPARTY",
+      "target": "E-01"
+    },
+    {
+      "source": "PB-05",
+      "relation": "HAS_CUSTODIAN",
+      "target": "E-01"
+    },
+    {
+      "source": "E-34",
+      "relation": "HAS_DOCUMENT",
+      "target": "E-15"
+    },
+    {
+      "source": "PM-01",
+      "relation": "HAS_FUND_ADMINISTRATOR",
+      "target": "PM-03"
+    },
+    {
+      "source": "DR-03",
+      "relation": "HAS_INVESTOR",
+      "target": "E-01"
+    },
+    {
+      "source": "PM-11",
+      "relation": "HAS_PREDECESSOR_GP",
+      "target": "PM-02"
+    },
+    {
+      "source": "E-15",
+      "relation": "HAS_SUBJECT",
+      "target": "E-01"
+    },
+    {
+      "source": "PM-11",
+      "relation": "HAS_SUCCESSOR_GP",
+      "target": "PM-02"
+    },
+    {
+      "source": "PM-15",
+      "relation": "HAS_TARGET_PARTY",
+      "target": "E-01"
+    },
+    {
+      "source": "RA-03",
+      "relation": "HAS_TENANT",
+      "target": "E-01"
+    },
+    {
+      "source": "E-25",
+      "relation": "HELD_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "RA-01",
+      "relation": "HELD_THROUGH_VEHICLE",
+      "target": "PM-05"
+    },
+    {
+      "source": "PM-09",
+      "relation": "HOLDS_INTEREST_IN",
+      "target": "PM-01"
+    },
+    {
+      "source": "E-33",
+      "relation": "INCLUDES_GOAL",
+      "target": "E-30"
+    },
+    {
+      "source": "PM-01",
+      "relation": "IN_FUND_FAMILY",
+      "target": "PM-01"
+    },
+    {
+      "source": "E-04",
+      "relation": "IN_PORTFOLIO",
+      "target": "E-03"
+    },
+    {
+      "source": "E-02",
+      "relation": "ISSUED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "PB-10",
+      "relation": "LENDS_POSITION",
+      "target": "E-04"
+    },
+    {
+      "source": "E-25",
+      "relation": "LINKED_TO_PORTFOLIO",
+      "target": "E-03"
+    },
+    {
+      "source": "DR-01",
+      "relation": "LISTED_ON",
+      "target": "E-01"
+    },
+    {
+      "source": "E-03",
+      "relation": "MANAGED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "PM-01",
+      "relation": "MANAGED_BY_GP",
+      "target": "PM-02"
+    },
+    {
+      "source": "E-31",
+      "relation": "MEASURES_GOAL",
+      "target": "E-30"
+    },
+    {
+      "source": "PM-06",
+      "relation": "OF_FUND",
+      "target": "PM-01"
+    },
+    {
+      "source": "E-07",
+      "relation": "OF_SHARE_CLASS",
+      "target": "FO-02"
+    },
+    {
+      "source": "DR-01",
+      "relation": "ON_INSTRUMENT",
+      "target": "E-02"
+    },
+    {
+      "source": "RA-02",
+      "relation": "ON_REAL_ASSET",
+      "target": "RA-01"
+    },
+    {
+      "source": "FO-04",
+      "relation": "ON_UNITHOLDING",
+      "target": "FO-03"
+    },
+    {
+      "source": "PM-14",
+      "relation": "ORIGINATED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "E-04",
+      "relation": "POSITION_IN",
+      "target": "E-02"
+    },
+    {
+      "source": "FO-08",
+      "relation": "PROVIDED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "PM-12",
+      "relation": "REFERENCES_BENCHMARK",
+      "target": "E-10"
+    },
+    {
+      "source": "E-01",
+      "relation": "RELATED_TO_PARTY",
+      "target": "E-01"
+    },
+    {
+      "source": "PB-07",
+      "relation": "RESULTS_IN_INSTRUMENT",
+      "target": "E-02"
+    },
+    {
+      "source": "DR-01",
+      "relation": "SPECIALISES",
+      "target": "E-02"
+    },
+    {
+      "source": "FO-01",
+      "relation": "SUBFUND_OF",
+      "target": "FO-01"
+    },
+    {
+      "source": "E-01",
+      "relation": "SUBSIDIARY_OF",
+      "target": "E-01"
+    },
+    {
+      "source": "E-03",
+      "relation": "SUB_PORTFOLIO_OF",
+      "target": "E-03"
+    },
+    {
+      "source": "PM-04",
+      "relation": "SUCCEEDED_BY",
+      "target": "PM-04"
+    },
+    {
+      "source": "E-11",
+      "relation": "SUPERSEDED_BY",
+      "target": "E-11"
+    },
+    {
+      "source": "DR-01",
+      "relation": "UNDERLYING_INDEX_IS",
+      "target": "E-10"
+    },
+    {
+      "source": "DR-01",
+      "relation": "UNDERLYING_IS",
+      "target": "E-02"
+    },
+    {
+      "source": "FO-10",
+      "relation": "UNDER_AP_AGREEMENT",
+      "target": "FO-12"
+    },
+    {
+      "source": "DR-04",
+      "relation": "UNDER_CLEARING_RELATIONSHIP",
+      "target": "DR-05"
+    },
+    {
+      "source": "DR-02",
+      "relation": "UNDER_MASTER_AGREEMENT",
+      "target": "DR-03"
+    },
+    {
+      "source": "E-19",
+      "relation": "UNDER_SCENARIO",
+      "target": "E-17"
+    },
+    {
+      "source": "PM-10",
+      "relation": "UNDER_TERMS_VERSION",
+      "target": "PM-10"
+    },
+    {
+      "source": "FO-10",
+      "relation": "USES_BASKET",
+      "target": "FO-11"
+    },
+    {
+      "source": "E-07",
+      "relation": "VALUATION_OF",
+      "target": "E-04"
+    },
+    {
+      "source": "RA-05",
+      "relation": "VALUED_BY",
+      "target": "E-01"
+    },
+    {
+      "source": "E-11",
+      "relation": "VALUE_OF_TYPE",
+      "target": "E-11"
+    },
+    {
+      "source": "PB-03",
+      "relation": "VIA_BROKER",
+      "target": "E-01"
+    },
+    {
+      "source": "FO-09",
+      "relation": "VIA_INTERMEDIARY",
+      "target": "E-01"
+    }
+  ]
+}

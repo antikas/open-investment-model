@@ -20,6 +20,14 @@ import re
 import sys
 from pathlib import Path
 
+# Pack identity (prefixes, slugs, palette) is single-sourced from the pack
+# registry at tools/pack_registry.py (OIM-211). Put tools/ on sys.path so the
+# validator — run as a standalone script — can import it.
+_TOOLS_DIR = Path(__file__).resolve().parents[1]
+if str(_TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOLS_DIR))
+import pack_registry  # noqa: E402
+
 REPO = Path(__file__).resolve().parents[2]
 SD_DIR = REPO / "model" / "service-domains"
 ENTITY_DIR = REPO / "model" / "entities"
@@ -226,7 +234,7 @@ def count_entities() -> tuple[int, int]:
         for pack in spec.iterdir():
             if pack.is_dir():
                 n_spec += len([p for p in pack.glob("*.md")
-                               if re.match(r"(PM|PB|DR|RA|FO)-\d+-", p.name)])
+                               if re.match(r"(" + pack_registry.SPEC_PREFIX_ALT + r")-\d+-", p.name)])
     return n_core, n_spec
 
 
@@ -466,6 +474,380 @@ def check_per_row_bd_tables(counts: dict[int, int]) -> None:
                 defect(f"{rel}: per-row table missing row for BD-{bd_num:02d}")
 
 
+# ---------------------------------------------------------------------------
+# OIM-63 — Two new checks (unscanned count-surface class, third recurrence:
+# cycle-04 ADR-0043 X1, OIM-60 BD-10 README, OIM-61 middle-office subtotal —
+# each caught only by a blind X/K audit, never by the validator before now):
+#   1. check_business_domain_map_subtotals — HARD defect: the Mermaid office
+#      subgraph subtotals and per-BD node counts in
+#      `model/diagrams/02-business-domain-map.md` must each equal the
+#      filesystem-derived per-BD SD count, each office subtotal must equal
+#      the sum of its contained per-BD cells, and the six office subtotals
+#      must sum to the derived repo-wide total.
+#   2. check_bd_readme_sd_count — HARD defect: each BD README's `**Maturity:**`
+#      line "N Service Domains" prose count must equal that BD's
+#      filesystem-derived SD count.
+#
+# Both checks take the same `counts` dict[bd_num, sd_count] already derived
+# by `check_business_domains()` — no new count-derivation helper is needed,
+# the per-BD SD count is already the canonical filesystem-derived value used
+# by `check_per_bd_sd_annotations` / `check_per_row_bd_tables` above.
+#
+# Both checks are split into a pure parsing/comparison helper (text/data in,
+# defects out, no file I/O) and a thin file-reading wrapper — the same shape
+# as `_scan_entity_count_tokens` — so tests exercise the logic against
+# synthetic fixtures without mutating the live tree.
+# ---------------------------------------------------------------------------
+
+
+def _parse_bd_map_subtotals(text: str) -> list[dict]:
+    """Parse office subgraph blocks out of a business-domain-map Mermaid text.
+
+    Returns a list of `{"name": str, "subtotal": int, "bd_cells": {bd_num: count}}`
+    dicts, one per `subgraph NAME["Label — N SDs"] ... end` block. Pure
+    text-in parsing, no file I/O, so it is exercisable on synthetic fixtures.
+    """
+    offices: list[dict] = []
+    subgraph_pat = re.compile(
+        r'subgraph\s+(\w+)\["[^"]*?—\s*(\d+)\s+SDs?"\]\s*\n(.*?)\n\s*end\b',
+        re.S,
+    )
+    bd_cell_pat = re.compile(r'BD(\d+)\["[^"]*?<br\s*/?>\s*(\d+)\s+SDs?"\]')
+    for m in subgraph_pat.finditer(text):
+        name, subtotal_str, body = m.groups()
+        bd_cells: dict[int, int] = {}
+        for bd_m in bd_cell_pat.finditer(body):
+            bd_cells[int(bd_m.group(1))] = int(bd_m.group(2))
+        offices.append({"name": name, "subtotal": int(subtotal_str), "bd_cells": bd_cells})
+    return offices
+
+
+def _check_bd_map_subtotals_against(
+    offices: list[dict], counts: dict[int, int], rel: str,
+) -> None:
+    """Defect on any subtotal / per-BD-cell / grand-total mismatch.
+
+    Pure logic (parsed office data + filesystem-derived counts in, defects
+    out) — shared by the live check and the negative tests. Asserts:
+      (a) each office's per-BD cells sum to that office's declared subtotal;
+      (b) each per-BD cell equals the filesystem-derived count for that BD;
+      (c) the six office subtotals sum to the derived repo-wide SD total;
+      (d) every BD in `counts` is represented in some office subgraph.
+    """
+    if not offices:
+        defect(f"{rel}: no office subgraphs parsed out of the Mermaid block — "
+               f"format changed, or the diagram is empty")
+        return
+    grand_total_declared = 0
+    seen_bds: set[int] = set()
+    for office in offices:
+        cell_sum = sum(office["bd_cells"].values())
+        if cell_sum != office["subtotal"]:
+            defect(f"{rel}: subgraph {office['name']} declares "
+                   f"{office['subtotal']} SDs but its per-BD cells sum to {cell_sum}")
+        for bd_num, declared in sorted(office["bd_cells"].items()):
+            actual = counts.get(bd_num)
+            if actual is None:
+                defect(f"{rel}: subgraph {office['name']} node BD-{bd_num:02d} "
+                       f"references a BD that has no directory")
+            elif actual != declared:
+                defect(f"{rel}: subgraph {office['name']} node BD-{bd_num:02d} "
+                       f"declares {declared} SDs; BD-{bd_num:02d} has {actual} SD file(s)")
+            seen_bds.add(bd_num)
+        grand_total_declared += office["subtotal"]
+    actual_total = sum(counts.values())
+    if grand_total_declared != actual_total:
+        defect(f"{rel}: the six office subtotals sum to {grand_total_declared}; "
+               f"the derived total SD count is {actual_total}")
+    missing = sorted(set(counts) - seen_bds)
+    if missing:
+        defect(f"{rel}: Business Domain(s) "
+               f"{', '.join(f'BD-{n:02d}' for n in missing)} not represented "
+               f"in any office subgraph")
+
+
+def check_business_domain_map_subtotals(counts: dict[int, int]) -> None:
+    """HARD defect: the office-subgraph subtotals and per-BD node counts in
+    `model/diagrams/02-business-domain-map.md` must agree with the
+    filesystem-derived per-BD SD counts, at every level.
+
+    Closes the recurring diagram-subtotal-drift class — cycle-04 ADR-0043 X1
+    and OIM-61's middle-office 32-vs-40 mismatch were both this shape, each
+    caught only by a blind X/K audit. See `_check_bd_map_subtotals_against`
+    for the three assertions this enforces.
+
+    Added: OIM-63.
+    """
+    rel = "model/diagrams/02-business-domain-map.md"
+    path = REPO / rel
+    if not path.exists():
+        return  # nothing to check (e.g. a stripped distribution)
+    text = path.read_text(encoding="utf-8")
+    offices = _parse_bd_map_subtotals(text)
+    _check_bd_map_subtotals_against(offices, counts, rel)
+
+
+def _scan_bd_readme_sd_count(
+    text: str, rel: str, bd_num: int, counts: dict[int, int],
+) -> None:
+    """Check a single BD README's `**Maturity:**` line "N Service Domains"
+    prose count against the filesystem-derived count for that BD.
+
+    Pure logic (text + counts in, defects out) — shared by the live check
+    and the negative tests.
+    """
+    m = re.search(r"\*\*Maturity:\*\*[^\n]*?(\d+)\s+Service\s+Domains?\b", text)
+    if not m:
+        defect(f"{rel}: '**Maturity:**' line does not state an "
+               f"'N Service Domain(s)' count")
+        return
+    found = int(m.group(1))
+    actual = counts.get(bd_num)
+    if actual is not None and found != actual:
+        defect(f"{rel}: '**Maturity:**' line says {found} Service Domain(s); "
+               f"BD-{bd_num:02d} has {actual} SD file(s)")
+
+
+def check_bd_readme_sd_count(counts: dict[int, int]) -> None:
+    """HARD defect: every BD README's `**Maturity:**` line "N Service Domains"
+    prose count must match that BD's filesystem-derived SD count.
+
+    Closes the recurring README-prose-count-drift class — OIM-60's BD-10
+    README stating "eight" (stale) SDs was this shape, caught only by a
+    blind N/P audit.
+
+    Added: OIM-63.
+    """
+    for bd in bd_dirs():
+        m = re.match(r"BD-(\d+)-", bd.name)
+        if not m:
+            continue
+        bd_num = int(m.group(1))
+        readme = bd / "README.md"
+        if not readme.exists():
+            continue  # check_business_domains() already defects on this
+        rel = str(readme.relative_to(REPO)).replace("\\", "/")
+        text = readme.read_text(encoding="utf-8")
+        _scan_bd_readme_sd_count(text, rel, bd_num, counts)
+
+
+# ---------------------------------------------------------------------------
+# OIM-213 — FIBO-curie resolvability check.
+#
+# OpenIM's positioning stakes credibility on "aligns to FIBO"; a fabricated
+# `fibo-*:` curie is a direct public-credibility failure. Six fabricated
+# curies were caught in the OIM-204 entities and the same class had slipped
+# the OIM-202 audit once before (FO-02's fibo-sec-fund-fund:FundShareClassUnit
+# — which then resurfaced on the fibo-alignment.md FO-02 row and was caught
+# again by the OIM-213 sweep). This check converts the class from a per-cycle
+# audit catch to a CI failure:
+#
+#   check_fibo_curie_resolvability — HARD defect: every `prefix:ClassName`
+#   curie with a `fibo-*` or `cmns-*` prefix asserted anywhere under model/
+#   must resolve against the resolvable-curie reference
+#   (`fibo_curie_reference.json`, alongside this script). The reference is
+#   the verified output of the OIM-213 repo-wide sweep: every listed class
+#   was confirmed as an owl:Class declaration in the named module's RDF,
+#   fetched from the edmcouncil/fibo master (or the OMG Commons published
+#   RDF for cmns-*). The validator itself never touches the network — it is
+#   deterministic and offline-runnable; verification against the live
+#   ontology happens once, at reference-maintenance time (see the _meta
+#   block in the JSON for the maintenance procedure).
+#
+# Scope notes:
+#   - Prefix-only module mentions (`fibo-ind-ir-ir` with no :Class) and the
+#     deliberately non-specific ellipsis form (`fibo-cae-...:CorporateAction`)
+#     assert a module or concept area, not a resolvable class curie — the
+#     token pattern does not match them, by design.
+#   - Only model/ is scanned: docs/ legitimately quotes fabricated curies in
+#     audit reports and decision records (as findings, not assertions).
+#   - A missing reference file is itself a HARD defect — the gate cannot be
+#     silently disabled by deleting the list (the OIM-212 baseline
+#     precedent).
+#
+# Split into a pure token-extraction helper + a pure comparison helper + a
+# thin file-walking wrapper (the OIM-63 shape), so the negative tests inject
+# a known-fabricated curie through the pure functions without mutating the
+# live tree (the no-mutate-restore lesson, OIM-201).
+# ---------------------------------------------------------------------------
+
+FIBO_CURIE_REFERENCE = Path(__file__).resolve().parent / "fibo_curie_reference.json"
+
+# `prefix:ClassName` where prefix is fibo-* or cmns-* (lowercase, hyphenated
+# segments) and the local name is a class-shaped token (UpperCamelCase, the
+# FIBO/Commons class convention). Deliberately does NOT match prefix-only
+# mentions or the `fibo-xxx-...:` ellipsis form (the `.` breaks the prefix
+# character class before the colon).
+_FIBO_CURIE_TOKEN_PAT = re.compile(
+    r"\b((?:fibo|cmns)-[a-z0-9]+(?:-[a-z0-9]+)*):([A-Z][A-Za-z0-9]*)"
+)
+
+# The OBJECT-PROPERTY sibling (OIM-a5oz/F2): `prefix:localName` where the local
+# name is lowerCamelCase (the FIBO/Commons object-property convention, e.g.
+# `isIssuedBy`, `hasCounterparty`). Disjoint from the class pattern above by the
+# case of the FIRST local-name character (Upper -> class, lower -> property), so
+# a curie is gated against exactly one of the two references, never both. Object
+# properties resolve against each prefix's `object_properties` list, so a
+# fabricated property curie (a plausible verb invented under a real FIBO prefix)
+# fails the gate exactly as a fabricated class curie does.
+_FIBO_PROPERTY_TOKEN_PAT = re.compile(
+    r"\b((?:fibo|cmns)-[a-z0-9]+(?:-[a-z0-9]+)*):([a-z][A-Za-z0-9]*)"
+)
+
+
+def _load_fibo_curie_reference(path: Path) -> dict[str, set[str]] | None:
+    """Load the resolvable-curie reference. Returns {prefix: {class, ...}}
+    or None when the file is missing/unreadable (the caller defects)."""
+    import json
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    prefixes = data.get("prefixes")
+    if not isinstance(prefixes, dict) or not prefixes:
+        return None
+    return {p: set(entry.get("classes", [])) for p, entry in prefixes.items()}
+
+
+def _extract_fibo_curie_tokens(text: str) -> list[tuple[str, str]]:
+    """All `(prefix, ClassName)` curie tokens asserted in a text. Pure
+    text-in extraction, no file I/O."""
+    return [(m.group(1), m.group(2)) for m in _FIBO_CURIE_TOKEN_PAT.finditer(text)]
+
+
+def _check_fibo_curie_tokens(
+    rel: str, tokens: list[tuple[str, str]], reference: dict[str, set[str]],
+) -> None:
+    """Defect on any curie token that does not resolve against the reference.
+
+    Pure logic (tokens + reference in, defects out) — shared by the live
+    check and the negative tests. Two failure shapes:
+      (a) unknown prefix — the ontology module itself is not in the
+          reference (never cited-and-verified before, or fabricated);
+      (b) known prefix, unknown class — the exact OIM-204 fabrication shape
+          (a plausible class name invented under a real FIBO prefix).
+    """
+    for prefix, cls in tokens:
+        classes = reference.get(prefix)
+        if classes is None:
+            defect(
+                f"{rel}: curie '{prefix}:{cls}' uses a prefix not in the "
+                f"resolvable-curie reference — verify the module exists in the "
+                f"published ontology and add it to fibo_curie_reference.json, "
+                f"or fix the citation"
+            )
+        elif cls not in classes:
+            defect(
+                f"{rel}: curie '{prefix}:{cls}' does not resolve — '{cls}' is "
+                f"not a verified class of '{prefix}' in "
+                f"fibo_curie_reference.json. Either the citation is fabricated "
+                f"or misspelled (fix it / de-specify to honest alignment "
+                f"prose), or the class genuinely exists and the reference is "
+                f"behind: verify the owl:Class declaration against the live "
+                f"published ontology, then extend the reference"
+            )
+
+
+def _load_fibo_property_reference(path: Path) -> dict[str, set[str]] | None:
+    """Load the verified object-property reference. Returns
+    {prefix: {property, ...}} or None when the file is missing/unreadable
+    (the caller defects on None via the class loader). A prefix with no
+    `object_properties` key contributes an empty set — asserting a property
+    curie under it then fails as an unverified property, which is correct.
+    Sibling of `_load_fibo_curie_reference` (which returns the class sets);
+    kept separate so the OIM-213 class-curie callers see an unchanged shape."""
+    import json
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    prefixes = data.get("prefixes")
+    if not isinstance(prefixes, dict) or not prefixes:
+        return None
+    return {p: set(entry.get("object_properties", []))
+            for p, entry in prefixes.items()}
+
+
+def _extract_fibo_property_tokens(text: str) -> list[tuple[str, str]]:
+    """All `(prefix, propertyName)` object-property curie tokens asserted in a
+    text (lowerCamelCase local name). Pure text-in extraction, no file I/O."""
+    return [(m.group(1), m.group(2))
+            for m in _FIBO_PROPERTY_TOKEN_PAT.finditer(text)]
+
+
+def _check_fibo_property_tokens(
+    rel: str, tokens: list[tuple[str, str]], reference: dict[str, set[str]],
+) -> None:
+    """Defect on any object-property curie token that does not resolve against
+    the verified object-property reference. Pure logic (tokens + reference in,
+    defects out) — shared by the live check and the negative tests. Mirrors
+    `_check_fibo_curie_tokens`: (a) unknown prefix, (b) known prefix / unknown
+    property (the fabricated-verb shape — the OIM-204 risk at the edge level)."""
+    for prefix, prop in tokens:
+        props = reference.get(prefix)
+        if not props:
+            defect(
+                f"{rel}: object-property curie '{prefix}:{prop}' uses a prefix "
+                f"with no verified object properties in the resolvable-curie "
+                f"reference — verify the property exists as an owl:ObjectProperty "
+                f"in the published ontology and add it under the prefix's "
+                f"object_properties in fibo_curie_reference.json, or fix the "
+                f"citation"
+            )
+        elif prop not in props:
+            defect(
+                f"{rel}: object-property curie '{prefix}:{prop}' does not "
+                f"resolve — '{prop}' is not a verified object property of "
+                f"'{prefix}' in fibo_curie_reference.json. Either the citation "
+                f"is fabricated or misspelled (fix it / de-specify to honest "
+                f"alignment prose), or the property genuinely exists and the "
+                f"reference is behind: verify the owl:ObjectProperty declaration "
+                f"against the live published ontology, then extend the reference"
+            )
+
+
+def check_fibo_curie_resolvability(reference_path: Path | None = None) -> None:
+    """HARD defect: every `fibo-*:Class` / `cmns-*:Class` class curie AND every
+    `fibo-*:objectProperty` / `cmns-*:objectProperty` object-property curie
+    asserted anywhere under model/ must resolve against the verified
+    resolvable-curie reference (`fibo_curie_reference.json`).
+
+    Closes the recurring fabricated-FIBO-curie class — six fabricated curies
+    in the OIM-204 entities, and FO-02's `FundShareClassUnit` which slipped
+    the OIM-202 audit and resurfaced on the fibo-alignment.md FO-02 row. The
+    object-property leg (OIM-a5oz/F2) extends the same gate to the relation-verb
+    FIBO alignment, so a fabricated object-property curie fails identically.
+
+    Added: OIM-213 (class curies); OIM-a5oz (object-property curies).
+    """
+    path = reference_path if reference_path is not None else FIBO_CURIE_REFERENCE
+    reference = _load_fibo_curie_reference(path)
+    if reference is None:
+        defect(
+            "fibo_curie_reference.json missing or unreadable alongside "
+            "validate.py — the FIBO-curie resolvability check cannot run and "
+            "cannot be silently disabled; restore the reference file"
+        )
+        return
+    property_reference = _load_fibo_property_reference(path)  # same file, props
+    model_dir = REPO / "model"
+    if not model_dir.is_dir():
+        return
+    for md in sorted(model_dir.rglob("*.md")):
+        rel = str(md.relative_to(REPO)).replace("\\", "/")
+        text = md.read_text(encoding="utf-8")
+        tokens = _extract_fibo_curie_tokens(text)
+        if tokens:
+            _check_fibo_curie_tokens(rel, tokens, reference)
+        prop_tokens = _extract_fibo_property_tokens(text)
+        if prop_tokens and property_reference is not None:
+            _check_fibo_property_tokens(rel, prop_tokens, property_reference)
+
+
 def check_ownership_map() -> None:
     """Entity-side leg of the three-way ownership pattern.
 
@@ -485,7 +867,7 @@ def check_ownership_map() -> None:
         for p in d.glob("*.md"):
             if p.name in {"README.md", "INDEX.md"}:
                 continue
-            if not re.match(r"(E|PM|PB|DR|RA|FO)-\d+-", p.name):
+            if not re.match(r"(" + pack_registry.PREFIX_ALT + r")-\d+-", p.name):
                 continue
             text = p.read_text(encoding="utf-8")
             if "**Owned by:**" not in text:
@@ -508,7 +890,7 @@ def parse_ownership_map() -> dict[str, list[tuple[str, str]]]:
     #   | E-NN ...     | <owner-cell> | <pattern> |
     # The first column starts with the entity ID; the cell may be bolded.
     pattern_row = re.compile(
-        r"^\|\s*\**((?:E|PM|PB|DR|RA|FO)-\d+)[^|]*\|([^|]+)\|([^|]+)\|",
+        r"^\|\s*\**((?:" + pack_registry.PREFIX_ALT + r")-\d+)[^|]*\|([^|]+)\|([^|]+)\|",
         re.M,
     )
     for m in pattern_row.finditer(text):
@@ -662,7 +1044,7 @@ def check_consuming_side_partitions() -> None:
                     window = block[m_id.end():m_id.end() + 240]
                     # Stop the window at the next entity ID in the line, so a
                     # later E-NN's partition doesn't satisfy this E-NN's check.
-                    next_entity = re.search(r"\b(E|PM|PB|DR|RA|FO)-\d+\b", window)
+                    next_entity = re.search(r"\b(" + pack_registry.PREFIX_ALT + r")-\d+\b", window)
                     if next_entity:
                         window = window[:next_entity.start()]
                     if not any(kw in window for kw in keywords):
@@ -730,7 +1112,7 @@ def check_sd_name_resolution() -> None:
             files.extend(sorted(
                 p for p in pack.glob("*.md")
                 if p.name not in {"README.md", "INDEX.md"}
-                and re.match(r"(PM|PB|DR|RA|FO)-\d+-", p.name)
+                and re.match(r"(" + pack_registry.SPEC_PREFIX_ALT + r")-\d+-", p.name)
             ))
     for bd in bd_dirs():
         files.extend(sorted(bd.glob("SD-*.md")))
@@ -1311,13 +1693,8 @@ def _scan_entity_count_tokens(
     # ── 4. Per-pack counts ────────────────────────────────────────────────
     # Pack-sizes prose paragraph: "public-markets NN, fund-operations NN, ..."
     # The pack name appears immediately before a space+number.
-    pack_label_map = {
-        "public-markets": "public-markets",
-        "fund-operations": "fund-operations",
-        "private-markets": "private-markets",
-        "derivatives": "derivatives",
-        "real-assets": "real-assets",
-    }
+    # Pack slugs (canonical OIM-215 order) single-sourced from the registry (OIM-211).
+    pack_label_map = {slug: slug for slug in pack_registry.SPEC_SLUGS}
     # OIM-212 MN-3 carry (OIM-210): tighten the per-pack count pattern so it
     # only fires when the number is followed by a comma, period, space-and-word,
     # or end-of-string — not when followed by a hyphen (e.g. "derivatives 5-year"
@@ -1342,13 +1719,8 @@ def _scan_entity_count_tokens(
     )
     for m in gloss_pat.finditer(scan_text):
         found_vals = [int(m.group(i)) for i in range(1, 6)]
-        expected_vals = [
-            per_pack.get("public-markets", 0),
-            per_pack.get("fund-operations", 0),
-            per_pack.get("private-markets", 0),
-            per_pack.get("derivatives", 0),
-            per_pack.get("real-assets", 0),
-        ]
+        # Canonical PB→FO→PM→DR→RA order single-sourced from the registry (OIM-211).
+        expected_vals = [per_pack.get(slug, 0) for slug in pack_registry.SPEC_SLUGS]
         if found_vals != expected_vals:
             defect(f"{rel}:{_line_of(m)}: parenthesised pack-size gloss says "
                    f"({' + '.join(str(v) for v in found_vals)}); "
@@ -1368,7 +1740,7 @@ def _scan_entity_index_table(
     | **[public-markets/](...) (`PB-NN`)** | 11 | What it covers |
     """
     pack_row_pat = re.compile(
-        r"^\|\s*\*?\*?\[?(public-markets|fund-operations|private-markets|derivatives|real-assets)"
+        r"^\|\s*\*?\*?\[?(" + pack_registry.SPEC_SLUG_ALT + r")"
         r"[^\|]*\|\s*(\d+)\s*\|",
         re.M | re.IGNORECASE,
     )
@@ -1639,10 +2011,22 @@ def check_diagram_render_coverage() -> None:
     - If `dist/` is absent (fresh checkout / no build yet), emit a
       warning, not a defect — the validator must still PASS on a clean
       clone so it can run as a pre-commit gate.
-    - If `dist/` is present, every declared BD / SD / entity must have
-      a corresponding `bd-NN.html` / `sd-NN.M.html` / `entity-X-NN.html`
-      file, plus `index.html`, `landscape.html`, `erd.html`. A miss is
-      a defect.
+    - If `dist/` is present but carries NO diagram render at all (none of
+      `index.html` / `landscape.html` / `erd.html` and no `bd-*.html` — i.e.
+      the diagram build was not run; `dist/` holds only non-diagram output
+      such as `dist/exports/` from an export-only run), emit a WARNING, not
+      a defect — there is no diagram render to cover. (The export-only `dist/`
+      case: running just the `tools/exports/` generators leaves a partial
+      `dist/` with no diagram HTML; that must not be read as 276 missing
+      pages.)
+    - If `dist/` is present WITH a diagram render (any of the landing pages
+      or any `bd-*.html` is present — a diagram build was attempted), then
+      every declared BD / SD / entity must have a corresponding
+      `bd-NN.html` / `sd-NN.M.html` / `entity-X-NN.html` file, plus
+      `index.html`, `landscape.html`, `erd.html`. A miss is a defect — a
+      diagram build that silently dropped a declared element (a genuinely
+      broken / incomplete render) is STILL caught (the real check is not
+      weakened).
     - Substantive coverage:
         (i)   Each SD page contains every declared Service Operation
               by name.
@@ -1671,6 +2055,29 @@ def check_diagram_render_coverage() -> None:
         return
 
     emitted = {p.name for p in dist_path.iterdir() if p.is_file() and p.suffix == ".html"}
+
+    # Distinguishing signal: was a diagram build run at all? The diagram render's
+    # signature pages are the landing pages (`index.html` / `landscape.html` /
+    # `erd.html`) and the per-BD pages (`bd-*.html`). If NONE of these is present,
+    # `dist/` carries no diagram render — the diagram build was not run; `dist/`
+    # holds only non-diagram output (e.g. `dist/exports/` from an export-only
+    # run). That is a WARNING (run the diagram build), NOT 276 missing-page
+    # defects. If ANY is present, a diagram build WAS attempted, so the full
+    # coverage enforcement below runs unchanged — a build that dropped a declared
+    # per-element page is still a defect.
+    has_landing = bool(emitted & {"index.html", "landscape.html", "erd.html"})
+    has_bd_page = any(re.match(r"bd-\d+\.html$", name) for name in emitted)
+    if not (has_landing or has_bd_page):
+        rel = (dist_path.relative_to(REPO)
+               if dist_path.is_relative_to(REPO) else dist_path)
+        warn(f"check_diagram_render_coverage: {rel} present but carries no "
+             f"diagram render (no index.html / landscape.html / erd.html / "
+             f"bd-*.html) — the diagram build was not run (only non-diagram "
+             f"output such as dist/exports/ is present). Run "
+             f"`python tools/diagrams/build.py --out dist/` to build the "
+             f"diagram render")
+        return
+
     missing: list[str] = []
 
     # Static pages.
@@ -1704,11 +2111,11 @@ def check_diagram_render_coverage() -> None:
     # Per-entity files + FK targets — parsed shallow from each entity .md.
     entity_fks: dict[str, list[str]] = {}
     if ENTITY_DIR.is_dir():
-        fk_re = re.compile(r"FK\s*[\->→]+\s*((?:E|PM|PB|DR|RA|FO)[_-]?\d{2,3})", re.IGNORECASE)
+        fk_re = re.compile(r"FK\s*[\->→]+\s*((?:" + pack_registry.PREFIX_ALT + r")[_-]?\d{2,3})", re.IGNORECASE)
         for ent_path in sorted(ENTITY_DIR.rglob("*.md")):
             if ent_path.name.upper().startswith("README") or ent_path.name == "INDEX.md":
                 continue
-            em = re.match(r"^(E|PM|PB|DR|RA|FO)-(\d{2})-", ent_path.name)
+            em = re.match(r"^(" + pack_registry.PREFIX_ALT + r")-(\d{2})-", ent_path.name)
             if not em:
                 continue
             ent_id = f"{em.group(1)}-{em.group(2)}"
@@ -1723,7 +2130,7 @@ def check_diagram_render_coverage() -> None:
                     fk = f"{pfx}-{num.zfill(2)}"
                 else:
                     # Strip leading prefix letters (E / PM / PB / DR / RA / FO).
-                    for pfx in ("PM", "PB", "DR", "RA", "FO"):
+                    for pfx in pack_registry.SPEC_PREFIXES:
                         if raw.startswith(pfx):
                             fk = f"{pfx}-{raw[len(pfx):].zfill(2)}"
                             break
@@ -1830,6 +2237,322 @@ def check_diagram_render_coverage() -> None:
                    f"reference to BD-{bd_num:02d} ({target}) "
                    f"(landscape-to-BD substantive coverage; no "
                    f"<a> href resolving to the target)")
+
+
+def check_archimate_export_coverage() -> None:
+    """ArchiMate/AMEFF export coverage gate (mirrors the diagram-render and the
+    ADR-0036/ADR-0045 precedent).
+
+    The exporter (`tools/exports/archimate.py`) projects the whole model into
+    an AMEFF XML document — every BD a Grouping, every SD a Capability, every
+    Service Operation a Business Service, every entity a Business Object. This
+    check confirms that the emitted export carries an element for every declared
+    BD / SD / entity, so an export that silently drops a declared element is
+    caught.
+
+    Behaviour (mirrors `check_diagram_render_coverage`):
+
+    - If the export file is absent (fresh clone / no export run yet), emit a
+      WARNING, not a defect — the validator must still PASS on a clean clone so
+      it can run as a pre-commit gate.
+    - If present, every declared BD / SD / entity id must appear as an element
+      name in the export. A miss is a defect.
+
+    The path can be overridden via the `OPENIM_ARCHIMATE` env var (default
+    `dist/exports/openim.archimate`). The check parses element names with a
+    regex over the `<name>` text — it does not import the exporter, so it runs
+    without `tools/exports/` on sys.path (mirrors the validator's standalone
+    diagram-coverage parse).
+    """
+    import os
+    export_path = Path(os.environ.get(
+        "OPENIM_ARCHIMATE", REPO / "dist" / "exports" / "openim.archimate"))
+    if not export_path.is_file():
+        rel = (export_path.relative_to(REPO)
+               if export_path.is_relative_to(REPO) else export_path)
+        warn(f"check_archimate_export_coverage: {rel} absent — run "
+             f"`python tools/exports/archimate.py --out "
+             f"dist/exports/openim.archimate` first")
+        return
+
+    text = export_path.read_text(encoding="utf-8")
+    # Element names are emitted as `<name>BD-NN Title</name>` etc. Collect the
+    # set of OpenIM ids that appear at the start of any element <name>.
+    name_re = re.compile(r"<name>([^<]+)</name>")
+    id_re = re.compile(r"^((?:BD-\d{2})|(?:SD-\d{2}\.\d+)|"
+                       r"(?:(?:" + pack_registry.PREFIX_ALT + r")-\d{2}))\b")
+    present: set[str] = set()
+    for nm in name_re.finditer(text):
+        m = id_re.match(nm.group(1).strip())
+        if m:
+            present.add(m.group(1))
+
+    # Declared ids, re-derived from disk (independent of the exporter).
+    declared: set[str] = set()
+    for bd in bd_dirs():
+        bm = re.match(r"BD-(\d+)-", bd.name)
+        if not bm:
+            continue
+        bd_num = int(bm.group(1))
+        declared.add(f"BD-{bd_num:02d}")
+        for sd_file in sorted(bd.glob("SD-*.md")):
+            sm = re.match(rf"SD-{bd_num:02d}\.(\d+)-", sd_file.name)
+            if sm:
+                declared.add(f"SD-{bd_num:02d}.{sm.group(1)}")
+    if ENTITY_DIR.is_dir():
+        for ent_path in sorted(ENTITY_DIR.rglob("*.md")):
+            if ent_path.name.upper().startswith("README") or ent_path.name == "INDEX.md":
+                continue
+            em = re.match(r"^(" + pack_registry.PREFIX_ALT + r")-(\d{2})-", ent_path.name)
+            if em:
+                declared.add(f"{em.group(1)}-{em.group(2)}")
+
+    for missing in sorted(declared - present):
+        defect(f"check_archimate_export_coverage: {missing} declared in the "
+               f"model has no element in the ArchiMate export "
+               f"(the export's coverage assertion must pass)")
+
+
+def _declared_entity_ids() -> set[str]:
+    """Re-derive the declared entity id set from disk (independent of any
+    exporter) — every `X-NN-*.md` under `model/entities/` except INDEX/README."""
+    declared: set[str] = set()
+    if ENTITY_DIR.is_dir():
+        for ent_path in sorted(ENTITY_DIR.rglob("*.md")):
+            if ent_path.name.upper().startswith("README") or ent_path.name == "INDEX.md":
+                continue
+            em = re.match(r"^(" + pack_registry.PREFIX_ALT + r")-(\d{2})-", ent_path.name)
+            if em:
+                declared.add(f"{em.group(1)}-{em.group(2)}")
+    return declared
+
+
+def check_schema_ontology_export_coverage() -> None:
+    """JSON Schema bundle + OWL ontology export coverage gate (mirrors
+    `check_archimate_export_coverage`, the ADR-0036/ADR-0045 precedent).
+
+    The schema/ontology exporters (`tools/exports/schema_bundle.py`,
+    `tools/exports/ontology.py`) project every entity into a JSON Schema `$defs`
+    entry and an `owl:Class`. This check confirms each emitted export carries an
+    entry for every declared entity, so an export that silently drops one is
+    caught.
+
+    Behaviour (mirrors the ArchiMate check):
+
+    - If an export file is absent (fresh clone / no export run yet), emit a
+      WARNING, not a defect — the validator must still PASS on a clean clone so
+      it can run as a pre-commit gate.
+    - If present, every declared entity id must appear (as a `$defs` key in the
+      bundle / as an `owl:Class` IRI ending in the entity id in the ontology). A
+      miss is a defect.
+
+    Paths override via `OPENIM_SCHEMA` / `OPENIM_ONTOLOGY` (defaults
+    `dist/exports/openim-schema.json` and `dist/exports/openim.ttl`). The check
+    parses the files with regex — it does not import the exporter, so it runs
+    without `tools/exports/` on sys.path (mirrors the standalone-parse idiom).
+    """
+    import os
+    declared = _declared_entity_ids()
+
+    # --- JSON Schema bundle ---
+    schema_path = Path(os.environ.get(
+        "OPENIM_SCHEMA", REPO / "dist" / "exports" / "openim-schema.json"))
+    if not schema_path.is_file():
+        rel = (schema_path.relative_to(REPO)
+               if schema_path.is_relative_to(REPO) else schema_path)
+        warn(f"check_schema_ontology_export_coverage: {rel} absent — run "
+             f"`python tools/exports/schema_bundle.py --out "
+             f"dist/exports/openim-schema.json` first")
+    else:
+        text = schema_path.read_text(encoding="utf-8")
+        # `$defs` keys are entity ids, emitted as `"E-NN": {`.
+        key_re = re.compile(r'"((?:' + pack_registry.PREFIX_ALT + r')-\d{2})"\s*:\s*\{')
+        present = {m.group(1) for m in key_re.finditer(text)}
+        for missing in sorted(declared - present):
+            defect(f"check_schema_ontology_export_coverage: {missing} declared "
+                   f"in the model has no $defs entry in the JSON Schema bundle "
+                   f"(the export's coverage assertion must pass)")
+
+    # --- OWL ontology ---
+    onto_path = Path(os.environ.get(
+        "OPENIM_ONTOLOGY", REPO / "dist" / "exports" / "openim.ttl"))
+    if not onto_path.is_file():
+        rel = (onto_path.relative_to(REPO)
+               if onto_path.is_relative_to(REPO) else onto_path)
+        warn(f"check_schema_ontology_export_coverage: {rel} absent — run "
+             f"`python tools/exports/ontology.py --out dist/exports/openim.ttl` "
+             f"first")
+    else:
+        text = onto_path.read_text(encoding="utf-8")
+        # Entity classes are emitted as `openim:E-NN a owl:Class` (prefixed) or
+        # as the full IRI `.../ontology/E-NN`. Match the prefixed-name form,
+        # which rdflib's Turtle serialiser uses for the OpenIM namespace.
+        cls_re = re.compile(r"openim:((?:" + pack_registry.PREFIX_ALT + r")-\d{2})\b")
+        present = {m.group(1) for m in cls_re.finditer(text)}
+        for missing in sorted(declared - present):
+            defect(f"check_schema_ontology_export_coverage: {missing} declared "
+                   f"in the model has no owl:Class in the OWL ontology export "
+                   f"(the export's coverage assertion must pass)")
+
+
+def _full_relation_edge_set(em: "object", parse_attribute_tables) -> tuple[
+        set[tuple[str, str]], list[tuple[str, str]]]:
+    """Derive the FULL parseable edge set from the parsed entity model.
+
+    Post-Item-2 (`fk_targets`, additive on `exports.model_parse.Attribute`):
+    a non-empty `fk_targets` list covers every FK notation alike — a normal
+    single-target FK, either self-FK notation (the literal `FK -> self` and
+    the id-notation `FK -> <own-entity-id>`), and a polymorphic brace-set.
+    `fk_target` alone (the Item-1-era set) silently drops self and
+    polymorphic edges — that is exactly the D7 carve-out this item ends.
+
+    Returns `(fk_edges, specialises_edges)`:
+      - `fk_edges` — `{(entity_id, column_name)}` for every column with a
+        resolved FK target (any notation).
+      - `specialises_edges` — `[(child_entity_id, parent_entity_id)]` for
+        every `Specialises` line.
+    """
+    fk_edges: set[tuple[str, str]] = set()
+    for e in em.entities:
+        for a in parse_attribute_tables(e):
+            if a.fk_targets:
+                fk_edges.add((e.id, a.name))
+    specialises_edges = [(e.id, e.specialises) for e in em.entities if e.specialises]
+    return fk_edges, specialises_edges
+
+
+def _check_relation_bidirectional_coverage(
+        rel: "object",
+        fk_edges: set[tuple[str, str]],
+        specialises_edges: list[tuple[str, str]]) -> None:
+    """D7 (Item 5): bidirectional coverage over the FULL edge set.
+
+    Every parseable edge (FK column in any notation, plus every Specialises
+    line) binds to exactly one declared verb, AND every declared verb binds
+    at least one real edge — including the self/polymorphic-only verbs the
+    Item-1 orphan-verb direction carved out (D7: "re-verified at Item 5 —
+    post-Item-2 — carve-out ends here").
+    """
+    fk_bound: dict[tuple[str, str], list[str]] = {}
+    for b in rel.bindings:
+        if b.column is not None:
+            fk_bound.setdefault((b.entity, b.column), []).append(b.verb)
+
+    for edge in sorted(fk_edges - set(fk_bound)):
+        defect(f"check_relation_coverage: edge {edge[0]}.{edge[1]} is not "
+               f"bound to any verb in model/relations.md (D7 coverage)")
+    for edge, verbs in sorted(fk_bound.items()):
+        if len(verbs) > 1:
+            defect(f"check_relation_coverage: edge {edge[0]}.{edge[1]} is "
+                   f"bound to more than one verb: {verbs}")
+
+    spec_bound = {b.entity for b in rel.bindings if b.is_specialises}
+    for child, _parent in specialises_edges:
+        if child not in spec_bound:
+            defect(f"check_relation_coverage: {child} Specialises line is "
+                   f"not bound to a verb in model/relations.md (D7 coverage)")
+
+    bound_verbs = {b.verb for b in rel.bindings}
+    for lpg in sorted(rel.verbs):
+        if lpg not in bound_verbs:
+            defect(f"check_relation_coverage: verb {lpg} binds no edge at "
+                   f"all (orphan verb — D7 carve-out ends at Item 5)")
+
+
+def _check_relation_inverse_bijectivity(rel: "object") -> None:
+    """Inverse consistency + bijectivity (Item 5 part b).
+
+    Every verb declares a non-empty inverse (consistency); no two verbs
+    claim the same inverse, and no inverse collides with a declared forward
+    verb name (bijectivity — the vocabulary's inverse names are traversed
+    both ways at query time and are never themselves separately bound).
+    """
+    seen_inverse: dict[str, str] = {}
+    for lpg in sorted(rel.verbs):
+        v = rel.verbs[lpg]
+        if not v.inverse:
+            defect(f"check_relation_coverage: verb {lpg} declares no inverse")
+            continue
+        if v.inverse in seen_inverse and seen_inverse[v.inverse] != lpg:
+            defect(f"check_relation_coverage: inverse {v.inverse} is "
+                   f"claimed by both {lpg} and {seen_inverse[v.inverse]} "
+                   f"(not a bijection)")
+        else:
+            seen_inverse[v.inverse] = lpg
+        if v.inverse in rel.verbs:
+            defect(f"check_relation_coverage: inverse {v.inverse} of {lpg} "
+                   f"collides with a declared forward verb name")
+
+
+def check_relation_coverage(
+        em: "object | None" = None, repo_root: Path | None = None) -> None:
+    """Relation-vocabulary validator gate (Item 5 — D7 bidirectional coverage
+    + inverse bijectivity, D8 model-absent-vocabulary defect).
+
+    Reuses the two SSOT parsers exclusively — never re-parses ad hoc (OIM-212
+    ruling): `diagrams.parser.entities` + `exports.model_parse` for the
+    entity/attribute side (the same parsers `_load_parser_models` already
+    uses elsewhere in this file), and `exports.relations_parse` (the Item-1
+    `model/relations.md` parse helper) for the vocabulary side.
+
+    `repo_root` mirrors the `check_fibo_curie_resolvability(reference_path=…)`
+    override idiom — defaults to the module's `REPO`, overridable so tests can
+    point the check at an isolated fixture tree without mutating the live repo
+    (the no-mutate-restore lesson, OIM-201).
+
+    (c) D8 — `model/relations.md` absent while the entity model exists is
+    itself a validator defect (the vocabulary is mandatory once entities are
+    declared) — distinct from the exports-layer graceful degrade in
+    `relations_parse.load_relations`, which is about emitter behaviour, not
+    validator judgement (`relations_parse`'s own docstring: "whether an
+    absent file is itself a model defect is the validator's judgment, not
+    this parser's").
+    """
+    root = repo_root if repo_root is not None else REPO
+    relations_path = root / "model" / "relations.md"
+    entity_dir = root / "model" / "entities"
+    if not relations_path.is_file():
+        if entity_dir.is_dir():
+            defect("check_relation_coverage: model/relations.md is absent "
+                   "while the entity model exists (D8) — the relation "
+                   "vocabulary is mandatory once entities are declared")
+        return
+
+    import sys as _sys
+    tools_path = str(REPO / "tools")
+    if tools_path not in _sys.path:
+        _sys.path.insert(0, tools_path)
+    try:
+        from exports.model_parse import parse_attribute_tables
+        from exports.relations_parse import parse_relations
+    except ImportError:
+        warn("check_relation_coverage: tools/exports/ not importable — "
+             "check skipped")
+        return
+
+    try:
+        rel = parse_relations(root)
+    except Exception as exc:  # noqa: BLE001
+        defect(f"check_relation_coverage: model/relations.md failed to "
+               f"parse: {type(exc).__name__}: {exc}")
+        return
+
+    if em is None:
+        try:
+            from diagrams.parser.entities import parse_entities
+            em = parse_entities(root)
+        except ImportError:
+            warn("check_relation_coverage: tools/diagrams/parser/ not "
+                 "importable — coverage check skipped")
+            return
+        except Exception as exc:  # noqa: BLE001
+            warn(f"check_relation_coverage: entity parser raised "
+                 f"{type(exc).__name__}: {exc} — coverage check skipped")
+            return
+
+    fk_edges, specialises_edges = _full_relation_edge_set(em, parse_attribute_tables)
+    _check_relation_bidirectional_coverage(rel, fk_edges, specialises_edges)
+    _check_relation_inverse_bijectivity(rel)
 
 
 # --- structural HTML helpers, stdlib only --- #
@@ -1963,6 +2686,12 @@ def main() -> int:
         check_backlog_prose_counts(counts)
     check_per_bd_sd_annotations(counts)
     check_per_row_bd_tables(counts)
+    # OIM-63 — the two unscanned-count-surface checks (diagram subtotals +
+    # BD-README SD-count prose).
+    check_business_domain_map_subtotals(counts)
+    check_bd_readme_sd_count(counts)
+    # OIM-213 — FIBO-curie resolvability (model-level, runs in distributions).
+    check_fibo_curie_resolvability()
     check_ownership_map()
     check_ownership_map_producing_side()
     check_consuming_side_partitions()
@@ -1979,6 +2708,12 @@ def main() -> int:
         check_two_sided_edges(_em, _sdm)
     check_deferral_language()
     check_diagram_render_coverage()
+    check_archimate_export_coverage()
+    check_schema_ontology_export_coverage()
+    # Item 5 (oim-5b3t) — relation-vocabulary bidirectional coverage +
+    # inverse bijectivity (D7) + model-absent-vocabulary defect (D8). Reuses
+    # the entity model already parsed above when available.
+    check_relation_coverage(parser_models[0] if parser_models is not None else None)
 
     print(f"OpenIM structural-integrity validator — "
           f"{len(counts)} Business Domains, {sum(counts.values())} Service Domains")

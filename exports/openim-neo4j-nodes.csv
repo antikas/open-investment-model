@@ -1,0 +1,87 @@
+id:ID(OpenIM),name:string,pack:string,owning_service_domain:string,fibo_class:string,specialises:string,:LABEL
+DR-01,Listed Derivative,derivatives,SD-13.1,,E-02,Entity
+DR-02,OTC Derivative,derivatives,SD-13.1,,E-02,Entity
+DR-03,Master Agreement & Collateral Terms,derivatives,SD-14.9,,,Entity
+DR-04,Margin & Collateral Balance,derivatives,SD-11.4,,,Entity
+DR-05,Clearing Relationship,derivatives,SD-14.9,,,Entity
+E-01,Legal Entity,core,SD-13.2,cmns-org:LegalEntity,,Entity
+E-02,Instrument / Asset,core,SD-13.1,fibo-fbc-fi-fi:FinancialInstrument,,Entity
+E-03,Portfolio / Mandate,core,SD-05.2;SD-01.2;SD-05.1,fibo-fbc-pas-caa:Account,,Entity
+E-04,Holding / Position,core,SD-12.1;SD-12.2;SD-12.10;SD-12.9;SD-16.2;SD-16.3;SD-16.4;SD-14.7,fibo-sec-fund-fund:FundHolding,,Entity
+E-05,Transaction,core,SD-12.1,fibo-fbc-pas-caa:AccountingTransaction,,Entity
+E-06,Cash Flow Event,core,SD-12.1,fibo-fnd-acc-cur:MonetaryAmount,,Entity
+E-07,Valuation,core,SD-08.1;SD-08.2;SD-08.3;SD-12.9,,,Entity
+E-08,Price & Market Data,core,SD-13.4,fibo-ind-ir-ir,,Entity
+E-09,Asset Class,core,SD-13.4,,,Entity
+E-10,Benchmark / Index,core,SD-13.5,fibo-ind-mkt-bas,,Entity
+E-11,Classification Type & Value,core,SD-13.7,,,Entity
+E-12,Classification History,core,SD-13.7,,,Entity
+E-13,Entity Alias,core,SD-13.1;SD-13.2;SD-13.3,,,Entity
+E-14,External Identifier,core,SD-13.1;SD-13.2;SD-13.3,fibo-be-le-lei:LegalEntityIdentifier,,Entity
+E-15,Document Metadata,core,SD-13.11,,,Entity
+E-16,Risk Limit,core,SD-07.7,,,Entity
+E-17,Scenario,core,SD-07.6,,,Entity
+E-18,Limit Breach,core,SD-07.7,,,Entity
+E-19,Risk Measurement,core,SD-07.1;SD-07.2;SD-07.3;SD-07.4;SD-07.6;SD-07.8;SD-07.7,,,Entity
+E-20,Performance Result,core,SD-09.1,,,Entity
+E-21,ESG Measurement,core,SD-13.9,,,Entity
+E-22,Metric Definition,core,SD-13.8,,,Entity
+E-23,Extraction Record,core,SD-13.6,,,Entity
+E-24,Reconciliation Break,core,SD-12.10,,,Entity
+E-25,Account,core,SD-12.5;SD-11.7;SD-15.4,,,Entity
+E-26,Collateral Position,core,SD-11.5,,,Entity
+E-27,Liability Profile,core,SD-01.7;SD-01.8,,,Entity
+E-28,Risk Budget,core,SD-01.9,,,Entity
+E-29,Allocation Plan,core,SD-01.4;SD-01.6;SD-01.10,,,Entity
+E-30,Goal,core,SD-01.14,,,Entity
+E-31,Goal Progress Measurement,core,SD-09.5,,,Entity
+E-32,Tax Lot,core,SD-12.17,,,Entity
+E-33,Financial Plan,core,SD-15.15,,,Entity
+E-34,Investment Authorisation,core,SD-03.9;SD-04.5,,,Entity
+E-35,Complaint Record,core,SD-15.16,,,Entity
+E-36,Oversight Exception,core,SD-12.16,,,Entity
+E-37,ESG Compliance Result,core,SD-10.9,,,Entity
+E-38,Internal Credit Rating,core,SD-02.3,,,Entity
+FO-01,Fund Product,fund-operations,SD-13.3,fibo-sec-fund-fund:CollectiveInvestmentVehicle,E-02,Entity
+FO-02,Share / Unit Class,fund-operations,SD-13.3,fibo-sec-fund-fund:CollectiveInvestmentVehicle,E-02,Entity
+FO-03,Investor Unitholding,fund-operations,SD-12.15,,E-04,Entity
+FO-04,Dealing Order,fund-operations,SD-12.15,,E-05,Entity
+FO-05,Fund Distribution Event,fund-operations,SD-12.7,,E-05,Entity
+FO-06,Fee Accrual,fund-operations,SD-12.11,,E-07,Entity
+FO-07,Investor Tax Statement,fund-operations,SD-17.4,,E-15,Entity
+FO-08,Service-Provider Appointment,fund-operations,SD-17.8,,,Entity
+FO-09,Omnibus Account,fund-operations,SD-15.4,,E-25,Entity
+FO-10,ETF Creation/Redemption Order,fund-operations,SD-12.15,,E-05,Entity
+FO-11,ETF Creation Basket (Portfolio Composition File),fund-operations,SD-12.9,,,Entity
+FO-12,ETF Authorised-Participant Agreement,fund-operations,SD-12.15,,,Entity
+PB-01,Listed Equity,public-markets,SD-13.1,,E-02,Entity
+PB-02,Debt Instrument,public-markets,SD-13.1,,E-02,Entity
+PB-03,Order,public-markets,SD-06.1,,E-05,Entity
+PB-04,Execution,public-markets,SD-06.2,,E-05,Entity
+PB-05,Allocation,public-markets,SD-06.5,,E-05,Entity
+PB-06,Settlement Instruction,public-markets,SD-12.4,,E-05,Entity
+PB-07,Corporate Action,public-markets,SD-12.6,,E-05,Entity
+PB-08,Income Schedule,public-markets,SD-13.1,,E-02,Entity
+PB-09,Index Constituent,public-markets,SD-13.5,,E-10,Entity
+PB-10,Securities Loan,public-markets,SD-12.13,,E-04,Entity
+PB-11,Proxy Vote,public-markets,SD-12.12,,E-05,Entity
+PM-01,Fund & Vehicle,private-markets,SD-13.3,,E-02,Entity
+PM-02,GP / Management Company,private-markets,SD-13.2,,E-01,Entity
+PM-03,Fund Administrator,private-markets,SD-13.2,,E-01,Entity
+PM-04,Portfolio Company,private-markets,SD-13.2,,E-01,Entity
+PM-05,Legal Vehicle / SPV,private-markets,SD-13.3,,,Entity
+PM-06,LP Commitment,private-markets,SD-03.5,,,Entity
+PM-07,Capital Call,private-markets,SD-12.8,,E-05,Entity
+PM-08,Distribution,private-markets,SD-12.8,,E-05,Entity
+PM-09,Fund Investment,private-markets,SD-12.1,,E-04,Entity
+PM-10,Fund Terms,private-markets,SD-13.3,,,Entity
+PM-11,Manager Succession Event,private-markets,SD-13.2,,,Entity
+PM-12,Benchmark Cross-Reference,private-markets,SD-13.5,,E-10,Entity
+PM-13,Investor Capital Account,private-markets,SD-12.9,,E-03,Entity
+PM-14,Direct Loan,private-markets,SD-04.12,,E-02,Entity
+PM-15,Deal / Investment Opportunity,private-markets,SD-04.1,,,Entity
+RA-01,Direct Real Asset,real-assets,SD-13.1,,E-02,Entity
+RA-02,Asset Operating Record,real-assets,SD-04.10,,,Entity
+RA-03,Lease / Tenancy,real-assets,SD-04.10;SD-14.9,,,Entity
+RA-04,Development Project,real-assets,SD-04.11,,,Entity
+RA-05,Asset Appraisal,real-assets,SD-08.3,,E-07,Entity

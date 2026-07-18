@@ -28,6 +28,8 @@ from ..parser.service_domains import ServiceDomainModel, BusinessDomain
 from ..parser.entities import EntityModel
 from ..graph.build import GraphBundle, CapabilityEdge
 
+import pack_registry
+
 
 # Office colour palette (subdued, accessible).
 _OFFICE_COLOURS = {
@@ -340,14 +342,8 @@ def entity_erd_dot(entity_model: EntityModel) -> str:
         '  edge [fontname="Helvetica,Arial,sans-serif", fontsize=9, '
         'color="#5b7aa6", arrowsize=0.6];',
     ]
-    pack_colours = {
-        "core": ("#dfe8f7", "#5b7aa6"),
-        "private-markets": ("#e9e2f0", "#7a5b9b"),
-        "public-markets": ("#e5efe1", "#5b8a48"),
-        "derivatives": ("#fbf0d8", "#a07b2c"),
-        "real-assets": ("#f7dfe0", "#a65b5b"),
-        "fund-operations": ("#fef3e2", "#b07d2a"),
-    }
+    # Pack render palette single-sourced from the pack registry (OIM-211).
+    pack_colours = pack_registry.PACK_COLOURS
     by_pack = entity_model.by_pack()
     for pack, ents in by_pack.items():
         fill, stroke = pack_colours.get(pack, ("#eeeeee", "#888888"))

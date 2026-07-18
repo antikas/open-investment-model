@@ -105,7 +105,7 @@ The manager pays the intermediary for maintaining the per-investor accounts and 
 **Partial — structural alignment at the account and party level; the servicing-fee terms, look-through gap, and omnibus register mechanics are OpenIM.**
 
 - `fibo-fbc-pas-caa:Account` — FIBO's generic Account concept aligns to FO-09's account-relationship record at the conceptual level. FO-09 specialises E-25 Account, which in turn aligns to `fibo-fbc-pas-caa:Account`.
-- FIBO's `fibo-be-le-lp:LegalEntity` aligns to the `intermediary_entity_id` FK → E-01 relationship — the intermediary is a Legal Entity in the distributor / nominee role.
+- `cmns-org:LegalEntity` (the OMG Commons base class FIBO imports and refines) aligns to the `intermediary_entity_id` FK → E-01 relationship — the intermediary is a Legal Entity in the distributor / nominee role.
 
 What FIBO does not model, and what FO-09 adds:
 

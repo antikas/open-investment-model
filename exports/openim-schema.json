@@ -33,6 +33,14 @@
           "type": "string",
           "description": "Declared type: varchar (FK → self)."
         },
+        "related_entity_id": {
+          "type": "string",
+          "description": "Declared type: varchar (FK → self)."
+        },
+        "party_relationship_type": {
+          "type": "string",
+          "description": "Declared type: varchar."
+        },
         "known_aliases": {
           "type": "array",
           "items": {
@@ -150,6 +158,10 @@
         "managed_by_entity_id": {
           "description": "Foreign key to E-01 (declared type: varchar (FK → E-01)).",
           "$ref": "#/$defs/E-01"
+        },
+        "governing_plan_id": {
+          "description": "Foreign key to E-29 (declared type: varchar (FK → E-29)).",
+          "$ref": "#/$defs/E-29"
         },
         "inception_date": {
           "type": "string",
@@ -719,7 +731,7 @@
         },
         "subject_id": {
           "type": "string",
-          "description": "Declared type: varchar."
+          "description": "Declared type: varchar (FK → {E-01, E-02, E-03, E-04, PM-01, PM-09})."
         },
         "filing_date": {
           "type": "string",
@@ -3898,7 +3910,7 @@
         },
         "target_id": {
           "type": "string",
-          "description": "Declared type: varchar."
+          "description": "Declared type: varchar (FK → {PM-04, PM-01})."
         },
         "investment_type": {
           "type": "string",

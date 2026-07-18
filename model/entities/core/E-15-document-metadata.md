@@ -13,7 +13,7 @@ Much of what an institutional investor knows arrives as documents — and in pri
 | `document_id` | varchar | Primary key. |
 | `document_type` | varchar | Manager / quarterly report, capital-account statement, LPA, side letter, IC paper, capital-call notice, trade confirmation, prospectus, AGM minutes, etc. |
 | `subject_type` | varchar | What the document concerns — `legal_entity` / `instrument` / `portfolio` / `holding` / `fund` / `fund_investment`. |
-| `subject_id` | varchar | The durable identifier of the record the document concerns. |
+| `subject_id` | varchar (FK → {E-01, E-02, E-03, E-04, PM-01, PM-09}) | The durable identifier of the record the document concerns. |
 | `filing_date` | date | When the document was filed or received. |
 | `as_of_date` | date | The date the document's content is *as of* (a Q1 report filed in Q2 is as-of Q1). |
 | `storage_path` | varchar | Where the document is held. |

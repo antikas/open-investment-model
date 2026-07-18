@@ -13,9 +13,12 @@ from pathlib import Path
 
 from .errors import ParseError
 
+import pack_registry
+
 
 _ROW_RE = re.compile(r"^\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*$")
-_ENTITY_ID_RE = re.compile(r"\b(E|PM|PB|DR|RA|FO)-(\d{2})\b")
+# Entity-id prefix alternation single-sourced from the pack registry (OIM-211).
+_ENTITY_ID_RE = re.compile(r"\b(" + pack_registry.PREFIX_ALT + r")-(\d{2})\b")
 _SD_ID_RE = re.compile(r"\bSD-(\d{2})\.(\d+)\b")
 
 

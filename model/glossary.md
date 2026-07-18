@@ -38,6 +38,8 @@ Conventions: alphabetical; **bold** the term; cross-references with *see also*; 
 
 **Capital call** — A notice from a GP to its LPs requesting drawdown of committed capital, with amount, deadline, purpose and account details. *See* [PM-07 Capital Call](entities/specialisations/private-markets/PM-07-capital-call.md).
 
+**Capital introduction** — A prime broker's service connecting a hedge-fund manager with prospective institutional investors/allocators; the hedge-fund manager's primary capital-raising channel, distinct from the retail/platform/consultant channels a third-party asset manager uses.
+
 **Carried interest (carry)** — The GP's share of fund profits, typically 20% above a hurdle rate. Paid through the waterfall.
 
 **Cash flow event** — A dated movement of cash — call, distribution, fee, interest, dividend. The granular record performance is computed from. *See* [E-06 Cash Flow Event](entities/core/E-06-cash-flow-event.md).

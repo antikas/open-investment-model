@@ -1,0 +1,199 @@
+{
+  "_meta": {
+    "purpose": "Resolvable-curie reference for check_fibo_curie_resolvability in validate.py. Every `fibo-*:Class` / `cmns-*:Class` class curie AND every `fibo-*:objectProperty` / `cmns-*:objectProperty` object-property curie asserted anywhere under model/ must appear here (classes under `classes`, object properties under `object_properties`), so a fabricated FIBO citation — class or property — fails the validator. The validator stays deterministic and offline: it checks against THIS list, never the network.",
+    "source": "FIBO: https://github.com/edmcouncil/fibo (master), published at https://spec.edmcouncil.org/fibo/ontology/ . OMG Commons: https://www.omg.org/spec/Commons/ .",
+    "verified": "2026-07-03",
+    "verification_method": "Each class name below was confirmed as an owl:Class declaration in the named module's RDF, fetched from the edmcouncil/fibo master branch (or the OMG Commons published RDF for cmns-* prefixes). Seeded from the OIM-213 repo-wide sweep: every curie then asserted under model/ was resolved KEEP / REMAP / DE-SPECIFY against the live source; the KEEP set (plus the classes named adjacent to a verified curie in model/fibo-alignment.md) is this list.",
+    "object_properties_verified": "2026-07-18",
+    "object_properties_verification_method": "For the F2 relation-verb FIBO alignment (model/fibo-alignment.md `## Relation-verb alignment`), each object property below was confirmed as an owl:ObjectProperty declaration in the named module's RDF, fetched from the edmcouncil/fibo master branch. Modules fetched and confirmed: FND/Relations/Relations (isIssuedBy, isHeldBy, isGeneratedBy — all present, no domain/range restriction, generic relation super-properties); FBC/FinancialInstruments/FinancialInstruments (hasUnderlier, range Underlier); SEC/Funds/Funds (isSubFundOf, domain/range PooledFund); FND/Agreements/Contracts (hasCounterparty, domain Contract, range Counterparty); BE/OwnershipAndControl/CorporateControl (isSubsidiaryOf domain Subsidiary range ControllingAffiliate; isAffiliateOf domain/range Affiliate). Only the properties actually cited by the alignment are listed (the reference asserts verification of what is cited, not an inventory of every property in each module). A relationship with no verifiable FIBO object property is listed openim-only in the alignment, never given an invented curie.",
+    "maintenance": "To cite a NEW FIBO or Commons class OR object property in model/: (1) resolve it against the live published ontology first (fetch the module RDF from edmcouncil/fibo master, or the ontology browser at spec.edmcouncil.org, and confirm the owl:Class / owl:ObjectProperty declaration exists); (2) add the class name under `classes`, or the property local-name under `object_properties`, for its prefix here (add the prefix block, with its namespace and module path, if the prefix is new); (3) re-run the validator. Never add a name you have not resolved against the live source — this file asserts verification, not intention. If FIBO removes or relocates a name already listed here, the citation in model/ is what must change (re-verify, then update both).",
+    "known_non_checked_forms": "Prefix-only module mentions (e.g. `fibo-ind-ir-ir` with no :Class) and deliberately non-specific forms (e.g. `fibo-cae-...:CorporateAction`) assert a module or a concept area, not a resolvable curie, and are not checked. Class curies are UpperCamelCase local names; object-property curies are lowerCamelCase local names — the two are gated against `classes` and `object_properties` respectively."
+  },
+  "prefixes": {
+    "fibo-be-le-cb": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/",
+      "module": "BE/LegalEntities/CorporateBodies.rdf",
+      "classes": [
+        "Corporation",
+        "RegistrationIdentifier",
+        "RegistrationIdentifierScheme"
+      ]
+    },
+    "fibo-be-le-lei": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/",
+      "module": "BE/LegalEntities/LEIEntities.rdf",
+      "classes": [
+        "LEIRegisteredEntity",
+        "LegalEntityIdentifier",
+        "LegalEntityIdentifierScheme"
+      ]
+    },
+    "fibo-be-le-lp": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/",
+      "module": "BE/LegalEntities/LegalPersons.rdf",
+      "classes": [
+        "SpecialPurposeVehicle"
+      ]
+    },
+    "fibo-be-oac-cctl": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/CorporateControl/",
+      "module": "BE/OwnershipAndControl/CorporateControl.rdf",
+      "classes": [],
+      "object_properties": [
+        "isAffiliateOf",
+        "isSubsidiaryOf"
+      ]
+    },
+    "fibo-be-ptr-ptr": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/BE/Partnerships/Partnerships/",
+      "module": "BE/Partnerships/Partnerships.rdf",
+      "classes": [
+        "GeneralPartner",
+        "LimitedPartner",
+        "LimitedPartnership",
+        "Partnership"
+      ]
+    },
+    "fibo-der-drc-bsc": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/DER/DerivativesContracts/DerivativesBasics/",
+      "module": "DER/DerivativesContracts/DerivativesBasics.rdf",
+      "classes": [
+        "CashflowTerms",
+        "DerivativesClearingOrganization"
+      ]
+    },
+    "fibo-fbc-fi-fi": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/",
+      "module": "FBC/FinancialInstruments/FinancialInstruments.rdf",
+      "classes": [
+        "CashInstrument",
+        "CommodityInstrument",
+        "CurrencyInstrument",
+        "DebtInstrument",
+        "DerivativeInstrument",
+        "EquityInstrument",
+        "FinancialInstrument",
+        "FinancialInstrumentIdentifier",
+        "Issuer"
+      ],
+      "object_properties": [
+        "hasUnderlier"
+      ]
+    },
+    "fibo-fbc-pas-caa": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/",
+      "module": "FBC/ProductsAndServices/ClientsAndAccounts.rdf",
+      "classes": [
+        "Account",
+        "AccountHolder",
+        "AccountingTransaction",
+        "CustomerAccount"
+      ]
+    },
+    "fibo-fnd-acc-cur": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/",
+      "module": "FND/Accounting/CurrencyAmount.rdf",
+      "classes": [
+        "MonetaryAmount"
+      ]
+    },
+    "fibo-fnd-agr-ctr": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Contracts/",
+      "module": "FND/Agreements/Contracts.rdf",
+      "classes": [],
+      "object_properties": [
+        "hasCounterparty"
+      ]
+    },
+    "fibo-fnd-arr-lif": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Lifecycles/",
+      "module": "FND/Arrangements/Lifecycles.rdf",
+      "classes": [
+        "LifecycleStage"
+      ]
+    },
+    "fibo-fnd-dt-fd": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/",
+      "module": "FND/DatesAndTimes/FinancialDates.rdf",
+      "classes": [
+        "CalculatedDate",
+        "RelativeDate"
+      ]
+    },
+    "fibo-fnd-rel-rel": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/FND/Relations/Relations/",
+      "module": "FND/Relations/Relations.rdf",
+      "classes": [],
+      "object_properties": [
+        "isGeneratedBy",
+        "isHeldBy",
+        "isIssuedBy"
+      ]
+    },
+    "fibo-ind-mkt-bas": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/IND/MarketIndices/BasketIndices/",
+      "module": "IND/MarketIndices/BasketIndices.rdf",
+      "classes": [
+        "CreditIndex",
+        "EquityIndex",
+        "ReferenceIndex"
+      ]
+    },
+    "fibo-sec-dbt-bnd": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/SEC/Debt/Bonds/",
+      "module": "SEC/Debt/Bonds.rdf",
+      "classes": [
+        "Bond"
+      ]
+    },
+    "fibo-sec-eq-eq": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/SEC/Equities/EquityInstruments/",
+      "module": "SEC/Equities/EquityInstruments.rdf",
+      "classes": [
+        "CommonShare",
+        "Custodian",
+        "DividendSchedule",
+        "PreferredShare"
+      ]
+    },
+    "fibo-sec-fund-fund": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/SEC/Funds/Funds/",
+      "module": "SEC/Funds/Funds.rdf",
+      "classes": [
+        "CollectiveInvestmentVehicle",
+        "FundAdministrator",
+        "FundHolding",
+        "FundManager",
+        "FundPosition",
+        "FundUnit",
+        "PrivateEquityFund",
+        "RealEstateInvestmentTrust"
+      ],
+      "object_properties": [
+        "isSubFundOf"
+      ]
+    },
+    "fibo-sec-sec-pls": {
+      "namespace": "https://spec.edmcouncil.org/fibo/ontology/SEC/Securities/Pools/",
+      "module": "SEC/Securities/Pools.rdf",
+      "classes": [
+        "PoolConstituent"
+      ]
+    },
+    "cmns-doc": {
+      "namespace": "https://www.omg.org/spec/Commons/Documents/",
+      "module": "OMG Commons Documents.rdf",
+      "classes": [
+        "Document"
+      ]
+    },
+    "cmns-org": {
+      "namespace": "https://www.omg.org/spec/Commons/Organizations/",
+      "module": "OMG Commons Organizations.rdf",
+      "classes": [
+        "LegalEntity",
+        "LegalPerson"
+      ]
+    }
+  }
+}

@@ -110,6 +110,8 @@ openim-shapes:E-01Shape a sh:NodeShape ;
         <https://w3id.org/openim/shapes/E-01Shape/known_aliases>,
         <https://w3id.org/openim/shapes/E-01Shape/lei>,
         <https://w3id.org/openim/shapes/E-01Shape/parent_entity_id>,
+        <https://w3id.org/openim/shapes/E-01Shape/party_relationship_type>,
+        <https://w3id.org/openim/shapes/E-01Shape/related_entity_id>,
         <https://w3id.org/openim/shapes/E-01Shape/status> ;
     sh:targetClass openim:E-01 .
 
@@ -132,6 +134,7 @@ openim-shapes:E-03Shape a sh:NodeShape ;
     sh:property <https://w3id.org/openim/shapes/E-03Shape/asset_class>,
         <https://w3id.org/openim/shapes/E-03Shape/base_currency>,
         <https://w3id.org/openim/shapes/E-03Shape/benchmark_id>,
+        <https://w3id.org/openim/shapes/E-03Shape/governing_plan_id>,
         <https://w3id.org/openim/shapes/E-03Shape/inception_date>,
         <https://w3id.org/openim/shapes/E-03Shape/managed_by_entity_id>,
         <https://w3id.org/openim/shapes/E-03Shape/mandate_objective>,
@@ -1925,6 +1928,18 @@ openim-shapes:RA-05Shape a sh:NodeShape ;
     sh:name "parent_entity_id" ;
     sh:path <https://w3id.org/openim/ontology/E-01#parent_entity_id> .
 
+<https://w3id.org/openim/shapes/E-01Shape/party_relationship_type> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "party_relationship_type" ;
+    sh:path <https://w3id.org/openim/ontology/E-01#party_relationship_type> .
+
+<https://w3id.org/openim/shapes/E-01Shape/related_entity_id> a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:name "related_entity_id" ;
+    sh:path <https://w3id.org/openim/ontology/E-01#related_entity_id> .
+
 <https://w3id.org/openim/shapes/E-01Shape/status> a sh:PropertyShape ;
     sh:datatype xsd:string ;
     sh:maxCount 1 ;
@@ -2008,6 +2023,12 @@ openim-shapes:RA-05Shape a sh:NodeShape ;
     sh:maxCount 1 ;
     sh:name "benchmark_id" ;
     sh:path <https://w3id.org/openim/ontology/E-03#benchmark_id> .
+
+<https://w3id.org/openim/shapes/E-03Shape/governing_plan_id> a sh:PropertyShape ;
+    sh:class openim:E-29 ;
+    sh:maxCount 1 ;
+    sh:name "governing_plan_id" ;
+    sh:path <https://w3id.org/openim/ontology/E-03#governing_plan_id> .
 
 <https://w3id.org/openim/shapes/E-03Shape/inception_date> a sh:PropertyShape ;
     sh:datatype xsd:date ;

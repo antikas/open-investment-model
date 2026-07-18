@@ -9,6 +9,9 @@ A co-owned entity fixture — two co-equal owners — for the parser tests.
 | Column | Type | Definition |
 |---|---|---|
 | `coowned_id` | varchar | Primary key. |
+| `parent_id` | varchar (FK → self) | Self-referential parent (literal notation). |
+| `corrects_id` | varchar (FK → E-27, self-ref) | Self-referential correction (id notation). |
+| `subject_id` | varchar (FK → {E-09, E-99, PM-99}) | Polymorphic FK across three entity types. |
 
 ## Owned and consumed by
 

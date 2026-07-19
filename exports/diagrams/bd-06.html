@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BD-06 — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>BD-06 — Trading &amp; Execution <span class='tag'>Front</span></h2>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_bd Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 4289.00 392.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 363.3)">
+<title>openim_bd</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-363.3 4259.93,-363.3 4259.93,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2115.56" y="-317.2" font-family="Times New Roman,serif" font-size="14.00" fill="#1f3a5f">BD&#45;06 — Trading &amp; Execution</text>
+<g id="clust1" class="cluster">
+<title>cluster_sd_06_1</title>
+<g id="a_clust1"><a xlink:href="./sd-06.1.html" xlink:title="SD&#45;06.1\\nOrder Management\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2591,-180C2591,-180 3669,-180 3669,-180 3675,-180 3681,-186 3681,-192 3681,-192 3681,-241.5 3681,-241.5 3681,-247.5 3675,-253.5 3669,-253.5 3669,-253.5 2591,-253.5 2591,-253.5 2585,-253.5 2579,-247.5 2579,-241.5 2579,-241.5 2579,-192 2579,-192 2579,-186 2585,-180 2591,-180"/>
+<text xml:space="preserve" text-anchor="middle" x="3130" y="-239.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.1\nOrder Management\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_sd_06_2</title>
+<g id="a_clust2"><a xlink:href="./sd-06.2.html" xlink:title="SD&#45;06.2\\nTrade Execution\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1709,-94C1709,-94 2527,-94 2527,-94 2533,-94 2539,-100 2539,-106 2539,-106 2539,-155.5 2539,-155.5 2539,-161.5 2533,-167.5 2527,-167.5 2527,-167.5 1709,-167.5 1709,-167.5 1703,-167.5 1697,-161.5 1697,-155.5 1697,-155.5 1697,-106 1697,-106 1697,-100 1703,-94 1709,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="2118" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.2\nTrade Execution\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_sd_06_3</title>
+<g id="a_clust3"><a xlink:href="./sd-06.3.html" xlink:title="SD&#45;06.3\\nExecution Venue &amp; Broker Management\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M90,-180C90,-180 1224,-180 1224,-180 1230,-180 1236,-186 1236,-192 1236,-192 1236,-241.5 1236,-241.5 1236,-247.5 1230,-253.5 1224,-253.5 1224,-253.5 90,-253.5 90,-253.5 84,-253.5 78,-247.5 78,-241.5 78,-241.5 78,-192 78,-192 78,-186 84,-180 90,-180"/>
+<text xml:space="preserve" text-anchor="middle" x="657" y="-239.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.3\nExecution Venue &amp; Broker Management\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_sd_06_4</title>
+<g id="a_clust4"><a xlink:href="./sd-06.4.html" xlink:title="SD&#45;06.4\\nBest Execution &amp; Transaction Cost Analysis\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M90,-94C90,-94 1430,-94 1430,-94 1436,-94 1442,-100 1442,-106 1442,-106 1442,-155.5 1442,-155.5 1442,-161.5 1436,-167.5 1430,-167.5 1430,-167.5 90,-167.5 90,-167.5 84,-167.5 78,-161.5 78,-155.5 78,-155.5 78,-106 78,-106 78,-100 84,-94 90,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="760" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.4\nBest Execution &amp; Transaction Cost Analysis\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_sd_06_5</title>
+<g id="a_clust5"><a xlink:href="./sd-06.5.html" xlink:title="SD&#45;06.5\\nTrade Allocation\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1709,-8C1709,-8 2719,-8 2719,-8 2725,-8 2731,-14 2731,-20 2731,-20 2731,-69.5 2731,-69.5 2731,-75.5 2725,-81.5 2719,-81.5 2719,-81.5 1709,-81.5 1709,-81.5 1703,-81.5 1697,-75.5 1697,-69.5 1697,-69.5 1697,-20 1697,-20 1697,-14 1703,-8 1709,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="2214" y="-67.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.5\nTrade Allocation\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_sd_06_6</title>
+<g id="a_clust6"><a xlink:href="./sd-06.6.html" xlink:title="SD&#45;06.6\\nDerivatives &amp; OTC Trade Management\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2647,-94C2647,-94 3698,-94 3698,-94 3704,-94 3710,-100 3710,-106 3710,-106 3710,-155.5 3710,-155.5 3710,-161.5 3704,-167.5 3698,-167.5 3698,-167.5 2647,-167.5 2647,-167.5 2641,-167.5 2635,-161.5 2635,-155.5 2635,-155.5 2635,-106 2635,-106 2635,-100 2641,-94 2647,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="3172.5" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;06.6\nDerivatives &amp; OTC Trade Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<!-- sd_06_1_anchor -->
+<!-- sd_06_2_anchor -->
+<!-- sd_06_1_anchor&#45;&gt;sd_06_2_anchor -->
+<g id="edge1" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2579,-204.78C2488.21,-201.69 1694,-167.5 1694,-167.5 1694,-167.5 1688.4,-143.84 1693.18,-130.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1694.89,-131.5 1696.22,-125.28 1691.3,-129.31 1694.89,-131.5"/>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;sd_06_2_anchor -->
+<g id="edge3" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2579,-204.66C2496.57,-201.11 1802.92,-171.24 1723.41,-167.82"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1723.6,-165.73 1717.51,-167.57 1723.42,-169.92 1723.6,-165.73"/>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;sd_06_2_anchor -->
+<g id="edge4" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2579,-204.47C2495.94,-200.18 1823.76,-171.19 1745.44,-167.82"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1745.6,-165.73 1739.51,-167.57 1745.42,-169.92 1745.6,-165.73"/>
+</g>
+<!-- sd_06_5_anchor -->
+<!-- sd_06_1_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge2" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2579,-201.21C2556,-181.77 2522,-94 2522,-94 2522,-94 1694,-81.5 1694,-81.5 1694,-81.5 1688.4,-57.84 1693.18,-44.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1694.89,-45.5 1696.22,-39.28 1691.3,-43.31 1694.89,-45.5"/>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge18" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2579,-184.35C2566.56,-152.25 2544,-94 2544,-94 2544,-94 1805.61,-82.85 1723.41,-81.61"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1723.54,-79.51 1717.51,-81.52 1723.48,-83.71 1723.54,-79.51"/>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge20" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2592,-180C2586.64,-147.27 2566,-94 2566,-94 2566,-94 1827.61,-82.85 1745.41,-81.61"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1745.54,-79.51 1739.51,-81.52 1745.48,-83.71 1745.54,-79.51"/>
+</g>
+<!-- sd_06_6_anchor -->
+<!-- sd_06_1_anchor&#45;&gt;sd_06_6_anchor -->
+<g id="edge21" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2587,-180C2587,-180 2615,-167.5 2615,-167.5 2615,-167.5 2622.58,-146.77 2630.89,-132.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2632.54,-134.31 2634.15,-128.16 2629.06,-131.96 2632.54,-134.31"/>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;sd_06_6_anchor -->
+<g id="edge22" class="edge">
+<title>sd_06_1_anchor&#45;&gt;sd_06_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2609,-180C2609,-180 2621.94,-174.23 2630.22,-170.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2631,-172.48 2635.62,-168.12 2629.28,-168.65 2631,-172.48"/>
+</g>
+<!-- ext_out_10 -->
+<g id="node46" class="node">
+<title>ext_out_10</title>
+<g id="a_node46"><a xlink:href="./bd-10.html" xlink:title="&#45;&gt; BD&#45;10\\nInvestment Compliance &amp; Guideline Monitoring">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M3980.38,-138C3980.38,-138 3735.62,-138 3735.62,-138 3729.62,-138 3723.62,-132 3723.62,-126 3723.62,-126 3723.62,-114 3723.62,-114 3723.62,-108 3729.62,-102 3735.62,-102 3735.62,-102 3980.38,-102 3980.38,-102 3986.38,-102 3992.38,-108 3992.38,-114 3992.38,-114 3992.38,-126 3992.38,-126 3992.38,-132 3986.38,-138 3980.38,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3858" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;10\nInvestment Compliance &amp; Guideline Monitoring</text>
+</a>
+</g>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;ext_out_10 -->
+<g id="edge24" class="edge">
+<title>sd_06_1_anchor&#45;&gt;ext_out_10</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2598,-180C2598,-180 3715,-167.5 3715,-167.5 3715,-167.5 3758,-153.52 3796.84,-140.89"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3797.03,-143.03 3802.09,-139.18 3795.74,-139.04 3797.03,-143.03"/>
+</g>
+<!-- ext_out_12 -->
+<g id="node48" class="node">
+<title>ext_out_12</title>
+<g id="a_node48"><a xlink:href="./bd-12.html" xlink:title="&#45;&gt; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M4219.12,-138C4219.12,-138 4026.88,-138 4026.88,-138 4020.88,-138 4014.88,-132 4014.88,-126 4014.88,-126 4014.88,-114 4014.88,-114 4014.88,-108 4020.88,-102 4026.88,-102 4026.88,-102 4219.12,-102 4219.12,-102 4225.12,-102 4231.12,-108 4231.12,-114 4231.12,-114 4231.12,-126 4231.12,-126 4231.12,-132 4225.12,-138 4219.12,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="4123" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- sd_06_1_anchor&#45;&gt;ext_out_12 -->
+<g id="edge26" class="edge">
+<title>sd_06_1_anchor&#45;&gt;ext_out_12</title>
+<g id="a_edge26"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2598,-180C2598,-180 4003,-167.5 4003,-167.5 4003,-167.5 4038.49,-153.75 4070.87,-141.2"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="4071.33,-143.28 4076.16,-139.15 4069.81,-139.36 4071.33,-143.28"/>
+</a>
+</g>
+</g>
+<!-- so_06_1_01 -->
+<g id="node2" class="node">
+<title>so_06_1_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2734.75,-224C2734.75,-224 2621.25,-224 2621.25,-224 2615.25,-224 2609.25,-218 2609.25,-212 2609.25,-212 2609.25,-200 2609.25,-200 2609.25,-194 2615.25,-188 2621.25,-188 2621.25,-188 2734.75,-188 2734.75,-188 2740.75,-188 2746.75,-194 2746.75,-200 2746.75,-200 2746.75,-212 2746.75,-212 2746.75,-218 2740.75,-224 2734.75,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2678" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Capture and stage the order</text>
+</g>
+<!-- so_06_1_02 -->
+<g id="node3" class="node">
+<title>so_06_1_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2963.62,-224C2963.62,-224 2780.38,-224 2780.38,-224 2774.38,-224 2768.38,-218 2768.38,-212 2768.38,-212 2768.38,-200 2768.38,-200 2768.38,-194 2774.38,-188 2780.38,-188 2780.38,-188 2963.62,-188 2963.62,-188 2969.62,-188 2975.62,-194 2975.62,-200 2975.62,-200 2975.62,-212 2975.62,-212 2975.62,-218 2969.62,-224 2963.62,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2872" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Gate the order through pre&#45;trade compliance</text>
+</g>
+<!-- so_06_1_03 -->
+<g id="node4" class="node">
+<title>so_06_1_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3070.5,-224C3070.5,-224 3009.5,-224 3009.5,-224 3003.5,-224 2997.5,-218 2997.5,-212 2997.5,-212 2997.5,-200 2997.5,-200 2997.5,-194 3003.5,-188 3009.5,-188 3009.5,-188 3070.5,-188 3070.5,-188 3076.5,-188 3082.5,-194 3082.5,-200 3082.5,-200 3082.5,-212 3082.5,-212 3082.5,-218 3076.5,-224 3070.5,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3040" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Enrich the order</text>
+</g>
+<!-- so_06_1_04 -->
+<g id="node5" class="node">
+<title>so_06_1_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3233.25,-224C3233.25,-224 3116.75,-224 3116.75,-224 3110.75,-224 3104.75,-218 3104.75,-212 3104.75,-212 3104.75,-200 3104.75,-200 3104.75,-194 3110.75,-188 3116.75,-188 3116.75,-188 3233.25,-188 3233.25,-188 3239.25,-188 3245.25,-194 3245.25,-200 3245.25,-200 3245.25,-212 3245.25,-212 3245.25,-218 3239.25,-224 3233.25,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3175" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Aggregate orders into blocks</text>
+</g>
+<!-- so_06_1_05 -->
+<g id="node6" class="node">
+<title>so_06_1_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3382.88,-224C3382.88,-224 3279.12,-224 3279.12,-224 3273.12,-224 3267.12,-218 3267.12,-212 3267.12,-212 3267.12,-200 3267.12,-200 3267.12,-194 3273.12,-188 3279.12,-188 3279.12,-188 3382.88,-188 3382.88,-188 3388.88,-188 3394.88,-194 3394.88,-200 3394.88,-200 3394.88,-212 3394.88,-212 3394.88,-218 3388.88,-224 3382.88,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3331" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Make the routing decision</text>
+</g>
+<!-- so_06_1_06 -->
+<g id="node7" class="node">
+<title>so_06_1_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3543.5,-224C3543.5,-224 3428.5,-224 3428.5,-224 3422.5,-224 3416.5,-218 3416.5,-212 3416.5,-212 3416.5,-200 3416.5,-200 3416.5,-194 3422.5,-188 3428.5,-188 3428.5,-188 3543.5,-188 3543.5,-188 3549.5,-188 3555.5,-194 3555.5,-200 3555.5,-200 3555.5,-212 3555.5,-212 3555.5,-218 3549.5,-224 3543.5,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3486" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Split blocks into child orders</text>
+</g>
+<!-- so_06_1_07 -->
+<g id="node8" class="node">
+<title>so_06_1_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3660.75,-224C3660.75,-224 3589.25,-224 3589.25,-224 3583.25,-224 3577.25,-218 3577.25,-212 3577.25,-212 3577.25,-200 3577.25,-200 3577.25,-194 3583.25,-188 3589.25,-188 3589.25,-188 3660.75,-188 3660.75,-188 3666.75,-188 3672.75,-194 3672.75,-200 3672.75,-200 3672.75,-212 3672.75,-212 3672.75,-218 3666.75,-224 3660.75,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3625" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Track order status</text>
+</g>
+<!-- sd_06_4_anchor -->
+<!-- sd_06_2_anchor&#45;&gt;sd_06_4_anchor -->
+<g id="edge5" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1697,-154.54C1695.3,-161.9 1694,-167.5 1694,-167.5 1694,-167.5 1688.5,-170.62 1688.5,-170.62 1688.5,-170.62 221.93,-170.62 105.33,-167.84"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="105.6,-165.75 99.51,-167.57 105.41,-169.95 105.6,-165.75"/>
+</g>
+<!-- sd_06_2_anchor&#45;&gt;sd_06_4_anchor -->
+<g id="edge11" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1697,-154.54C1695.3,-161.9 1694,-167.5 1694,-167.5 1694,-167.5 1683,-173.75 1683,-173.75 1683,-173.75 109,-173.75 109,-173.75 109,-173.75 106.89,-172.55 104.53,-171.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="105.57,-169.39 99.32,-168.25 103.5,-173.04 105.57,-169.39"/>
+</g>
+<!-- sd_06_2_anchor&#45;&gt;sd_06_4_anchor -->
+<g id="edge13" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1697,-154.54C1695.3,-161.9 1694,-167.5 1694,-167.5 1694,-167.5 1677.5,-176.88 1677.5,-176.88 1677.5,-176.88 114.5,-176.88 114.5,-176.88 114.5,-176.88 108.99,-173.74 104.33,-171.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="105.57,-169.39 99.32,-168.25 103.5,-173.04 105.57,-169.39"/>
+</g>
+<!-- sd_06_2_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge6" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1697,-114.46C1687.04,-101.61 1685.83,-64.76 1693.38,-46.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1695.21,-47.14 1696.27,-40.87 1691.53,-45.11 1695.21,-47.14"/>
+</g>
+<!-- sd_06_2_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge17" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1705,-94C1705,-92.33 1705,-90.61 1705,-88.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1707.1,-89.01 1705,-83.01 1702.9,-89.01 1707.1,-89.01"/>
+</g>
+<!-- sd_06_2_anchor&#45;&gt;sd_06_5_anchor -->
+<g id="edge19" class="edge">
+<title>sd_06_2_anchor&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1720.23,-94C1720.51,-92.25 1720.74,-90.45 1720.93,-88.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1722.99,-89.14 1721.31,-83.01 1718.8,-88.85 1722.99,-89.14"/>
+</g>
+<!-- so_06_2_01 -->
+<g id="node10" class="node">
+<title>so_06_2_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1858.75,-138C1858.75,-138 1739.25,-138 1739.25,-138 1733.25,-138 1727.25,-132 1727.25,-126 1727.25,-126 1727.25,-114 1727.25,-114 1727.25,-108 1733.25,-102 1739.25,-102 1739.25,-102 1858.75,-102 1858.75,-102 1864.75,-102 1870.75,-108 1870.75,-114 1870.75,-114 1870.75,-126 1870.75,-126 1870.75,-132 1864.75,-138 1858.75,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1799" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Select the execution strategy</text>
+</g>
+<!-- so_06_2_02 -->
+<g id="node11" class="node">
+<title>so_06_2_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1987,-138C1987,-138 1905,-138 1905,-138 1899,-138 1893,-132 1893,-126 1893,-126 1893,-114 1893,-114 1893,-108 1899,-102 1905,-102 1905,-102 1987,-102 1987,-102 1993,-102 1999,-108 1999,-114 1999,-114 1999,-126 1999,-126 1999,-132 1993,-138 1987,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1946" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Execute order&#45;driven</text>
+</g>
+<!-- so_06_2_03 -->
+<g id="node12" class="node">
+<title>so_06_2_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2117.12,-138C2117.12,-138 2032.88,-138 2032.88,-138 2026.88,-138 2020.88,-132 2020.88,-126 2020.88,-126 2020.88,-114 2020.88,-114 2020.88,-108 2026.88,-102 2032.88,-102 2032.88,-102 2117.12,-102 2117.12,-102 2123.12,-102 2129.12,-108 2129.12,-114 2129.12,-114 2129.12,-126 2129.12,-126 2129.12,-132 2123.12,-138 2117.12,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2075" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Execute quote&#45;driven</text>
+</g>
+<!-- so_06_2_04 -->
+<g id="node13" class="node">
+<title>so_06_2_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2239,-138C2239,-138 2163,-138 2163,-138 2157,-138 2151,-132 2151,-126 2151,-126 2151,-114 2151,-114 2151,-108 2157,-102 2163,-102 2163,-102 2239,-102 2239,-102 2245,-102 2251,-108 2251,-114 2251,-114 2251,-126 2251,-126 2251,-132 2245,-138 2239,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2201" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Execute high&#45;touch</text>
+</g>
+<!-- so_06_2_05 -->
+<g id="node14" class="node">
+<title>so_06_2_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2354.62,-138C2354.62,-138 2285.38,-138 2285.38,-138 2279.38,-138 2273.38,-132 2273.38,-126 2273.38,-126 2273.38,-114 2273.38,-114 2273.38,-108 2279.38,-102 2285.38,-102 2285.38,-102 2354.62,-102 2354.62,-102 2360.62,-102 2366.62,-108 2366.62,-114 2366.62,-114 2366.62,-126 2366.62,-126 2366.62,-132 2360.62,-138 2354.62,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2320" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor execution</text>
+</g>
+<!-- so_06_2_06 -->
+<g id="node15" class="node">
+<title>so_06_2_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2519,-138C2519,-138 2401,-138 2401,-138 2395,-138 2389,-132 2389,-126 2389,-126 2389,-114 2389,-114 2389,-108 2395,-102 2401,-102 2401,-102 2519,-102 2519,-102 2525,-102 2531,-108 2531,-114 2531,-114 2531,-126 2531,-126 2531,-132 2525,-138 2519,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2460" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Capture the execution record</text>
+</g>
+<!-- sd_06_3_anchor -->
+<!-- sd_06_3_anchor&#45;&gt;sd_06_1_anchor -->
+<g id="edge10" class="edge">
+<title>sd_06_3_anchor&#45;&gt;sd_06_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M97,-253.5C97,-253.5 108,-263.75 108,-263.75 108,-263.75 1230,-263.75 1230,-263.75 1230,-263.75 2464.03,-211.23 2578.51,-206.36"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2573.86,-211.91 2577.73,-206.87 2571.56,-208.39 2573.86,-211.91"/>
+</g>
+<!-- sd_06_3_anchor&#45;&gt;sd_06_2_anchor -->
+<g id="edge9" class="edge">
+<title>sd_06_3_anchor&#45;&gt;sd_06_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M97,-180C97,-180 1694,-167.5 1694,-167.5 1694,-167.5 1694.51,-165.36 1695.3,-161.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1697.32,-162.6 1696.65,-156.28 1693.23,-161.64 1697.32,-162.6"/>
+</g>
+<!-- sd_06_3_anchor&#45;&gt;sd_06_4_anchor -->
+<g id="edge12" class="edge">
+<title>sd_06_3_anchor&#45;&gt;sd_06_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M86,-180C86,-178.33 86,-176.61 86,-174.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="88.1,-175.01 86,-169.01 83.9,-175.01 88.1,-175.01"/>
+</g>
+<!-- sd_06_3_anchor&#45;&gt;sd_06_4_anchor -->
+<g id="edge14" class="edge">
+<title>sd_06_3_anchor&#45;&gt;sd_06_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M101.23,-180C101.51,-178.25 101.74,-176.45 101.93,-174.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="103.99,-175.14 102.31,-169.01 99.8,-174.85 103.99,-175.14"/>
+</g>
+<!-- so_06_3_01 -->
+<g id="node17" class="node">
+<title>so_06_3_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M301.88,-224C301.88,-224 120.12,-224 120.12,-224 114.12,-224 108.12,-218 108.12,-212 108.12,-212 108.12,-200 108.12,-200 108.12,-194 114.12,-188 120.12,-188 120.12,-188 301.88,-188 301.88,-188 307.88,-188 313.88,-194 313.88,-200 313.88,-200 313.88,-212 313.88,-212 313.88,-218 307.88,-224 301.88,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="211" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the approved broker and dealer list</text>
+</g>
+<!-- so_06_3_02 -->
+<g id="node18" class="node">
+<title>so_06_3_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M483.62,-224C483.62,-224 348.38,-224 348.38,-224 342.38,-224 336.38,-218 336.38,-212 336.38,-212 336.38,-200 336.38,-200 336.38,-194 342.38,-188 348.38,-188 348.38,-188 483.62,-188 483.62,-188 489.62,-188 495.62,-194 495.62,-200 495.62,-200 495.62,-212 495.62,-212 495.62,-218 489.62,-224 483.62,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="416" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the execution&#45;venue list</text>
+</g>
+<!-- so_06_3_03 -->
+<g id="node19" class="node">
+<title>so_06_3_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M662.12,-224C662.12,-224 529.88,-224 529.88,-224 523.88,-224 517.88,-218 517.88,-212 517.88,-212 517.88,-200 517.88,-200 517.88,-194 523.88,-188 529.88,-188 529.88,-188 662.12,-188 662.12,-188 668.12,-188 674.12,-194 674.12,-200 674.12,-200 674.12,-212 674.12,-212 674.12,-218 668.12,-224 662.12,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="596" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor counterparty trading risk</text>
+</g>
+<!-- so_06_3_04 -->
+<g id="node20" class="node">
+<title>so_06_3_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M884.25,-224C884.25,-224 707.75,-224 707.75,-224 701.75,-224 695.75,-218 695.75,-212 695.75,-212 695.75,-200 695.75,-200 695.75,-194 701.75,-188 707.75,-188 707.75,-188 884.25,-188 884.25,-188 890.25,-188 896.25,-194 896.25,-200 896.25,-200 896.25,-212 896.25,-212 896.25,-218 890.25,-224 884.25,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="796" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage trading&#45;commission arrangements</text>
+</g>
+<!-- so_06_3_05 -->
+<g id="node21" class="node">
+<title>so_06_3_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1087.5,-224C1087.5,-224 930.5,-224 930.5,-224 924.5,-224 918.5,-218 918.5,-212 918.5,-212 918.5,-200 918.5,-200 918.5,-194 924.5,-188 930.5,-188 930.5,-188 1087.5,-188 1087.5,-188 1093.5,-188 1099.5,-194 1099.5,-200 1099.5,-200 1099.5,-212 1099.5,-212 1099.5,-218 1093.5,-224 1087.5,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1009" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce broker and venue scorecards</text>
+</g>
+<!-- so_06_3_06 -->
+<g id="node22" class="node">
+<title>so_06_3_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1216,-224C1216,-224 1134,-224 1134,-224 1128,-224 1122,-218 1122,-212 1122,-212 1122,-200 1122,-200 1122,-194 1128,-188 1134,-188 1134,-188 1216,-188 1216,-188 1222,-188 1228,-194 1228,-200 1228,-200 1228,-212 1228,-212 1228,-218 1222,-224 1216,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1175" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage connectivity</text>
+</g>
+<!-- sd_06_4_anchor&#45;&gt;sd_06_2_anchor -->
+<g id="edge15" class="edge">
+<title>sd_06_4_anchor&#45;&gt;sd_06_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M98,-167.5C98,-167.5 109,-173.75 109,-173.75 109,-173.75 1683,-173.75 1683,-173.75 1683,-173.75 1694,-167.5 1694,-167.5 1694,-167.5 1694.53,-165.2 1695.36,-161.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1697.35,-162.34 1696.66,-156.02 1693.26,-161.39 1697.35,-162.34"/>
+</g>
+<!-- sd_06_4_anchor&#45;&gt;sd_06_3_anchor -->
+<g id="edge7" class="edge">
+<title>sd_06_4_anchor&#45;&gt;sd_06_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M78,-122.01C47.04,-130.24 44.83,-186.26 71.39,-201.29"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="70.25,-203.1 76.6,-203.42 71.84,-199.21 70.25,-203.1"/>
+</g>
+<!-- sd_06_4_anchor&#45;&gt;sd_06_3_anchor -->
+<g id="edge8" class="edge">
+<title>sd_06_4_anchor&#45;&gt;sd_06_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M78,-125.54C68.04,-138.39 66.83,-175.25 74.39,-193.9"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="72.54,-194.89 77.27,-199.13 76.21,-192.87 72.54,-194.89"/>
+</g>
+<!-- sd_06_4_anchor&#45;&gt;sd_06_3_anchor -->
+<g id="edge16" class="edge">
+<title>sd_06_4_anchor&#45;&gt;sd_06_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M118.83,-167.5C118.7,-169.3 118.48,-171.08 118.18,-172.85"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="116.17,-172.21 116.82,-178.53 120.26,-173.18 116.17,-172.21"/>
+</g>
+<!-- ext_out_09 -->
+<g id="node45" class="node">
+<title>ext_out_09</title>
+<g id="a_node45"><a xlink:href="./bd-09.html" xlink:title="&#45;&gt; BD&#45;09\\nPerformance &amp; Analytics">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M160,-52C160,-52 12,-52 12,-52 6,-52 0,-46 0,-40 0,-40 0,-28 0,-28 0,-22 6,-16 12,-16 12,-16 160,-16 160,-16 166,-16 172,-22 172,-28 172,-28 172,-40 172,-40 172,-46 166,-52 160,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="86" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;09\nPerformance &amp; Analytics</text>
+</a>
+</g>
+</g>
+<!-- sd_06_4_anchor&#45;&gt;ext_out_09 -->
+<g id="edge23" class="edge">
+<title>sd_06_4_anchor&#45;&gt;ext_out_09</title>
+<g id="a_edge23"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M86,-94C86,-83.23 86,-70.66 86,-59.89"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="88.1,-59.94 86,-53.94 83.9,-59.94 88.1,-59.94"/>
+</a>
+</g>
+</g>
+<!-- so_06_4_01 -->
+<g id="node24" class="node">
+<title>so_06_4_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M283.5,-138C283.5,-138 120.5,-138 120.5,-138 114.5,-138 108.5,-132 108.5,-126 108.5,-126 108.5,-114 108.5,-114 108.5,-108 114.5,-102 120.5,-102 120.5,-102 283.5,-102 283.5,-102 289.5,-102 295.5,-108 295.5,-114 295.5,-114 295.5,-126 295.5,-126 295.5,-132 289.5,-138 283.5,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="202" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run pre&#45;trade transaction cost analysis</text>
+</g>
+<!-- so_06_4_02 -->
+<g id="node25" class="node">
+<title>so_06_4_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M498.12,-138C498.12,-138 329.88,-138 329.88,-138 323.88,-138 317.88,-132 317.88,-126 317.88,-126 317.88,-114 317.88,-114 317.88,-108 323.88,-102 329.88,-102 329.88,-102 498.12,-102 498.12,-102 504.12,-102 510.12,-108 510.12,-114 510.12,-114 510.12,-126 510.12,-126 510.12,-132 504.12,-138 498.12,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="414" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run post&#45;trade transaction cost analysis</text>
+</g>
+<!-- so_06_4_03 -->
+<g id="node26" class="node">
+<title>so_06_4_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M695.5,-138C695.5,-138 544.5,-138 544.5,-138 538.5,-138 532.5,-132 532.5,-126 532.5,-126 532.5,-114 532.5,-114 532.5,-108 538.5,-102 544.5,-102 544.5,-102 695.5,-102 695.5,-102 701.5,-102 707.5,-108 707.5,-114 707.5,-114 707.5,-126 707.5,-126 707.5,-132 701.5,-138 695.5,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="620" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Decompose implementation shortfall</text>
+</g>
+<!-- so_06_4_04 -->
+<g id="node27" class="node">
+<title>so_06_4_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M874.12,-138C874.12,-138 741.88,-138 741.88,-138 735.88,-138 729.88,-132 729.88,-126 729.88,-126 729.88,-114 729.88,-114 729.88,-108 735.88,-102 741.88,-102 741.88,-102 874.12,-102 874.12,-102 880.12,-102 886.12,-108 886.12,-114 886.12,-114 886.12,-126 886.12,-126 886.12,-132 880.12,-138 874.12,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="808" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Evaluate execution performance</text>
+</g>
+<!-- so_06_4_05 -->
+<g id="node28" class="node">
+<title>so_06_4_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1095.5,-138C1095.5,-138 920.5,-138 920.5,-138 914.5,-138 908.5,-132 908.5,-126 908.5,-126 908.5,-114 908.5,-114 908.5,-108 914.5,-102 920.5,-102 920.5,-102 1095.5,-102 1095.5,-102 1101.5,-102 1107.5,-108 1107.5,-114 1107.5,-114 1107.5,-126 1107.5,-126 1107.5,-132 1101.5,-138 1095.5,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1008" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run best&#45;execution monitoring and review</text>
+</g>
+<!-- so_06_4_06 -->
+<g id="node29" class="node">
+<title>so_06_4_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1300.25,-138C1300.25,-138 1141.75,-138 1141.75,-138 1135.75,-138 1129.75,-132 1129.75,-126 1129.75,-126 1129.75,-114 1129.75,-114 1129.75,-108 1135.75,-102 1141.75,-102 1141.75,-102 1300.25,-102 1300.25,-102 1306.25,-102 1312.25,-108 1312.25,-114 1312.25,-114 1312.25,-126 1312.25,-126 1312.25,-132 1306.25,-138 1300.25,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1221" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the best&#45;execution committee</text>
+</g>
+<!-- so_06_4_07 -->
+<g id="node30" class="node">
+<title>so_06_4_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1421.62,-138C1421.62,-138 1346.38,-138 1346.38,-138 1340.38,-138 1334.38,-132 1334.38,-126 1334.38,-126 1334.38,-114 1334.38,-114 1334.38,-108 1340.38,-102 1346.38,-102 1346.38,-102 1421.62,-102 1421.62,-102 1427.62,-102 1433.62,-108 1433.62,-114 1433.62,-114 1433.62,-126 1433.62,-126 1433.62,-132 1427.62,-138 1421.62,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1384" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Handle trade errors</text>
+</g>
+<!-- so_06_5_01 -->
+<g id="node32" class="node">
+<title>so_06_5_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1913.12,-52C1913.12,-52 1738.88,-52 1738.88,-52 1732.88,-52 1726.88,-46 1726.88,-40 1726.88,-40 1726.88,-28 1726.88,-28 1726.88,-22 1732.88,-16 1738.88,-16 1738.88,-16 1913.12,-16 1913.12,-16 1919.12,-16 1925.12,-22 1925.12,-28 1925.12,-28 1925.12,-40 1925.12,-40 1925.12,-46 1919.12,-52 1913.12,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1826" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Declare the pre&#45;trade allocation statement</text>
+</g>
+<!-- so_06_5_02 -->
+<g id="node33" class="node">
+<title>so_06_5_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2053,-52C2053,-52 1959,-52 1959,-52 1953,-52 1947,-46 1947,-40 1947,-40 1947,-28 1947,-28 1947,-22 1953,-16 1959,-16 1959,-16 2053,-16 2053,-16 2059,-16 2065,-22 2065,-28 2065,-28 2065,-40 2065,-40 2065,-46 2059,-52 2053,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2006" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Calculate the allocation</text>
+</g>
+<!-- so_06_5_03 -->
+<g id="node34" class="node">
+<title>so_06_5_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2208.5,-52C2208.5,-52 2099.5,-52 2099.5,-52 2093.5,-52 2087.5,-46 2087.5,-40 2087.5,-40 2087.5,-28 2087.5,-28 2087.5,-22 2093.5,-16 2099.5,-16 2099.5,-16 2208.5,-16 2208.5,-16 2214.5,-16 2220.5,-22 2220.5,-28 2220.5,-28 2220.5,-40 2220.5,-40 2220.5,-46 2214.5,-52 2208.5,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2154" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Handle partial&#45;fill allocation</text>
+</g>
+<!-- so_06_5_04 -->
+<g id="node35" class="node">
+<title>so_06_5_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2369.5,-52C2369.5,-52 2254.5,-52 2254.5,-52 2248.5,-52 2242.5,-46 2242.5,-40 2242.5,-40 2242.5,-28 2242.5,-28 2242.5,-22 2248.5,-16 2254.5,-16 2254.5,-16 2369.5,-16 2369.5,-16 2375.5,-16 2381.5,-22 2381.5,-28 2381.5,-28 2381.5,-40 2381.5,-40 2381.5,-46 2375.5,-52 2369.5,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2312" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Enforce the allocation policy</text>
+</g>
+<!-- so_06_5_05 -->
+<g id="node36" class="node">
+<title>so_06_5_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2532.62,-52C2532.62,-52 2415.38,-52 2415.38,-52 2409.38,-52 2403.38,-46 2403.38,-40 2403.38,-40 2403.38,-28 2403.38,-28 2403.38,-22 2409.38,-16 2415.38,-16 2415.38,-16 2532.62,-16 2532.62,-16 2538.62,-16 2544.62,-22 2544.62,-28 2544.62,-28 2544.62,-40 2544.62,-40 2544.62,-46 2538.62,-52 2532.62,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2474" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Handle allocation exceptions</text>
+</g>
+<!-- so_06_5_06 -->
+<g id="node37" class="node">
+<title>so_06_5_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2711.12,-52C2711.12,-52 2578.88,-52 2578.88,-52 2572.88,-52 2566.88,-46 2566.88,-40 2566.88,-40 2566.88,-28 2566.88,-28 2566.88,-22 2572.88,-16 2578.88,-16 2578.88,-16 2711.12,-16 2711.12,-16 2717.12,-16 2723.12,-22 2723.12,-28 2723.12,-28 2723.12,-40 2723.12,-40 2723.12,-46 2717.12,-52 2711.12,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2645" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the allocation audit trail</text>
+</g>
+<!-- ext_out_11 -->
+<g id="node47" class="node">
+<title>ext_out_11</title>
+<g id="a_node47"><a xlink:href="./bd-11.html" xlink:title="&#45;&gt; BD&#45;11\\nTreasury, Cash &amp; Collateral">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M2917,-52C2917,-52 2757,-52 2757,-52 2751,-52 2745,-46 2745,-40 2745,-40 2745,-28 2745,-28 2745,-22 2751,-16 2757,-16 2757,-16 2917,-16 2917,-16 2923,-16 2929,-22 2929,-28 2929,-28 2929,-40 2929,-40 2929,-46 2923,-52 2917,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2837" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;11\nTreasury, Cash &amp; Collateral</text>
+</a>
+</g>
+</g>
+<!-- sd_06_6_anchor&#45;&gt;ext_out_11 -->
+<g id="edge25" class="edge">
+<title>sd_06_6_anchor&#45;&gt;ext_out_11</title>
+<g id="a_edge25"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2654,-94C2654,-94 2736,-81.5 2736,-81.5 2736,-81.5 2765.13,-68.09 2792.1,-55.67"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2792.86,-57.64 2797.43,-53.22 2791.1,-53.82 2792.86,-57.64"/>
+</a>
+</g>
+</g>
+<!-- so_06_6_01 -->
+<g id="node39" class="node">
+<title>so_06_6_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2779.12,-138C2779.12,-138 2676.88,-138 2676.88,-138 2670.88,-138 2664.88,-132 2664.88,-126 2664.88,-126 2664.88,-114 2664.88,-114 2664.88,-108 2670.88,-102 2676.88,-102 2676.88,-102 2779.12,-102 2779.12,-102 2785.12,-102 2791.12,-108 2791.12,-114 2791.12,-114 2791.12,-126 2791.12,-126 2791.12,-132 2785.12,-138 2779.12,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2728" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Execute OTC derivatives</text>
+</g>
+<!-- so_06_6_02 -->
+<g id="node40" class="node">
+<title>so_06_6_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2982.88,-138C2982.88,-138 2825.12,-138 2825.12,-138 2819.12,-138 2813.12,-132 2813.12,-126 2813.12,-126 2813.12,-114 2813.12,-114 2813.12,-108 2819.12,-102 2825.12,-102 2825.12,-102 2982.88,-102 2982.88,-102 2988.88,-102 2994.88,-108 2994.88,-114 2994.88,-114 2994.88,-126 2994.88,-126 2994.88,-132 2988.88,-138 2982.88,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2904" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Determine clearing eligibility and route</text>
+</g>
+<!-- so_06_6_03 -->
+<g id="node41" class="node">
+<title>so_06_6_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3096.88,-138C3096.88,-138 3029.12,-138 3029.12,-138 3023.12,-138 3017.12,-132 3017.12,-126 3017.12,-126 3017.12,-114 3017.12,-114 3017.12,-108 3023.12,-102 3029.12,-102 3029.12,-102 3096.88,-102 3096.88,-102 3102.88,-102 3108.88,-108 3108.88,-114 3108.88,-114 3108.88,-126 3108.88,-126 3108.88,-132 3102.88,-138 3096.88,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3063" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Process give&#45;ups</text>
+</g>
+<!-- so_06_6_04 -->
+<g id="node42" class="node">
+<title>so_06_6_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3304.75,-138C3304.75,-138 3143.25,-138 3143.25,-138 3137.25,-138 3131.25,-132 3131.25,-126 3131.25,-126 3131.25,-114 3131.25,-114 3131.25,-108 3137.25,-102 3143.25,-102 3143.25,-102 3304.75,-102 3304.75,-102 3310.75,-102 3316.75,-108 3316.75,-114 3316.75,-114 3316.75,-126 3316.75,-126 3316.75,-132 3310.75,-138 3304.75,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3224" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Reference the ISDA master agreement</text>
+</g>
+<!-- so_06_6_05 -->
+<g id="node43" class="node">
+<title>so_06_6_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3459.5,-138C3459.5,-138 3350.5,-138 3350.5,-138 3344.5,-138 3338.5,-132 3338.5,-126 3338.5,-126 3338.5,-114 3338.5,-114 3338.5,-108 3344.5,-102 3350.5,-102 3350.5,-102 3459.5,-102 3459.5,-102 3465.5,-102 3471.5,-108 3471.5,-114 3471.5,-114 3471.5,-126 3471.5,-126 3471.5,-132 3465.5,-138 3459.5,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3405" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set up margin at execution</text>
+</g>
+<!-- so_06_6_06 -->
+<g id="node44" class="node">
+<title>so_06_6_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3690,-138C3690,-138 3506,-138 3506,-138 3500,-138 3494,-132 3494,-126 3494,-126 3494,-114 3494,-114 3494,-108 3500,-102 3506,-102 3506,-102 3690,-102 3690,-102 3696,-102 3702,-108 3702,-114 3702,-114 3702,-126 3702,-126 3702,-132 3696,-138 3690,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3598" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Determine the regulatory reporting obligation</text>
+</g>
+<!-- ext_in_05 -->
+<g id="node49" class="node">
+<title>ext_in_05</title>
+<g id="a_node49"><a xlink:href="./bd-05.html" xlink:title="&lt;&#45; BD&#45;05\\nPortfolio Management">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M2418.62,-310C2418.62,-310 2283.38,-310 2283.38,-310 2277.38,-310 2271.38,-304 2271.38,-298 2271.38,-298 2271.38,-286 2271.38,-286 2271.38,-280 2277.38,-274 2283.38,-274 2283.38,-274 2418.62,-274 2418.62,-274 2424.62,-274 2430.62,-280 2430.62,-286 2430.62,-286 2430.62,-298 2430.62,-298 2430.62,-304 2424.62,-310 2418.62,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="2351" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;05\nPortfolio Management</text>
+</a>
+</g>
+</g>
+<!-- ext_in_05&#45;&gt;sd_06_1_anchor -->
+<g id="edge27" class="edge">
+<title>ext_in_05&#45;&gt;sd_06_1_anchor</title>
+<g id="a_edge27"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2400.76,-273.29C2455.04,-253.97 2538.66,-224.2 2572.27,-212.24"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2572.92,-214.24 2577.86,-210.25 2571.51,-210.29 2572.92,-214.24"/>
+</a>
+</g>
+</g>
+<!-- ext_in_10 -->
+<g id="node50" class="node">
+<title>ext_in_10</title>
+<g id="a_node50"><a xlink:href="./bd-10.html" xlink:title="&lt;&#45; BD&#45;10\\nInvestment Compliance &amp; Guideline Monitoring">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M2709.38,-310C2709.38,-310 2464.62,-310 2464.62,-310 2458.62,-310 2452.62,-304 2452.62,-298 2452.62,-298 2452.62,-286 2452.62,-286 2452.62,-280 2458.62,-274 2464.62,-274 2464.62,-274 2709.38,-274 2709.38,-274 2715.38,-274 2721.38,-280 2721.38,-286 2721.38,-286 2721.38,-298 2721.38,-298 2721.38,-304 2715.38,-310 2709.38,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="2587" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;10\nInvestment Compliance &amp; Guideline Monitoring</text>
+</a>
+</g>
+</g>
+<!-- ext_in_10&#45;&gt;sd_06_1_anchor -->
+<g id="edge28" class="edge">
+<title>ext_in_10&#45;&gt;sd_06_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2587,-273.6C2587,-269.68 2587,-265.33 2587,-260.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2589.1,-261.01 2587,-255.01 2584.9,-261.01 2589.1,-261.01"/>
+</g>
+<!-- ext_in_12 -->
+<g id="node51" class="node">
+<title>ext_in_12</title>
+<g id="a_node51"><a xlink:href="./bd-12.html" xlink:title="&lt;&#45; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M2948.12,-310C2948.12,-310 2755.88,-310 2755.88,-310 2749.88,-310 2743.88,-304 2743.88,-298 2743.88,-298 2743.88,-286 2743.88,-286 2743.88,-280 2749.88,-274 2755.88,-274 2755.88,-274 2948.12,-274 2948.12,-274 2954.12,-274 2960.12,-280 2960.12,-286 2960.12,-286 2960.12,-298 2960.12,-298 2960.12,-304 2954.12,-310 2948.12,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="2852" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- ext_in_12&#45;&gt;sd_06_1_anchor -->
+<g id="edge29" class="edge">
+<title>ext_in_12&#45;&gt;sd_06_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2743.18,-274.93C2686.89,-266.62 2625.75,-257.6 2605.19,-254.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2605.74,-252.52 2599.5,-253.72 2605.13,-256.67 2605.74,-252.52"/>
+</g>
+<!-- ext_in_14 -->
+<g id="node52" class="node">
+<title>ext_in_14</title>
+<g id="a_node52"><a xlink:href="./bd-14.html" xlink:title="&lt;&#45; BD&#45;14\\nEnterprise Risk, Control &amp; Assurance">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M1670.75,-138C1670.75,-138 1467.25,-138 1467.25,-138 1461.25,-138 1455.25,-132 1455.25,-126 1455.25,-126 1455.25,-114 1455.25,-114 1455.25,-108 1461.25,-102 1467.25,-102 1467.25,-102 1670.75,-102 1670.75,-102 1676.75,-102 1682.75,-108 1682.75,-114 1682.75,-114 1682.75,-126 1682.75,-126 1682.75,-132 1676.75,-138 1670.75,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1569" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;14\nEnterprise Risk, Control &amp; Assurance</text>
+</a>
+</g>
+</g>
+<!-- ext_in_14&#45;&gt;sd_06_5_anchor -->
+<g id="edge30" class="edge">
+<title>ext_in_14&#45;&gt;sd_06_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1597.51,-101.39C1626.09,-83.74 1668.92,-57.28 1690.89,-43.71"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1691.71,-45.67 1695.72,-40.73 1689.51,-42.1 1691.71,-45.67"/>
+</g>
+</g>
+</svg>
+</div>
+<h3>Service Domains (6)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Service Domain</th><th>Example operations</th></tr></thead>
+  <tbody><tr><td>SD-06.1</td><td><a href='./sd-06.1.html'>Order Management</a> <span class='tag tag-PUB'>PUB</span></td><td>Capture and stage the order, Gate the order through pre-trade compliance, Enrich the order…</td></tr><tr><td>SD-06.2</td><td><a href='./sd-06.2.html'>Trade Execution</a> <span class='tag tag-PUB'>PUB</span></td><td>Select the execution strategy, Execute order-driven, Execute quote-driven…</td></tr><tr><td>SD-06.3</td><td><a href='./sd-06.3.html'>Execution Venue &amp; Broker Management</a> <span class='tag tag-PUB'>PUB</span></td><td>Maintain the approved broker and dealer list, Maintain the execution-venue list, Monitor counterparty trading risk…</td></tr><tr><td>SD-06.4</td><td><a href='./sd-06.4.html'>Best Execution &amp; Transaction Cost Analysis</a> <span class='tag tag-PUB'>PUB</span></td><td>Run pre-trade transaction cost analysis, Run post-trade transaction cost analysis, Decompose implementation shortfall…</td></tr><tr><td>SD-06.5</td><td><a href='./sd-06.5.html'>Trade Allocation</a> <span class='tag tag-PUB'>PUB</span></td><td>Declare the pre-trade allocation statement, Calculate the allocation, Handle partial-fill allocation…</td></tr><tr><td>SD-06.6</td><td><a href='./sd-06.6.html'>Derivatives &amp; OTC Trade Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Execute OTC derivatives, Determine clearing eligibility and route, Process give-ups…</td></tr></tbody>
+</table>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

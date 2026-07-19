@@ -1,8 +1,8 @@
 # Hybrid D — OpenIM static-site diagram generator
 
-A small Python generator that parses the OpenIM model markdown directly, lays out the BD → SD → Service Operation capability graph and the entity ERD via Graphviz, and emits a static HTML+SVG site to `dist/`. The markdown is the only authoritative source; no derived DSL artefact (no `.c4`, no intermediate JSON) sits between the writer's hand and the rendered page.
+A small Python generator that parses the OpenIM model markdown directly, lays out the BD → SD → Service Operation capability graph and the entity ERD via Graphviz, and emits a static HTML+SVG site to `exports/diagrams/`. The markdown is the only authoritative source; no derived DSL artefact (no `.c4`, no intermediate JSON) sits between the writer's hand and the rendered page.
 
-The Mermaid interval diagrams (`model/diagrams/01..04.md`) stay in place — they are the source-code-readable form and render natively on GitHub. The D2 attribute-level core ERD (`model/diagrams/d2/core-erd.d2`) and the D2 layer-stack (`model/diagrams/d2/layer-stack.d2`) continue to be rendered by the D2 binary in CI; the Hybrid D generator links to those outputs from its ERD page.
+The Mermaid interval diagrams (`model/diagrams/01..04.md`) stay in place — they are the source-code-readable form and render natively on GitHub. The D2 attribute-level core ERD (`model/diagrams/d2/core-erd.d2`) and the D2 layer-stack (`model/diagrams/d2/layer-stack.d2`) are rendered separately by the D2 binary as their own build step; the Hybrid D generator links to those outputs from its ERD page.
 
 ## What it produces
 
@@ -23,18 +23,24 @@ From the OpenIM repo root:
 
 ```bash
 python -m pip install -r tools/diagrams/requirements.txt
-python tools/diagrams/build.py --out dist/
+python -m unittest discover tools/diagrams/tests/
+python tools/diagrams/build.py --out exports/diagrams/
+d2 --layout=elk model/diagrams/d2/core-erd.d2 exports/diagrams/entities/core/core-erd.svg
+d2 --layout=elk model/diagrams/d2/layer-stack.d2 exports/diagrams/layer-stack.svg
 ```
 
 The generator parses the markdown, builds the graphs in memory, hands DOT source to Graphviz (`dot` for the landscape + ERD, `dot` with `compound=true` for per-BD views), and writes the rendered SVG into the HTML template. Exit codes:
 
 - `0` — every declared BD / SD / Service Operation / entity is rendered.
-- `1` — a parser raised on an unhandled markdown shape, or Graphviz failed to lay a graph out, or the coverage assertion found a declared item missing from `dist/`.
+- `1` — a parser raised on an unhandled markdown shape, or Graphviz failed to lay a graph out, or the coverage assertion found a declared item missing from `exports/diagrams/`.
+
+The site is committed directly — there is no separate deploy step. Regenerate whenever the model
+changes and commit the result; a regeneration against an unchanged model is byte-identical.
 
 Local preview:
 
 ```bash
-python -m http.server 8000 -d dist/
+python -m http.server 8000 -d exports/diagrams/
 # open http://localhost:8000/
 ```
 
@@ -47,7 +53,7 @@ python -m http.server 8000 -d dist/
 | `model/service-domains/BD-NN-*/SD-NN.M-*.md` | SD id, name, `**Applies:**` tag, `## Purpose`, `## Service Operations` bullets, `## Inputs and outputs` narrative SDs, `## Entities` structured `**Consumes:**` / `**Owns:**` / `**Produces:**` lines. |
 | `model/entities/core/E-NN-*.md` and `model/entities/specialisations/<pack>/X-NN-*.md` | Entity id, name, `**Specialises:**` declaration (specialisation packs), FK targets from the attribute table, `## Owned and consumed by` `**Owned by:**` / `**Consumed by:**` lines. |
 | `model/ownership-map.md` | Per-entity authoritative ownership pattern (single owner / key-partitioned / faceted / co-owned) and the owning Service Domain(s). |
-| `model/diagrams/d2/core-erd.d2` | Not parsed by the generator — the D2 binary renders this source directly to SVG in the CI workflow (`dist/entities/core/core-erd.svg`); the generator's ERD page links to that output. |
+| `model/diagrams/d2/core-erd.d2` | Not parsed by the generator — the D2 binary renders this source directly to SVG as its own build step (`exports/diagrams/entities/core/core-erd.svg`); the generator's ERD page links to that output. |
 
 The parser is strict by construction. Any of the following raise `ParseError` and exit non-zero:
 
@@ -90,7 +96,7 @@ The generator imports two third-party Python libraries beyond the standard libra
 - **[Jinja2](https://github.com/pallets/jinja) 3.x** — MIT — the HTML template engine. Used purely for the page chrome; no template inheritance, no filters beyond `safe`. A 200-line hand-rolled template renderer could replace it; Jinja2 is preferred because every Python developer already knows it.
 - **[graphviz](https://github.com/xflr6/graphviz) 0.21** — MIT — a thin Python binding around the Graphviz CLI. Used only as a convenience; the generator invokes the `dot` binary directly via `subprocess` in [`render/layout.py`](render/layout.py). Replaceable in ~30 lines if the dependency footprint matters.
 
-Both ship pure-Python; neither carries native code. The Graphviz binary itself (`dot`, `sfdp`) must be installed on the system (apt-get on Linux / Homebrew on macOS / the binary releases on Windows). The CI workflow at `.github/workflows/diagrams.yml` installs it as a build step.
+Both ship pure-Python; neither carries native code. The Graphviz binary itself (`dot`, `sfdp`) must be installed on the system (apt-get on Linux / Homebrew on macOS / the binary releases on Windows — see Install below).
 
 The rendered site embeds one vendored client-side JS file:
 
@@ -113,7 +119,7 @@ The fixtures (under `tests/fixtures/`) mirror the real repo's structure on a min
 
 ```
 tools/diagrams/
-  build.py                  — main entry point (the script CI invokes)
+  build.py                  — main entry point
   requirements.txt          — Jinja2 + graphviz pins
   README.md                 — this file
   parser/                   — markdown → in-memory model
@@ -143,8 +149,8 @@ tools/diagrams/
 
 - It does not edit the model. The generator renders what exists; new SDs / entities / BDs land through the standard ADR process and the next build picks them up.
 - It does not draw Service-Operation-to-Service-Operation edges. The SO names live in the markdown; the SO-to-SO edges did not — they were authored into the predecessor renderer's source by hand and do not exist as data in any markdown file. Restoring them would be either (a) authoring a structured SO-edge declaration into the SD markdown, or (b) a future machine-readable (RDF/OWL) representation of the model.
-- It does not re-render the D2 attribute-level ERD. The D2 binary step in CI continues to produce `entities/core/core-erd.svg`; the generator's ERD page links to that file.
-- It does not deploy. The generator writes to `dist/`; the CI workflow at `.github/workflows/diagrams.yml` packages and uploads.
+- It does not re-render the D2 attribute-level ERD. The D2 binary is a separate build step that produces `entities/core/core-erd.svg`; the generator's ERD page links to that file.
+- It does not deploy anywhere. The generator writes to `exports/diagrams/`, which is committed directly; there is no hosted deploy target.
 - It does not ship live filtering, dynamic view composition, an MCP server, or rich hover overlays. The static-bundle floor is the optimisation; richer client-side features would require a JS framework. Dark mode + tag highlighting are pure CSS (no JS); see `render/templates/base.html.j2`.
 
 ## When something goes wrong
@@ -157,33 +163,28 @@ tools/diagrams/
 | `LayoutError: Graphviz timed out` | A view exceeds the layout-engine budget; consider per-BD baking only. |
 | `coverage assertion failed — N expected pages missing` | The generator ran to completion but a declared BD / SD / entity has no corresponding page; almost always a parser bug to investigate, not a model defect. |
 
-## Install — local build prerequisites
+## Install — build prerequisites
 
-The generator needs Python ≥ 3.10 and Graphviz ≥ 11. The Python deps come from `pip install -r tools/diagrams/requirements.txt`. Install Graphviz:
+The generator needs Python ≥ 3.10 and Graphviz ≥ 11, plus the D2 binary for the attribute-level ERD and layer-stack SVGs. There is no hosted build — everything below runs locally, and the output is committed.
 
 ```bash
-# Linux (apt-get) — what the CI workflow runs.
-sudo apt-get install -y graphviz
+# Python deps
+python -m pip install -r tools/diagrams/requirements.txt
 
-# macOS (Homebrew).
-brew install graphviz
-
+# Graphviz (dot, sfdp)
+sudo apt-get install -y graphviz     # Linux
+brew install graphviz                # macOS
 # Windows — download the installer from
 # https://gitlab.com/api/v4/projects/4207231/packages/generic/graphviz-releases
 # and add the bin/ directory to PATH.
+
+# D2 (pinned v0.6.9). Linux/macOS — direct binary download, no curl|sh:
+curl -fLO https://github.com/terrastruct/d2/releases/download/v0.6.9/d2-v0.6.9-linux-amd64.tar.gz
+tar -xzf d2-v0.6.9-linux-amd64.tar.gz
+export PATH="$PWD/d2-v0.6.9/bin:$PATH"
+# Windows — download the matching release from the same GitHub releases page
+# and add its bin/ directory to PATH.
 ```
 
-The D2 binary (still used in CI for the attribute-level ERD and layer stack) is installed by the workflow itself; see the CI section below.
-
-## CI / deploy
-
-`.github/workflows/diagrams.yml` runs on push to the pilot branch and on `workflow_dispatch`. It:
-
-1. Sets up Python 3.12 and installs the generator's requirements.
-2. Installs the system Graphviz binary.
-3. Installs D2 (still used for the attribute-level core ERD and the layer-stack SVG).
-4. Runs `python tools/diagrams/build.py --out dist/` to emit the full Hybrid D site.
-5. Runs D2 to render `dist/entities/core/core-erd.svg` and `dist/layer-stack.svg` alongside.
-6. Uploads `dist/` as a workflow artefact and (if Pages is enabled) deploys to GitHub Pages.
-
-GitHub Pages must be enabled at the repository level for the deploy step to succeed — *Settings → Pages → Build and deployment → Source: GitHub Actions*. This is a one-time repo-admin action.
+Once installed, `python tools/diagrams/build.py --out exports/diagrams/` plus the two `d2` commands in
+"How to build it" above regenerate the whole committed site.

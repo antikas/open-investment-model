@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BD-07 — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>BD-07 — Investment Risk <span class='tag'>Middle</span></h2>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_bd Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 5560.00 414.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 384.8)">
+<title>openim_bd</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-384.8 5531.55,-384.8 5531.55,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2751.38" y="-338.7" font-family="Times New Roman,serif" font-size="14.00" fill="#1f3a5f">BD&#45;07 — Investment Risk</text>
+<g id="clust1" class="cluster">
+<title>cluster_sd_07_1</title>
+<g id="a_clust1"><a xlink:href="./sd-07.1.html" xlink:title="SD&#45;07.1\\nMarket Risk Management\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M2300.75,-164C2300.75,-164 3354.75,-164 3354.75,-164 3360.75,-164 3366.75,-170 3366.75,-176 3366.75,-176 3366.75,-225.5 3366.75,-225.5 3366.75,-231.5 3360.75,-237.5 3354.75,-237.5 3354.75,-237.5 2300.75,-237.5 2300.75,-237.5 2294.75,-237.5 2288.75,-231.5 2288.75,-225.5 2288.75,-225.5 2288.75,-176 2288.75,-176 2288.75,-170 2294.75,-164 2300.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="2827.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.1\nMarket Risk Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_sd_07_2</title>
+<g id="a_clust2"><a xlink:href="./sd-07.2.html" xlink:title="SD&#45;07.2\\nCredit &amp; Counterparty Risk Management\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M320.75,-164C320.75,-164 1386.75,-164 1386.75,-164 1392.75,-164 1398.75,-170 1398.75,-176 1398.75,-176 1398.75,-225.5 1398.75,-225.5 1398.75,-231.5 1392.75,-237.5 1386.75,-237.5 1386.75,-237.5 320.75,-237.5 320.75,-237.5 314.75,-237.5 308.75,-231.5 308.75,-225.5 308.75,-225.5 308.75,-176 308.75,-176 308.75,-170 314.75,-164 320.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="853.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.2\nCredit &amp; Counterparty Risk Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_sd_07_3</title>
+<g id="a_clust3"><a xlink:href="./sd-07.3.html" xlink:title="SD&#45;07.3\\nLiquidity Risk Management\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M1418.75,-164C1418.75,-164 2268.75,-164 2268.75,-164 2274.75,-164 2280.75,-170 2280.75,-176 2280.75,-176 2280.75,-225.5 2280.75,-225.5 2280.75,-231.5 2274.75,-237.5 2268.75,-237.5 2268.75,-237.5 1418.75,-237.5 1418.75,-237.5 1412.75,-237.5 1406.75,-231.5 1406.75,-225.5 1406.75,-225.5 1406.75,-176 1406.75,-176 1406.75,-170 1412.75,-164 1418.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="1843.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.3\nLiquidity Risk Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_sd_07_4</title>
+<g id="a_clust4"><a xlink:href="./sd-07.4.html" xlink:title="SD&#45;07.4\\nConcentration &amp; Exposure Risk\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M3386.75,-164C3386.75,-164 4207.75,-164 4207.75,-164 4213.75,-164 4219.75,-170 4219.75,-176 4219.75,-176 4219.75,-225.5 4219.75,-225.5 4219.75,-231.5 4213.75,-237.5 4207.75,-237.5 4207.75,-237.5 3386.75,-237.5 3386.75,-237.5 3380.75,-237.5 3374.75,-231.5 3374.75,-225.5 3374.75,-225.5 3374.75,-176 3374.75,-176 3374.75,-170 3380.75,-164 3386.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="3797.25" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.4\nConcentration &amp; Exposure Risk\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_sd_07_5</title>
+<g id="a_clust5"><a xlink:href="./sd-07.5.html" xlink:title="SD&#45;07.5\\nLook&#45;Through Exposure Analysis\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M3386.75,-250C3386.75,-250 4172.75,-250 4172.75,-250 4178.75,-250 4184.75,-256 4184.75,-262 4184.75,-262 4184.75,-311.5 4184.75,-311.5 4184.75,-317.5 4178.75,-323.5 4172.75,-323.5 4172.75,-323.5 3386.75,-323.5 3386.75,-323.5 3380.75,-323.5 3374.75,-317.5 3374.75,-311.5 3374.75,-311.5 3374.75,-262 3374.75,-262 3374.75,-256 3380.75,-250 3386.75,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="3779.75" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.5\nLook&#45;Through Exposure Analysis\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_sd_07_6</title>
+<g id="a_clust6"><a xlink:href="./sd-07.6.html" xlink:title="SD&#45;07.6\\nScenario Analysis &amp; Stress Testing\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M4271.75,-250C4271.75,-250 5482.75,-250 5482.75,-250 5488.75,-250 5494.75,-256 5494.75,-262 5494.75,-262 5494.75,-311.5 5494.75,-311.5 5494.75,-317.5 5488.75,-323.5 5482.75,-323.5 5482.75,-323.5 4271.75,-323.5 4271.75,-323.5 4265.75,-323.5 4259.75,-317.5 4259.75,-311.5 4259.75,-311.5 4259.75,-262 4259.75,-262 4259.75,-256 4265.75,-250 4271.75,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="4877.25" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.6\nScenario Analysis &amp; Stress Testing\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_sd_07_7</title>
+<g id="a_clust7"><a xlink:href="./sd-07.7.html" xlink:title="SD&#45;07.7\\nInvestment Risk Reporting &amp; Limits Governance\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M2816.75,-78C2816.75,-78 3782.75,-78 3782.75,-78 3788.75,-78 3794.75,-84 3794.75,-90 3794.75,-90 3794.75,-139.5 3794.75,-139.5 3794.75,-145.5 3788.75,-151.5 3782.75,-151.5 3782.75,-151.5 2816.75,-151.5 2816.75,-151.5 2810.75,-151.5 2804.75,-145.5 2804.75,-139.5 2804.75,-139.5 2804.75,-90 2804.75,-90 2804.75,-84 2810.75,-78 2816.75,-78"/>
+<text xml:space="preserve" text-anchor="middle" x="3299.75" y="-137.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.7\nInvestment Risk Reporting &amp; Limits Governance\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_sd_07_8</title>
+<g id="a_clust8"><a xlink:href="./sd-07.8.html" xlink:title="SD&#45;07.8\\nClimate Risk Analytics\\n[BOTH]">
+<path fill="#e9e2f0" stroke="#7a5b9b" d="M4327.75,-164C4327.75,-164 5285.75,-164 5285.75,-164 5291.75,-164 5297.75,-170 5297.75,-176 5297.75,-176 5297.75,-225.5 5297.75,-225.5 5297.75,-231.5 5291.75,-237.5 5285.75,-237.5 5285.75,-237.5 4327.75,-237.5 4327.75,-237.5 4321.75,-237.5 4315.75,-231.5 4315.75,-225.5 4315.75,-225.5 4315.75,-176 4315.75,-176 4315.75,-170 4321.75,-164 4327.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="4806.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;07.8\nClimate Risk Analytics\n[BOTH]</text>
+</a>
+</g>
+</g>
+<!-- sd_07_1_anchor -->
+<!-- sd_07_7_anchor -->
+<!-- sd_07_1_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge1" class="edge">
+<title>sd_07_1_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2288.75,-187.36C2278.21,-181.8 2286.75,-164 2286.75,-164 2286.75,-164 2709.34,-114.53 2797.5,-106.19"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2797.46,-108.3 2803.24,-105.67 2797.08,-104.12 2797.46,-108.3"/>
+</g>
+<!-- sd_07_1_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge10" class="edge">
+<title>sd_07_1_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2308.75,-164C2308.75,-164 2712.98,-116.68 2797.41,-106.8"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2797.53,-108.9 2803.25,-106.11 2797.05,-104.72 2797.53,-108.9"/>
+</g>
+<!-- sd_07_1_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge13" class="edge">
+<title>sd_07_1_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2330.75,-164C2330.75,-164 2713.7,-119.17 2797.41,-107.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2797.61,-109.76 2803.25,-106.84 2797.02,-105.6 2797.61,-109.76"/>
+</g>
+<!-- ext_out_09 -->
+<g id="node58" class="node">
+<title>ext_out_09</title>
+<g id="a_node58"><a xlink:href="./bd-09.html" xlink:title="&#45;&gt; BD&#45;09\\nPerformance &amp; Analytics">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M2370.75,-122C2370.75,-122 2222.75,-122 2222.75,-122 2216.75,-122 2210.75,-116 2210.75,-110 2210.75,-110 2210.75,-98 2210.75,-98 2210.75,-92 2216.75,-86 2222.75,-86 2222.75,-86 2370.75,-86 2370.75,-86 2376.75,-86 2382.75,-92 2382.75,-98 2382.75,-98 2382.75,-110 2382.75,-110 2382.75,-116 2376.75,-122 2370.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2296.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;09\nPerformance &amp; Analytics</text>
+</a>
+</g>
+</g>
+<!-- sd_07_1_anchor&#45;&gt;ext_out_09 -->
+<g id="edge20" class="edge">
+<title>sd_07_1_anchor&#45;&gt;ext_out_09</title>
+<g id="a_edge20"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2296.75,-164C2296.75,-153.23 2296.75,-140.66 2296.75,-129.89"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2298.85,-129.94 2296.75,-123.94 2294.65,-129.94 2298.85,-129.94"/>
+</a>
+</g>
+</g>
+<!-- so_07_1_01 -->
+<g id="node2" class="node">
+<title>so_07_1_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2518.25,-208C2518.25,-208 2331.25,-208 2331.25,-208 2325.25,-208 2319.25,-202 2319.25,-196 2319.25,-196 2319.25,-184 2319.25,-184 2319.25,-178 2325.25,-172 2331.25,-172 2331.25,-172 2518.25,-172 2518.25,-172 2524.25,-172 2530.25,-178 2530.25,-184 2530.25,-184 2530.25,-196 2530.25,-196 2530.25,-202 2524.25,-208 2518.25,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2424.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Compute value&#45;at&#45;risk and expected shortfall</text>
+</g>
+<!-- so_07_1_02 -->
+<g id="node3" class="node">
+<title>so_07_1_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2648.88,-208C2648.88,-208 2564.62,-208 2564.62,-208 2558.62,-208 2552.62,-202 2552.62,-196 2552.62,-196 2552.62,-184 2552.62,-184 2552.62,-178 2558.62,-172 2564.62,-172 2564.62,-172 2648.88,-172 2648.88,-172 2654.88,-172 2660.88,-178 2660.88,-184 2660.88,-184 2660.88,-196 2660.88,-196 2660.88,-202 2654.88,-208 2648.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2606.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure sensitivities</text>
+</g>
+<!-- so_07_1_03 -->
+<g id="node4" class="node">
+<title>so_07_1_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2796.88,-208C2796.88,-208 2694.62,-208 2694.62,-208 2688.62,-208 2682.62,-202 2682.62,-196 2682.62,-196 2682.62,-184 2682.62,-184 2682.62,-178 2688.62,-172 2694.62,-172 2694.62,-172 2796.88,-172 2796.88,-172 2802.88,-172 2808.88,-178 2808.88,-184 2808.88,-184 2808.88,-196 2808.88,-196 2808.88,-202 2802.88,-208 2796.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2745.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the factor risk model</text>
+</g>
+<!-- so_07_1_04 -->
+<g id="node5" class="node">
+<title>so_07_1_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2989,-208C2989,-208 2842.5,-208 2842.5,-208 2836.5,-208 2830.5,-202 2830.5,-196 2830.5,-196 2830.5,-184 2830.5,-184 2830.5,-178 2836.5,-172 2842.5,-172 2842.5,-172 2989,-172 2989,-172 2995,-172 3001,-178 3001,-184 3001,-184 3001,-196 3001,-196 3001,-202 2995,-208 2989,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2915.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure private&#45;markets return risk</text>
+</g>
+<!-- so_07_1_05 -->
+<g id="node6" class="node">
+<title>so_07_1_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3154.88,-208C3154.88,-208 3034.62,-208 3034.62,-208 3028.62,-208 3022.62,-202 3022.62,-196 3022.62,-196 3022.62,-184 3022.62,-184 3022.62,-178 3028.62,-172 3034.62,-172 3034.62,-172 3154.88,-172 3154.88,-172 3160.88,-172 3166.88,-178 3166.88,-184 3166.88,-184 3166.88,-196 3166.88,-196 3166.88,-202 3160.88,-208 3154.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3094.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Decompose and attribute risk</text>
+</g>
+<!-- so_07_1_06 -->
+<g id="node7" class="node">
+<title>so_07_1_06</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3346.25,-208C3346.25,-208 3201.25,-208 3201.25,-208 3195.25,-208 3189.25,-202 3189.25,-196 3189.25,-196 3189.25,-184 3189.25,-184 3189.25,-178 3195.25,-172 3201.25,-172 3201.25,-172 3346.25,-172 3346.25,-172 3352.25,-172 3358.25,-178 3358.25,-184 3358.25,-184 3358.25,-196 3358.25,-196 3358.25,-202 3352.25,-208 3346.25,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3273.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor the investment risk models</text>
+</g>
+<!-- sd_07_2_anchor -->
+<!-- sd_07_2_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge2" class="edge">
+<title>sd_07_2_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M327.75,-164C327.75,-164 2393.75,-151.5 2393.75,-151.5 2393.75,-151.5 2722.42,-115.02 2797.57,-106.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2797.51,-108.8 2803.25,-106.05 2797.05,-104.63 2797.51,-108.8"/>
+</g>
+<!-- ext_out_08 -->
+<g id="node57" class="node">
+<title>ext_out_08</title>
+<g id="a_node57"><a xlink:href="./bd-08.html" xlink:title="&#45;&gt; BD&#45;08\\nValuation &amp; Pricing">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M378,-122C378,-122 255.5,-122 255.5,-122 249.5,-122 243.5,-116 243.5,-110 243.5,-110 243.5,-98 243.5,-98 243.5,-92 249.5,-86 255.5,-86 255.5,-86 378,-86 378,-86 384,-86 390,-92 390,-98 390,-98 390,-110 390,-110 390,-116 384,-122 378,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="316.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;08\nValuation &amp; Pricing</text>
+</a>
+</g>
+</g>
+<!-- sd_07_2_anchor&#45;&gt;ext_out_08 -->
+<g id="edge19" class="edge">
+<title>sd_07_2_anchor&#45;&gt;ext_out_08</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M316.75,-164C316.75,-153.33 316.75,-140.9 316.75,-130.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="318.85,-130.24 316.75,-124.24 314.65,-130.24 318.85,-130.24"/>
+</g>
+<!-- so_07_2_01 -->
+<g id="node9" class="node">
+<title>so_07_2_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M450.75,-208C450.75,-208 350.75,-208 350.75,-208 344.75,-208 338.75,-202 338.75,-196 338.75,-196 338.75,-184 338.75,-184 338.75,-178 344.75,-172 350.75,-172 350.75,-172 450.75,-172 450.75,-172 456.75,-172 462.75,-178 462.75,-184 462.75,-184 462.75,-196 462.75,-196 462.75,-202 456.75,-208 450.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="400.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess issuer credit risk</text>
+</g>
+<!-- so_07_2_02 -->
+<g id="node10" class="node">
+<title>so_07_2_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M651.12,-208C651.12,-208 496.38,-208 496.38,-208 490.38,-208 484.38,-202 484.38,-196 484.38,-196 484.38,-184 484.38,-184 484.38,-178 490.38,-172 496.38,-172 496.38,-172 651.12,-172 651.12,-172 657.12,-172 663.12,-178 663.12,-184 663.12,-184 663.12,-196 663.12,-196 663.12,-202 657.12,-208 651.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="573.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor downgrade and migration risk</text>
+</g>
+<!-- so_07_2_03 -->
+<g id="node11" class="node">
+<title>so_07_2_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M853.88,-208C853.88,-208 697.62,-208 697.62,-208 691.62,-208 685.62,-202 685.62,-196 685.62,-196 685.62,-184 685.62,-184 685.62,-178 691.62,-172 697.62,-172 697.62,-172 853.88,-172 853.88,-172 859.88,-172 865.88,-178 865.88,-184 865.88,-184 865.88,-196 865.88,-196 865.88,-202 859.88,-208 853.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="775.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure counterparty credit exposure</text>
+</g>
+<!-- so_07_2_04 -->
+<g id="node12" class="node">
+<title>so_07_2_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1051.62,-208C1051.62,-208 899.88,-208 899.88,-208 893.88,-208 887.88,-202 887.88,-196 887.88,-196 887.88,-184 887.88,-184 887.88,-178 893.88,-172 899.88,-172 899.88,-172 1051.62,-172 1051.62,-172 1057.62,-172 1063.62,-178 1063.62,-184 1063.62,-184 1063.62,-196 1063.62,-196 1063.62,-202 1057.62,-208 1051.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="975.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Compute credit valuation adjustment</text>
+</g>
+<!-- so_07_2_05 -->
+<g id="node13" class="node">
+<title>so_07_2_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1240.12,-208C1240.12,-208 1097.38,-208 1097.38,-208 1091.38,-208 1085.38,-202 1085.38,-196 1085.38,-196 1085.38,-184 1085.38,-184 1085.38,-178 1091.38,-172 1097.38,-172 1097.38,-172 1240.12,-172 1240.12,-172 1246.12,-172 1252.12,-178 1252.12,-184 1252.12,-184 1252.12,-196 1252.12,-196 1252.12,-202 1246.12,-208 1240.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1168.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor counterparty concentration</text>
+</g>
+<!-- so_07_2_06 -->
+<g id="node14" class="node">
+<title>so_07_2_06</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1379,-208C1379,-208 1286.5,-208 1286.5,-208 1280.5,-208 1274.5,-202 1274.5,-196 1274.5,-196 1274.5,-184 1274.5,-184 1274.5,-178 1280.5,-172 1286.5,-172 1286.5,-172 1379,-172 1379,-172 1385,-172 1391,-178 1391,-184 1391,-184 1391,-196 1391,-196 1391,-202 1385,-208 1379,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1332.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess settlement risk</text>
+</g>
+<!-- sd_07_3_anchor -->
+<!-- sd_07_3_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge3" class="edge">
+<title>sd_07_3_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1426.75,-164C1426.75,-164 2393.75,-151.5 2393.75,-151.5 2393.75,-151.5 2722.42,-115.02 2797.57,-106.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2797.51,-108.8 2803.25,-106.05 2797.05,-104.63 2797.51,-108.8"/>
+</g>
+<!-- ext_out_05 -->
+<g id="node56" class="node">
+<title>ext_out_05</title>
+<g id="a_node56"><a xlink:href="./bd-05.html" xlink:title="&#45;&gt; BD&#45;05\\nPortfolio Management">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M1579.38,-122C1579.38,-122 1444.12,-122 1444.12,-122 1438.12,-122 1432.12,-116 1432.12,-110 1432.12,-110 1432.12,-98 1432.12,-98 1432.12,-92 1438.12,-86 1444.12,-86 1444.12,-86 1579.38,-86 1579.38,-86 1585.38,-86 1591.38,-92 1591.38,-98 1591.38,-98 1591.38,-110 1591.38,-110 1591.38,-116 1585.38,-122 1579.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="1511.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;05\nPortfolio Management</text>
+</a>
+</g>
+</g>
+<!-- sd_07_3_anchor&#45;&gt;ext_out_05 -->
+<g id="edge18" class="edge">
+<title>sd_07_3_anchor&#45;&gt;ext_out_05</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1426.75,-164C1426.75,-164 1456.04,-143.67 1480.23,-126.88"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1481.27,-128.71 1485,-123.56 1478.88,-125.26 1481.27,-128.71"/>
+</g>
+<!-- ext_out_11 -->
+<g id="node59" class="node">
+<title>ext_out_11</title>
+<g id="a_node59"><a xlink:href="./bd-11.html" xlink:title="&#45;&gt; BD&#45;11\\nTreasury, Cash &amp; Collateral">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M1397.75,-122C1397.75,-122 1237.75,-122 1237.75,-122 1231.75,-122 1225.75,-116 1225.75,-110 1225.75,-110 1225.75,-98 1225.75,-98 1225.75,-92 1231.75,-86 1237.75,-86 1237.75,-86 1397.75,-86 1397.75,-86 1403.75,-86 1409.75,-92 1409.75,-98 1409.75,-98 1409.75,-110 1409.75,-110 1409.75,-116 1403.75,-122 1397.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="1317.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;11\nTreasury, Cash &amp; Collateral</text>
+</a>
+</g>
+</g>
+<!-- sd_07_3_anchor&#45;&gt;ext_out_11 -->
+<g id="edge21" class="edge">
+<title>sd_07_3_anchor&#45;&gt;ext_out_11</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1406.75,-170.82C1405.05,-166.95 1403.75,-164 1403.75,-164 1403.75,-164 1374.12,-143.67 1349.64,-126.88"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1350.94,-125.22 1344.8,-123.56 1348.56,-128.68 1350.94,-125.22"/>
+</g>
+<!-- so_07_3_01 -->
+<g id="node16" class="node">
+<title>so_07_3_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1566,-208C1566,-208 1449.5,-208 1449.5,-208 1443.5,-208 1437.5,-202 1437.5,-196 1437.5,-196 1437.5,-184 1437.5,-184 1437.5,-178 1443.5,-172 1449.5,-172 1449.5,-172 1566,-172 1566,-172 1572,-172 1578,-178 1578,-184 1578,-184 1578,-196 1578,-196 1578,-202 1572,-208 1566,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1507.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Classify holdings by liquidity</text>
+</g>
+<!-- so_07_3_02 -->
+<g id="node17" class="node">
+<title>so_07_3_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1701.12,-208C1701.12,-208 1612.38,-208 1612.38,-208 1606.38,-208 1600.38,-202 1600.38,-196 1600.38,-196 1600.38,-184 1600.38,-184 1600.38,-178 1606.38,-172 1612.38,-172 1612.38,-172 1701.12,-172 1701.12,-172 1707.12,-172 1713.12,-178 1713.12,-184 1713.12,-184 1713.12,-196 1713.12,-196 1713.12,-202 1707.12,-208 1701.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1656.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Model the liability side</text>
+</g>
+<!-- so_07_3_03 -->
+<g id="node18" class="node">
+<title>so_07_3_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M1938.12,-208C1938.12,-208 1747.38,-208 1747.38,-208 1741.38,-208 1735.38,-202 1735.38,-196 1735.38,-196 1735.38,-184 1735.38,-184 1735.38,-178 1741.38,-172 1747.38,-172 1747.38,-172 1938.12,-172 1938.12,-172 1944.12,-172 1950.12,-178 1950.12,-184 1950.12,-184 1950.12,-196 1950.12,-196 1950.12,-202 1944.12,-208 1938.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1842.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure commitment and capital&#45;call liquidity</text>
+</g>
+<!-- so_07_3_04 -->
+<g id="node19" class="node">
+<title>so_07_3_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2092.88,-208C2092.88,-208 1984.62,-208 1984.62,-208 1978.62,-208 1972.62,-202 1972.62,-196 1972.62,-196 1972.62,-184 1972.62,-184 1972.62,-178 1978.62,-172 1984.62,-172 1984.62,-172 2092.88,-172 2092.88,-172 2098.88,-172 2104.88,-178 2104.88,-184 2104.88,-184 2104.88,-196 2104.88,-196 2104.88,-202 2098.88,-208 2092.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2038.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run liquidity stress testing</text>
+</g>
+<!-- so_07_3_05 -->
+<g id="node20" class="node">
+<title>so_07_3_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2260.25,-208C2260.25,-208 2139.25,-208 2139.25,-208 2133.25,-208 2127.25,-202 2127.25,-196 2127.25,-196 2127.25,-184 2127.25,-184 2127.25,-178 2133.25,-172 2139.25,-172 2139.25,-172 2260.25,-172 2260.25,-172 2266.25,-172 2272.25,-178 2272.25,-184 2272.25,-184 2272.25,-196 2272.25,-196 2272.25,-202 2266.25,-208 2260.25,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2199.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor against liquidity limits</text>
+</g>
+<!-- sd_07_4_anchor -->
+<!-- sd_07_4_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge6" class="edge">
+<title>sd_07_4_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3374.75,-170.82C3373.05,-166.95 3371.75,-164 3371.75,-164 3371.75,-164 2896.11,-153.15 2831.08,-151.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2831.31,-149.57 2825.26,-151.53 2831.21,-153.77 2831.31,-149.57"/>
+</g>
+<!-- so_07_4_01 -->
+<g id="node22" class="node">
+<title>so_07_4_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3496.25,-208C3496.25,-208 3417.25,-208 3417.25,-208 3411.25,-208 3405.25,-202 3405.25,-196 3405.25,-196 3405.25,-184 3405.25,-184 3405.25,-178 3411.25,-172 3417.25,-172 3417.25,-172 3496.25,-172 3496.25,-172 3502.25,-172 3508.25,-178 3508.25,-184 3508.25,-184 3508.25,-196 3508.25,-196 3508.25,-202 3502.25,-208 3496.25,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3456.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Aggregate exposure</text>
+</g>
+<!-- so_07_4_02 -->
+<g id="node23" class="node">
+<title>so_07_4_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3671,-208C3671,-208 3542.5,-208 3542.5,-208 3536.5,-208 3530.5,-202 3530.5,-196 3530.5,-196 3530.5,-184 3530.5,-184 3530.5,-178 3536.5,-172 3542.5,-172 3542.5,-172 3671,-172 3671,-172 3677,-172 3683,-178 3683,-184 3683,-184 3683,-196 3683,-196 3683,-202 3677,-208 3671,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3606.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Compute concentration metrics</text>
+</g>
+<!-- so_07_4_03 -->
+<g id="node24" class="node">
+<title>so_07_4_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3836.12,-208C3836.12,-208 3717.38,-208 3717.38,-208 3711.38,-208 3705.38,-202 3705.38,-196 3705.38,-196 3705.38,-184 3705.38,-184 3705.38,-178 3711.38,-172 3717.38,-172 3717.38,-172 3836.12,-172 3836.12,-172 3842.12,-172 3848.12,-178 3848.12,-184 3848.12,-184 3848.12,-196 3848.12,-196 3848.12,-202 3842.12,-208 3836.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3776.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure factor concentration</text>
+</g>
+<!-- so_07_4_04 -->
+<g id="node25" class="node">
+<title>so_07_4_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4007.5,-208C4007.5,-208 3882,-208 3882,-208 3876,-208 3870,-202 3870,-196 3870,-196 3870,-184 3870,-184 3870,-178 3876,-172 3882,-172 3882,-172 4007.5,-172 4007.5,-172 4013.5,-172 4019.5,-178 4019.5,-184 4019.5,-184 4019.5,-196 4019.5,-196 4019.5,-202 4013.5,-208 4007.5,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3944.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Measure vintage concentration</text>
+</g>
+<!-- so_07_4_05 -->
+<g id="node26" class="node">
+<title>so_07_4_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4200,-208C4200,-208 4053.5,-208 4053.5,-208 4047.5,-208 4041.5,-202 4041.5,-196 4041.5,-196 4041.5,-184 4041.5,-184 4041.5,-178 4047.5,-172 4053.5,-172 4053.5,-172 4200,-172 4200,-172 4206,-172 4212,-178 4212,-184 4212,-184 4212,-196 4212,-196 4212,-202 4206,-208 4200,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4126.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor against concentration limits</text>
+</g>
+<!-- sd_07_5_anchor -->
+<!-- sd_07_5_anchor&#45;&gt;sd_07_4_anchor -->
+<g id="edge4" class="edge">
+<title>sd_07_5_anchor&#45;&gt;sd_07_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3374.75,-270.46C3364.79,-257.61 3363.58,-220.76 3371.13,-202.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3372.96,-203.14 3374.02,-196.87 3369.28,-201.11 3372.96,-203.14"/>
+</g>
+<!-- sd_07_5_anchor&#45;&gt;sd_07_4_anchor -->
+<g id="edge5" class="edge">
+<title>sd_07_5_anchor&#45;&gt;sd_07_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3382.75,-250C3382.75,-248.33 3382.75,-246.61 3382.75,-244.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3384.85,-245.01 3382.75,-239.01 3380.65,-245.01 3384.85,-245.01"/>
+</g>
+<!-- sd_07_5_anchor&#45;&gt;sd_07_4_anchor -->
+<g id="edge7" class="edge">
+<title>sd_07_5_anchor&#45;&gt;sd_07_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3397.98,-250C3398.26,-248.25 3398.49,-246.45 3398.68,-244.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3400.74,-245.14 3399.06,-239.01 3396.55,-244.85 3400.74,-245.14"/>
+</g>
+<!-- so_07_5_01 -->
+<g id="node28" class="node">
+<title>so_07_5_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3532.25,-294C3532.25,-294 3417.25,-294 3417.25,-294 3411.25,-294 3405.25,-288 3405.25,-282 3405.25,-282 3405.25,-270 3405.25,-270 3405.25,-264 3411.25,-258 3417.25,-258 3417.25,-258 3532.25,-258 3532.25,-258 3538.25,-258 3544.25,-264 3544.25,-270 3544.25,-270 3544.25,-282 3544.25,-282 3544.25,-288 3538.25,-294 3532.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3474.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Decompose pooled vehicles</text>
+</g>
+<!-- so_07_5_02 -->
+<g id="node29" class="node">
+<title>so_07_5_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3713.38,-294C3713.38,-294 3578.12,-294 3578.12,-294 3572.12,-294 3566.12,-288 3566.12,-282 3566.12,-282 3566.12,-270 3566.12,-270 3566.12,-264 3572.12,-258 3578.12,-258 3578.12,-258 3713.38,-258 3713.38,-258 3719.38,-258 3725.38,-264 3725.38,-270 3725.38,-270 3725.38,-282 3725.38,-282 3725.38,-288 3719.38,-294 3713.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3645.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Aggregate look&#45;through exposure</text>
+</g>
+<!-- so_07_5_03 -->
+<g id="node30" class="node">
+<title>so_07_5_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3854.12,-294C3854.12,-294 3759.38,-294 3759.38,-294 3753.38,-294 3747.38,-288 3747.38,-282 3747.38,-282 3747.38,-270 3747.38,-270 3747.38,-264 3753.38,-258 3759.38,-258 3759.38,-258 3854.12,-258 3854.12,-258 3860.12,-258 3866.12,-264 3866.12,-270 3866.12,-270 3866.12,-282 3866.12,-282 3866.12,-288 3860.12,-294 3854.12,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3806.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Detect holdings overlap</text>
+</g>
+<!-- so_07_5_04 -->
+<g id="node31" class="node">
+<title>so_07_5_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3997.62,-294C3997.62,-294 3899.88,-294 3899.88,-294 3893.88,-294 3887.88,-288 3887.88,-282 3887.88,-282 3887.88,-270 3887.88,-270 3887.88,-264 3893.88,-258 3899.88,-258 3899.88,-258 3997.62,-258 3997.62,-258 4003.62,-258 4009.62,-264 4009.62,-270 4009.62,-270 4009.62,-282 4009.62,-282 4009.62,-288 4003.62,-294 3997.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3948.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Roll up nested exposure</text>
+</g>
+<!-- so_07_5_05 -->
+<g id="node32" class="node">
+<title>so_07_5_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4164.25,-294C4164.25,-294 4043.25,-294 4043.25,-294 4037.25,-294 4031.25,-288 4031.25,-282 4031.25,-282 4031.25,-270 4031.25,-270 4031.25,-264 4037.25,-258 4043.25,-258 4043.25,-258 4164.25,-258 4164.25,-258 4170.25,-258 4176.25,-264 4176.25,-270 4176.25,-270 4176.25,-282 4176.25,-282 4176.25,-288 4170.25,-294 4164.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4103.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Apply look&#45;through thresholds</text>
+</g>
+<!-- sd_07_6_anchor -->
+<!-- sd_07_6_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge9" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4259.75,-271.21C4236.75,-251.77 4202.75,-164 4202.75,-164 4202.75,-164 2801.75,-151.5 2801.75,-151.5 2801.75,-151.5 2796.15,-127.84 2800.93,-114.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2802.64,-115.5 2803.97,-109.28 2799.05,-113.31 2802.64,-115.5"/>
+</g>
+<!-- sd_07_6_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge11" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4259.75,-254.35C4247.31,-222.25 4224.75,-164 4224.75,-164 4224.75,-164 2938.94,-152.53 2830.95,-151.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2831.28,-149.47 2825.26,-151.51 2831.24,-153.67 2831.28,-149.47"/>
+</g>
+<!-- sd_07_6_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge12" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4272.75,-250C4267.39,-217.27 4246.75,-164 4246.75,-164 4246.75,-164 2960.94,-152.53 2852.95,-151.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2853.28,-149.47 2847.26,-151.51 2853.24,-153.67 2853.28,-149.47"/>
+</g>
+<!-- sd_07_8_anchor -->
+<!-- sd_07_6_anchor&#45;&gt;sd_07_8_anchor -->
+<g id="edge8" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4259.75,-273.36C4249.21,-267.8 4257.75,-250 4257.75,-250 4257.75,-250 4284.75,-237.5 4284.75,-237.5 4284.75,-237.5 4294.89,-209.76 4309.65,-197.13"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4310.7,-198.95 4314.5,-193.85 4308.35,-195.47 4310.7,-198.95"/>
+</g>
+<!-- sd_07_6_anchor&#45;&gt;sd_07_8_anchor -->
+<g id="edge14" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4279.75,-250C4279.75,-250 4306.75,-237.5 4306.75,-237.5 4306.75,-237.5 4309.72,-229.37 4313.18,-219.9"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4315.15,-220.65 4315.23,-214.29 4311.2,-219.21 4315.15,-220.65"/>
+</g>
+<!-- sd_07_6_anchor&#45;&gt;sd_07_8_anchor -->
+<g id="edge15" class="edge">
+<title>sd_07_6_anchor&#45;&gt;sd_07_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4301.75,-250C4301.75,-250 4313.94,-244.36 4321.94,-240.65"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4322.81,-242.56 4327.38,-238.14 4321.05,-238.75 4322.81,-242.56"/>
+</g>
+<!-- so_07_6_01 -->
+<g id="node34" class="node">
+<title>so_07_6_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4447.25,-294C4447.25,-294 4302.25,-294 4302.25,-294 4296.25,-294 4290.25,-288 4290.25,-282 4290.25,-282 4290.25,-270 4290.25,-270 4290.25,-264 4296.25,-258 4302.25,-258 4302.25,-258 4447.25,-258 4447.25,-258 4453.25,-258 4459.25,-264 4459.25,-270 4459.25,-270 4459.25,-282 4459.25,-282 4459.25,-288 4453.25,-294 4447.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4374.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Design and run historical scenarios</text>
+</g>
+<!-- so_07_6_02 -->
+<g id="node35" class="node">
+<title>so_07_6_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4652,-294C4652,-294 4493.5,-294 4493.5,-294 4487.5,-294 4481.5,-288 4481.5,-282 4481.5,-282 4481.5,-270 4481.5,-270 4481.5,-264 4487.5,-258 4493.5,-258 4493.5,-258 4652,-258 4652,-258 4658,-258 4664,-264 4664,-270 4664,-270 4664,-282 4664,-282 4664,-288 4658,-294 4652,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4572.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Design and run hypothetical scenarios</text>
+</g>
+<!-- so_07_6_03 -->
+<g id="node36" class="node">
+<title>so_07_6_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4787.5,-294C4787.5,-294 4698,-294 4698,-294 4692,-294 4686,-288 4686,-282 4686,-282 4686,-270 4686,-270 4686,-264 4692,-258 4698,-258 4698,-258 4787.5,-258 4787.5,-258 4793.5,-258 4799.5,-264 4799.5,-270 4799.5,-270 4799.5,-282 4799.5,-282 4799.5,-288 4793.5,-294 4787.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4742.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run climate scenarios</text>
+</g>
+<!-- so_07_6_04 -->
+<g id="node37" class="node">
+<title>so_07_6_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4993.75,-294C4993.75,-294 4833.75,-294 4833.75,-294 4827.75,-294 4821.75,-288 4821.75,-282 4821.75,-282 4821.75,-270 4821.75,-270 4821.75,-264 4827.75,-258 4833.75,-258 4833.75,-258 4993.75,-258 4993.75,-258 4999.75,-258 5005.75,-264 5005.75,-270 5005.75,-270 5005.75,-282 5005.75,-282 5005.75,-288 4999.75,-294 4993.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4913.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run sensitivity and shock stress tests</text>
+</g>
+<!-- so_07_6_05 -->
+<g id="node38" class="node">
+<title>so_07_6_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M5165.5,-294C5165.5,-294 5040,-294 5040,-294 5034,-294 5028,-288 5028,-282 5028,-282 5028,-270 5028,-270 5028,-264 5034,-258 5040,-258 5040,-258 5165.5,-258 5165.5,-258 5171.5,-258 5177.5,-264 5177.5,-270 5177.5,-270 5177.5,-282 5177.5,-282 5177.5,-288 5171.5,-294 5165.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5102.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run private&#45;markets scenarios</text>
+</g>
+<!-- so_07_6_06 -->
+<g id="node39" class="node">
+<title>so_07_6_06</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M5319.5,-294C5319.5,-294 5212,-294 5212,-294 5206,-294 5200,-288 5200,-282 5200,-282 5200,-270 5200,-270 5200,-264 5206,-258 5212,-258 5212,-258 5319.5,-258 5319.5,-258 5325.5,-258 5331.5,-264 5331.5,-270 5331.5,-270 5331.5,-282 5331.5,-282 5331.5,-288 5325.5,-294 5319.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5265.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run reverse stress testing</text>
+</g>
+<!-- so_07_6_07 -->
+<g id="node40" class="node">
+<title>so_07_6_07</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M5474.25,-294C5474.25,-294 5365.25,-294 5365.25,-294 5359.25,-294 5353.25,-288 5353.25,-282 5353.25,-282 5353.25,-270 5353.25,-270 5353.25,-264 5359.25,-258 5365.25,-258 5365.25,-258 5474.25,-258 5474.25,-258 5480.25,-258 5486.25,-264 5486.25,-270 5486.25,-270 5486.25,-282 5486.25,-282 5486.25,-288 5480.25,-294 5474.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5419.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern the scenario library</text>
+</g>
+<!-- ext_out_16 -->
+<g id="node61" class="node">
+<title>ext_out_16</title>
+<g id="a_node61"><a xlink:href="./bd-16.html" xlink:title="&#45;&gt; BD&#45;16\\nEnterprise Governance &amp; Accountability">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M2919.38,-36C2919.38,-36 2706.12,-36 2706.12,-36 2700.12,-36 2694.12,-30 2694.12,-24 2694.12,-24 2694.12,-12 2694.12,-12 2694.12,-6 2700.12,0 2706.12,0 2706.12,0 2919.38,0 2919.38,0 2925.38,0 2931.38,-6 2931.38,-12 2931.38,-12 2931.38,-24 2931.38,-24 2931.38,-30 2925.38,-36 2919.38,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="2812.75" y="-14.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;16\nEnterprise Governance &amp; Accountability</text>
+</a>
+</g>
+</g>
+<!-- sd_07_7_anchor&#45;&gt;ext_out_16 -->
+<g id="edge23" class="edge">
+<title>sd_07_7_anchor&#45;&gt;ext_out_16</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2812.75,-78C2812.75,-67.33 2812.75,-54.9 2812.75,-44.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2814.85,-44.24 2812.75,-38.24 2810.65,-44.24 2814.85,-44.24"/>
+</g>
+<!-- so_07_7_01 -->
+<g id="node42" class="node">
+<title>so_07_7_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M2980.62,-122C2980.62,-122 2846.88,-122 2846.88,-122 2840.88,-122 2834.88,-116 2834.88,-110 2834.88,-110 2834.88,-98 2834.88,-98 2834.88,-92 2840.88,-86 2846.88,-86 2846.88,-86 2980.62,-86 2980.62,-86 2986.62,-86 2992.62,-92 2992.62,-98 2992.62,-98 2992.62,-110 2992.62,-110 2992.62,-116 2986.62,-122 2980.62,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2913.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the risk&#45;limit framework</text>
+</g>
+<!-- so_07_7_02 -->
+<g id="node43" class="node">
+<title>so_07_7_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3139.12,-122C3139.12,-122 3026.38,-122 3026.38,-122 3020.38,-122 3014.38,-116 3014.38,-110 3014.38,-110 3014.38,-98 3014.38,-98 3014.38,-92 3020.38,-86 3026.38,-86 3026.38,-86 3139.12,-86 3139.12,-86 3145.12,-86 3151.12,-92 3151.12,-98 3151.12,-98 3151.12,-110 3151.12,-110 3151.12,-116 3145.12,-122 3139.12,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3082.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate hard and soft limits</text>
+</g>
+<!-- so_07_7_03 -->
+<g id="node44" class="node">
+<title>so_07_7_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3290.38,-122C3290.38,-122 3185.12,-122 3185.12,-122 3179.12,-122 3173.12,-116 3173.12,-110 3173.12,-110 3173.12,-98 3173.12,-98 3173.12,-92 3179.12,-86 3185.12,-86 3185.12,-86 3290.38,-86 3290.38,-86 3296.38,-86 3302.38,-92 3302.38,-98 3302.38,-98 3302.38,-110 3302.38,-110 3302.38,-116 3296.38,-122 3290.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3237.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Translate the risk appetite</text>
+</g>
+<!-- so_07_7_04 -->
+<g id="node45" class="node">
+<title>so_07_7_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3459,-122C3459,-122 3336.5,-122 3336.5,-122 3330.5,-122 3324.5,-116 3324.5,-110 3324.5,-110 3324.5,-98 3324.5,-98 3324.5,-92 3330.5,-86 3336.5,-86 3336.5,-86 3459,-86 3459,-86 3465,-86 3471,-92 3471,-98 3471,-98 3471,-110 3471,-110 3471,-116 3465,-122 3459,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3397.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Detect and escalate breaches</text>
+</g>
+<!-- so_07_7_05 -->
+<g id="node46" class="node">
+<title>so_07_7_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3592.38,-122C3592.38,-122 3505.12,-122 3505.12,-122 3499.12,-122 3493.12,-116 3493.12,-110 3493.12,-110 3493.12,-98 3493.12,-98 3493.12,-92 3499.12,-86 3505.12,-86 3505.12,-86 3592.38,-86 3592.38,-86 3598.38,-86 3604.38,-92 3604.38,-98 3604.38,-98 3604.38,-110 3604.38,-110 3604.38,-116 3598.38,-122 3592.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3548.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce risk reporting</text>
+</g>
+<!-- so_07_7_06 -->
+<g id="node47" class="node">
+<title>so_07_7_06</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M3774.75,-122C3774.75,-122 3638.75,-122 3638.75,-122 3632.75,-122 3626.75,-116 3626.75,-110 3626.75,-110 3626.75,-98 3626.75,-98 3626.75,-92 3632.75,-86 3638.75,-86 3638.75,-86 3774.75,-86 3774.75,-86 3780.75,-86 3786.75,-92 3786.75,-98 3786.75,-98 3786.75,-110 3786.75,-110 3786.75,-116 3780.75,-122 3774.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3706.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern the risk&#45;policy framework</text>
+</g>
+<!-- sd_07_8_anchor&#45;&gt;sd_07_7_anchor -->
+<g id="edge16" class="edge">
+<title>sd_07_8_anchor&#45;&gt;sd_07_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4315.75,-177.24C4311.34,-170.75 4306.75,-164 4306.75,-164 4306.75,-164 2942.91,-152.5 2831.03,-151.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2831.28,-149.46 2825.26,-151.51 2831.25,-153.66 2831.28,-149.46"/>
+</g>
+<!-- ext_out_01 -->
+<g id="node55" class="node">
+<title>ext_out_01</title>
+<g id="a_node55"><a xlink:href="./bd-01.html" xlink:title="&#45;&gt; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M4532.38,-122C4532.38,-122 4349.12,-122 4349.12,-122 4343.12,-122 4337.12,-116 4337.12,-110 4337.12,-110 4337.12,-98 4337.12,-98 4337.12,-92 4343.12,-86 4349.12,-86 4349.12,-86 4532.38,-86 4532.38,-86 4538.38,-86 4544.38,-92 4544.38,-98 4544.38,-98 4544.38,-110 4544.38,-110 4544.38,-116 4538.38,-122 4532.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="4440.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- sd_07_8_anchor&#45;&gt;ext_out_01 -->
+<g id="edge17" class="edge">
+<title>sd_07_8_anchor&#45;&gt;ext_out_01</title>
+<g id="a_edge17"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M4335.75,-164C4335.75,-164 4373.16,-142.98 4403.32,-126.03"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="4403.99,-128.07 4408.19,-123.3 4401.93,-124.4 4403.99,-128.07"/>
+</a>
+</g>
+</g>
+<!-- ext_out_12 -->
+<g id="node60" class="node">
+<title>ext_out_12</title>
+<g id="a_node60"><a xlink:href="./bd-12.html" xlink:title="&#45;&gt; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M4302.88,-122C4302.88,-122 4110.62,-122 4110.62,-122 4104.62,-122 4098.62,-116 4098.62,-110 4098.62,-110 4098.62,-98 4098.62,-98 4098.62,-92 4104.62,-86 4110.62,-86 4110.62,-86 4302.88,-86 4302.88,-86 4308.88,-86 4314.88,-92 4314.88,-98 4314.88,-98 4314.88,-110 4314.88,-110 4314.88,-116 4308.88,-122 4302.88,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="4206.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- sd_07_8_anchor&#45;&gt;ext_out_12 -->
+<g id="edge22" class="edge">
+<title>sd_07_8_anchor&#45;&gt;ext_out_12</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M4315.75,-177.24C4311.34,-170.75 4306.75,-164 4306.75,-164 4306.75,-164 4271.71,-143.33 4243.11,-126.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4244.29,-124.71 4238.06,-123.47 4242.16,-128.33 4244.29,-124.71"/>
+</g>
+<!-- so_07_8_01 -->
+<g id="node49" class="node">
+<title>so_07_8_01</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4433,-208C4433,-208 4358.5,-208 4358.5,-208 4352.5,-208 4346.5,-202 4346.5,-196 4346.5,-196 4346.5,-184 4346.5,-184 4346.5,-178 4352.5,-172 4358.5,-172 4358.5,-172 4433,-172 4433,-172 4439,-172 4445,-178 4445,-184 4445,-184 4445,-196 4445,-196 4445,-202 4439,-208 4433,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4395.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Carbon&#45;footprinting</text>
+</g>
+<!-- so_07_8_02 -->
+<g id="node50" class="node">
+<title>so_07_8_02</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4584.38,-208C4584.38,-208 4479.12,-208 4479.12,-208 4473.12,-208 4467.12,-202 4467.12,-196 4467.12,-196 4467.12,-184 4467.12,-184 4467.12,-178 4473.12,-172 4479.12,-172 4479.12,-172 4584.38,-172 4584.38,-172 4590.38,-172 4596.38,-178 4596.38,-184 4596.38,-184 4596.38,-196 4596.38,-196 4596.38,-202 4590.38,-208 4584.38,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4531.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Emissions&#45;data attribution</text>
+</g>
+<!-- so_07_8_03 -->
+<g id="node51" class="node">
+<title>so_07_8_03</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4723,-208C4723,-208 4630.5,-208 4630.5,-208 4624.5,-208 4618.5,-202 4618.5,-196 4618.5,-196 4618.5,-184 4618.5,-184 4618.5,-178 4624.5,-172 4630.5,-172 4630.5,-172 4723,-172 4723,-172 4729,-172 4735,-178 4735,-184 4735,-184 4735,-196 4735,-196 4735,-202 4729,-208 4723,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4676.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Physical&#45;risk modelling</text>
+</g>
+<!-- so_07_8_04 -->
+<g id="node52" class="node">
+<title>so_07_8_04</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M4866.62,-208C4866.62,-208 4768.88,-208 4768.88,-208 4762.88,-208 4756.88,-202 4756.88,-196 4756.88,-196 4756.88,-184 4756.88,-184 4756.88,-178 4762.88,-172 4768.88,-172 4768.88,-172 4866.62,-172 4866.62,-172 4872.62,-172 4878.62,-178 4878.62,-184 4878.62,-184 4878.62,-196 4878.62,-196 4878.62,-202 4872.62,-208 4866.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4817.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Transition&#45;risk modelling</text>
+</g>
+<!-- so_07_8_05 -->
+<g id="node53" class="node">
+<title>so_07_8_05</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M5019.12,-208C5019.12,-208 4912.38,-208 4912.38,-208 4906.38,-208 4900.38,-202 4900.38,-196 4900.38,-196 4900.38,-184 4900.38,-184 4900.38,-178 4906.38,-172 4912.38,-172 4912.38,-172 5019.12,-172 5019.12,-172 5025.12,-172 5031.12,-178 5031.12,-184 5031.12,-184 5031.12,-196 5031.12,-196 5031.12,-202 5025.12,-208 5019.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4965.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Net&#45;zero pathway tracking</text>
+</g>
+<!-- so_07_8_06 -->
+<g id="node54" class="node">
+<title>so_07_8_06</title>
+<path fill="white" stroke="#7a5b9b" stroke-width="1.5" d="M5278,-208C5278,-208 5065.5,-208 5065.5,-208 5059.5,-208 5053.5,-202 5053.5,-196 5053.5,-196 5053.5,-184 5053.5,-184 5053.5,-178 5059.5,-172 5065.5,-172 5065.5,-172 5278,-172 5278,-172 5284,-172 5290,-178 5290,-184 5290,-184 5290,-196 5290,-196 5290,-202 5284,-208 5278,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="5171.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Climate&#45;analytics distribution and reporting support</text>
+</g>
+<!-- ext_in_01 -->
+<g id="node62" class="node">
+<title>ext_in_01</title>
+<g id="a_node62"><a xlink:href="./bd-01.html" xlink:title="&lt;&#45; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M1506.38,-294C1506.38,-294 1323.12,-294 1323.12,-294 1317.12,-294 1311.12,-288 1311.12,-282 1311.12,-282 1311.12,-270 1311.12,-270 1311.12,-264 1317.12,-258 1323.12,-258 1323.12,-258 1506.38,-258 1506.38,-258 1512.38,-258 1518.38,-264 1518.38,-270 1518.38,-270 1518.38,-282 1518.38,-282 1518.38,-288 1512.38,-294 1506.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1414.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- ext_in_01&#45;&gt;sd_07_3_anchor -->
+<g id="edge24" class="edge">
+<title>ext_in_01&#45;&gt;sd_07_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1414.75,-257.6C1414.75,-253.68 1414.75,-249.33 1414.75,-244.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1416.85,-245.01 1414.75,-239.01 1412.65,-245.01 1416.85,-245.01"/>
+</g>
+<!-- ext_in_02 -->
+<g id="node63" class="node">
+<title>ext_in_02</title>
+<g id="a_node63"><a xlink:href="./bd-02.html" xlink:title="&lt;&#45; BD&#45;02\\nSecurities Research &amp; Selection">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M407.62,-294C407.62,-294 225.88,-294 225.88,-294 219.88,-294 213.88,-288 213.88,-282 213.88,-282 213.88,-270 213.88,-270 213.88,-264 219.88,-258 225.88,-258 225.88,-258 407.62,-258 407.62,-258 413.62,-258 419.62,-264 419.62,-270 419.62,-270 419.62,-282 419.62,-282 419.62,-288 413.62,-294 407.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="316.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;02\nSecurities Research &amp; Selection</text>
+</a>
+</g>
+</g>
+<!-- ext_in_02&#45;&gt;sd_07_2_anchor -->
+<g id="edge25" class="edge">
+<title>ext_in_02&#45;&gt;sd_07_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M316.75,-257.6C316.75,-253.68 316.75,-249.33 316.75,-244.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="318.85,-245.01 316.75,-239.01 314.65,-245.01 318.85,-245.01"/>
+</g>
+<!-- ext_in_11 -->
+<g id="node64" class="node">
+<title>ext_in_11</title>
+<g id="a_node64"><a xlink:href="./bd-11.html" xlink:title="&lt;&#45; BD&#45;11\\nTreasury, Cash &amp; Collateral">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M613.75,-294C613.75,-294 453.75,-294 453.75,-294 447.75,-294 441.75,-288 441.75,-282 441.75,-282 441.75,-270 441.75,-270 441.75,-264 447.75,-258 453.75,-258 453.75,-258 613.75,-258 613.75,-258 619.75,-258 625.75,-264 625.75,-270 625.75,-270 625.75,-282 625.75,-282 625.75,-288 619.75,-294 613.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="533.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;11\nTreasury, Cash &amp; Collateral</text>
+</a>
+</g>
+</g>
+<!-- ext_in_11&#45;&gt;sd_07_2_anchor -->
+<g id="edge26" class="edge">
+<title>ext_in_11&#45;&gt;sd_07_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M460.82,-257.3C443.91,-253.19 430.75,-250 430.75,-250 430.75,-250 358.77,-241.27 335.16,-238.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="335.46,-236.32 329.25,-237.68 334.96,-240.49 335.46,-236.32"/>
+</g>
+<!-- ext_in_12 -->
+<g id="node65" class="node">
+<title>ext_in_12</title>
+<g id="a_node65"><a xlink:href="./bd-12.html" xlink:title="&lt;&#45; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M2392.88,-294C2392.88,-294 2200.62,-294 2200.62,-294 2194.62,-294 2188.62,-288 2188.62,-282 2188.62,-282 2188.62,-270 2188.62,-270 2188.62,-264 2194.62,-258 2200.62,-258 2200.62,-258 2392.88,-258 2392.88,-258 2398.88,-258 2404.88,-264 2404.88,-270 2404.88,-270 2404.88,-282 2404.88,-282 2404.88,-288 2398.88,-294 2392.88,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2296.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- ext_in_12&#45;&gt;sd_07_1_anchor -->
+<g id="edge27" class="edge">
+<title>ext_in_12&#45;&gt;sd_07_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2296.75,-257.6C2296.75,-253.68 2296.75,-249.33 2296.75,-244.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2298.85,-245.01 2296.75,-239.01 2294.65,-245.01 2298.85,-245.01"/>
+</g>
+<!-- ext_in_13 -->
+<g id="node66" class="node">
+<title>ext_in_13</title>
+<g id="a_node66"><a xlink:href="./bd-13.html" xlink:title="&lt;&#45; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M179.5,-294C179.5,-294 12,-294 12,-294 6,-294 0,-288 0,-282 0,-282 0,-270 0,-270 0,-264 6,-258 12,-258 12,-258 179.5,-258 179.5,-258 185.5,-258 191.5,-264 191.5,-270 191.5,-270 191.5,-282 191.5,-282 191.5,-288 185.5,-294 179.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="95.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- ext_in_13&#45;&gt;sd_07_2_anchor -->
+<g id="edge28" class="edge">
+<title>ext_in_13&#45;&gt;sd_07_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M142.35,-257.29C192.63,-238.18 269.82,-208.84 301.93,-196.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="302.48,-198.67 307.34,-194.58 300.98,-194.75 302.48,-198.67"/>
+</g>
+</g>
+</svg>
+</div>
+<h3>Service Domains (8)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Service Domain</th><th>Example operations</th></tr></thead>
+  <tbody><tr><td>SD-07.1</td><td><a href='./sd-07.1.html'>Market Risk Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Compute value-at-risk and expected shortfall, Measure sensitivities, Run the factor risk model…</td></tr><tr><td>SD-07.2</td><td><a href='./sd-07.2.html'>Credit &amp; Counterparty Risk Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Assess issuer credit risk, Monitor downgrade and migration risk, Measure counterparty credit exposure…</td></tr><tr><td>SD-07.3</td><td><a href='./sd-07.3.html'>Liquidity Risk Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Classify holdings by liquidity, Model the liability side, Measure commitment and capital-call liquidity…</td></tr><tr><td>SD-07.4</td><td><a href='./sd-07.4.html'>Concentration &amp; Exposure Risk</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Aggregate exposure, Compute concentration metrics, Measure factor concentration…</td></tr><tr><td>SD-07.5</td><td><a href='./sd-07.5.html'>Look-Through Exposure Analysis</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Decompose pooled vehicles, Aggregate look-through exposure, Detect holdings overlap…</td></tr><tr><td>SD-07.6</td><td><a href='./sd-07.6.html'>Scenario Analysis &amp; Stress Testing</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Design and run historical scenarios, Design and run hypothetical scenarios, Run climate scenarios…</td></tr><tr><td>SD-07.7</td><td><a href='./sd-07.7.html'>Investment Risk Reporting &amp; Limits Governance</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Maintain the risk-limit framework, Operate hard and soft limits, Translate the risk appetite…</td></tr><tr><td>SD-07.8</td><td><a href='./sd-07.8.html'>Climate Risk Analytics</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Carbon-footprinting, Emissions-data attribution, Physical-risk modelling…</td></tr></tbody>
+</table>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

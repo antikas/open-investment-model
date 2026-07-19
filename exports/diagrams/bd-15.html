@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BD-15 — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>BD-15 — Distribution, Product &amp; Client Management <span class='tag'>Commercial</span></h2>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_bd Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 7065.00 672.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 642.8)">
+<title>openim_bd</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-642.8 7035.8,-642.8 7035.8,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="3503.5" y="-596.7" font-family="Times New Roman,serif" font-size="14.00" fill="#1f3a5f">BD&#45;15 — Distribution, Product &amp; Client Management</text>
+<g id="clust1" class="cluster">
+<title>cluster_sd_15_1</title>
+<g id="a_clust1"><a xlink:href="./sd-15.1.html" xlink:title="SD&#45;15.1\\nInvestment Product Strategy\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M20,-336C20,-336 936,-336 936,-336 942,-336 948,-342 948,-348 948,-348 948,-397.5 948,-397.5 948,-403.5 942,-409.5 936,-409.5 936,-409.5 20,-409.5 20,-409.5 14,-409.5 8,-403.5 8,-397.5 8,-397.5 8,-348 8,-348 8,-342 14,-336 20,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="478" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.1\nInvestment Product Strategy\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_sd_15_2</title>
+<g id="a_clust2"><a xlink:href="./sd-15.2.html" xlink:title="SD&#45;15.2\\nProduct Development &amp; Launch\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M968,-422C968,-422 1605,-422 1605,-422 1611,-422 1617,-428 1617,-434 1617,-434 1617,-483.5 1617,-483.5 1617,-489.5 1611,-495.5 1605,-495.5 1605,-495.5 968,-495.5 968,-495.5 962,-495.5 956,-489.5 956,-483.5 956,-483.5 956,-434 956,-434 956,-428 962,-422 968,-422"/>
+<text xml:space="preserve" text-anchor="middle" x="1286.5" y="-481.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.2\nProduct Development &amp; Launch\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_sd_15_3</title>
+<g id="a_clust3"><a xlink:href="./sd-15.3.html" xlink:title="SD&#45;15.3\\nProduct Governance &amp; Lifecycle Management\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M968,-336C968,-336 1843,-336 1843,-336 1849,-336 1855,-342 1855,-348 1855,-348 1855,-397.5 1855,-397.5 1855,-403.5 1849,-409.5 1843,-409.5 1843,-409.5 968,-409.5 968,-409.5 962,-409.5 956,-403.5 956,-397.5 956,-397.5 956,-348 956,-348 956,-342 962,-336 968,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="1405.5" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.3\nProduct Governance &amp; Lifecycle Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_sd_15_4</title>
+<g id="a_clust4"><a xlink:href="./sd-15.4.html" xlink:title="SD&#45;15.4\\nDistribution Strategy &amp; Channel Management\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M3407,-422C3407,-422 4239,-422 4239,-422 4245,-422 4251,-428 4251,-434 4251,-434 4251,-483.5 4251,-483.5 4251,-489.5 4245,-495.5 4239,-495.5 4239,-495.5 3407,-495.5 3407,-495.5 3401,-495.5 3395,-489.5 3395,-483.5 3395,-483.5 3395,-434 3395,-434 3395,-428 3401,-422 3407,-422"/>
+<text xml:space="preserve" text-anchor="middle" x="3823" y="-481.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.4\nDistribution Strategy &amp; Channel Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_sd_15_5</title>
+<g id="a_clust5"><a xlink:href="./sd-15.5.html" xlink:title="SD&#45;15.5\\nMarketing, Brand &amp; Content\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M5260,-336C5260,-336 6040,-336 6040,-336 6046,-336 6052,-342 6052,-348 6052,-348 6052,-397.5 6052,-397.5 6052,-403.5 6046,-409.5 6040,-409.5 6040,-409.5 5260,-409.5 5260,-409.5 5254,-409.5 5248,-403.5 5248,-397.5 5248,-397.5 5248,-348 5248,-348 5248,-342 5254,-336 5260,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="5650" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.5\nMarketing, Brand &amp; Content\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_sd_15_6</title>
+<g id="a_clust6"><a xlink:href="./sd-15.6.html" xlink:title="SD&#45;15.6\\nMarketing&#45;Material &amp; Financial&#45;Promotion Approval\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M5864,-250C5864,-250 6725,-250 6725,-250 6731,-250 6737,-256 6737,-262 6737,-262 6737,-311.5 6737,-311.5 6737,-317.5 6731,-323.5 6725,-323.5 6725,-323.5 5864,-323.5 5864,-323.5 5858,-323.5 5852,-317.5 5852,-311.5 5852,-311.5 5852,-262 5852,-262 5852,-256 5858,-250 5864,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="6294.5" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.6\nMarketing&#45;Material &amp; Financial&#45;Promotion Approval\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_sd_15_7</title>
+<g id="a_clust7"><a xlink:href="./sd-15.7.html" xlink:title="SD&#45;15.7\\nInstitutional Sales &amp; Business Development\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M6072,-336C6072,-336 6803,-336 6803,-336 6809,-336 6815,-342 6815,-348 6815,-348 6815,-397.5 6815,-397.5 6815,-403.5 6809,-409.5 6803,-409.5 6803,-409.5 6072,-409.5 6072,-409.5 6066,-409.5 6060,-403.5 6060,-397.5 6060,-397.5 6060,-348 6060,-348 6060,-342 6066,-336 6072,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="6437.5" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.7\nInstitutional Sales &amp; Business Development\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_sd_15_8</title>
+<g id="a_clust8"><a xlink:href="./sd-15.8.html" xlink:title="SD&#45;15.8\\nRFP &amp; DDQ Management\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M6128,-422C6128,-422 6968,-422 6968,-422 6974,-422 6980,-428 6980,-434 6980,-434 6980,-483.5 6980,-483.5 6980,-489.5 6974,-495.5 6968,-495.5 6968,-495.5 6128,-495.5 6128,-495.5 6122,-495.5 6116,-489.5 6116,-483.5 6116,-483.5 6116,-434 6116,-434 6116,-428 6122,-422 6128,-422"/>
+<text xml:space="preserve" text-anchor="middle" x="6548" y="-481.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.8\nRFP &amp; DDQ Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_sd_15_9</title>
+<g id="a_clust9"><a xlink:href="./sd-15.9.html" xlink:title="SD&#45;15.9\\nConsultant &amp; Gatekeeper Relations\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M6072,-508C6072,-508 6987,-508 6987,-508 6993,-508 6999,-514 6999,-520 6999,-520 6999,-569.5 6999,-569.5 6999,-575.5 6993,-581.5 6987,-581.5 6987,-581.5 6072,-581.5 6072,-581.5 6066,-581.5 6060,-575.5 6060,-569.5 6060,-569.5 6060,-520 6060,-520 6060,-514 6066,-508 6072,-508"/>
+<text xml:space="preserve" text-anchor="middle" x="6529.5" y="-567.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.9\nConsultant &amp; Gatekeeper Relations\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust10" class="cluster">
+<title>cluster_sd_15_10</title>
+<g id="a_clust10"><a xlink:href="./sd-15.10.html" xlink:title="SD&#45;15.10\\nFund Capital Raising\\n[PRIV]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M4177,-336C4177,-336 4980,-336 4980,-336 4986,-336 4992,-342 4992,-348 4992,-348 4992,-397.5 4992,-397.5 4992,-403.5 4986,-409.5 4980,-409.5 4980,-409.5 4177,-409.5 4177,-409.5 4171,-409.5 4165,-403.5 4165,-397.5 4165,-397.5 4165,-348 4165,-348 4165,-342 4171,-336 4177,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="4578.5" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.10\nFund Capital Raising\n[PRIV]</text>
+</a>
+</g>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_sd_15_11</title>
+<g id="a_clust11"><a xlink:href="./sd-15.11.html" xlink:title="SD&#45;15.11\\nClient &amp; Investor Onboarding\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M4741,-250C4741,-250 5624,-250 5624,-250 5630,-250 5636,-256 5636,-262 5636,-262 5636,-311.5 5636,-311.5 5636,-317.5 5630,-323.5 5624,-323.5 5624,-323.5 4741,-323.5 4741,-323.5 4735,-323.5 4729,-317.5 4729,-311.5 4729,-311.5 4729,-262 4729,-262 4729,-256 4735,-250 4741,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="5182.5" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.11\nClient &amp; Investor Onboarding\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust12" class="cluster">
+<title>cluster_sd_15_12</title>
+<g id="a_clust12"><a xlink:href="./sd-15.12.html" xlink:title="SD&#45;15.12\\nClient Advice &amp; Suitability\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M1875,-250C1875,-250 2640,-250 2640,-250 2646,-250 2652,-256 2652,-262 2652,-262 2652,-311.5 2652,-311.5 2652,-317.5 2646,-323.5 2640,-323.5 2640,-323.5 1875,-323.5 1875,-323.5 1869,-323.5 1863,-317.5 1863,-311.5 1863,-311.5 1863,-262 1863,-262 1863,-256 1869,-250 1875,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="2257.5" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.12\nClient Advice &amp; Suitability\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust13" class="cluster">
+<title>cluster_sd_15_13</title>
+<g id="a_clust13"><a xlink:href="./sd-15.13.html" xlink:title="SD&#45;15.13\\nClient Relationship Management &amp; Servicing\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M3220,-164C3220,-164 4025,-164 4025,-164 4031,-164 4037,-170 4037,-176 4037,-176 4037,-225.5 4037,-225.5 4037,-231.5 4031,-237.5 4025,-237.5 4025,-237.5 3220,-237.5 3220,-237.5 3214,-237.5 3208,-231.5 3208,-225.5 3208,-225.5 3208,-176 3208,-176 3208,-170 3214,-164 3220,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="3622.5" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.13\nClient Relationship Management &amp; Servicing\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust14" class="cluster">
+<title>cluster_sd_15_14</title>
+<g id="a_clust14"><a xlink:href="./sd-15.14.html" xlink:title="SD&#45;15.14\\nClient &amp; Investor Reporting\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M3175,-250C3175,-250 3993,-250 3993,-250 3999,-250 4005,-256 4005,-262 4005,-262 4005,-311.5 4005,-311.5 4005,-317.5 3999,-323.5 3993,-323.5 3993,-323.5 3175,-323.5 3175,-323.5 3169,-323.5 3163,-317.5 3163,-311.5 3163,-311.5 3163,-262 3163,-262 3163,-256 3169,-250 3175,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="3584" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.14\nClient &amp; Investor Reporting\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust15" class="cluster">
+<title>cluster_sd_15_15</title>
+<g id="a_clust15"><a xlink:href="./sd-15.15.html" xlink:title="SD&#45;15.15\\nFinancial &amp; Wealth Planning\\n[PUB]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M1875,-336C1875,-336 3041,-336 3041,-336 3047,-336 3053,-342 3053,-348 3053,-348 3053,-397.5 3053,-397.5 3053,-403.5 3047,-409.5 3041,-409.5 3041,-409.5 1875,-409.5 1875,-409.5 1869,-409.5 1863,-403.5 1863,-397.5 1863,-397.5 1863,-348 1863,-348 1863,-342 1869,-336 1875,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="2458" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.15\nFinancial &amp; Wealth Planning\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust16" class="cluster">
+<title>cluster_sd_15_16</title>
+<g id="a_clust16"><a xlink:href="./sd-15.16.html" xlink:title="SD&#45;15.16\\nComplaint &amp; Client&#45;Case Management\\n[BOTH]">
+<path fill="#f7dfe0" stroke="#a65b5b" d="M3197,-78C3197,-78 4373,-78 4373,-78 4379,-78 4385,-84 4385,-90 4385,-90 4385,-139.5 4385,-139.5 4385,-145.5 4379,-151.5 4373,-151.5 4373,-151.5 3197,-151.5 3197,-151.5 3191,-151.5 3185,-145.5 3185,-139.5 3185,-139.5 3185,-90 3185,-90 3185,-84 3191,-78 3197,-78"/>
+<text xml:space="preserve" text-anchor="middle" x="3785" y="-137.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;15.16\nComplaint &amp; Client&#45;Case Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<!-- sd_15_1_anchor -->
+<!-- sd_15_2_anchor -->
+<!-- sd_15_1_anchor&#45;&gt;sd_15_2_anchor -->
+<g id="edge5" class="edge">
+<title>sd_15_1_anchor&#45;&gt;sd_15_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M8,-366.05C-2.54,-376.4 6,-409.5 6,-409.5 6,-409.5 468,-422 468,-422 468,-422 863.57,-442.86 948.75,-446.47"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="948.41,-448.56 954.49,-446.7 948.58,-444.36 948.41,-448.56"/>
+</g>
+<!-- sd_15_1_anchor&#45;&gt;sd_15_2_anchor -->
+<g id="edge6" class="edge">
+<title>sd_15_1_anchor&#45;&gt;sd_15_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M28,-409.5C28,-409.5 490,-422 490,-422 490,-422 867.44,-441.91 948.7,-446.19"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="948.39,-448.28 954.49,-446.5 948.61,-444.09 948.39,-448.28"/>
+</g>
+<!-- sd_15_1_anchor&#45;&gt;sd_15_2_anchor -->
+<g id="edge7" class="edge">
+<title>sd_15_1_anchor&#45;&gt;sd_15_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M50,-409.5C50,-409.5 512,-422 512,-422 512,-422 868.22,-440.79 948.71,-445.79"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="948.37,-447.87 954.49,-446.16 948.64,-443.68 948.37,-447.87"/>
+</g>
+<!-- so_15_1_01 -->
+<g id="node2" class="node">
+<title>so_15_1_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M197.25,-380C197.25,-380 50.75,-380 50.75,-380 44.75,-380 38.75,-374 38.75,-368 38.75,-368 38.75,-356 38.75,-356 38.75,-350 44.75,-344 50.75,-344 50.75,-344 197.25,-344 197.25,-344 203.25,-344 209.25,-350 209.25,-356 209.25,-356 209.25,-368 209.25,-368 209.25,-374 203.25,-380 197.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="124" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Generate and assess product ideas</text>
+</g>
+<!-- so_15_1_02 -->
+<g id="node3" class="node">
+<title>so_15_1_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M342.62,-380C342.62,-380 243.38,-380 243.38,-380 237.38,-380 231.38,-374 231.38,-368 231.38,-368 231.38,-356 231.38,-356 231.38,-350 237.38,-344 243.38,-344 243.38,-344 342.62,-344 342.62,-344 348.62,-344 354.62,-350 354.62,-356 354.62,-356 354.62,-368 354.62,-368 354.62,-374 348.62,-380 342.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="293" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set the product roadmap</text>
+</g>
+<!-- so_15_1_03 -->
+<g id="node4" class="node">
+<title>so_15_1_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M547.25,-380C547.25,-380 388.75,-380 388.75,-380 382.75,-380 376.75,-374 376.75,-368 376.75,-368 376.75,-356 376.75,-356 376.75,-350 382.75,-344 388.75,-344 388.75,-344 547.25,-344 547.25,-344 553.25,-344 559.25,-350 559.25,-356 559.25,-356 559.25,-368 559.25,-368 559.25,-374 553.25,-380 547.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="468" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Make the build / buy / partner decision</text>
+</g>
+<!-- so_15_1_04 -->
+<g id="node5" class="node">
+<title>so_15_1_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M692.25,-380C692.25,-380 593.75,-380 593.75,-380 587.75,-380 581.75,-374 581.75,-368 581.75,-368 581.75,-356 581.75,-356 581.75,-350 587.75,-344 593.75,-344 593.75,-344 692.25,-344 692.25,-344 698.25,-344 704.25,-350 704.25,-356 704.25,-356 704.25,-368 704.25,-368 704.25,-374 698.25,-380 692.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="643" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Shape the product range</text>
+</g>
+<!-- so_15_1_05 -->
+<g id="node6" class="node">
+<title>so_15_1_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M928,-380C928,-380 738,-380 738,-380 732,-380 726,-374 726,-368 726,-368 726,-356 726,-356 726,-350 732,-344 738,-344 738,-344 928,-344 928,-344 934,-344 940,-350 940,-356 940,-356 940,-368 940,-368 940,-374 934,-380 928,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="833" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse the competitive and demand position</text>
+</g>
+<!-- sd_15_3_anchor -->
+<!-- sd_15_2_anchor&#45;&gt;sd_15_3_anchor -->
+<g id="edge8" class="edge">
+<title>sd_15_2_anchor&#45;&gt;sd_15_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M956,-442.46C946.04,-429.61 944.83,-392.76 952.38,-374.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="954.21,-375.14 955.27,-368.87 950.53,-373.11 954.21,-375.14"/>
+</g>
+<!-- sd_15_2_anchor&#45;&gt;sd_15_3_anchor -->
+<g id="edge9" class="edge">
+<title>sd_15_2_anchor&#45;&gt;sd_15_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M964,-422C964,-420.33 964,-418.61 964,-416.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="966.1,-417.01 964,-411.01 961.9,-417.01 966.1,-417.01"/>
+</g>
+<!-- sd_15_2_anchor&#45;&gt;sd_15_3_anchor -->
+<g id="edge11" class="edge">
+<title>sd_15_2_anchor&#45;&gt;sd_15_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M979.23,-422C979.51,-420.25 979.74,-418.45 979.93,-416.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="981.99,-417.14 980.31,-411.01 977.8,-416.85 981.99,-417.14"/>
+</g>
+<!-- sd_15_10_anchor -->
+<!-- sd_15_2_anchor&#45;&gt;sd_15_10_anchor -->
+<g id="edge47" class="edge">
+<title>sd_15_2_anchor&#45;&gt;sd_15_10_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M965,-422C965,-422 4151,-409.5 4151,-409.5 4151,-409.5 4155.52,-390.4 4161.66,-376.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4163.46,-377.78 4164.31,-371.48 4159.72,-375.87 4163.46,-377.78"/>
+</g>
+<!-- sd_15_2_anchor&#45;&gt;sd_15_10_anchor -->
+<g id="edge48" class="edge">
+<title>sd_15_2_anchor&#45;&gt;sd_15_10_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M987,-422C987,-422 3998.12,-410.19 4165.73,-409.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4165.49,-411.63 4171.49,-409.51 4165.48,-407.43 4165.49,-411.63"/>
+</g>
+<!-- so_15_2_01 -->
+<g id="node8" class="node">
+<title>so_15_2_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1073.25,-466C1073.25,-466 998.75,-466 998.75,-466 992.75,-466 986.75,-460 986.75,-454 986.75,-454 986.75,-442 986.75,-442 986.75,-436 992.75,-430 998.75,-430 998.75,-430 1073.25,-430 1073.25,-430 1079.25,-430 1085.25,-436 1085.25,-442 1085.25,-442 1085.25,-454 1085.25,-454 1085.25,-460 1079.25,-466 1073.25,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1036" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Design the product</text>
+</g>
+<!-- so_15_2_02 -->
+<g id="node9" class="node">
+<title>so_15_2_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1249,-466C1249,-466 1119,-466 1119,-466 1113,-466 1107,-460 1107,-454 1107,-454 1107,-442 1107,-442 1107,-436 1113,-430 1119,-430 1119,-430 1249,-430 1249,-430 1255,-430 1261,-436 1261,-442 1261,-442 1261,-454 1261,-454 1261,-460 1255,-466 1249,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1184" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Select the vehicle and structure</text>
+</g>
+<!-- so_15_2_03 -->
+<g id="node10" class="node">
+<title>so_15_2_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1350.5,-466C1350.5,-466 1295.5,-466 1295.5,-466 1289.5,-466 1283.5,-460 1283.5,-454 1283.5,-454 1283.5,-442 1283.5,-442 1283.5,-436 1289.5,-430 1295.5,-430 1295.5,-430 1350.5,-430 1350.5,-430 1356.5,-430 1362.5,-436 1362.5,-442 1362.5,-442 1362.5,-454 1362.5,-454 1362.5,-460 1356.5,-466 1350.5,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1323" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set the pricing</text>
+</g>
+<!-- so_15_2_04 -->
+<g id="node11" class="node">
+<title>so_15_2_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1475.12,-466C1475.12,-466 1396.88,-466 1396.88,-466 1390.88,-466 1384.88,-460 1384.88,-454 1384.88,-454 1384.88,-442 1384.88,-442 1384.88,-436 1390.88,-430 1396.88,-430 1396.88,-430 1475.12,-430 1475.12,-430 1481.12,-430 1487.12,-436 1487.12,-442 1487.12,-442 1487.12,-454 1487.12,-454 1487.12,-460 1481.12,-466 1475.12,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1436" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Secure seed capital</text>
+</g>
+<!-- so_15_2_05 -->
+<g id="node12" class="node">
+<title>so_15_2_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1597,-466C1597,-466 1521,-466 1521,-466 1515,-466 1509,-460 1509,-454 1509,-454 1509,-442 1509,-442 1509,-436 1515,-430 1521,-430 1521,-430 1597,-430 1597,-430 1603,-430 1609,-436 1609,-442 1609,-442 1609,-454 1609,-454 1609,-460 1603,-466 1597,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1559" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Execute the launch</text>
+</g>
+<!-- sd_15_4_anchor -->
+<!-- sd_15_3_anchor&#45;&gt;sd_15_4_anchor -->
+<g id="edge13" class="edge">
+<title>sd_15_3_anchor&#45;&gt;sd_15_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M975,-409.5C975,-409.5 3181.39,-443.58 3387.59,-446.76"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3387.46,-448.86 3393.49,-446.85 3387.52,-444.66 3387.46,-448.86"/>
+</g>
+<!-- sd_15_3_anchor&#45;&gt;sd_15_4_anchor -->
+<g id="edge14" class="edge">
+<title>sd_15_3_anchor&#45;&gt;sd_15_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M997,-409.5C997,-409.5 3181.44,-443.24 3387.58,-446.71"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3387.46,-448.81 3393.49,-446.81 3387.53,-444.61 3387.46,-448.81"/>
+</g>
+<!-- sd_15_3_anchor&#45;&gt;sd_15_4_anchor -->
+<g id="edge15" class="edge">
+<title>sd_15_3_anchor&#45;&gt;sd_15_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1019,-409.5C1019,-409.5 3181.16,-442.89 3387.78,-446.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3387.45,-448.75 3393.49,-446.76 3387.53,-444.55 3387.45,-448.75"/>
+</g>
+<!-- sd_15_12_anchor -->
+<!-- sd_15_3_anchor&#45;&gt;sd_15_12_anchor -->
+<g id="edge55" class="edge">
+<title>sd_15_3_anchor&#45;&gt;sd_15_12_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M964,-336C964,-336 1735.56,-285.19 1855.51,-277.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1855.63,-279.97 1861.49,-277.51 1855.38,-275.78 1855.63,-279.97"/>
+</g>
+<!-- sd_15_3_anchor&#45;&gt;sd_15_12_anchor -->
+<g id="edge58" class="edge">
+<title>sd_15_3_anchor&#45;&gt;sd_15_12_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M986,-336C986,-336 1737.73,-286.5 1855.63,-278.18"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1855.66,-280.28 1861.49,-277.76 1855.36,-276.09 1855.66,-280.28"/>
+</g>
+<!-- so_15_3_01 -->
+<g id="node14" class="node">
+<title>so_15_3_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1153.75,-380C1153.75,-380 998.25,-380 998.25,-380 992.25,-380 986.25,-374 986.25,-368 986.25,-368 986.25,-356 986.25,-356 986.25,-350 992.25,-344 998.25,-344 998.25,-344 1153.75,-344 1153.75,-344 1159.75,-344 1165.75,-350 1165.75,-356 1165.75,-356 1165.75,-368 1165.75,-368 1165.75,-374 1159.75,-380 1153.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1076" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the product&#45;approval process</text>
+</g>
+<!-- so_15_3_02 -->
+<g id="node15" class="node">
+<title>so_15_3_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1348,-380C1348,-380 1200,-380 1200,-380 1194,-380 1188,-374 1188,-368 1188,-368 1188,-356 1188,-356 1188,-350 1194,-344 1200,-344 1200,-344 1348,-344 1348,-344 1354,-344 1360,-350 1360,-356 1360,-356 1360,-368 1360,-368 1360,-374 1354,-380 1348,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1274" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Define and review the target market</text>
+</g>
+<!-- so_15_3_03 -->
+<g id="node16" class="node">
+<title>so_15_3_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1507.75,-380C1507.75,-380 1394.25,-380 1394.25,-380 1388.25,-380 1382.25,-374 1382.25,-368 1382.25,-368 1382.25,-356 1382.25,-356 1382.25,-350 1388.25,-344 1394.25,-344 1394.25,-344 1507.75,-344 1507.75,-344 1513.75,-344 1519.75,-350 1519.75,-356 1519.75,-356 1519.75,-368 1519.75,-368 1519.75,-374 1513.75,-380 1507.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1451" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run periodic product review</text>
+</g>
+<!-- so_15_3_04 -->
+<g id="node17" class="node">
+<title>so_15_3_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1678.38,-380C1678.38,-380 1553.62,-380 1553.62,-380 1547.62,-380 1541.62,-374 1541.62,-368 1541.62,-368 1541.62,-356 1541.62,-356 1541.62,-350 1547.62,-344 1553.62,-344 1553.62,-344 1678.38,-344 1678.38,-344 1684.38,-344 1690.38,-350 1690.38,-356 1690.38,-356 1690.38,-368 1690.38,-368 1690.38,-374 1684.38,-380 1678.38,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1616" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage product rationalisation</text>
+</g>
+<!-- so_15_3_05 -->
+<g id="node18" class="node">
+<title>so_15_3_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1835.25,-380C1835.25,-380 1724.75,-380 1724.75,-380 1718.75,-380 1712.75,-374 1712.75,-368 1712.75,-368 1712.75,-356 1712.75,-356 1712.75,-350 1718.75,-344 1724.75,-344 1724.75,-344 1835.25,-344 1835.25,-344 1841.25,-344 1847.25,-350 1847.25,-356 1847.25,-356 1847.25,-368 1847.25,-368 1847.25,-374 1841.25,-380 1835.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1780" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern the product register</text>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge1" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-446.92C3263.67,-445.35 1600,-422 1600,-422 1600,-422 6,-409.5 6,-409.5 6,-409.5 -0.08,-385.93 4.35,-372.35"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6.05,-373.6 7.25,-367.36 2.42,-371.5 6.05,-373.6"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge3" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-446.89C3266.09,-445.08 1622,-422 1622,-422 1622,-422 153.09,-410.48 35.46,-409.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="35.53,-407.46 29.51,-409.51 35.5,-411.66 35.53,-407.46"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge18" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-446.85C3265.44,-444.76 1644,-422 1644,-422 1644,-422 175.09,-410.48 57.46,-409.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="57.53,-407.46 51.51,-409.51 57.5,-411.66 57.53,-407.46"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_3_anchor -->
+<g id="edge10" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-446.93C3236.15,-445.1 931,-409.5 931,-409.5 931,-409.5 922.77,-374.72 949.01,-365.32"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="949.22,-367.43 954.53,-363.94 948.2,-363.36 949.22,-367.43"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_3_anchor -->
+<g id="edge12" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-446.91C3240.93,-444.84 953,-409.5 953,-409.5 953,-409.5 947.4,-385.84 952.18,-372.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="953.89,-373.5 955.22,-367.28 950.3,-371.31 953.89,-373.5"/>
+</g>
+<!-- sd_15_5_anchor -->
+<!-- sd_15_4_anchor&#45;&gt;sd_15_5_anchor -->
+<g id="edge17" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-445.39C3384.14,-439.87 3392,-422 3392,-422 3392,-422 5223,-409.5 5223,-409.5 5223,-409.5 5229.38,-382.53 5242.14,-369.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5243.34,-371.39 5246.81,-366.06 5240.77,-368.07 5243.34,-371.39"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_5_anchor -->
+<g id="edge19" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3414,-422C3414,-422 5245,-409.5 5245,-409.5 5245,-409.5 5245.51,-407.36 5246.3,-403.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5248.32,-404.6 5247.65,-398.28 5244.23,-403.64 5248.32,-404.6"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_5_anchor -->
+<g id="edge20" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3436,-422C3436,-422 5133.63,-410.41 5259.62,-409.55"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5259.5,-411.65 5265.49,-409.51 5259.47,-407.45 5259.5,-411.65"/>
+</g>
+<!-- sd_15_7_anchor -->
+<!-- sd_15_4_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge16" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3395,-445.39C3384.14,-439.87 3392,-422 3392,-422 3392,-422 6035,-409.5 6035,-409.5 6035,-409.5 6041.38,-382.53 6054.14,-369.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6055.34,-371.39 6058.81,-366.06 6052.77,-368.07 6055.34,-371.39"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge31" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3414,-422C3414,-422 6057,-409.5 6057,-409.5 6057,-409.5 6057.51,-407.36 6058.3,-403.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6060.32,-404.6 6059.65,-398.28 6056.23,-403.64 6060.32,-404.6"/>
+</g>
+<!-- sd_15_4_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge35" class="edge">
+<title>sd_15_4_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3436,-422C3436,-422 5921.4,-410.25 6071.88,-409.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6071.5,-411.64 6077.49,-409.51 6071.48,-407.44 6071.5,-411.64"/>
+</g>
+<!-- so_15_4_01 -->
+<g id="node20" class="node">
+<title>so_15_4_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3549,-466C3549,-466 3437,-466 3437,-466 3431,-466 3425,-460 3425,-454 3425,-454 3425,-442 3425,-442 3425,-436 3431,-430 3437,-430 3437,-430 3549,-430 3549,-430 3555,-430 3561,-436 3561,-442 3561,-442 3561,-454 3561,-454 3561,-460 3555,-466 3549,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="3493" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set the distribution strategy</text>
+</g>
+<!-- so_15_4_02 -->
+<g id="node21" class="node">
+<title>so_15_4_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3680.5,-466C3680.5,-466 3595.5,-466 3595.5,-466 3589.5,-466 3583.5,-460 3583.5,-454 3583.5,-454 3583.5,-442 3583.5,-442 3583.5,-436 3589.5,-430 3595.5,-430 3595.5,-430 3680.5,-430 3680.5,-430 3686.5,-430 3692.5,-436 3692.5,-442 3692.5,-442 3692.5,-454 3692.5,-454 3692.5,-460 3686.5,-466 3680.5,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="3638" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the channels</text>
+</g>
+<!-- so_15_4_03 -->
+<g id="node22" class="node">
+<title>so_15_4_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3839.75,-466C3839.75,-466 3726.25,-466 3726.25,-466 3720.25,-466 3714.25,-460 3714.25,-454 3714.25,-454 3714.25,-442 3714.25,-442 3714.25,-436 3720.25,-430 3726.25,-430 3726.25,-430 3839.75,-430 3839.75,-430 3845.75,-430 3851.75,-436 3851.75,-442 3851.75,-442 3851.75,-454 3851.75,-454 3851.75,-460 3845.75,-466 3839.75,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="3783" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage channel economics</text>
+</g>
+<!-- so_15_4_04 -->
+<g id="node23" class="node">
+<title>so_15_4_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4050.25,-466C4050.25,-466 3885.75,-466 3885.75,-466 3879.75,-466 3873.75,-460 3873.75,-454 3873.75,-454 3873.75,-442 3873.75,-442 3873.75,-436 3879.75,-430 3885.75,-430 3885.75,-430 4050.25,-430 4050.25,-430 4056.25,-430 4062.25,-436 4062.25,-442 4062.25,-442 4062.25,-454 4062.25,-454 4062.25,-460 4056.25,-466 4050.25,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="3968" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Drive market and geographic expansion</text>
+</g>
+<!-- so_15_4_05 -->
+<g id="node24" class="node">
+<title>so_15_4_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4231.25,-466C4231.25,-466 4096.75,-466 4096.75,-466 4090.75,-466 4084.75,-460 4084.75,-454 4084.75,-454 4084.75,-442 4084.75,-442 4084.75,-436 4090.75,-430 4096.75,-430 4096.75,-430 4231.25,-430 4231.25,-430 4237.25,-430 4243.25,-436 4243.25,-442 4243.25,-442 4243.25,-454 4243.25,-454 4243.25,-460 4237.25,-466 4231.25,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="4164" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse distribution performance</text>
+</g>
+<!-- sd_15_6_anchor -->
+<!-- sd_15_5_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge22" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5256,-336C5256,-336 5630,-323.5 5630,-323.5 5630,-323.5 5792.65,-288.96 5844.65,-279.42"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5844.97,-281.49 5850.51,-278.38 5844.24,-277.36 5844.97,-281.49"/>
+</g>
+<!-- sd_15_5_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge23" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5278,-336C5278,-336 5652,-323.5 5652,-323.5 5652,-323.5 5796.53,-292.81 5844.87,-281.3"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5845.2,-283.38 5850.53,-279.92 5844.21,-279.3 5845.2,-283.38"/>
+</g>
+<!-- sd_15_5_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge28" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5300,-336C5300,-336 5674,-323.5 5674,-323.5 5674,-323.5 5797.53,-297.27 5845.06,-284.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5845.35,-286.31 5850.55,-282.65 5844.2,-282.27 5845.35,-286.31"/>
+</g>
+<!-- sd_15_5_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge21" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5267,-409.5C5267,-409.5 5272.5,-412.62 5272.5,-412.62 5272.5,-412.62 6051.5,-412.62 6051.5,-412.62 6051.5,-412.62 6057,-409.5 6057,-409.5 6057,-409.5 6057.53,-407.2 6058.36,-403.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6060.35,-404.34 6059.66,-398.02 6056.26,-403.39 6060.35,-404.34"/>
+</g>
+<!-- sd_15_5_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge32" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5267,-409.5C5267,-409.5 5278,-415.75 5278,-415.75 5278,-415.75 6046,-415.75 6046,-415.75 6046,-415.75 6057,-409.5 6057,-409.5 6057,-409.5 6057.53,-407.2 6058.36,-403.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6060.35,-404.34 6059.66,-398.02 6056.26,-403.39 6060.35,-404.34"/>
+</g>
+<!-- sd_15_5_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge37" class="edge">
+<title>sd_15_5_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5267,-409.5C5267,-409.5 5283.5,-418.88 5283.5,-418.88 5283.5,-418.88 6040.5,-418.88 6040.5,-418.88 6040.5,-418.88 6057,-409.5 6057,-409.5 6057,-409.5 6057.53,-407.2 6058.36,-403.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6060.35,-404.34 6059.66,-398.02 6056.26,-403.39 6060.35,-404.34"/>
+</g>
+<!-- so_15_5_01 -->
+<g id="node26" class="node">
+<title>so_15_5_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5360,-380C5360,-380 5290,-380 5290,-380 5284,-380 5278,-374 5278,-368 5278,-368 5278,-356 5278,-356 5278,-350 5284,-344 5290,-344 5290,-344 5360,-344 5360,-344 5366,-344 5372,-350 5372,-356 5372,-356 5372,-368 5372,-368 5372,-374 5366,-380 5360,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5325" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the brand</text>
+</g>
+<!-- so_15_5_02 -->
+<g id="node27" class="node">
+<title>so_15_5_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5517.62,-380C5517.62,-380 5406.38,-380 5406.38,-380 5400.38,-380 5394.38,-374 5394.38,-368 5394.38,-368 5394.38,-356 5394.38,-356 5394.38,-350 5400.38,-344 5406.38,-344 5406.38,-344 5517.62,-344 5517.62,-344 5523.62,-344 5529.62,-350 5529.62,-356 5529.62,-356 5529.62,-368 5529.62,-368 5529.62,-374 5523.62,-380 5517.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5462" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run campaigns and events</text>
+</g>
+<!-- so_15_5_03 -->
+<g id="node28" class="node">
+<title>so_15_5_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5728.25,-380C5728.25,-380 5563.75,-380 5563.75,-380 5557.75,-380 5551.75,-374 5551.75,-368 5551.75,-368 5551.75,-356 5551.75,-356 5551.75,-350 5557.75,-344 5563.75,-344 5563.75,-344 5728.25,-344 5728.25,-344 5734.25,-344 5740.25,-350 5740.25,-356 5740.25,-356 5740.25,-368 5740.25,-368 5740.25,-374 5734.25,-380 5728.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5646" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce thought leadership and content</text>
+</g>
+<!-- so_15_5_04 -->
+<g id="node29" class="node">
+<title>so_15_5_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5871.88,-380C5871.88,-380 5774.12,-380 5774.12,-380 5768.12,-380 5762.12,-374 5762.12,-368 5762.12,-368 5762.12,-356 5762.12,-356 5762.12,-350 5768.12,-344 5774.12,-344 5774.12,-344 5871.88,-344 5871.88,-344 5877.88,-344 5883.88,-350 5883.88,-356 5883.88,-356 5883.88,-368 5883.88,-368 5883.88,-374 5877.88,-380 5871.88,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5823" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the digital presence</text>
+</g>
+<!-- so_15_5_05 -->
+<g id="node30" class="node">
+<title>so_15_5_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6032.12,-380C6032.12,-380 5917.88,-380 5917.88,-380 5911.88,-380 5905.88,-374 5905.88,-368 5905.88,-368 5905.88,-356 5905.88,-356 5905.88,-350 5911.88,-344 5917.88,-344 5917.88,-344 6032.12,-344 6032.12,-344 6038.12,-344 6044.12,-350 6044.12,-356 6044.12,-356 6044.12,-368 6044.12,-368 6044.12,-374 6038.12,-380 6032.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5975" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage marketing analytics</text>
+</g>
+<!-- sd_15_6_anchor&#45;&gt;sd_15_5_anchor -->
+<g id="edge30" class="edge">
+<title>sd_15_6_anchor&#45;&gt;sd_15_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5852,-277.5C5801.16,-282.49 5608,-323.5 5608,-323.5 5608,-323.5 5234,-336 5234,-336 5234,-336 5226.92,-352.08 5241.15,-358.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5240.2,-360.36 5246.55,-359.99 5241.36,-356.32 5240.2,-360.36"/>
+</g>
+<!-- sd_15_6_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge29" class="edge">
+<title>sd_15_6_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M5893,-323.5C5893,-323.5 6037.96,-333.24 6071.94,-335.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6071.36,-337.59 6077.49,-335.9 6071.64,-333.4 6071.36,-337.59"/>
+</g>
+<!-- so_15_6_01 -->
+<g id="node32" class="node">
+<title>so_15_6_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6009.88,-294C6009.88,-294 5894.12,-294 5894.12,-294 5888.12,-294 5882.12,-288 5882.12,-282 5882.12,-282 5882.12,-270 5882.12,-270 5882.12,-264 5888.12,-258 5894.12,-258 5894.12,-258 6009.88,-258 6009.88,-258 6015.88,-258 6021.88,-264 6021.88,-270 6021.88,-270 6021.88,-282 6021.88,-282 6021.88,-288 6015.88,-294 6009.88,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5952" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review promotional material</text>
+</g>
+<!-- so_15_6_02 -->
+<g id="node33" class="node">
+<title>so_15_6_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6137.62,-294C6137.62,-294 6056.38,-294 6056.38,-294 6050.38,-294 6044.38,-288 6044.38,-282 6044.38,-282 6044.38,-270 6044.38,-270 6044.38,-264 6050.38,-258 6056.38,-258 6056.38,-258 6137.62,-258 6137.62,-258 6143.62,-258 6149.62,-264 6149.62,-270 6149.62,-270 6149.62,-282 6149.62,-282 6149.62,-288 6143.62,-294 6137.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="6097" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Approve and sign off</text>
+</g>
+<!-- so_15_6_03 -->
+<g id="node34" class="node">
+<title>so_15_6_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6370.5,-294C6370.5,-294 6183.5,-294 6183.5,-294 6177.5,-294 6171.5,-288 6171.5,-282 6171.5,-282 6171.5,-270 6171.5,-270 6171.5,-264 6177.5,-258 6183.5,-258 6183.5,-258 6370.5,-258 6370.5,-258 6376.5,-258 6382.5,-264 6382.5,-270 6382.5,-270 6382.5,-282 6382.5,-282 6382.5,-288 6376.5,-294 6370.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="6277" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern performance and claims presentation</text>
+</g>
+<!-- so_15_6_04 -->
+<g id="node35" class="node">
+<title>so_15_6_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6543.12,-294C6543.12,-294 6416.88,-294 6416.88,-294 6410.88,-294 6404.88,-288 6404.88,-282 6404.88,-282 6404.88,-270 6404.88,-270 6404.88,-264 6410.88,-258 6416.88,-258 6416.88,-258 6543.12,-258 6543.12,-258 6549.12,-258 6555.12,-264 6555.12,-270 6555.12,-270 6555.12,-282 6555.12,-282 6555.12,-288 6549.12,-294 6543.12,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="6480" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the promotion register</text>
+</g>
+<!-- so_15_6_05 -->
+<g id="node36" class="node">
+<title>so_15_6_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6717.25,-294C6717.25,-294 6588.75,-294 6588.75,-294 6582.75,-294 6576.75,-288 6576.75,-282 6576.75,-282 6576.75,-270 6576.75,-270 6576.75,-264 6582.75,-258 6588.75,-258 6588.75,-258 6717.25,-258 6717.25,-258 6723.25,-258 6729.25,-264 6729.25,-270 6729.25,-270 6729.25,-282 6729.25,-282 6729.25,-288 6723.25,-294 6717.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="6653" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the approval standards</text>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge2" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-396.54C6058.3,-403.9 6057,-409.5 6057,-409.5 6057,-409.5 6051.5,-412.62 6051.5,-412.62 6051.5,-412.62 272.04,-412.62 35.46,-409.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="35.56,-407.59 29.51,-409.54 35.46,-411.78 35.56,-407.59"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge4" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-396.54C6058.3,-403.9 6057,-409.5 6057,-409.5 6057,-409.5 6046,-415.75 6046,-415.75 6046,-415.75 39,-415.75 39,-415.75 39,-415.75 36.89,-414.55 34.53,-413.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="35.57,-411.39 29.32,-410.25 33.5,-415.04 35.57,-411.39"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge40" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-396.54C6058.3,-403.9 6057,-409.5 6057,-409.5 6057,-409.5 6040.5,-418.88 6040.5,-418.88 6040.5,-418.88 44.5,-418.88 44.5,-418.88 44.5,-418.88 38.99,-415.74 34.33,-413.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="35.57,-411.39 29.32,-410.25 33.5,-415.04 35.57,-411.39"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge24" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-359.85C6043.33,-354.94 6035,-336 6035,-336 6035,-336 5849,-323.5 5849,-323.5 5849,-323.5 5843.4,-299.84 5848.18,-286.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5849.89,-287.5 5851.22,-281.28 5846.3,-285.31 5849.89,-287.5"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge26" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-342.82C6058.3,-338.95 6057,-336 6057,-336 6057,-336 5912.04,-326.26 5878.06,-323.97"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5878.64,-321.91 5872.51,-323.6 5878.36,-326.1 5878.64,-321.91"/>
+</g>
+<!-- sd_15_8_anchor -->
+<!-- sd_15_7_anchor&#45;&gt;sd_15_8_anchor -->
+<g id="edge41" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6079,-409.5C6079,-409.5 6107,-422 6107,-422 6107,-422 6109.17,-425.19 6111.96,-429.29"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6110.04,-430.21 6115.15,-433.99 6113.51,-427.84 6110.04,-430.21"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_8_anchor -->
+<g id="edge42" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6101,-409.5C6101,-409.5 6113.94,-415.27 6122.22,-418.97"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6121.28,-420.85 6127.62,-421.38 6123,-417.02 6121.28,-420.85"/>
+</g>
+<!-- sd_15_11_anchor -->
+<!-- sd_15_7_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge39" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-359.85C6043.33,-354.94 6035,-336 6035,-336 6035,-336 4726,-323.5 4726,-323.5 4726,-323.5 4720.4,-299.84 4725.18,-286.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4726.89,-287.5 4728.22,-281.28 4723.3,-285.31 4726.89,-287.5"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge51" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-342.82C6058.3,-338.95 6057,-336 6057,-336 6057,-336 4860.52,-324.57 4755.36,-323.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4755.53,-321.47 4749.51,-323.51 4755.49,-325.67 4755.53,-321.47"/>
+</g>
+<!-- sd_15_7_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge52" class="edge">
+<title>sd_15_7_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6079,-336C6079,-336 4882.52,-324.57 4777.36,-323.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4777.53,-321.47 4771.51,-323.51 4777.49,-325.67 4777.53,-321.47"/>
+</g>
+<!-- so_15_7_01 -->
+<g id="node38" class="node">
+<title>so_15_7_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6222.12,-380C6222.12,-380 6101.88,-380 6101.88,-380 6095.88,-380 6089.88,-374 6089.88,-368 6089.88,-368 6089.88,-356 6089.88,-356 6089.88,-350 6095.88,-344 6101.88,-344 6101.88,-344 6222.12,-344 6222.12,-344 6228.12,-344 6234.12,-350 6234.12,-356 6234.12,-356 6234.12,-368 6234.12,-368 6234.12,-374 6228.12,-380 6222.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="6162" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Identify and qualify prospects</text>
+</g>
+<!-- so_15_7_02 -->
+<g id="node39" class="node">
+<title>so_15_7_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6373.62,-380C6373.62,-380 6268.38,-380 6268.38,-380 6262.38,-380 6256.38,-374 6256.38,-368 6256.38,-368 6256.38,-356 6256.38,-356 6256.38,-350 6262.38,-344 6268.38,-344 6268.38,-344 6373.62,-344 6373.62,-344 6379.62,-344 6385.62,-350 6385.62,-356 6385.62,-356 6385.62,-368 6385.62,-368 6385.62,-374 6379.62,-380 6373.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="6321" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the sales pipeline</text>
+</g>
+<!-- so_15_7_03 -->
+<g id="node40" class="node">
+<title>so_15_7_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6514.75,-380C6514.75,-380 6419.25,-380 6419.25,-380 6413.25,-380 6407.25,-374 6407.25,-368 6407.25,-368 6407.25,-356 6407.25,-356 6407.25,-350 6413.25,-344 6419.25,-344 6419.25,-344 6514.75,-344 6514.75,-344 6520.75,-344 6526.75,-350 6526.75,-356 6526.75,-356 6526.75,-368 6526.75,-368 6526.75,-374 6520.75,-380 6514.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="6467" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the pitch and finals</text>
+</g>
+<!-- so_15_7_04 -->
+<g id="node41" class="node">
+<title>so_15_7_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6627.12,-380C6627.12,-380 6560.88,-380 6560.88,-380 6554.88,-380 6548.88,-374 6548.88,-368 6548.88,-368 6548.88,-356 6548.88,-356 6548.88,-350 6554.88,-344 6560.88,-344 6560.88,-344 6627.12,-344 6627.12,-344 6633.12,-344 6639.12,-350 6639.12,-356 6639.12,-356 6639.12,-368 6639.12,-368 6639.12,-374 6633.12,-380 6627.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="6594" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Win the mandate</text>
+</g>
+<!-- so_15_7_05 -->
+<g id="node42" class="node">
+<title>so_15_7_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6794.88,-380C6794.88,-380 6673.12,-380 6673.12,-380 6667.12,-380 6661.12,-374 6661.12,-368 6661.12,-368 6661.12,-356 6661.12,-356 6661.12,-350 6667.12,-344 6673.12,-344 6673.12,-344 6794.88,-344 6794.88,-344 6800.88,-344 6806.88,-350 6806.88,-356 6806.88,-356 6806.88,-368 6806.88,-368 6806.88,-374 6800.88,-380 6794.88,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="6734" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the sales relationship</text>
+</g>
+<!-- sd_15_8_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge25" class="edge">
+<title>sd_15_8_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6125,-422C6125,-422 6809,-409.5 6809,-409.5 6809,-409.5 6809,-336 6809,-336 6809,-336 5955.69,-324.76 5867.36,-323.6"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5867.54,-321.5 5861.51,-323.52 5867.49,-325.7 5867.54,-321.5"/>
+</g>
+<!-- sd_15_8_anchor&#45;&gt;sd_15_6_anchor -->
+<g id="edge27" class="edge">
+<title>sd_15_8_anchor&#45;&gt;sd_15_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6147,-422C6147,-422 6831,-409.5 6831,-409.5 6831,-409.5 6831,-336 6831,-336 6831,-336 5977.69,-324.76 5889.36,-323.6"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="5889.54,-321.5 5883.51,-323.52 5889.49,-325.7 5889.54,-321.5"/>
+</g>
+<!-- sd_15_8_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge33" class="edge">
+<title>sd_15_8_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6116,-446.71C6077.93,-443.95 6063,-422 6063,-422 6063,-422 6035,-409.5 6035,-409.5 6035,-409.5 6026.77,-374.72 6053.01,-365.32"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6053.22,-367.43 6058.53,-363.94 6052.2,-363.36 6053.22,-367.43"/>
+</g>
+<!-- sd_15_8_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge36" class="edge">
+<title>sd_15_8_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6116,-445.92C6098.01,-441.14 6085,-422 6085,-422 6085,-422 6057,-409.5 6057,-409.5 6057,-409.5 6051.4,-385.84 6056.18,-372.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6057.89,-373.5 6059.22,-367.28 6054.3,-371.31 6057.89,-373.5"/>
+</g>
+<!-- sd_15_8_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge43" class="edge">
+<title>sd_15_8_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6151,-422C6151,-422 6138.06,-416.23 6129.78,-412.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6130.72,-410.65 6124.38,-410.12 6129,-414.48 6130.72,-410.65"/>
+</g>
+<!-- so_15_8_01 -->
+<g id="node44" class="node">
+<title>so_15_8_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6305.25,-466C6305.25,-466 6158.75,-466 6158.75,-466 6152.75,-466 6146.75,-460 6146.75,-454 6146.75,-454 6146.75,-442 6146.75,-442 6146.75,-436 6152.75,-430 6158.75,-430 6158.75,-430 6305.25,-430 6305.25,-430 6311.25,-430 6317.25,-436 6317.25,-442 6317.25,-442 6317.25,-454 6317.25,-454 6317.25,-460 6311.25,-466 6305.25,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="6232" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Source and triage RFPs and DDQs</text>
+</g>
+<!-- so_15_8_02 -->
+<g id="node45" class="node">
+<title>so_15_8_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6460.5,-466C6460.5,-466 6351.5,-466 6351.5,-466 6345.5,-466 6339.5,-460 6339.5,-454 6339.5,-454 6339.5,-442 6339.5,-442 6339.5,-436 6345.5,-430 6351.5,-430 6351.5,-430 6460.5,-430 6460.5,-430 6466.5,-430 6472.5,-436 6472.5,-442 6472.5,-442 6472.5,-454 6472.5,-454 6472.5,-460 6466.5,-466 6460.5,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="6406" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the answer library</text>
+</g>
+<!-- so_15_8_03 -->
+<g id="node46" class="node">
+<title>so_15_8_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6601.38,-466C6601.38,-466 6506.62,-466 6506.62,-466 6500.62,-466 6494.62,-460 6494.62,-454 6494.62,-454 6494.62,-442 6494.62,-442 6494.62,-436 6500.62,-430 6506.62,-430 6506.62,-430 6601.38,-430 6601.38,-430 6607.38,-430 6613.38,-436 6613.38,-442 6613.38,-442 6613.38,-454 6613.38,-454 6613.38,-460 6607.38,-466 6601.38,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="6554" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assemble the response</text>
+</g>
+<!-- so_15_8_04 -->
+<g id="node47" class="node">
+<title>so_15_8_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6788.25,-466C6788.25,-466 6647.75,-466 6647.75,-466 6641.75,-466 6635.75,-460 6635.75,-454 6635.75,-454 6635.75,-442 6635.75,-442 6635.75,-436 6641.75,-430 6647.75,-430 6647.75,-430 6788.25,-430 6788.25,-430 6794.25,-430 6800.25,-436 6800.25,-442 6800.25,-442 6800.25,-454 6800.25,-454 6800.25,-460 6794.25,-466 6788.25,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="6718" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review and approve the response</text>
+</g>
+<!-- so_15_8_05 -->
+<g id="node48" class="node">
+<title>so_15_8_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6959.75,-466C6959.75,-466 6834.25,-466 6834.25,-466 6828.25,-466 6822.25,-460 6822.25,-454 6822.25,-454 6822.25,-442 6822.25,-442 6822.25,-436 6828.25,-430 6834.25,-430 6834.25,-430 6959.75,-430 6959.75,-430 6965.75,-430 6971.75,-436 6971.75,-442 6971.75,-442 6971.75,-454 6971.75,-454 6971.75,-460 6965.75,-466 6959.75,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="6897" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the response calendar</text>
+</g>
+<!-- sd_15_9_anchor -->
+<!-- sd_15_9_anchor&#45;&gt;sd_15_1_anchor -->
+<g id="edge46" class="edge">
+<title>sd_15_9_anchor&#45;&gt;sd_15_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-532.94C5835.28,-531.29 951,-495.5 951,-495.5 951,-495.5 122.78,-418.33 35.43,-410.19"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="35.68,-408.11 29.51,-409.64 35.29,-412.29 35.68,-408.11"/>
+</g>
+<!-- sd_15_9_anchor&#45;&gt;sd_15_4_anchor -->
+<g id="edge45" class="edge">
+<title>sd_15_9_anchor&#45;&gt;sd_15_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-532.89C5905.64,-530.71 3566.68,-497.66 3421.09,-495.6"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3421.54,-493.51 3415.51,-495.52 3421.48,-497.71 3421.54,-493.51"/>
+</g>
+<!-- sd_15_9_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge34" class="edge">
+<title>sd_15_9_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6060,-523.81C6049.46,-496.3 6048.72,-414.38 6057.79,-379.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6059.77,-380 6059.55,-373.65 6055.76,-378.75 6059.77,-380"/>
+</g>
+<!-- sd_15_9_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge38" class="edge">
+<title>sd_15_9_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6068,-508C6068,-484.13 6068,-447.37 6068,-416.84"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6070.1,-417.01 6068,-411.01 6065.9,-417.01 6070.1,-417.01"/>
+</g>
+<!-- sd_15_9_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge44" class="edge">
+<title>sd_15_9_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M6080.1,-508C6084.44,-484.17 6085.57,-447.48 6083.48,-416.98"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6085.58,-416.82 6083.01,-411.01 6081.39,-417.15 6085.58,-416.82"/>
+</g>
+<!-- so_15_9_01 -->
+<g id="node50" class="node">
+<title>so_15_9_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6234.12,-552C6234.12,-552 6101.88,-552 6101.88,-552 6095.88,-552 6089.88,-546 6089.88,-540 6089.88,-540 6089.88,-528 6089.88,-528 6089.88,-522 6095.88,-516 6101.88,-516 6101.88,-516 6234.12,-516 6234.12,-516 6240.12,-516 6246.12,-522 6246.12,-528 6246.12,-528 6246.12,-540 6246.12,-540 6246.12,-546 6240.12,-552 6234.12,-552"/>
+<text xml:space="preserve" text-anchor="middle" x="6168" y="-530.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage consultant relationships</text>
+</g>
+<!-- so_15_9_02 -->
+<g id="node51" class="node">
+<title>so_15_9_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6421.62,-552C6421.62,-552 6280.38,-552 6280.38,-552 6274.38,-552 6268.38,-546 6268.38,-540 6268.38,-540 6268.38,-528 6268.38,-528 6268.38,-522 6274.38,-516 6280.38,-516 6280.38,-516 6421.62,-516 6421.62,-516 6427.62,-516 6433.62,-522 6433.62,-528 6433.62,-528 6433.62,-540 6433.62,-540 6433.62,-546 6427.62,-552 6421.62,-552"/>
+<text xml:space="preserve" text-anchor="middle" x="6351" y="-530.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the consultant databases</text>
+</g>
+<!-- so_15_9_03 -->
+<g id="node52" class="node">
+<title>so_15_9_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6628.38,-552C6628.38,-552 6467.62,-552 6467.62,-552 6461.62,-552 6455.62,-546 6455.62,-540 6455.62,-540 6455.62,-528 6455.62,-528 6455.62,-522 6461.62,-516 6467.62,-516 6467.62,-516 6628.38,-516 6628.38,-516 6634.38,-516 6640.38,-522 6640.38,-528 6640.38,-528 6640.38,-540 6640.38,-540 6640.38,-546 6634.38,-552 6628.38,-552"/>
+<text xml:space="preserve" text-anchor="middle" x="6548" y="-530.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Support the manager&#45;research process</text>
+</g>
+<!-- so_15_9_04 -->
+<g id="node53" class="node">
+<title>so_15_9_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6807.12,-552C6807.12,-552 6674.88,-552 6674.88,-552 6668.88,-552 6662.88,-546 6662.88,-540 6662.88,-540 6662.88,-528 6662.88,-528 6662.88,-522 6668.88,-516 6674.88,-516 6674.88,-516 6807.12,-516 6807.12,-516 6813.12,-516 6819.12,-522 6819.12,-528 6819.12,-528 6819.12,-540 6819.12,-540 6819.12,-546 6813.12,-552 6807.12,-552"/>
+<text xml:space="preserve" text-anchor="middle" x="6741" y="-530.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Track ratings and buy&#45;list status</text>
+</g>
+<!-- so_15_9_05 -->
+<g id="node54" class="node">
+<title>so_15_9_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M6979.12,-552C6979.12,-552 6852.88,-552 6852.88,-552 6846.88,-552 6840.88,-546 6840.88,-540 6840.88,-540 6840.88,-528 6840.88,-528 6840.88,-522 6846.88,-516 6852.88,-516 6852.88,-516 6979.12,-516 6979.12,-516 6985.12,-516 6991.12,-522 6991.12,-528 6991.12,-528 6991.12,-540 6991.12,-540 6991.12,-546 6985.12,-552 6979.12,-552"/>
+<text xml:space="preserve" text-anchor="middle" x="6916" y="-530.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage consultant intelligence</text>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge49" class="edge">
+<title>sd_15_10_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4165,-359.39C4154.14,-353.87 4162,-336 4162,-336 4162,-336 4704,-323.5 4704,-323.5 4704,-323.5 4710.38,-296.53 4723.14,-283.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4724.34,-285.39 4727.81,-280.06 4721.77,-282.07 4724.34,-285.39"/>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge50" class="edge">
+<title>sd_15_10_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4184,-336C4184,-336 4726,-323.5 4726,-323.5 4726,-323.5 4726.51,-321.36 4727.3,-317.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4729.32,-318.6 4728.65,-312.28 4725.23,-317.64 4729.32,-318.6"/>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;sd_15_11_anchor -->
+<g id="edge53" class="edge">
+<title>sd_15_10_anchor&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4206,-336C4206,-336 4676.43,-325.15 4740.75,-323.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4740.54,-325.77 4746.49,-323.53 4740.44,-321.57 4740.54,-325.77"/>
+</g>
+<!-- ext_out_04 -->
+<g id="node100" class="node">
+<title>ext_out_04</title>
+<g id="a_node100"><a xlink:href="./bd-04.html" xlink:title="&#45;&gt; BD&#45;04\\nDirect &amp; Co&#45;Investment">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M4173.75,-294C4173.75,-294 4030.25,-294 4030.25,-294 4024.25,-294 4018.25,-288 4018.25,-282 4018.25,-282 4018.25,-270 4018.25,-270 4018.25,-264 4024.25,-258 4030.25,-258 4030.25,-258 4173.75,-258 4173.75,-258 4179.75,-258 4185.75,-264 4185.75,-270 4185.75,-270 4185.75,-282 4185.75,-282 4185.75,-288 4179.75,-294 4173.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4102" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;04\nDirect &amp; Co&#45;Investment</text>
+</a>
+</g>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;ext_out_04 -->
+<g id="edge78" class="edge">
+<title>sd_15_10_anchor&#45;&gt;ext_out_04</title>
+<g id="a_edge78"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M4165,-342.82C4163.3,-338.95 4162,-336 4162,-336 4162,-336 4142.02,-316.36 4125.12,-299.74"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="4126.62,-298.26 4120.87,-295.55 4123.67,-301.26 4126.62,-298.26"/>
+</a>
+</g>
+</g>
+<!-- ext_out_10 -->
+<g id="node101" class="node">
+<title>ext_out_10</title>
+<g id="a_node101"><a xlink:href="./bd-10.html" xlink:title="&#45;&gt; BD&#45;10\\nInvestment Compliance &amp; Guideline Monitoring">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M4464.38,-294C4464.38,-294 4219.62,-294 4219.62,-294 4213.62,-294 4207.62,-288 4207.62,-282 4207.62,-282 4207.62,-270 4207.62,-270 4207.62,-264 4213.62,-258 4219.62,-258 4219.62,-258 4464.38,-258 4464.38,-258 4470.38,-258 4476.38,-264 4476.38,-270 4476.38,-270 4476.38,-282 4476.38,-282 4476.38,-288 4470.38,-294 4464.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4342" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;10\nInvestment Compliance &amp; Guideline Monitoring</text>
+</a>
+</g>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;ext_out_10 -->
+<g id="edge79" class="edge">
+<title>sd_15_10_anchor&#45;&gt;ext_out_10</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M4184,-336C4184,-336 4241.95,-314.36 4287.66,-297.29"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4288.29,-299.3 4293.18,-295.23 4286.82,-295.36 4288.29,-299.3"/>
+</g>
+<!-- ext_out_12 -->
+<g id="node102" class="node">
+<title>ext_out_12</title>
+<g id="a_node102"><a xlink:href="./bd-12.html" xlink:title="&#45;&gt; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M4703.12,-294C4703.12,-294 4510.88,-294 4510.88,-294 4504.88,-294 4498.88,-288 4498.88,-282 4498.88,-282 4498.88,-270 4498.88,-270 4498.88,-264 4504.88,-258 4510.88,-258 4510.88,-258 4703.12,-258 4703.12,-258 4709.12,-258 4715.12,-264 4715.12,-270 4715.12,-270 4715.12,-282 4715.12,-282 4715.12,-288 4709.12,-294 4703.12,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4607" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- sd_15_10_anchor&#45;&gt;ext_out_12 -->
+<g id="edge80" class="edge">
+<title>sd_15_10_anchor&#45;&gt;ext_out_12</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M4184,-336C4184,-336 4487,-323.5 4487,-323.5 4487,-323.5 4522.19,-309.86 4554.46,-297.36"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4555.04,-299.39 4559.88,-295.26 4553.53,-295.47 4555.04,-299.39"/>
+</g>
+<!-- so_15_10_01 -->
+<g id="node56" class="node">
+<title>so_15_10_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4342.62,-380C4342.62,-380 4207.38,-380 4207.38,-380 4201.38,-380 4195.38,-374 4195.38,-368 4195.38,-368 4195.38,-356 4195.38,-356 4195.38,-350 4201.38,-344 4207.38,-344 4207.38,-344 4342.62,-344 4342.62,-344 4348.62,-344 4354.62,-350 4354.62,-356 4354.62,-356 4354.62,-368 4354.62,-368 4354.62,-374 4348.62,-380 4342.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4275" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Prepare the fundraising materials</text>
+</g>
+<!-- so_15_10_02 -->
+<g id="node57" class="node">
+<title>so_15_10_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4511.62,-380C4511.62,-380 4388.38,-380 4388.38,-380 4382.38,-380 4376.38,-374 4376.38,-368 4376.38,-368 4376.38,-356 4376.38,-356 4376.38,-350 4382.38,-344 4388.38,-344 4388.38,-344 4511.62,-344 4511.62,-344 4517.62,-344 4523.62,-350 4523.62,-356 4523.62,-356 4523.62,-368 4523.62,-368 4523.62,-374 4517.62,-380 4511.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4450" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the fundraising data room</text>
+</g>
+<!-- so_15_10_03 -->
+<g id="node58" class="node">
+<title>so_15_10_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4652,-380C4652,-380 4558,-380 4558,-380 4552,-380 4546,-374 4546,-368 4546,-368 4546,-356 4546,-356 4546,-350 4552,-344 4558,-344 4558,-344 4652,-344 4652,-344 4658,-344 4664,-350 4664,-356 4664,-356 4664,-368 4664,-368 4664,-374 4658,-380 4652,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4605" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the LP pipeline</text>
+</g>
+<!-- so_15_10_04 -->
+<g id="node59" class="node">
+<title>so_15_10_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4813.5,-380C4813.5,-380 4698.5,-380 4698.5,-380 4692.5,-380 4686.5,-374 4686.5,-368 4686.5,-368 4686.5,-356 4686.5,-356 4686.5,-350 4692.5,-344 4698.5,-344 4698.5,-344 4813.5,-344 4813.5,-344 4819.5,-344 4825.5,-350 4825.5,-356 4825.5,-356 4825.5,-368 4825.5,-368 4825.5,-374 4819.5,-380 4813.5,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4756" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Negotiate commercial terms</text>
+</g>
+<!-- so_15_10_05 -->
+<g id="node60" class="node">
+<title>so_15_10_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4972,-380C4972,-380 4860,-380 4860,-380 4854,-380 4848,-374 4848,-368 4848,-368 4848,-356 4848,-356 4848,-350 4854,-344 4860,-344 4860,-344 4972,-344 4972,-344 4978,-344 4984,-350 4984,-356 4984,-356 4984,-368 4984,-368 4984,-374 4978,-380 4972,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4916" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Drive to first and final close</text>
+</g>
+<!-- sd_15_13_anchor -->
+<!-- sd_15_11_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge54" class="edge">
+<title>sd_15_11_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4729,-273.85C4712.33,-268.94 4704,-250 4704,-250 4704,-250 3205,-237.5 3205,-237.5 3205,-237.5 3199.4,-213.84 3204.18,-200.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3205.89,-201.5 3207.22,-195.28 3202.3,-199.31 3205.89,-201.5"/>
+</g>
+<!-- sd_15_11_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge60" class="edge">
+<title>sd_15_11_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4729,-256.82C4727.3,-252.95 4726,-250 4726,-250 4726,-250 3347.44,-238.5 3234.36,-237.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3234.53,-235.46 3228.51,-237.51 3234.5,-239.66 3234.53,-235.46"/>
+</g>
+<!-- sd_15_11_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge62" class="edge">
+<title>sd_15_11_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M4748,-250C4748,-250 3369.44,-238.5 3256.36,-237.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3256.53,-235.46 3250.51,-237.51 3256.5,-239.66 3256.53,-235.46"/>
+</g>
+<!-- ext_out_01 -->
+<g id="node99" class="node">
+<title>ext_out_01</title>
+<g id="a_node99"><a xlink:href="./bd-01.html" xlink:title="&#45;&gt; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M4938.62,-208C4938.62,-208 4755.38,-208 4755.38,-208 4749.38,-208 4743.38,-202 4743.38,-196 4743.38,-196 4743.38,-184 4743.38,-184 4743.38,-178 4749.38,-172 4755.38,-172 4755.38,-172 4938.62,-172 4938.62,-172 4944.62,-172 4950.62,-178 4950.62,-184 4950.62,-184 4950.62,-196 4950.62,-196 4950.62,-202 4944.62,-208 4938.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4847" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- sd_15_11_anchor&#45;&gt;ext_out_01 -->
+<g id="edge77" class="edge">
+<title>sd_15_11_anchor&#45;&gt;ext_out_01</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M4748,-250C4748,-250 4782.69,-229.33 4811,-212.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4811.92,-214.35 4816,-209.48 4809.77,-210.74 4811.92,-214.35"/>
+</g>
+<!-- ext_out_13 -->
+<g id="node103" class="node">
+<title>ext_out_13</title>
+<g id="a_node103"><a xlink:href="./bd-13.html" xlink:title="&#45;&gt; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M4709.75,-208C4709.75,-208 4542.25,-208 4542.25,-208 4536.25,-208 4530.25,-202 4530.25,-196 4530.25,-196 4530.25,-184 4530.25,-184 4530.25,-178 4536.25,-172 4542.25,-172 4542.25,-172 4709.75,-172 4709.75,-172 4715.75,-172 4721.75,-178 4721.75,-184 4721.75,-184 4721.75,-196 4721.75,-196 4721.75,-202 4715.75,-208 4709.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="4626" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- sd_15_11_anchor&#45;&gt;ext_out_13 -->
+<g id="edge81" class="edge">
+<title>sd_15_11_anchor&#45;&gt;ext_out_13</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M4729,-256.82C4727.3,-252.95 4726,-250 4726,-250 4726,-250 4690.96,-229.33 4662.36,-212.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4663.54,-210.71 4657.31,-209.47 4661.41,-214.33 4663.54,-210.71"/>
+</g>
+<!-- so_15_11_01 -->
+<g id="node62" class="node">
+<title>so_15_11_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4926.75,-294C4926.75,-294 4771.25,-294 4771.25,-294 4765.25,-294 4759.25,-288 4759.25,-282 4759.25,-282 4759.25,-270 4759.25,-270 4759.25,-264 4765.25,-258 4771.25,-258 4771.25,-258 4926.75,-258 4926.75,-258 4932.75,-258 4938.75,-264 4938.75,-270 4938.75,-270 4938.75,-282 4938.75,-282 4938.75,-288 4932.75,-294 4926.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="4849" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Negotiate and execute the agreement</text>
+</g>
+<!-- so_15_11_02 -->
+<g id="node63" class="node">
+<title>so_15_11_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5041.62,-294C5041.62,-294 4972.38,-294 4972.38,-294 4966.38,-294 4960.38,-288 4960.38,-282 4960.38,-282 4960.38,-270 4960.38,-270 4960.38,-264 4966.38,-258 4972.38,-258 4972.38,-258 5041.62,-258 5041.62,-258 5047.62,-258 5053.62,-264 5053.62,-270 5053.62,-270 5053.62,-282 5053.62,-282 5053.62,-288 5047.62,-294 5041.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5007" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Open the account</text>
+</g>
+<!-- so_15_11_03 -->
+<g id="node64" class="node">
+<title>so_15_11_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5248.75,-294C5248.75,-294 5087.25,-294 5087.25,-294 5081.25,-294 5075.25,-288 5075.25,-282 5075.25,-282 5075.25,-270 5075.25,-270 5075.25,-264 5081.25,-258 5087.25,-258 5087.25,-258 5248.75,-258 5248.75,-258 5254.75,-258 5260.75,-264 5260.75,-270 5260.75,-270 5260.75,-282 5260.75,-282 5260.75,-288 5254.75,-294 5248.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5168" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Coordinate cross&#45;functional onboarding</text>
+</g>
+<!-- so_15_11_04 -->
+<g id="node65" class="node">
+<title>so_15_11_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5447.62,-294C5447.62,-294 5294.38,-294 5294.38,-294 5288.38,-294 5282.38,-288 5282.38,-282 5282.38,-282 5282.38,-270 5282.38,-270 5282.38,-264 5288.38,-258 5294.38,-258 5294.38,-258 5447.62,-258 5447.62,-258 5453.62,-258 5459.62,-264 5459.62,-270 5459.62,-270 5459.62,-282 5459.62,-282 5459.62,-288 5453.62,-294 5447.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5371" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Trigger and consume the KYC check</text>
+</g>
+<!-- so_15_11_05 -->
+<g id="node66" class="node">
+<title>so_15_11_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M5615.88,-294C5615.88,-294 5494.12,-294 5494.12,-294 5488.12,-294 5482.12,-288 5482.12,-282 5482.12,-282 5482.12,-270 5482.12,-270 5482.12,-264 5488.12,-258 5494.12,-258 5494.12,-258 5615.88,-258 5615.88,-258 5621.88,-258 5627.88,-264 5627.88,-270 5627.88,-270 5627.88,-282 5627.88,-282 5627.88,-288 5621.88,-294 5615.88,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="5555" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Confirm onboarding readiness</text>
+</g>
+<!-- sd_15_12_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge59" class="edge">
+<title>sd_15_12_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1883,-250C1883,-250 3053.01,-198.21 3200.73,-191.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3200.59,-193.78 3206.49,-191.42 3200.4,-189.59 3200.59,-193.78"/>
+</g>
+<!-- sd_15_15_anchor -->
+<!-- sd_15_12_anchor&#45;&gt;sd_15_15_anchor -->
+<g id="edge70" class="edge">
+<title>sd_15_12_anchor&#45;&gt;sd_15_15_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1871,-323.5C1871,-325.25 1871,-326.99 1871,-328.7"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1868.9,-328.49 1871,-334.49 1873.1,-328.49 1868.9,-328.49"/>
+</g>
+<!-- sd_15_12_anchor&#45;&gt;sd_15_15_anchor -->
+<g id="edge71" class="edge">
+<title>sd_15_12_anchor&#45;&gt;sd_15_15_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1887.42,-323.5C1887.35,-325.2 1887.25,-326.89 1887.11,-328.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1885.03,-328.3 1886.41,-334.5 1889.2,-328.79 1885.03,-328.3"/>
+</g>
+<!-- ext_out_14 -->
+<g id="node104" class="node">
+<title>ext_out_14</title>
+<g id="a_node104"><a xlink:href="./bd-14.html" xlink:title="&#45;&gt; BD&#45;14\\nEnterprise Risk, Control &amp; Assurance">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M1972.75,-208C1972.75,-208 1769.25,-208 1769.25,-208 1763.25,-208 1757.25,-202 1757.25,-196 1757.25,-196 1757.25,-184 1757.25,-184 1757.25,-178 1763.25,-172 1769.25,-172 1769.25,-172 1972.75,-172 1972.75,-172 1978.75,-172 1984.75,-178 1984.75,-184 1984.75,-184 1984.75,-196 1984.75,-196 1984.75,-202 1978.75,-208 1972.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1871" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;14\nEnterprise Risk, Control &amp; Assurance</text>
+</a>
+</g>
+</g>
+<!-- sd_15_12_anchor&#45;&gt;ext_out_14 -->
+<g id="edge82" class="edge">
+<title>sd_15_12_anchor&#45;&gt;ext_out_14</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1871,-250C1871,-239.33 1871,-226.9 1871,-216.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1873.1,-216.24 1871,-210.24 1868.9,-216.24 1873.1,-216.24"/>
+</g>
+<!-- so_15_12_01 -->
+<g id="node68" class="node">
+<title>so_15_12_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M1968.25,-294C1968.25,-294 1905.75,-294 1905.75,-294 1899.75,-294 1893.75,-288 1893.75,-282 1893.75,-282 1893.75,-270 1893.75,-270 1893.75,-264 1899.75,-258 1905.75,-258 1905.75,-258 1968.25,-258 1968.25,-258 1974.25,-258 1980.25,-264 1980.25,-270 1980.25,-270 1980.25,-282 1980.25,-282 1980.25,-288 1974.25,-294 1968.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1937" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Profile the client</text>
+</g>
+<!-- so_15_12_02 -->
+<g id="node69" class="node">
+<title>so_15_12_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2174,-294C2174,-294 2014,-294 2014,-294 2008,-294 2002,-288 2002,-282 2002,-282 2002,-270 2002,-270 2002,-264 2008,-258 2014,-258 2014,-258 2174,-258 2174,-258 2180,-258 2186,-264 2186,-270 2186,-270 2186,-282 2186,-282 2186,-288 2180,-294 2174,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2094" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess suitability and appropriateness</text>
+</g>
+<!-- so_15_12_03 -->
+<g id="node70" class="node">
+<title>so_15_12_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2315.75,-294C2315.75,-294 2220.25,-294 2220.25,-294 2214.25,-294 2208.25,-288 2208.25,-282 2208.25,-282 2208.25,-270 2208.25,-270 2208.25,-264 2214.25,-258 2220.25,-258 2220.25,-258 2315.75,-258 2315.75,-258 2321.75,-258 2327.75,-264 2327.75,-270 2327.75,-270 2327.75,-282 2327.75,-282 2327.75,-288 2321.75,-294 2315.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2268" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the advice process</text>
+</g>
+<!-- so_15_12_04 -->
+<g id="node71" class="node">
+<title>so_15_12_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2474.38,-294C2474.38,-294 2361.62,-294 2361.62,-294 2355.62,-294 2349.62,-288 2349.62,-282 2349.62,-282 2349.62,-270 2349.62,-270 2349.62,-264 2355.62,-258 2361.62,-258 2361.62,-258 2474.38,-258 2474.38,-258 2480.38,-258 2486.38,-264 2486.38,-270 2486.38,-270 2486.38,-282 2486.38,-282 2486.38,-288 2480.38,-294 2474.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2418" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review suitability over time</text>
+</g>
+<!-- so_15_12_05 -->
+<g id="node72" class="node">
+<title>so_15_12_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2632,-294C2632,-294 2520,-294 2520,-294 2514,-294 2508,-288 2508,-282 2508,-282 2508,-270 2508,-270 2508,-264 2514,-258 2520,-258 2520,-258 2632,-258 2632,-258 2638,-258 2644,-264 2644,-270 2644,-270 2644,-282 2644,-282 2644,-288 2638,-294 2632,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2576" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern the advice standard</text>
+</g>
+<!-- sd_15_13_anchor&#45;&gt;sd_15_7_anchor -->
+<g id="edge64" class="edge">
+<title>sd_15_13_anchor&#45;&gt;sd_15_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3227,-237.5C3227,-237.5 6742,-250 6742,-250 6742,-250 6742,-323.5 6742,-323.5 6742,-323.5 6159.29,-334.49 6086.45,-335.86"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="6086.47,-333.76 6080.51,-335.97 6086.55,-337.96 6086.47,-333.76"/>
+</g>
+<!-- sd_15_16_anchor -->
+<!-- sd_15_13_anchor&#45;&gt;sd_15_16_anchor -->
+<g id="edge75" class="edge">
+<title>sd_15_13_anchor&#45;&gt;sd_15_16_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3208,-183.25C3203.11,-176.64 3198.83,-165.78 3196.33,-158.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3198.33,-157.99 3194.47,-152.94 3194.34,-159.29 3198.33,-157.99"/>
+</g>
+<!-- sd_15_13_anchor&#45;&gt;sd_15_16_anchor -->
+<g id="edge76" class="edge">
+<title>sd_15_13_anchor&#45;&gt;sd_15_16_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3219.03,-164C3218.64,-162.04 3218.22,-160.18 3217.83,-158.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3219.92,-158.24 3216.38,-152.96 3215.86,-159.3 3219.92,-158.24"/>
+</g>
+<!-- so_15_13_01 -->
+<g id="node74" class="node">
+<title>so_15_13_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3371.88,-208C3371.88,-208 3250.12,-208 3250.12,-208 3244.12,-208 3238.12,-202 3238.12,-196 3238.12,-196 3238.12,-184 3238.12,-184 3238.12,-178 3244.12,-172 3250.12,-172 3250.12,-172 3371.88,-172 3371.88,-172 3377.88,-172 3383.88,-178 3383.88,-184 3383.88,-184 3383.88,-196 3383.88,-196 3383.88,-202 3377.88,-208 3371.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3311" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the client relationship</text>
+</g>
+<!-- so_15_13_02 -->
+<g id="node75" class="node">
+<title>so_15_13_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3560.38,-208C3560.38,-208 3417.62,-208 3417.62,-208 3411.62,-208 3405.62,-202 3405.62,-196 3405.62,-196 3405.62,-184 3405.62,-184 3405.62,-178 3411.62,-172 3417.62,-172 3417.62,-172 3560.38,-172 3560.38,-172 3566.38,-172 3572.38,-178 3572.38,-184 3572.38,-184 3572.38,-196 3572.38,-196 3572.38,-202 3566.38,-208 3560.38,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3489" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Handle client queries and requests</text>
+</g>
+<!-- so_15_13_03 -->
+<g id="node76" class="node">
+<title>so_15_13_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3725.75,-208C3725.75,-208 3606.25,-208 3606.25,-208 3600.25,-208 3594.25,-202 3594.25,-196 3594.25,-196 3594.25,-184 3594.25,-184 3594.25,-178 3600.25,-172 3606.25,-172 3606.25,-172 3725.75,-172 3725.75,-172 3731.75,-172 3737.75,-178 3737.75,-184 3737.75,-184 3737.75,-196 3737.75,-196 3737.75,-202 3731.75,-208 3725.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3666" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the client experience</text>
+</g>
+<!-- so_15_13_04 -->
+<g id="node77" class="node">
+<title>so_15_13_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3852.62,-208C3852.62,-208 3771.38,-208 3771.38,-208 3765.38,-208 3759.38,-202 3759.38,-196 3759.38,-196 3759.38,-184 3759.38,-184 3759.38,-178 3765.38,-172 3771.38,-172 3771.38,-172 3852.62,-172 3852.62,-172 3858.62,-172 3864.62,-178 3864.62,-184 3864.62,-184 3864.62,-196 3864.62,-196 3864.62,-202 3858.62,-208 3852.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3812" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Work client retention</text>
+</g>
+<!-- so_15_13_05 -->
+<g id="node78" class="node">
+<title>so_15_13_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4017.38,-208C4017.38,-208 3898.62,-208 3898.62,-208 3892.62,-208 3886.62,-202 3886.62,-196 3886.62,-196 3886.62,-184 3886.62,-184 3886.62,-178 3892.62,-172 3898.62,-172 3898.62,-172 4017.38,-172 4017.38,-172 4023.38,-172 4029.38,-178 4029.38,-184 4029.38,-184 4029.38,-196 4029.38,-196 4029.38,-202 4023.38,-208 4017.38,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3958" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage upsell and cross&#45;sell</text>
+</g>
+<!-- sd_15_14_anchor -->
+<!-- sd_15_14_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge61" class="edge">
+<title>sd_15_14_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3163,-273.36C3152.46,-267.8 3161,-250 3161,-250 3161,-250 3177,-237.5 3177,-237.5 3177,-237.5 3187.14,-209.76 3201.9,-197.13"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3202.95,-198.95 3206.75,-193.85 3200.6,-195.47 3202.95,-198.95"/>
+</g>
+<!-- sd_15_14_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge63" class="edge">
+<title>sd_15_14_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3183,-250C3183,-250 3199,-237.5 3199,-237.5 3199,-237.5 3201.97,-229.37 3205.43,-219.9"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3207.4,-220.65 3207.48,-214.29 3203.45,-219.21 3207.4,-220.65"/>
+</g>
+<!-- sd_15_14_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge69" class="edge">
+<title>sd_15_14_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3205,-250C3205,-250 3210.64,-245.59 3215.22,-242.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3216.37,-243.78 3219.81,-238.43 3213.79,-240.47 3216.37,-243.78"/>
+</g>
+<!-- so_15_14_01 -->
+<g id="node80" class="node">
+<title>so_15_14_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3340.25,-294C3340.25,-294 3205.75,-294 3205.75,-294 3199.75,-294 3193.75,-288 3193.75,-282 3193.75,-282 3193.75,-270 3193.75,-270 3193.75,-264 3199.75,-258 3205.75,-258 3205.75,-258 3340.25,-258 3340.25,-258 3346.25,-258 3352.25,-264 3352.25,-270 3352.25,-270 3352.25,-282 3352.25,-282 3352.25,-288 3346.25,-294 3340.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3273" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce bespoke client reporting</text>
+</g>
+<!-- so_15_14_02 -->
+<g id="node81" class="node">
+<title>so_15_14_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3477.5,-294C3477.5,-294 3386.5,-294 3386.5,-294 3380.5,-294 3374.5,-288 3374.5,-282 3374.5,-282 3374.5,-270 3374.5,-270 3374.5,-264 3380.5,-258 3386.5,-258 3386.5,-258 3477.5,-258 3477.5,-258 3483.5,-258 3489.5,-264 3489.5,-270 3489.5,-270 3489.5,-282 3489.5,-282 3489.5,-288 3483.5,-294 3477.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3432" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the investor portal</text>
+</g>
+<!-- so_15_14_03 -->
+<g id="node82" class="node">
+<title>so_15_14_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3622.62,-294C3622.62,-294 3523.38,-294 3523.38,-294 3517.38,-294 3511.38,-288 3511.38,-282 3511.38,-282 3511.38,-270 3511.38,-270 3511.38,-264 3517.38,-258 3523.38,-258 3523.38,-258 3622.62,-258 3622.62,-258 3628.62,-258 3634.62,-264 3634.62,-270 3634.62,-270 3634.62,-282 3634.62,-282 3634.62,-288 3628.62,-294 3622.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3573" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run relationship reviews</text>
+</g>
+<!-- so_15_14_04 -->
+<g id="node83" class="node">
+<title>so_15_14_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3790.88,-294C3790.88,-294 3669.12,-294 3669.12,-294 3663.12,-294 3657.12,-288 3657.12,-282 3657.12,-282 3657.12,-270 3657.12,-270 3657.12,-264 3663.12,-258 3669.12,-258 3669.12,-258 3790.88,-258 3790.88,-258 3796.88,-258 3802.88,-264 3802.88,-270 3802.88,-270 3802.88,-282 3802.88,-282 3802.88,-288 3796.88,-294 3790.88,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3730" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage client communication</text>
+</g>
+<!-- so_15_14_05 -->
+<g id="node84" class="node">
+<title>so_15_14_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3984.62,-294C3984.62,-294 3837.38,-294 3837.38,-294 3831.38,-294 3825.38,-288 3825.38,-282 3825.38,-282 3825.38,-270 3825.38,-270 3825.38,-264 3831.38,-258 3837.38,-258 3837.38,-258 3984.62,-258 3984.62,-258 3990.62,-258 3996.62,-264 3996.62,-270 3996.62,-270 3996.62,-282 3996.62,-282 3996.62,-288 3990.62,-294 3984.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="3911" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Govern the client&#45;reporting standard</text>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_12_anchor -->
+<g id="edge56" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_12_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1863,-359.99C1832.04,-351.76 1829.83,-295.74 1856.39,-280.71"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1856.84,-282.79 1861.6,-278.58 1855.25,-278.9 1856.84,-282.79"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_12_anchor -->
+<g id="edge57" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_12_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1863,-356.46C1853.04,-343.61 1851.83,-306.76 1859.38,-288.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1861.21,-289.14 1862.27,-282.87 1857.53,-287.11 1861.21,-289.14"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_12_anchor -->
+<g id="edge73" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_12_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1901.47,-336C1902.02,-334.26 1902.47,-332.47 1902.84,-330.65"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1904.88,-331.23 1903.62,-325 1900.72,-330.65 1904.88,-331.23"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_13_anchor -->
+<g id="edge72" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_13_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1882,-336C1882,-336 2657,-323.5 2657,-323.5 2657,-323.5 3111.84,-215.69 3200.96,-194.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3201.18,-196.67 3206.53,-193.24 3200.21,-192.59 3201.18,-196.67"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_14_anchor -->
+<g id="edge65" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1863,-359.39C1852.14,-353.87 1860,-336 1860,-336 1860,-336 2903,-323.5 2903,-323.5 2903,-323.5 3096.41,-286.94 3155.58,-278.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3155.82,-280.74 3161.5,-277.88 3155.28,-276.58 3155.82,-280.74"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_14_anchor -->
+<g id="edge67" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1882,-336C1882,-336 2925,-323.5 2925,-323.5 2925,-323.5 3102.06,-290.03 3155.75,-279.88"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3156.01,-281.97 3161.52,-278.79 3155.23,-277.84 3156.01,-281.97"/>
+</g>
+<!-- sd_15_15_anchor&#45;&gt;sd_15_14_anchor -->
+<g id="edge74" class="edge">
+<title>sd_15_15_anchor&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1904,-336C1904,-336 2947,-323.5 2947,-323.5 2947,-323.5 3103.84,-293.85 3155.85,-281.9"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3156.17,-283.99 3161.53,-280.56 3155.21,-279.9 3156.17,-283.99"/>
+</g>
+<!-- so_15_15_01 -->
+<g id="node86" class="node">
+<title>so_15_15_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2078.75,-380C2078.75,-380 1905.25,-380 1905.25,-380 1899.25,-380 1893.25,-374 1893.25,-368 1893.25,-368 1893.25,-356 1893.25,-356 1893.25,-350 1899.25,-344 1905.25,-344 1905.25,-344 2078.75,-344 2078.75,-344 2084.75,-344 2090.75,-350 2090.75,-356 2090.75,-356 2090.75,-368 2090.75,-368 2090.75,-374 2084.75,-380 2078.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1992" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce the comprehensive financial plan</text>
+</g>
+<!-- so_15_15_02 -->
+<g id="node87" class="node">
+<title>so_15_15_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2289.62,-380C2289.62,-380 2124.38,-380 2124.38,-380 2118.38,-380 2112.38,-374 2112.38,-368 2112.38,-368 2112.38,-356 2112.38,-356 2112.38,-350 2118.38,-344 2124.38,-344 2124.38,-344 2289.62,-344 2289.62,-344 2295.62,-344 2301.62,-350 2301.62,-356 2301.62,-356 2301.62,-368 2301.62,-368 2301.62,-374 2295.62,-380 2289.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2207" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run estate and wealth&#45;transfer planning</text>
+</g>
+<!-- so_15_15_03 -->
+<g id="node88" class="node">
+<title>so_15_15_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2526.75,-380C2526.75,-380 2335.25,-380 2335.25,-380 2329.25,-380 2323.25,-374 2323.25,-368 2323.25,-368 2323.25,-356 2323.25,-356 2323.25,-350 2329.25,-344 2335.25,-344 2335.25,-344 2526.75,-344 2526.75,-344 2532.75,-344 2538.75,-350 2538.75,-356 2538.75,-356 2538.75,-368 2538.75,-368 2538.75,-374 2532.75,-380 2526.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2431" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Deliver behavioural advice and bias mitigation</text>
+</g>
+<!-- so_15_15_04 -->
+<g id="node89" class="node">
+<title>so_15_15_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2681.12,-380C2681.12,-380 2572.88,-380 2572.88,-380 2566.88,-380 2560.88,-374 2560.88,-368 2560.88,-368 2560.88,-356 2560.88,-356 2560.88,-350 2566.88,-344 2572.88,-344 2572.88,-344 2681.12,-344 2681.12,-344 2687.12,-344 2693.12,-350 2693.12,-356 2693.12,-356 2693.12,-368 2693.12,-368 2693.12,-374 2687.12,-380 2681.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2627" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Support family governance</text>
+</g>
+<!-- so_15_15_05 -->
+<g id="node90" class="node">
+<title>so_15_15_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M2871.12,-380C2871.12,-380 2726.88,-380 2726.88,-380 2720.88,-380 2714.88,-374 2714.88,-368 2714.88,-368 2714.88,-356 2714.88,-356 2714.88,-350 2720.88,-344 2726.88,-344 2726.88,-344 2871.12,-344 2871.12,-344 2877.12,-344 2883.12,-350 2883.12,-356 2883.12,-356 2883.12,-368 2883.12,-368 2883.12,-374 2877.12,-380 2871.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2799" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Advise on after&#45;tax wealth strategy</text>
+</g>
+<!-- so_15_15_06 -->
+<g id="node91" class="node">
+<title>so_15_15_06</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3032.88,-380C3032.88,-380 2917.12,-380 2917.12,-380 2911.12,-380 2905.12,-374 2905.12,-368 2905.12,-368 2905.12,-356 2905.12,-356 2905.12,-350 2911.12,-344 2917.12,-344 2917.12,-344 3032.88,-344 3032.88,-344 3038.88,-344 3044.88,-350 3044.88,-356 3044.88,-356 3044.88,-368 3044.88,-368 3044.88,-374 3038.88,-380 3032.88,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2975" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Conduct the planning review</text>
+</g>
+<!-- sd_15_16_anchor&#45;&gt;sd_15_14_anchor -->
+<g id="edge66" class="edge">
+<title>sd_15_16_anchor&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3185,-124.43C3178.03,-153.23 3170.6,-207.59 3168.55,-242.51"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3166.46,-242.4 3168.26,-248.49 3170.65,-242.6 3166.46,-242.4"/>
+</g>
+<!-- sd_15_16_anchor&#45;&gt;sd_15_14_anchor -->
+<g id="edge68" class="edge">
+<title>sd_15_16_anchor&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3194.43,-151.5C3191.97,-180.5 3186.96,-217.09 3181.78,-242.89"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3179.77,-242.22 3180.59,-248.52 3183.88,-243.08 3179.77,-242.22"/>
+</g>
+<!-- ext_out_16 -->
+<g id="node105" class="node">
+<title>ext_out_16</title>
+<g id="a_node105"><a xlink:href="./bd-16.html" xlink:title="&#45;&gt; BD&#45;16\\nEnterprise Governance &amp; Accountability">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M3299.62,-36C3299.62,-36 3086.38,-36 3086.38,-36 3080.38,-36 3074.38,-30 3074.38,-24 3074.38,-24 3074.38,-12 3074.38,-12 3074.38,-6 3080.38,0 3086.38,0 3086.38,0 3299.62,0 3299.62,0 3305.62,0 3311.62,-6 3311.62,-12 3311.62,-12 3311.62,-24 3311.62,-24 3311.62,-30 3305.62,-36 3299.62,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="3193" y="-14.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;16\nEnterprise Governance &amp; Accountability</text>
+</a>
+</g>
+</g>
+<!-- sd_15_16_anchor&#45;&gt;ext_out_16 -->
+<g id="edge83" class="edge">
+<title>sd_15_16_anchor&#45;&gt;ext_out_16</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3193,-78C3193,-67.33 3193,-54.9 3193,-44.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3195.1,-44.24 3193,-38.24 3190.9,-44.24 3195.1,-44.24"/>
+</g>
+<!-- so_15_16_01 -->
+<g id="node93" class="node">
+<title>so_15_16_01</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3330.5,-122C3330.5,-122 3227.5,-122 3227.5,-122 3221.5,-122 3215.5,-116 3215.5,-110 3215.5,-110 3215.5,-98 3215.5,-98 3215.5,-92 3221.5,-86 3227.5,-86 3227.5,-86 3330.5,-86 3330.5,-86 3336.5,-86 3342.5,-92 3342.5,-98 3342.5,-98 3342.5,-110 3342.5,-110 3342.5,-116 3336.5,-122 3330.5,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3279" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Handle formal complaints</text>
+</g>
+<!-- so_15_16_02 -->
+<g id="node94" class="node">
+<title>so_15_16_02</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3517.25,-122C3517.25,-122 3376.75,-122 3376.75,-122 3370.75,-122 3364.75,-116 3364.75,-110 3364.75,-110 3364.75,-98 3364.75,-98 3364.75,-92 3370.75,-86 3376.75,-86 3376.75,-86 3517.25,-86 3517.25,-86 3523.25,-86 3529.25,-92 3529.25,-98 3529.25,-98 3529.25,-110 3529.25,-110 3529.25,-116 3523.25,-122 3517.25,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3447" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage client cases and disputes</text>
+</g>
+<!-- so_15_16_03 -->
+<g id="node95" class="node">
+<title>so_15_16_03</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3706.38,-122C3706.38,-122 3563.62,-122 3563.62,-122 3557.62,-122 3551.62,-116 3551.62,-110 3551.62,-110 3551.62,-98 3551.62,-98 3551.62,-92 3557.62,-86 3563.62,-86 3563.62,-86 3706.38,-86 3706.38,-86 3712.38,-86 3718.38,-92 3718.38,-98 3718.38,-98 3718.38,-110 3718.38,-110 3718.38,-116 3712.38,-122 3706.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3635" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run complaint root&#45;cause analysis</text>
+</g>
+<!-- so_15_16_04 -->
+<g id="node96" class="node">
+<title>so_15_16_04</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M3927.12,-122C3927.12,-122 3752.88,-122 3752.88,-122 3746.88,-122 3740.88,-116 3740.88,-110 3740.88,-110 3740.88,-98 3740.88,-98 3740.88,-92 3746.88,-86 3752.88,-86 3752.88,-86 3927.12,-86 3927.12,-86 3933.12,-86 3939.12,-92 3939.12,-98 3939.12,-98 3939.12,-110 3939.12,-110 3939.12,-116 3933.12,-122 3927.12,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="3840" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Identify and remediate systemic problems</text>
+</g>
+<!-- so_15_16_05 -->
+<g id="node97" class="node">
+<title>so_15_16_05</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4161.25,-122C4161.25,-122 3972.75,-122 3972.75,-122 3966.75,-122 3960.75,-116 3960.75,-110 3960.75,-110 3960.75,-98 3960.75,-98 3960.75,-92 3966.75,-86 3972.75,-86 3972.75,-86 4161.25,-86 4161.25,-86 4167.25,-86 4173.25,-92 4173.25,-98 4173.25,-98 4173.25,-110 4173.25,-110 4173.25,-116 4167.25,-122 4161.25,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="4067" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce complaints management information</text>
+</g>
+<!-- so_15_16_06 -->
+<g id="node98" class="node">
+<title>so_15_16_06</title>
+<path fill="white" stroke="#a65b5b" stroke-width="1.5" d="M4364.88,-122C4364.88,-122 4207.12,-122 4207.12,-122 4201.12,-122 4195.12,-116 4195.12,-110 4195.12,-110 4195.12,-98 4195.12,-98 4195.12,-92 4201.12,-86 4207.12,-86 4207.12,-86 4364.88,-86 4364.88,-86 4370.88,-86 4376.88,-92 4376.88,-98 4376.88,-98 4376.88,-110 4376.88,-110 4376.88,-116 4370.88,-122 4364.88,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="4286" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Feed conduct and outcomes evidence</text>
+</g>
+<!-- ext_in_01 -->
+<g id="node106" class="node">
+<title>ext_in_01</title>
+<g id="a_node106"><a xlink:href="./bd-01.html" xlink:title="&lt;&#45; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M3492.62,-380C3492.62,-380 3309.38,-380 3309.38,-380 3303.38,-380 3297.38,-374 3297.38,-368 3297.38,-368 3297.38,-356 3297.38,-356 3297.38,-350 3303.38,-344 3309.38,-344 3309.38,-344 3492.62,-344 3492.62,-344 3498.62,-344 3504.62,-350 3504.62,-356 3504.62,-356 3504.62,-368 3504.62,-368 3504.62,-374 3498.62,-380 3492.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3401" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- ext_in_01&#45;&gt;sd_15_14_anchor -->
+<g id="edge84" class="edge">
+<title>ext_in_01&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3319.57,-343.3C3300.69,-339.19 3286,-336 3286,-336 3286,-336 3214.02,-327.27 3190.41,-324.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3190.71,-322.32 3184.5,-323.68 3190.21,-326.49 3190.71,-322.32"/>
+</g>
+<!-- ext_in_09 -->
+<g id="node107" class="node">
+<title>ext_in_09</title>
+<g id="a_node107"><a xlink:href="./bd-09.html" xlink:title="&lt;&#45; BD&#45;09\\nPerformance &amp; Analytics">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M3687,-380C3687,-380 3539,-380 3539,-380 3533,-380 3527,-374 3527,-368 3527,-368 3527,-356 3527,-356 3527,-350 3533,-344 3539,-344 3539,-344 3687,-344 3687,-344 3693,-344 3699,-350 3699,-356 3699,-356 3699,-368 3699,-368 3699,-374 3693,-380 3687,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3613" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;09\nPerformance &amp; Analytics</text>
+</a>
+</g>
+</g>
+<!-- ext_in_09&#45;&gt;sd_15_14_anchor -->
+<g id="edge85" class="edge">
+<title>ext_in_09&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3544.32,-343.3C3528.39,-339.19 3516,-336 3516,-336 3516,-336 3238.96,-325.6 3190.26,-323.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3190.59,-321.68 3184.51,-323.56 3190.43,-325.88 3190.59,-321.68"/>
+</g>
+<!-- ext_in_12 -->
+<g id="node108" class="node">
+<title>ext_in_12</title>
+<g id="a_node108"><a xlink:href="./bd-12.html" xlink:title="&lt;&#45; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M3925.12,-380C3925.12,-380 3732.88,-380 3732.88,-380 3726.88,-380 3720.88,-374 3720.88,-368 3720.88,-368 3720.88,-356 3720.88,-356 3720.88,-350 3726.88,-344 3732.88,-344 3732.88,-344 3925.12,-344 3925.12,-344 3931.12,-344 3937.12,-350 3937.12,-356 3937.12,-356 3937.12,-368 3937.12,-368 3937.12,-374 3931.12,-380 3925.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3829" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- ext_in_12&#45;&gt;sd_15_14_anchor -->
+<g id="edge86" class="edge">
+<title>ext_in_12&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3744.74,-343.3C3725.2,-339.19 3710,-336 3710,-336 3710,-336 3254.5,-325.2 3190.45,-323.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3190.56,-321.58 3184.51,-323.54 3190.46,-325.78 3190.56,-321.58"/>
+</g>
+<!-- ext_in_13 -->
+<g id="node109" class="node">
+<title>ext_in_13</title>
+<g id="a_node109"><a xlink:href="./bd-13.html" xlink:title="&lt;&#45; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M4138.75,-380C4138.75,-380 3971.25,-380 3971.25,-380 3965.25,-380 3959.25,-374 3959.25,-368 3959.25,-368 3959.25,-356 3959.25,-356 3959.25,-350 3965.25,-344 3971.25,-344 3971.25,-344 4138.75,-344 4138.75,-344 4144.75,-344 4150.75,-350 4150.75,-356 4150.75,-356 4150.75,-368 4150.75,-368 4150.75,-374 4144.75,-380 4138.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="4055" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- ext_in_13&#45;&gt;sd_15_14_anchor -->
+<g id="edge87" class="edge">
+<title>ext_in_13&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3979.24,-343.3C3961.67,-339.19 3948,-336 3948,-336 3948,-336 3267.21,-324.88 3190.08,-323.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3190.55,-321.52 3184.51,-323.52 3190.48,-325.72 3190.55,-321.52"/>
+</g>
+<!-- ext_in_14 -->
+<g id="node110" class="node">
+<title>ext_in_14</title>
+<g id="a_node110"><a xlink:href="./bd-14.html" xlink:title="&lt;&#45; BD&#45;14\\nEnterprise Risk, Control &amp; Assurance">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M5221.75,-380C5221.75,-380 5018.25,-380 5018.25,-380 5012.25,-380 5006.25,-374 5006.25,-368 5006.25,-368 5006.25,-356 5006.25,-356 5006.25,-350 5012.25,-344 5018.25,-344 5018.25,-344 5221.75,-344 5221.75,-344 5227.75,-344 5233.75,-350 5233.75,-356 5233.75,-356 5233.75,-368 5233.75,-368 5233.75,-374 5227.75,-380 5221.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="5120" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;14\nEnterprise Risk, Control &amp; Assurance</text>
+</a>
+</g>
+</g>
+<!-- ext_in_14&#45;&gt;sd_15_11_anchor -->
+<g id="edge88" class="edge">
+<title>ext_in_14&#45;&gt;sd_15_11_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M5032.91,-343.3C5012.71,-339.19 4997,-336 4997,-336 4997,-336 4796.88,-325.95 4755.45,-323.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4755.61,-321.78 4749.51,-323.58 4755.4,-325.97 4755.61,-321.78"/>
+</g>
+<!-- ext_in_17 -->
+<g id="node111" class="node">
+<title>ext_in_17</title>
+<g id="a_node111"><a xlink:href="./bd-17.html" xlink:title="&lt;&#45; BD&#45;17\\nCorporate Services &amp; Resources">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M3263,-380C3263,-380 3079,-380 3079,-380 3073,-380 3067,-374 3067,-368 3067,-368 3067,-356 3067,-356 3067,-350 3073,-344 3079,-344 3079,-344 3263,-344 3263,-344 3269,-344 3275,-350 3275,-356 3275,-356 3275,-368 3275,-368 3275,-374 3269,-380 3263,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3171" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;17\nCorporate Services &amp; Resources</text>
+</a>
+</g>
+</g>
+<!-- ext_in_17&#45;&gt;sd_15_14_anchor -->
+<g id="edge89" class="edge">
+<title>ext_in_17&#45;&gt;sd_15_14_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3171,-343.6C3171,-339.68 3171,-335.33 3171,-330.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3173.1,-331.01 3171,-325.01 3168.9,-331.01 3173.1,-331.01"/>
+</g>
+</g>
+</svg>
+</div>
+<h3>Service Domains (16)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Service Domain</th><th>Example operations</th></tr></thead>
+  <tbody><tr><td>SD-15.1</td><td><a href='./sd-15.1.html'>Investment Product Strategy</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Generate and assess product ideas, Set the product roadmap, Make the build / buy / partner decision…</td></tr><tr><td>SD-15.2</td><td><a href='./sd-15.2.html'>Product Development &amp; Launch</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Design the product, Select the vehicle and structure, Set the pricing…</td></tr><tr><td>SD-15.3</td><td><a href='./sd-15.3.html'>Product Governance &amp; Lifecycle Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Operate the product-approval process, Define and review the target market, Run periodic product review…</td></tr><tr><td>SD-15.4</td><td><a href='./sd-15.4.html'>Distribution Strategy &amp; Channel Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Set the distribution strategy, Manage the channels, Manage channel economics…</td></tr><tr><td>SD-15.5</td><td><a href='./sd-15.5.html'>Marketing, Brand &amp; Content</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Manage the brand, Run campaigns and events, Produce thought leadership and content…</td></tr><tr><td>SD-15.6</td><td><a href='./sd-15.6.html'>Marketing-Material &amp; Financial-Promotion Approval</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Review promotional material, Approve and sign off, Govern performance and claims presentation…</td></tr><tr><td>SD-15.7</td><td><a href='./sd-15.7.html'>Institutional Sales &amp; Business Development</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Identify and qualify prospects, Manage the sales pipeline, Run the pitch and finals…</td></tr><tr><td>SD-15.8</td><td><a href='./sd-15.8.html'>RFP &amp; DDQ Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Source and triage RFPs and DDQs, Maintain the answer library, Assemble the response…</td></tr><tr><td>SD-15.9</td><td><a href='./sd-15.9.html'>Consultant &amp; Gatekeeper Relations</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Manage consultant relationships, Maintain the consultant databases, Support the manager-research process…</td></tr><tr><td>SD-15.10</td><td><a href='./sd-15.10.html'>Fund Capital Raising</a> <span class='tag tag-PRIV'>PRIV</span></td><td>Prepare the fundraising materials, Run the fundraising data room, Manage the LP pipeline…</td></tr><tr><td>SD-15.11</td><td><a href='./sd-15.11.html'>Client &amp; Investor Onboarding</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Negotiate and execute the agreement, Open the account, Coordinate cross-functional onboarding…</td></tr><tr><td>SD-15.12</td><td><a href='./sd-15.12.html'>Client Advice &amp; Suitability</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Profile the client, Assess suitability and appropriateness, Run the advice process…</td></tr><tr><td>SD-15.13</td><td><a href='./sd-15.13.html'>Client Relationship Management &amp; Servicing</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Manage the client relationship, Handle client queries and requests, Manage the client experience…</td></tr><tr><td>SD-15.14</td><td><a href='./sd-15.14.html'>Client &amp; Investor Reporting</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Produce bespoke client reporting, Run the investor portal, Run relationship reviews…</td></tr><tr><td>SD-15.15</td><td><a href='./sd-15.15.html'>Financial &amp; Wealth Planning</a> <span class='tag tag-PUB'>PUB</span></td><td>Produce the comprehensive financial plan, Run estate and wealth-transfer planning, Deliver behavioural advice and bias mitigation…</td></tr><tr><td>SD-15.16</td><td><a href='./sd-15.16.html'>Complaint &amp; Client-Case Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Handle formal complaints, Manage client cases and disputes, Run complaint root-cause analysis…</td></tr></tbody>
+</table>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

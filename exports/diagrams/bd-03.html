@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BD-03 — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>BD-03 — Manager &amp; Fund Investment <span class='tag'>Front</span></h2>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_bd Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 4137.00 548.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 519.3)">
+<title>openim_bd</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-519.3 4108.55,-519.3 4108.55,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2039.88" y="-473.2" font-family="Times New Roman,serif" font-size="14.00" fill="#1f3a5f">BD&#45;03 — Manager &amp; Fund Investment</text>
+<g id="clust1" class="cluster">
+<title>cluster_sd_03_1</title>
+<g id="a_clust1"><a xlink:href="./sd-03.1.html" xlink:title="SD&#45;03.1\\nManager Sourcing &amp; Pipeline\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2802.75,-336C2802.75,-336 3660.75,-336 3660.75,-336 3666.75,-336 3672.75,-342 3672.75,-348 3672.75,-348 3672.75,-397.5 3672.75,-397.5 3672.75,-403.5 3666.75,-409.5 3660.75,-409.5 3660.75,-409.5 2802.75,-409.5 2802.75,-409.5 2796.75,-409.5 2790.75,-403.5 2790.75,-397.5 2790.75,-397.5 2790.75,-348 2790.75,-348 2790.75,-342 2796.75,-336 2802.75,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="3231.75" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.1\nManager Sourcing &amp; Pipeline\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_sd_03_2</title>
+<g id="a_clust2"><a xlink:href="./sd-03.2.html" xlink:title="SD&#45;03.2\\nManager Research &amp; Selection\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1797.75,-250C1797.75,-250 2788.75,-250 2788.75,-250 2794.75,-250 2800.75,-256 2800.75,-262 2800.75,-262 2800.75,-311.5 2800.75,-311.5 2800.75,-317.5 2794.75,-323.5 2788.75,-323.5 2788.75,-323.5 1797.75,-323.5 1797.75,-323.5 1791.75,-323.5 1785.75,-317.5 1785.75,-311.5 1785.75,-311.5 1785.75,-262 1785.75,-262 1785.75,-256 1791.75,-250 1797.75,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="2293.25" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.2\nManager Research &amp; Selection\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_sd_03_3</title>
+<g id="a_clust3"><a xlink:href="./sd-03.3.html" xlink:title="SD&#45;03.3\\nFund Operational Due Diligence (ODD)\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1797.75,-336C1797.75,-336 2770.75,-336 2770.75,-336 2776.75,-336 2782.75,-342 2782.75,-348 2782.75,-348 2782.75,-397.5 2782.75,-397.5 2782.75,-403.5 2776.75,-409.5 2770.75,-409.5 2770.75,-409.5 1797.75,-409.5 1797.75,-409.5 1791.75,-409.5 1785.75,-403.5 1785.75,-397.5 1785.75,-397.5 1785.75,-348 1785.75,-348 1785.75,-342 1791.75,-336 1797.75,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="2284.25" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.3\nFund Operational Due Diligence (ODD)\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_sd_03_4</title>
+<g id="a_clust4"><a xlink:href="./sd-03.4.html" xlink:title="SD&#45;03.4\\nFund Investment Due Diligence\\n[PRIV]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M604.75,-336C604.75,-336 1566.75,-336 1566.75,-336 1572.75,-336 1578.75,-342 1578.75,-348 1578.75,-348 1578.75,-397.5 1578.75,-397.5 1578.75,-403.5 1572.75,-409.5 1566.75,-409.5 1566.75,-409.5 604.75,-409.5 604.75,-409.5 598.75,-409.5 592.75,-403.5 592.75,-397.5 592.75,-397.5 592.75,-348 592.75,-348 592.75,-342 598.75,-336 604.75,-336"/>
+<text xml:space="preserve" text-anchor="middle" x="1085.75" y="-395.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.4\nFund Investment Due Diligence\n[PRIV]</text>
+</a>
+</g>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_sd_03_5</title>
+<g id="a_clust5"><a xlink:href="./sd-03.5.html" xlink:title="SD&#45;03.5\\nFund Commitment &amp; Subscription\\n[PRIV]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M303.75,-164C303.75,-164 1379.75,-164 1379.75,-164 1385.75,-164 1391.75,-170 1391.75,-176 1391.75,-176 1391.75,-225.5 1391.75,-225.5 1391.75,-231.5 1385.75,-237.5 1379.75,-237.5 1379.75,-237.5 303.75,-237.5 303.75,-237.5 297.75,-237.5 291.75,-231.5 291.75,-225.5 291.75,-225.5 291.75,-176 291.75,-176 291.75,-170 297.75,-164 303.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="841.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.5\nFund Commitment &amp; Subscription\n[PRIV]</text>
+</a>
+</g>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_sd_03_6</title>
+<g id="a_clust6"><a xlink:href="./sd-03.6.html" xlink:title="SD&#45;03.6\\nGP &amp; Manager Monitoring\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1411.75,-164C1411.75,-164 2505.75,-164 2505.75,-164 2511.75,-164 2517.75,-170 2517.75,-176 2517.75,-176 2517.75,-225.5 2517.75,-225.5 2517.75,-231.5 2511.75,-237.5 2505.75,-237.5 2505.75,-237.5 1411.75,-237.5 1411.75,-237.5 1405.75,-237.5 1399.75,-231.5 1399.75,-225.5 1399.75,-225.5 1399.75,-176 1399.75,-176 1399.75,-170 1405.75,-164 1411.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="1958.75" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.6\nGP &amp; Manager Monitoring\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_sd_03_7</title>
+<g id="a_clust7"><a xlink:href="./sd-03.7.html" xlink:title="SD&#45;03.7\\nManager Mandate Administration\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2794.75,-164C2794.75,-164 4059.75,-164 4059.75,-164 4065.75,-164 4071.75,-170 4071.75,-176 4071.75,-176 4071.75,-225.5 4071.75,-225.5 4071.75,-231.5 4065.75,-237.5 4059.75,-237.5 4059.75,-237.5 2794.75,-237.5 2794.75,-237.5 2788.75,-237.5 2782.75,-231.5 2782.75,-225.5 2782.75,-225.5 2782.75,-176 2782.75,-176 2782.75,-170 2788.75,-164 2794.75,-164"/>
+<text xml:space="preserve" text-anchor="middle" x="3427.25" y="-223.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.7\nManager Mandate Administration\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_sd_03_8</title>
+<g id="a_clust8"><a xlink:href="./sd-03.8.html" xlink:title="SD&#45;03.8\\nRe&#45;Up &amp; Manager Relationship Management\\n[BOTH]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2147.75,-78C2147.75,-78 3023.75,-78 3023.75,-78 3029.75,-78 3035.75,-84 3035.75,-90 3035.75,-90 3035.75,-139.5 3035.75,-139.5 3035.75,-145.5 3029.75,-151.5 3023.75,-151.5 3023.75,-151.5 2147.75,-151.5 2147.75,-151.5 2141.75,-151.5 2135.75,-145.5 2135.75,-139.5 2135.75,-139.5 2135.75,-90 2135.75,-90 2135.75,-84 2141.75,-78 2147.75,-78"/>
+<text xml:space="preserve" text-anchor="middle" x="2585.75" y="-137.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.8\nRe&#45;Up &amp; Manager Relationship Management\n[BOTH]</text>
+</a>
+</g>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_sd_03_9</title>
+<g id="a_clust9"><a xlink:href="./sd-03.9.html" xlink:title="SD&#45;03.9\\nFund&#45;Commitment Approval &amp; Authorisation\\n[PRIV]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M303.75,-250C303.75,-250 1267.75,-250 1267.75,-250 1273.75,-250 1279.75,-256 1279.75,-262 1279.75,-262 1279.75,-311.5 1279.75,-311.5 1279.75,-317.5 1273.75,-323.5 1267.75,-323.5 1267.75,-323.5 303.75,-323.5 303.75,-323.5 297.75,-323.5 291.75,-317.5 291.75,-311.5 291.75,-311.5 291.75,-262 291.75,-262 291.75,-256 297.75,-250 303.75,-250"/>
+<text xml:space="preserve" text-anchor="middle" x="785.75" y="-309.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;03.9\nFund&#45;Commitment Approval &amp; Authorisation\n[PRIV]</text>
+</a>
+</g>
+</g>
+<!-- sd_03_1_anchor -->
+<!-- sd_03_2_anchor -->
+<!-- sd_03_1_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge2" class="edge">
+<title>sd_03_1_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2790.75,-359.85C2774.08,-354.94 2765.75,-336 2765.75,-336 2765.75,-336 1782.75,-323.5 1782.75,-323.5 1782.75,-323.5 1777.15,-299.84 1781.93,-286.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1783.64,-287.5 1784.97,-281.28 1780.05,-285.31 1783.64,-287.5"/>
+</g>
+<!-- sd_03_1_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge3" class="edge">
+<title>sd_03_1_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2790.75,-342.82C2789.05,-338.95 2787.75,-336 2787.75,-336 2787.75,-336 1902.05,-324.74 1812.1,-323.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1812.29,-321.5 1806.26,-323.52 1812.24,-325.7 1812.29,-321.5"/>
+</g>
+<!-- sd_03_1_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge6" class="edge">
+<title>sd_03_1_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2809.75,-336C2809.75,-336 1924.05,-324.74 1834.1,-323.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1834.29,-321.5 1828.26,-323.52 1834.24,-325.7 1834.29,-321.5"/>
+</g>
+<!-- sd_03_8_anchor -->
+<!-- sd_03_1_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge1" class="edge">
+<title>sd_03_1_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2809.75,-336C2809.75,-336 4076.75,-237.5 4076.75,-237.5 4076.75,-237.5 4076.75,-164 4076.75,-164 4076.75,-164 2292.06,-152.39 2163.09,-151.55"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2163.28,-149.45 2157.26,-151.51 2163.25,-153.65 2163.28,-149.45"/>
+</g>
+<!-- so_03_1_01 -->
+<g id="node2" class="node">
+<title>so_03_1_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2958.5,-380C2958.5,-380 2833,-380 2833,-380 2827,-380 2821,-374 2821,-368 2821,-368 2821,-356 2821,-356 2821,-350 2827,-344 2833,-344 2833,-344 2958.5,-344 2958.5,-344 2964.5,-344 2970.5,-350 2970.5,-356 2970.5,-356 2970.5,-368 2970.5,-368 2970.5,-374 2964.5,-380 2958.5,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2895.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the manager universe</text>
+</g>
+<!-- so_03_1_02 -->
+<g id="node3" class="node">
+<title>so_03_1_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3073,-380C3073,-380 3004.5,-380 3004.5,-380 2998.5,-380 2992.5,-374 2992.5,-368 2992.5,-368 2992.5,-356 2992.5,-356 2992.5,-350 2998.5,-344 3004.5,-344 3004.5,-344 3073,-344 3073,-344 3079,-344 3085,-350 3085,-356 3085,-356 3085,-368 3085,-368 3085,-374 3079,-380 3073,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3038.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Source managers</text>
+</g>
+<!-- so_03_1_03 -->
+<g id="node4" class="node">
+<title>so_03_1_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3192.62,-380C3192.62,-380 3118.88,-380 3118.88,-380 3112.88,-380 3106.88,-374 3106.88,-368 3106.88,-368 3106.88,-356 3106.88,-356 3106.88,-350 3112.88,-344 3118.88,-344 3118.88,-344 3192.62,-344 3192.62,-344 3198.62,-344 3204.62,-350 3204.62,-356 3204.62,-356 3204.62,-368 3204.62,-368 3204.62,-374 3198.62,-380 3192.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3155.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Screen for initial fit</text>
+</g>
+<!-- so_03_1_04 -->
+<g id="node5" class="node">
+<title>so_03_1_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3387.12,-380C3387.12,-380 3238.38,-380 3238.38,-380 3232.38,-380 3226.38,-374 3226.38,-368 3226.38,-368 3226.38,-356 3226.38,-356 3226.38,-350 3232.38,-344 3238.38,-344 3238.38,-344 3387.12,-344 3387.12,-344 3393.12,-344 3399.12,-350 3399.12,-356 3399.12,-356 3399.12,-368 3399.12,-368 3399.12,-374 3393.12,-380 3387.12,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3312.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain and stage&#45;gate the pipeline</text>
+</g>
+<!-- so_03_1_05 -->
+<g id="node6" class="node">
+<title>so_03_1_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3652.38,-380C3652.38,-380 3433.12,-380 3433.12,-380 3427.12,-380 3421.12,-374 3421.12,-368 3421.12,-368 3421.12,-356 3421.12,-356 3421.12,-350 3427.12,-344 3433.12,-344 3433.12,-344 3652.38,-344 3652.38,-344 3658.38,-344 3664.38,-350 3664.38,-356 3664.38,-356 3664.38,-368 3664.38,-368 3664.38,-374 3658.38,-380 3652.38,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="3542.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Commission or consume external manager research</text>
+</g>
+<!-- sd_03_4_anchor -->
+<!-- sd_03_2_anchor&#45;&gt;sd_03_4_anchor -->
+<g id="edge12" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-310.81C1784.05,-318.02 1782.75,-323.5 1782.75,-323.5 1782.75,-323.5 718.96,-334.86 619.23,-335.92"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="619.24,-333.82 613.26,-335.98 619.29,-338.02 619.24,-333.82"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_4_anchor -->
+<g id="edge13" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1804.75,-323.5C1804.75,-323.5 740.96,-334.86 641.23,-335.92"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="641.24,-333.82 635.26,-335.98 641.29,-338.02 641.24,-333.82"/>
+</g>
+<!-- sd_03_5_anchor -->
+<!-- sd_03_2_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge10" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-273.85C1769.08,-268.94 1760.75,-250 1760.75,-250 1760.75,-250 288.75,-237.5 288.75,-237.5 288.75,-237.5 283.15,-213.84 287.93,-200.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="289.64,-201.5 290.97,-195.28 286.05,-199.31 289.64,-201.5"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge17" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-256.82C1784.05,-252.95 1782.75,-250 1782.75,-250 1782.75,-250 429.02,-238.5 317.98,-237.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="318.28,-235.46 312.26,-237.51 318.25,-239.66 318.28,-235.46"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge19" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1804.75,-250C1804.75,-250 451.02,-238.5 339.98,-237.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="340.28,-235.46 334.26,-237.51 340.25,-239.66 340.28,-235.46"/>
+</g>
+<!-- sd_03_6_anchor -->
+<!-- sd_03_2_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge23" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-271.17C1777.98,-264.16 1771.75,-250 1771.75,-250 1771.75,-250 1466.32,-239.51 1415.02,-237.75"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1415.33,-235.66 1409.26,-237.55 1415.19,-239.86 1415.33,-235.66"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge25" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1793.75,-250C1793.75,-250 1488.32,-239.51 1437.02,-237.75"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1437.33,-235.66 1431.26,-237.55 1437.19,-239.86 1437.33,-235.66"/>
+</g>
+<!-- sd_03_7_anchor -->
+<!-- sd_03_2_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge9" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-273.39C1774.89,-267.87 1782.75,-250 1782.75,-250 1782.75,-250 2757.75,-237.5 2757.75,-237.5 2757.75,-237.5 2764.13,-210.53 2776.89,-197.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2778.09,-199.39 2781.56,-194.06 2775.52,-196.07 2778.09,-199.39"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge28" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1804.75,-250C1804.75,-250 2779.75,-237.5 2779.75,-237.5 2779.75,-237.5 2780.26,-235.36 2781.05,-231.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2783.07,-232.6 2782.4,-226.28 2778.98,-231.64 2783.07,-232.6"/>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge31" class="edge">
+<title>sd_03_2_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1826.75,-250C1826.75,-250 2705.24,-238.74 2794.46,-237.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2794.26,-239.7 2800.24,-237.52 2794.21,-235.5 2794.26,-239.7"/>
+</g>
+<!-- ext_out_16 -->
+<g id="node65" class="node">
+<title>ext_out_16</title>
+<g id="a_node65"><a xlink:href="./bd-16.html" xlink:title="&#45;&gt; BD&#45;16\\nEnterprise Governance &amp; Accountability">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M2756.38,-208C2756.38,-208 2543.12,-208 2543.12,-208 2537.12,-208 2531.12,-202 2531.12,-196 2531.12,-196 2531.12,-184 2531.12,-184 2531.12,-178 2537.12,-172 2543.12,-172 2543.12,-172 2756.38,-172 2756.38,-172 2762.38,-172 2768.38,-178 2768.38,-184 2768.38,-184 2768.38,-196 2768.38,-196 2768.38,-202 2762.38,-208 2756.38,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2649.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;16\nEnterprise Governance &amp; Accountability</text>
+</a>
+</g>
+</g>
+<!-- sd_03_2_anchor&#45;&gt;ext_out_16 -->
+<g id="edge50" class="edge">
+<title>sd_03_2_anchor&#45;&gt;ext_out_16</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1804.75,-250C1804.75,-250 2522.75,-237.5 2522.75,-237.5 2522.75,-237.5 2560.31,-223.75 2594.58,-211.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2595.04,-213.27 2599.95,-209.23 2593.6,-209.32 2595.04,-213.27"/>
+</g>
+<!-- so_03_2_01 -->
+<g id="node8" class="node">
+<title>so_03_2_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1993.38,-294C1993.38,-294 1828.12,-294 1828.12,-294 1822.12,-294 1816.12,-288 1816.12,-282 1816.12,-282 1816.12,-270 1816.12,-270 1816.12,-264 1822.12,-258 1828.12,-258 1828.12,-258 1993.38,-258 1993.38,-258 1999.38,-258 2005.38,-264 2005.38,-270 2005.38,-270 2005.38,-282 2005.38,-282 2005.38,-288 1999.38,-294 1993.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1910.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Define the peer group and classify style</text>
+</g>
+<!-- so_03_2_02 -->
+<g id="node9" class="node">
+<title>so_03_2_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2138,-294C2138,-294 2039.5,-294 2039.5,-294 2033.5,-294 2027.5,-288 2027.5,-282 2027.5,-282 2027.5,-270 2027.5,-270 2027.5,-264 2033.5,-258 2039.5,-258 2039.5,-258 2138,-258 2138,-258 2144,-258 2150,-264 2150,-270 2150,-270 2150,-282 2150,-282 2150,-288 2144,-294 2138,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2088.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse the track record</text>
+</g>
+<!-- so_03_2_03 -->
+<g id="node10" class="node">
+<title>so_03_2_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2313.75,-294C2313.75,-294 2183.75,-294 2183.75,-294 2177.75,-294 2171.75,-288 2171.75,-282 2171.75,-282 2171.75,-270 2171.75,-270 2171.75,-264 2177.75,-258 2183.75,-258 2183.75,-258 2313.75,-258 2313.75,-258 2319.75,-258 2325.75,-264 2325.75,-270 2325.75,-270 2325.75,-282 2325.75,-282 2325.75,-288 2319.75,-294 2313.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2248.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess the investment process</text>
+</g>
+<!-- so_03_2_04 -->
+<g id="node11" class="node">
+<title>so_03_2_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2573.38,-294C2573.38,-294 2360.12,-294 2360.12,-294 2354.12,-294 2348.12,-288 2348.12,-282 2348.12,-282 2348.12,-270 2348.12,-270 2348.12,-264 2354.12,-258 2360.12,-258 2360.12,-258 2573.38,-258 2573.38,-258 2579.38,-258 2585.38,-264 2585.38,-270 2585.38,-270 2585.38,-282 2585.38,-282 2585.38,-288 2579.38,-294 2573.38,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2466.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Conduct manager interviews and reference checks</text>
+</g>
+<!-- so_03_2_05 -->
+<g id="node12" class="node">
+<title>so_03_2_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2780.5,-294C2780.5,-294 2619,-294 2619,-294 2613,-294 2607,-288 2607,-282 2607,-282 2607,-270 2607,-270 2607,-264 2613,-258 2619,-258 2619,-258 2780.5,-258 2780.5,-258 2786.5,-258 2792.5,-264 2792.5,-270 2792.5,-270 2792.5,-282 2792.5,-282 2792.5,-288 2786.5,-294 2780.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="2699.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce the selection recommendation</text>
+</g>
+<!-- sd_03_3_anchor -->
+<!-- sd_03_3_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge4" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-356.46C1775.79,-343.61 1774.58,-306.76 1782.13,-288.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1783.96,-289.14 1785.02,-282.87 1780.28,-287.11 1783.96,-289.14"/>
+</g>
+<!-- sd_03_3_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge7" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1793.75,-336C1793.75,-334.33 1793.75,-332.61 1793.75,-330.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1795.85,-331.01 1793.75,-325.01 1791.65,-331.01 1795.85,-331.01"/>
+</g>
+<!-- sd_03_3_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge11" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1808.98,-336C1809.26,-334.25 1809.49,-332.45 1809.68,-330.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1811.74,-331.14 1810.06,-325.01 1807.55,-330.85 1811.74,-331.14"/>
+</g>
+<!-- sd_03_3_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge29" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1793.75,-336C1793.75,-336 2794.75,-323.5 2794.75,-323.5 2794.75,-323.5 2794.75,-250 2794.75,-250 2794.75,-250 2794.23,-247.97 2793.46,-244.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2795.55,-244.37 2792.19,-238.97 2791.45,-245.29 2795.55,-244.37"/>
+</g>
+<!-- sd_03_3_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge30" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1815.75,-336C1815.75,-336 2816.75,-323.5 2816.75,-323.5 2816.75,-323.5 2816.75,-250 2816.75,-250 2816.75,-250 2816.23,-247.97 2815.32,-244.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2817.36,-244.15 2813.7,-238.95 2813.32,-245.3 2817.36,-244.15"/>
+</g>
+<!-- sd_03_9_anchor -->
+<!-- sd_03_3_anchor&#45;&gt;sd_03_9_anchor -->
+<g id="edge40" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_9_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-360.38C1745.23,-356.53 1572.75,-336 1572.75,-336 1572.75,-336 412.46,-324.6 308.22,-323.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="308.28,-321.47 302.26,-323.51 308.24,-325.67 308.28,-321.47"/>
+</g>
+<!-- sd_03_3_anchor&#45;&gt;sd_03_9_anchor -->
+<g id="edge43" class="edge">
+<title>sd_03_3_anchor&#45;&gt;sd_03_9_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1785.75,-359.55C1747.84,-354.23 1594.75,-336 1594.75,-336 1594.75,-336 434.46,-324.6 330.22,-323.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="330.28,-321.47 324.26,-323.51 330.24,-325.67 330.28,-321.47"/>
+</g>
+<!-- so_03_3_01 -->
+<g id="node14" class="node">
+<title>so_03_3_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1921.75,-380C1921.75,-380 1827.75,-380 1827.75,-380 1821.75,-380 1815.75,-374 1815.75,-368 1815.75,-368 1815.75,-356 1815.75,-356 1815.75,-350 1821.75,-344 1827.75,-344 1827.75,-344 1921.75,-344 1921.75,-344 1927.75,-344 1933.75,-350 1933.75,-356 1933.75,-356 1933.75,-368 1933.75,-368 1933.75,-374 1927.75,-380 1921.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1874.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Verify service providers</text>
+</g>
+<!-- so_03_3_02 -->
+<g id="node15" class="node">
+<title>so_03_3_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2079.75,-380C2079.75,-380 1967.75,-380 1967.75,-380 1961.75,-380 1955.75,-374 1955.75,-368 1955.75,-368 1955.75,-356 1955.75,-356 1955.75,-350 1961.75,-344 1967.75,-344 1967.75,-344 2079.75,-344 2079.75,-344 2085.75,-344 2091.75,-350 2091.75,-356 2091.75,-356 2091.75,-368 2091.75,-368 2091.75,-374 2085.75,-380 2079.75,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2023.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess the valuation policy</text>
+</g>
+<!-- so_03_3_03 -->
+<g id="node16" class="node">
+<title>so_03_3_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2212,-380C2212,-380 2125.5,-380 2125.5,-380 2119.5,-380 2113.5,-374 2113.5,-368 2113.5,-368 2113.5,-356 2113.5,-356 2113.5,-350 2119.5,-344 2125.5,-344 2125.5,-344 2212,-344 2212,-344 2218,-344 2224,-350 2224,-356 2224,-356 2224,-368 2224,-368 2224,-374 2218,-380 2212,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2168.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess cash controls</text>
+</g>
+<!-- so_03_3_04 -->
+<g id="node17" class="node">
+<title>so_03_3_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2385.25,-380C2385.25,-380 2258.25,-380 2258.25,-380 2252.25,-380 2246.25,-374 2246.25,-368 2246.25,-368 2246.25,-356 2246.25,-356 2246.25,-350 2252.25,-344 2258.25,-344 2258.25,-344 2385.25,-344 2385.25,-344 2391.25,-344 2397.25,-350 2397.25,-356 2397.25,-356 2397.25,-368 2397.25,-368 2397.25,-374 2391.25,-380 2385.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2321.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review NAV and reconciliation</text>
+</g>
+<!-- so_03_3_05 -->
+<g id="node18" class="node">
+<title>so_03_3_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2624.62,-380C2624.62,-380 2430.88,-380 2430.88,-380 2424.88,-380 2418.88,-374 2418.88,-368 2418.88,-368 2418.88,-356 2418.88,-356 2418.88,-350 2424.88,-344 2430.88,-344 2430.88,-344 2624.62,-344 2624.62,-344 2630.62,-344 2636.62,-350 2636.62,-356 2636.62,-356 2636.62,-368 2636.62,-368 2636.62,-374 2630.62,-380 2624.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2527.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess counterparty, cyber and continuity risk</text>
+</g>
+<!-- so_03_3_06 -->
+<g id="node19" class="node">
+<title>so_03_3_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2762.62,-380C2762.62,-380 2670.88,-380 2670.88,-380 2664.88,-380 2658.88,-374 2658.88,-368 2658.88,-368 2658.88,-356 2658.88,-356 2658.88,-350 2664.88,-344 2670.88,-344 2670.88,-344 2762.62,-344 2762.62,-344 2768.62,-344 2774.62,-350 2774.62,-356 2774.62,-356 2774.62,-368 2774.62,-368 2774.62,-374 2768.62,-380 2762.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="2716.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Issue the ODD opinion</text>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge5" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-360.69C558.15,-357.82 567.75,-336 567.75,-336 567.75,-336 1738.75,-323.5 1738.75,-323.5 1738.75,-323.5 1747.16,-287.96 1778.67,-279.02"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1778.83,-281.13 1784.27,-277.85 1777.97,-277.02 1778.83,-281.13"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge8" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-359.39C581.89,-353.87 589.75,-336 589.75,-336 589.75,-336 1760.75,-323.5 1760.75,-323.5 1760.75,-323.5 1767.13,-296.53 1779.89,-283.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1781.09,-285.39 1784.56,-280.06 1778.52,-282.07 1781.09,-285.39"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_2_anchor -->
+<g id="edge15" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M655.75,-336C655.75,-336 1719.54,-324.64 1819.27,-323.58"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1819.26,-325.68 1825.24,-323.52 1819.21,-321.48 1819.26,-325.68"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge14" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-360.53C538.66,-356.21 264.75,-323.5 264.75,-323.5 264.75,-323.5 264.75,-250 264.75,-250 264.75,-250 272.59,-214.42 286.4,-198.52"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="287.6,-200.26 290.63,-194.67 284.78,-197.15 287.6,-200.26"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge18" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-360.05C543.81,-354.2 286.75,-323.5 286.75,-323.5 286.75,-323.5 286.75,-250 286.75,-250 286.75,-250 288.22,-243.31 290.18,-234.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="292.18,-235.09 291.43,-228.78 288.08,-234.19 292.18,-235.09"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge20" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-359.11C543.26,-351.51 308.75,-323.5 308.75,-323.5 308.75,-323.5 308.75,-250 308.75,-250 308.75,-250 309.2,-247.97 309.79,-244.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="311.82,-245.25 310.69,-238.99 307.67,-244.59 311.82,-245.25"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge24" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M600.75,-336C600.75,-336 1509.75,-323.5 1509.75,-323.5 1509.75,-323.5 1509.75,-250 1509.75,-250 1509.75,-250 1438.47,-241.27 1415.09,-238.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1415.46,-236.33 1409.25,-237.68 1414.95,-240.5 1415.46,-236.33"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge26" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M622.75,-336C622.75,-336 1531.75,-323.5 1531.75,-323.5 1531.75,-323.5 1531.75,-250 1531.75,-250 1531.75,-250 1460.47,-241.27 1437.09,-238.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1437.46,-236.33 1431.25,-237.68 1436.95,-240.5 1437.46,-236.33"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_9_anchor -->
+<g id="edge41" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_9_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-360.29C549.33,-355.64 349.05,-329.76 308.08,-324.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="308.47,-322.38 302.25,-323.69 307.93,-326.55 308.47,-322.38"/>
+</g>
+<!-- sd_03_4_anchor&#45;&gt;sd_03_9_anchor -->
+<g id="edge42" class="edge">
+<title>sd_03_4_anchor&#45;&gt;sd_03_9_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M592.75,-359.51C551.45,-353.28 368.63,-329.46 329.95,-324.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="330.47,-322.39 324.25,-323.7 329.93,-326.55 330.47,-322.39"/>
+</g>
+<!-- so_03_4_01 -->
+<g id="node21" class="node">
+<title>so_03_4_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M756.62,-380C756.62,-380 634.88,-380 634.88,-380 628.88,-380 622.88,-374 622.88,-368 622.88,-368 622.88,-356 622.88,-356 622.88,-350 628.88,-344 634.88,-344 634.88,-344 756.62,-344 756.62,-344 762.62,-344 768.62,-350 768.62,-356 768.62,-356 768.62,-368 768.62,-368 768.62,-374 762.62,-380 756.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="695.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess the investment thesis</text>
+</g>
+<!-- so_03_4_02 -->
+<g id="node22" class="node">
+<title>so_03_4_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M906.62,-380C906.62,-380 802.88,-380 802.88,-380 796.88,-380 790.88,-374 790.88,-368 790.88,-368 790.88,-356 790.88,-356 790.88,-350 796.88,-344 802.88,-344 802.88,-344 906.62,-344 906.62,-344 912.62,-344 918.62,-350 918.62,-356 918.62,-356 918.62,-368 918.62,-368 918.62,-374 912.62,-380 906.62,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="854.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse the return drivers</text>
+</g>
+<!-- so_03_4_03 -->
+<g id="node23" class="node">
+<title>so_03_4_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1043.25,-380C1043.25,-380 952.25,-380 952.25,-380 946.25,-380 940.25,-374 940.25,-368 940.25,-368 940.25,-356 940.25,-356 940.25,-350 946.25,-344 952.25,-344 952.25,-344 1043.25,-344 1043.25,-344 1049.25,-344 1055.25,-350 1055.25,-356 1055.25,-356 1055.25,-368 1055.25,-368 1055.25,-374 1049.25,-380 1043.25,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="997.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review the fund terms</text>
+</g>
+<!-- so_03_4_04 -->
+<g id="node24" class="node">
+<title>so_03_4_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1188,-380C1188,-380 1089.5,-380 1089.5,-380 1083.5,-380 1077.5,-374 1077.5,-368 1077.5,-368 1077.5,-356 1077.5,-356 1077.5,-350 1083.5,-344 1089.5,-344 1089.5,-344 1188,-344 1188,-344 1194,-344 1200,-350 1200,-356 1200,-356 1200,-368 1200,-368 1200,-374 1194,-380 1188,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1138.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse the track record</text>
+</g>
+<!-- so_03_4_05 -->
+<g id="node25" class="node">
+<title>so_03_4_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1329.5,-380C1329.5,-380 1234,-380 1234,-380 1228,-380 1222,-374 1222,-368 1222,-368 1222,-356 1222,-356 1222,-350 1228,-344 1234,-344 1234,-344 1329.5,-344 1329.5,-344 1335.5,-344 1341.5,-350 1341.5,-356 1341.5,-356 1341.5,-368 1341.5,-368 1341.5,-374 1335.5,-380 1329.5,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1281.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Conduct reference calls</text>
+</g>
+<!-- so_03_4_06 -->
+<g id="node26" class="node">
+<title>so_03_4_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1558.38,-380C1558.38,-380 1375.12,-380 1375.12,-380 1369.12,-380 1363.12,-374 1363.12,-368 1363.12,-368 1363.12,-356 1363.12,-356 1363.12,-350 1369.12,-344 1375.12,-344 1375.12,-344 1558.38,-344 1558.38,-344 1564.38,-344 1570.38,-350 1570.38,-356 1570.38,-356 1570.38,-368 1570.38,-368 1570.38,-374 1564.38,-380 1558.38,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="1466.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce the investment due&#45;diligence report</text>
+</g>
+<!-- sd_03_5_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge22" class="edge">
+<title>sd_03_5_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M310.75,-237.5C310.75,-237.5 321.75,-243.75 321.75,-243.75 321.75,-243.75 1385.75,-243.75 1385.75,-243.75 1385.75,-243.75 1396.75,-237.5 1396.75,-237.5 1396.75,-237.5 1397.28,-235.2 1398.11,-231.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1400.1,-232.34 1399.41,-226.02 1396.01,-231.39 1400.1,-232.34"/>
+</g>
+<!-- ext_out_09 -->
+<g id="node62" class="node">
+<title>ext_out_09</title>
+<g id="a_node62"><a xlink:href="./bd-09.html" xlink:title="&#45;&gt; BD&#45;09\\nPerformance &amp; Analytics">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M373.75,-122C373.75,-122 225.75,-122 225.75,-122 219.75,-122 213.75,-116 213.75,-110 213.75,-110 213.75,-98 213.75,-98 213.75,-92 219.75,-86 225.75,-86 225.75,-86 373.75,-86 373.75,-86 379.75,-86 385.75,-92 385.75,-98 385.75,-98 385.75,-110 385.75,-110 385.75,-116 379.75,-122 373.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="299.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;09\nPerformance &amp; Analytics</text>
+</a>
+</g>
+</g>
+<!-- sd_03_5_anchor&#45;&gt;ext_out_09 -->
+<g id="edge47" class="edge">
+<title>sd_03_5_anchor&#45;&gt;ext_out_09</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M299.75,-164C299.75,-153.33 299.75,-140.9 299.75,-130.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="301.85,-130.24 299.75,-124.24 297.65,-130.24 301.85,-130.24"/>
+</g>
+<!-- ext_out_12 -->
+<g id="node63" class="node">
+<title>ext_out_12</title>
+<g id="a_node63"><a xlink:href="./bd-12.html" xlink:title="&#45;&gt; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M611.88,-122C611.88,-122 419.62,-122 419.62,-122 413.62,-122 407.62,-116 407.62,-110 407.62,-110 407.62,-98 407.62,-98 407.62,-92 413.62,-86 419.62,-86 419.62,-86 611.88,-86 611.88,-86 617.88,-86 623.88,-92 623.88,-98 623.88,-98 623.88,-110 623.88,-110 623.88,-116 617.88,-122 611.88,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="515.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- sd_03_5_anchor&#45;&gt;ext_out_12 -->
+<g id="edge48" class="edge">
+<title>sd_03_5_anchor&#45;&gt;ext_out_12</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M310.75,-164C310.75,-164 396.75,-151.5 396.75,-151.5 396.75,-151.5 431.65,-137.86 463.65,-125.36"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="464.19,-127.4 469.01,-123.26 462.66,-123.49 464.19,-127.4"/>
+</g>
+<!-- ext_out_13 -->
+<g id="node64" class="node">
+<title>ext_out_13</title>
+<g id="a_node64"><a xlink:href="./bd-13.html" xlink:title="&#45;&gt; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M179.5,-122C179.5,-122 12,-122 12,-122 6,-122 0,-116 0,-110 0,-110 0,-98 0,-98 0,-92 6,-86 12,-86 12,-86 179.5,-86 179.5,-86 185.5,-86 191.5,-92 191.5,-98 191.5,-98 191.5,-110 191.5,-110 191.5,-116 185.5,-122 179.5,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="95.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- sd_03_5_anchor&#45;&gt;ext_out_13 -->
+<g id="edge49" class="edge">
+<title>sd_03_5_anchor&#45;&gt;ext_out_13</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M291.75,-185.91C268.54,-176.93 202.75,-151.5 202.75,-151.5 202.75,-151.5 171.89,-138.09 143.32,-125.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="144.24,-123.78 137.9,-123.32 142.56,-127.63 144.24,-123.78"/>
+</g>
+<!-- so_03_5_01 -->
+<g id="node28" class="node">
+<title>so_03_5_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M455.62,-208C455.62,-208 333.88,-208 333.88,-208 327.88,-208 321.88,-202 321.88,-196 321.88,-196 321.88,-184 321.88,-184 321.88,-178 327.88,-172 333.88,-172 333.88,-172 455.62,-172 455.62,-172 461.62,-172 467.62,-178 467.62,-184 467.62,-184 467.62,-196 467.62,-196 467.62,-202 461.62,-208 455.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="394.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Negotiate and review the LPA</text>
+</g>
+<!-- so_03_5_02 -->
+<g id="node29" class="node">
+<title>so_03_5_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M708,-208C708,-208 501.5,-208 501.5,-208 495.5,-208 489.5,-202 489.5,-196 489.5,-196 489.5,-184 489.5,-184 489.5,-178 495.5,-172 501.5,-172 501.5,-172 708,-172 708,-172 714,-172 720,-178 720,-184 720,-184 720,-196 720,-196 720,-202 714,-208 708,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="604.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Negotiate the side letter and co&#45;investment rights</text>
+</g>
+<!-- so_03_5_03 -->
+<g id="node30" class="node">
+<title>so_03_5_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M859.75,-208C859.75,-208 753.75,-208 753.75,-208 747.75,-208 741.75,-202 741.75,-196 741.75,-196 741.75,-184 741.75,-184 741.75,-178 747.75,-172 753.75,-172 753.75,-172 859.75,-172 859.75,-172 865.75,-172 871.75,-178 871.75,-184 871.75,-184 871.75,-196 871.75,-196 871.75,-202 865.75,-208 859.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="806.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Complete the subscription</text>
+</g>
+<!-- so_03_5_04 -->
+<g id="node31" class="node">
+<title>so_03_5_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1015.62,-208C1015.62,-208 905.88,-208 905.88,-208 899.88,-208 893.88,-202 893.88,-196 893.88,-196 893.88,-184 893.88,-184 893.88,-178 899.88,-172 905.88,-172 905.88,-172 1015.62,-172 1015.62,-172 1021.62,-172 1027.62,-178 1027.62,-184 1027.62,-184 1027.62,-196 1027.62,-196 1027.62,-202 1021.62,-208 1015.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="960.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Participate in fund closings</text>
+</g>
+<!-- so_03_5_05 -->
+<g id="node32" class="node">
+<title>so_03_5_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1219.62,-208C1219.62,-208 1061.88,-208 1061.88,-208 1055.88,-208 1049.88,-202 1049.88,-196 1049.88,-196 1049.88,-184 1049.88,-184 1049.88,-178 1055.88,-172 1061.88,-172 1061.88,-172 1219.62,-172 1219.62,-172 1225.62,-172 1231.62,-178 1231.62,-184 1231.62,-184 1231.62,-196 1231.62,-196 1231.62,-202 1225.62,-208 1219.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1140.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the most&#45;favoured&#45;nation election</text>
+</g>
+<!-- so_03_5_06 -->
+<g id="node33" class="node">
+<title>so_03_5_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1371.75,-208C1371.75,-208 1265.75,-208 1265.75,-208 1259.75,-208 1253.75,-202 1253.75,-196 1253.75,-196 1253.75,-184 1253.75,-184 1253.75,-178 1259.75,-172 1265.75,-172 1265.75,-172 1371.75,-172 1371.75,-172 1377.75,-172 1383.75,-178 1383.75,-184 1383.75,-184 1383.75,-196 1383.75,-196 1383.75,-202 1377.75,-208 1371.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1318.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set up the capital account</text>
+</g>
+<!-- sd_03_6_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge27" class="edge">
+<title>sd_03_6_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1399.75,-187.39C1388.89,-181.87 1396.75,-164 1396.75,-164 1396.75,-164 2020.23,-113.26 2128.37,-105.89"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2128.39,-107.99 2134.24,-105.5 2128.12,-103.8 2128.39,-107.99"/>
+</g>
+<!-- sd_03_6_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge34" class="edge">
+<title>sd_03_6_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1418.75,-164C1418.75,-164 2023.54,-114.78 2128.36,-106.25"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2128.43,-108.35 2134.24,-105.77 2128.09,-104.17 2128.43,-108.35"/>
+</g>
+<!-- sd_03_6_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge37" class="edge">
+<title>sd_03_6_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1440.75,-164C1440.75,-164 2023.95,-116.54 2128.34,-106.75"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2128.47,-108.85 2134.24,-106.19 2128.07,-104.67 2128.47,-108.85"/>
+</g>
+<!-- ext_out_07 -->
+<g id="node61" class="node">
+<title>ext_out_07</title>
+<g id="a_node61"><a xlink:href="./bd-07.html" xlink:title="&#45;&gt; BD&#45;07\\nInvestment Risk">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M1463.75,-122C1463.75,-122 1351.75,-122 1351.75,-122 1345.75,-122 1339.75,-116 1339.75,-110 1339.75,-110 1339.75,-98 1339.75,-98 1339.75,-92 1345.75,-86 1351.75,-86 1351.75,-86 1463.75,-86 1463.75,-86 1469.75,-86 1475.75,-92 1475.75,-98 1475.75,-98 1475.75,-110 1475.75,-110 1475.75,-116 1469.75,-122 1463.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="1407.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;07\nInvestment Risk</text>
+</a>
+</g>
+</g>
+<!-- sd_03_6_anchor&#45;&gt;ext_out_07 -->
+<g id="edge46" class="edge">
+<title>sd_03_6_anchor&#45;&gt;ext_out_07</title>
+<g id="a_edge46"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M1407.75,-164C1407.75,-153.23 1407.75,-140.66 1407.75,-129.89"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="1409.85,-129.94 1407.75,-123.94 1405.65,-129.94 1409.85,-129.94"/>
+</a>
+</g>
+</g>
+<!-- so_03_6_01 -->
+<g id="node35" class="node">
+<title>so_03_6_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1563.62,-208C1563.62,-208 1441.88,-208 1441.88,-208 1435.88,-208 1429.88,-202 1429.88,-196 1429.88,-196 1429.88,-184 1429.88,-184 1429.88,-178 1435.88,-172 1441.88,-172 1441.88,-172 1563.62,-172 1563.62,-172 1569.62,-172 1575.62,-178 1575.62,-184 1575.62,-184 1575.62,-196 1575.62,-196 1575.62,-202 1569.62,-208 1563.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1502.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor manager performance</text>
+</g>
+<!-- so_03_6_02 -->
+<g id="node36" class="node">
+<title>so_03_6_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1726,-208C1726,-208 1609.5,-208 1609.5,-208 1603.5,-208 1597.5,-202 1597.5,-196 1597.5,-196 1597.5,-184 1597.5,-184 1597.5,-178 1603.5,-172 1609.5,-172 1609.5,-172 1726,-172 1726,-172 1732,-172 1738,-178 1738,-184 1738,-184 1738,-196 1738,-196 1738,-202 1732,-208 1726,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1667.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor organisational health</text>
+</g>
+<!-- so_03_6_03 -->
+<g id="node37" class="node">
+<title>so_03_6_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1939.12,-208C1939.12,-208 1772.38,-208 1772.38,-208 1766.38,-208 1760.38,-202 1760.38,-196 1760.38,-196 1760.38,-184 1760.38,-184 1760.38,-178 1766.38,-172 1772.38,-172 1772.38,-172 1939.12,-172 1939.12,-172 1945.12,-172 1951.12,-178 1951.12,-184 1951.12,-184 1951.12,-196 1951.12,-196 1951.12,-202 1945.12,-208 1939.12,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="1855.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Participate in the LPAC / advisory board</text>
+</g>
+<!-- so_03_6_04 -->
+<g id="node38" class="node">
+<title>so_03_6_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2111.88,-208C2111.88,-208 1985.62,-208 1985.62,-208 1979.62,-208 1973.62,-202 1973.62,-196 1973.62,-196 1973.62,-184 1973.62,-184 1973.62,-178 1979.62,-172 1985.62,-172 1985.62,-172 2111.88,-172 2111.88,-172 2117.88,-172 2123.88,-178 2123.88,-184 2123.88,-184 2123.88,-196 2123.88,-196 2123.88,-202 2117.88,-208 2111.88,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2048.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor the manager&#39;s portfolio</text>
+</g>
+<!-- so_03_6_05 -->
+<g id="node39" class="node">
+<title>so_03_6_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2286,-208C2286,-208 2157.5,-208 2157.5,-208 2151.5,-208 2145.5,-202 2145.5,-196 2145.5,-196 2145.5,-184 2145.5,-184 2145.5,-178 2151.5,-172 2157.5,-172 2157.5,-172 2286,-172 2286,-172 2292,-172 2298,-178 2298,-184 2298,-184 2298,-196 2298,-196 2298,-202 2292,-208 2286,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2221.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the manager watch list</text>
+</g>
+<!-- so_03_6_06 -->
+<g id="node40" class="node">
+<title>so_03_6_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2497.38,-208C2497.38,-208 2332.12,-208 2332.12,-208 2326.12,-208 2320.12,-202 2320.12,-196 2320.12,-196 2320.12,-184 2320.12,-184 2320.12,-178 2326.12,-172 2332.12,-172 2332.12,-172 2497.38,-172 2497.38,-172 2503.38,-172 2509.38,-178 2509.38,-184 2509.38,-184 2509.38,-196 2509.38,-196 2509.38,-202 2503.38,-208 2497.38,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2414.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Review valuations and capital accounts</text>
+</g>
+<!-- sd_03_7_anchor&#45;&gt;sd_03_6_anchor -->
+<g id="edge33" class="edge">
+<title>sd_03_7_anchor&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2782.75,-224.54C2781.05,-231.9 2779.75,-237.5 2779.75,-237.5 2779.75,-237.5 2768.75,-243.75 2768.75,-243.75 2768.75,-243.75 1429.75,-243.75 1429.75,-243.75 1429.75,-243.75 1427.64,-242.55 1425.28,-241.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1426.32,-239.39 1420.07,-238.25 1424.25,-243.04 1426.32,-239.39"/>
+</g>
+<!-- sd_03_7_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge32" class="edge">
+<title>sd_03_7_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2782.75,-185.17C2774.98,-178.16 2768.75,-164 2768.75,-164 2768.75,-164 2222.6,-153.06 2152.19,-151.65"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2152.3,-149.55 2146.26,-151.53 2152.22,-153.75 2152.3,-149.55"/>
+</g>
+<!-- sd_03_7_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge35" class="edge">
+<title>sd_03_7_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2790.75,-164C2790.75,-164 2244.6,-153.06 2174.19,-151.65"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2174.3,-149.55 2168.26,-151.53 2174.22,-153.75 2174.3,-149.55"/>
+</g>
+<!-- sd_03_7_anchor&#45;&gt;sd_03_8_anchor -->
+<g id="edge36" class="edge">
+<title>sd_03_7_anchor&#45;&gt;sd_03_8_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2812.75,-164C2812.75,-164 2266.6,-153.06 2196.19,-151.65"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2196.3,-149.55 2190.26,-151.53 2196.22,-153.75 2196.3,-149.55"/>
+</g>
+<!-- so_03_7_01 -->
+<g id="node42" class="node">
+<title>so_03_7_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3020,-208C3020,-208 2825.5,-208 2825.5,-208 2819.5,-208 2813.5,-202 2813.5,-196 2813.5,-196 2813.5,-184 2813.5,-184 2813.5,-178 2819.5,-172 2825.5,-172 2825.5,-172 3020,-172 3020,-172 3026,-172 3032,-178 3032,-184 3032,-184 3032,-196 3032,-196 3032,-202 3026,-208 3020,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="2922.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Define the mandate parameters and guidelines</text>
+</g>
+<!-- so_03_7_02 -->
+<g id="node43" class="node">
+<title>so_03_7_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3331.62,-208C3331.62,-208 3065.88,-208 3065.88,-208 3059.88,-208 3053.88,-202 3053.88,-196 3053.88,-196 3053.88,-184 3053.88,-184 3053.88,-178 3059.88,-172 3065.88,-172 3065.88,-172 3331.62,-172 3331.62,-172 3337.62,-172 3343.62,-178 3343.62,-184 3343.62,-184 3343.62,-196 3343.62,-196 3343.62,-202 3337.62,-208 3331.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3198.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Negotiate and execute the investment&#45;management agreement</text>
+</g>
+<!-- so_03_7_03 -->
+<g id="node44" class="node">
+<title>so_03_7_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3487.62,-208C3487.62,-208 3377.88,-208 3377.88,-208 3371.88,-208 3365.88,-202 3365.88,-196 3365.88,-196 3365.88,-184 3365.88,-184 3365.88,-178 3371.88,-172 3377.88,-172 3377.88,-172 3487.62,-172 3487.62,-172 3493.62,-172 3499.62,-178 3499.62,-184 3499.62,-184 3499.62,-196 3499.62,-196 3499.62,-202 3493.62,-208 3487.62,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3432.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Open and fund the account</text>
+</g>
+<!-- so_03_7_04 -->
+<g id="node45" class="node">
+<title>so_03_7_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3645.75,-208C3645.75,-208 3533.75,-208 3533.75,-208 3527.75,-208 3521.75,-202 3521.75,-196 3521.75,-196 3521.75,-184 3521.75,-184 3521.75,-178 3527.75,-172 3533.75,-172 3533.75,-172 3645.75,-172 3645.75,-172 3651.75,-172 3657.75,-178 3657.75,-184 3657.75,-184 3657.75,-196 3657.75,-196 3657.75,-202 3651.75,-208 3645.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3589.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run transition management</text>
+</g>
+<!-- so_03_7_05 -->
+<g id="node46" class="node">
+<title>so_03_7_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3845.75,-208C3845.75,-208 3691.75,-208 3691.75,-208 3685.75,-208 3679.75,-202 3679.75,-196 3679.75,-196 3679.75,-184 3679.75,-184 3679.75,-178 3685.75,-172 3691.75,-172 3691.75,-172 3845.75,-172 3845.75,-172 3851.75,-172 3857.75,-178 3857.75,-184 3857.75,-184 3857.75,-196 3857.75,-196 3857.75,-202 3851.75,-208 3845.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3768.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor mandate&#45;guideline adherence</text>
+</g>
+<!-- so_03_7_06 -->
+<g id="node47" class="node">
+<title>so_03_7_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M4051.75,-208C4051.75,-208 3891.75,-208 3891.75,-208 3885.75,-208 3879.75,-202 3879.75,-196 3879.75,-196 3879.75,-184 3879.75,-184 3879.75,-178 3885.75,-172 3891.75,-172 3891.75,-172 4051.75,-172 4051.75,-172 4057.75,-172 4063.75,-178 4063.75,-184 4063.75,-184 4063.75,-196 4063.75,-196 4063.75,-202 4057.75,-208 4051.75,-208"/>
+<text xml:space="preserve" text-anchor="middle" x="3971.75" y="-186.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage breaches and mandate review</text>
+</g>
+<!-- sd_03_8_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge39" class="edge">
+<title>sd_03_8_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2135.75,-105.57C2060.95,-110.86 1486.75,-151.5 1486.75,-151.5 1486.75,-151.5 418.42,-162.86 318.26,-163.92"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="318.24,-161.82 312.26,-163.98 318.29,-166.02 318.24,-161.82"/>
+</g>
+<!-- sd_03_8_anchor&#45;&gt;sd_03_7_anchor -->
+<g id="edge38" class="edge">
+<title>sd_03_8_anchor&#45;&gt;sd_03_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2135.75,-106.1C2112.85,-113.15 2122.75,-151.5 2122.75,-151.5 2122.75,-151.5 2746.75,-164 2746.75,-164 2746.75,-164 2754.24,-181.02 2775.4,-186.97"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2774.97,-189.03 2781.27,-188.18 2775.81,-184.92 2774.97,-189.03"/>
+</g>
+<!-- ext_out_01 -->
+<g id="node60" class="node">
+<title>ext_out_01</title>
+<g id="a_node60"><a xlink:href="./bd-01.html" xlink:title="&#45;&gt; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M2235.38,-36C2235.38,-36 2052.12,-36 2052.12,-36 2046.12,-36 2040.12,-30 2040.12,-24 2040.12,-24 2040.12,-12 2040.12,-12 2040.12,-6 2046.12,0 2052.12,0 2052.12,0 2235.38,0 2235.38,0 2241.38,0 2247.38,-6 2247.38,-12 2247.38,-12 2247.38,-24 2247.38,-24 2247.38,-30 2241.38,-36 2235.38,-36"/>
+<text xml:space="preserve" text-anchor="middle" x="2143.75" y="-14.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- sd_03_8_anchor&#45;&gt;ext_out_01 -->
+<g id="edge45" class="edge">
+<title>sd_03_8_anchor&#45;&gt;ext_out_01</title>
+<g id="a_edge45"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2143.75,-78C2143.75,-67.23 2143.75,-54.66 2143.75,-43.89"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2145.85,-43.94 2143.75,-37.94 2141.65,-43.94 2145.85,-43.94"/>
+</a>
+</g>
+</g>
+<!-- so_03_8_01 -->
+<g id="node49" class="node">
+<title>so_03_8_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2289,-122C2289,-122 2178.5,-122 2178.5,-122 2172.5,-122 2166.5,-116 2166.5,-110 2166.5,-110 2166.5,-98 2166.5,-98 2166.5,-92 2172.5,-86 2178.5,-86 2178.5,-86 2289,-86 2289,-86 2295,-86 2301,-92 2301,-98 2301,-98 2301,-110 2301,-110 2301,-116 2295,-122 2289,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2233.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Evaluate the re&#45;up decision</text>
+</g>
+<!-- so_03_8_02 -->
+<g id="node50" class="node">
+<title>so_03_8_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2472.12,-122C2472.12,-122 2335.38,-122 2335.38,-122 2329.38,-122 2323.38,-116 2323.38,-110 2323.38,-110 2323.38,-98 2323.38,-98 2323.38,-92 2329.38,-86 2335.38,-86 2335.38,-86 2472.12,-86 2472.12,-86 2478.12,-86 2484.12,-92 2484.12,-98 2484.12,-98 2484.12,-110 2484.12,-110 2484.12,-116 2478.12,-122 2472.12,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2403.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess succession&#45;plan maturity</text>
+</g>
+<!-- so_03_8_03 -->
+<g id="node51" class="node">
+<title>so_03_8_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2653.75,-122C2653.75,-122 2517.75,-122 2517.75,-122 2511.75,-122 2505.75,-116 2505.75,-110 2505.75,-110 2505.75,-98 2505.75,-98 2505.75,-92 2511.75,-86 2517.75,-86 2517.75,-86 2653.75,-86 2653.75,-86 2659.75,-86 2665.75,-92 2665.75,-98 2665.75,-98 2665.75,-110 2665.75,-110 2665.75,-116 2659.75,-122 2653.75,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2585.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the manager relationship</text>
+</g>
+<!-- so_03_8_04 -->
+<g id="node52" class="node">
+<title>so_03_8_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2815.62,-122C2815.62,-122 2699.88,-122 2699.88,-122 2693.88,-122 2687.88,-116 2687.88,-110 2687.88,-110 2687.88,-98 2687.88,-98 2687.88,-92 2693.88,-86 2699.88,-86 2699.88,-86 2815.62,-86 2815.62,-86 2821.62,-86 2827.62,-92 2827.62,-98 2827.62,-98 2827.62,-110 2827.62,-110 2827.62,-116 2821.62,-122 2815.62,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2757.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Re&#45;negotiate fees and terms</text>
+</g>
+<!-- so_03_8_05 -->
+<g id="node53" class="node">
+<title>so_03_8_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3015.38,-122C3015.38,-122 2862.12,-122 2862.12,-122 2856.12,-122 2850.12,-116 2850.12,-110 2850.12,-110 2850.12,-98 2850.12,-98 2850.12,-92 2856.12,-86 2862.12,-86 2862.12,-86 3015.38,-86 3015.38,-86 3021.38,-86 3027.38,-92 3027.38,-98 3027.38,-98 3027.38,-110 3027.38,-110 3027.38,-116 3021.38,-122 3015.38,-122"/>
+<text xml:space="preserve" text-anchor="middle" x="2938.75" y="-100.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Decide retention, re&#45;up or termination</text>
+</g>
+<!-- sd_03_9_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge16" class="edge">
+<title>sd_03_9_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M291.75,-270.46C281.79,-257.61 280.58,-220.76 288.13,-202.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="289.96,-203.14 291.02,-196.87 286.28,-201.11 289.96,-203.14"/>
+</g>
+<!-- sd_03_9_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge21" class="edge">
+<title>sd_03_9_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M299.75,-250C299.75,-248.33 299.75,-246.61 299.75,-244.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="301.85,-245.01 299.75,-239.01 297.65,-245.01 301.85,-245.01"/>
+</g>
+<!-- sd_03_9_anchor&#45;&gt;sd_03_5_anchor -->
+<g id="edge44" class="edge">
+<title>sd_03_9_anchor&#45;&gt;sd_03_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M314.98,-250C315.26,-248.25 315.49,-246.45 315.68,-244.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="317.74,-245.14 316.06,-239.01 313.55,-244.85 317.74,-245.14"/>
+</g>
+<!-- so_03_9_01 -->
+<g id="node55" class="node">
+<title>so_03_9_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M529,-294C529,-294 334.5,-294 334.5,-294 328.5,-294 322.5,-288 322.5,-282 322.5,-282 322.5,-270 322.5,-270 322.5,-264 328.5,-258 334.5,-258 334.5,-258 529,-258 529,-258 535,-258 541,-264 541,-270 541,-270 541,-282 541,-282 541,-288 535,-294 529,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="431.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Synthesise the recommendation memorandum</text>
+</g>
+<!-- so_03_9_02 -->
+<g id="node56" class="node">
+<title>so_03_9_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M736.5,-294C736.5,-294 575,-294 575,-294 569,-294 563,-288 563,-282 563,-282 563,-270 563,-270 563,-264 569,-258 575,-258 575,-258 736.5,-258 736.5,-258 742.5,-258 748.5,-264 748.5,-270 748.5,-270 748.5,-282 748.5,-282 748.5,-288 742.5,-294 736.5,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="655.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the staged committee process</text>
+</g>
+<!-- so_03_9_03 -->
+<g id="node57" class="node">
+<title>so_03_9_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M889.12,-294C889.12,-294 782.38,-294 782.38,-294 776.38,-294 770.38,-288 770.38,-282 770.38,-282 770.38,-270 770.38,-270 770.38,-264 776.38,-258 782.38,-258 782.38,-258 889.12,-258 889.12,-258 895.12,-258 901.12,-264 901.12,-270 901.12,-270 901.12,-282 901.12,-282 901.12,-288 895.12,-294 889.12,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="835.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Authorise the commitment</text>
+</g>
+<!-- so_03_9_04 -->
+<g id="node58" class="node">
+<title>so_03_9_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1062.62,-294C1062.62,-294 934.88,-294 934.88,-294 928.88,-294 922.88,-288 922.88,-282 922.88,-282 922.88,-270 922.88,-270 922.88,-264 928.88,-258 934.88,-258 934.88,-258 1062.62,-258 1062.62,-258 1068.62,-258 1074.62,-264 1074.62,-270 1074.62,-270 1074.62,-282 1074.62,-282 1074.62,-288 1068.62,-294 1062.62,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="998.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Verify authority and mandate fit</text>
+</g>
+<!-- so_03_9_05 -->
+<g id="node59" class="node">
+<title>so_03_9_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1259.25,-294C1259.25,-294 1108.25,-294 1108.25,-294 1102.25,-294 1096.25,-288 1096.25,-282 1096.25,-282 1096.25,-270 1096.25,-270 1096.25,-264 1102.25,-258 1108.25,-258 1108.25,-258 1259.25,-258 1259.25,-258 1265.25,-258 1271.25,-264 1271.25,-270 1271.25,-270 1271.25,-282 1271.25,-282 1271.25,-288 1265.25,-294 1259.25,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1183.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the IC pipeline and cadence</text>
+</g>
+<!-- ext_in_01 -->
+<g id="node66" class="node">
+<title>ext_in_01</title>
+<g id="a_node66"><a xlink:href="./bd-01.html" xlink:title="&lt;&#45; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M2890.38,-466C2890.38,-466 2707.12,-466 2707.12,-466 2701.12,-466 2695.12,-460 2695.12,-454 2695.12,-454 2695.12,-442 2695.12,-442 2695.12,-436 2701.12,-430 2707.12,-430 2707.12,-430 2890.38,-430 2890.38,-430 2896.38,-430 2902.38,-436 2902.38,-442 2902.38,-442 2902.38,-454 2902.38,-454 2902.38,-460 2896.38,-466 2890.38,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="2798.75" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- ext_in_01&#45;&gt;sd_03_1_anchor -->
+<g id="edge51" class="edge">
+<title>ext_in_01&#45;&gt;sd_03_1_anchor</title>
+<g id="a_edge51"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2798.75,-429.6C2798.75,-425.59 2798.75,-421.13 2798.75,-416.46"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2800.85,-416.71 2798.75,-410.71 2796.65,-416.71 2800.85,-416.71"/>
+</a>
+</g>
+</g>
+<!-- ext_in_05 -->
+<g id="node67" class="node">
+<title>ext_in_05</title>
+<g id="a_node67"><a xlink:href="./bd-05.html" xlink:title="&lt;&#45; BD&#45;05\\nPortfolio Management">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M367.38,-380C367.38,-380 232.12,-380 232.12,-380 226.12,-380 220.12,-374 220.12,-368 220.12,-368 220.12,-356 220.12,-356 220.12,-350 226.12,-344 232.12,-344 232.12,-344 367.38,-344 367.38,-344 373.38,-344 379.38,-350 379.38,-356 379.38,-356 379.38,-368 379.38,-368 379.38,-374 373.38,-380 367.38,-380"/>
+<text xml:space="preserve" text-anchor="middle" x="299.75" y="-358.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;05\nPortfolio Management</text>
+</a>
+</g>
+</g>
+<!-- ext_in_05&#45;&gt;sd_03_9_anchor -->
+<g id="edge52" class="edge">
+<title>ext_in_05&#45;&gt;sd_03_9_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M299.75,-343.6C299.75,-339.68 299.75,-335.33 299.75,-330.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="301.85,-331.01 299.75,-325.01 297.65,-331.01 301.85,-331.01"/>
+</g>
+<!-- ext_in_09 -->
+<g id="node68" class="node">
+<title>ext_in_09</title>
+<g id="a_node68"><a xlink:href="./bd-09.html" xlink:title="&lt;&#45; BD&#45;09\\nPerformance &amp; Analytics">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M1759.75,-294C1759.75,-294 1611.75,-294 1611.75,-294 1605.75,-294 1599.75,-288 1599.75,-282 1599.75,-282 1599.75,-270 1599.75,-270 1599.75,-264 1605.75,-258 1611.75,-258 1611.75,-258 1759.75,-258 1759.75,-258 1765.75,-258 1771.75,-264 1771.75,-270 1771.75,-270 1771.75,-282 1771.75,-282 1771.75,-288 1765.75,-294 1759.75,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1685.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;09\nPerformance &amp; Analytics</text>
+</a>
+</g>
+</g>
+<!-- ext_in_09&#45;&gt;sd_03_6_anchor -->
+<g id="edge53" class="edge">
+<title>ext_in_09&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1612.82,-257.3C1595.91,-253.19 1582.75,-250 1582.75,-250 1582.75,-250 1458.31,-240.51 1426.22,-238.07"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1426.4,-235.98 1420.26,-237.62 1426.08,-240.17 1426.4,-235.98"/>
+</g>
+<!-- ext_in_12 -->
+<g id="node69" class="node">
+<title>ext_in_12</title>
+<g id="a_node69"><a xlink:href="./bd-12.html" xlink:title="&lt;&#45; BD&#45;12\\nInvestment Operations &amp; Servicing">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" stroke-dasharray="5,2" d="M1497.88,-294C1497.88,-294 1305.62,-294 1305.62,-294 1299.62,-294 1293.62,-288 1293.62,-282 1293.62,-282 1293.62,-270 1293.62,-270 1293.62,-264 1299.62,-258 1305.62,-258 1305.62,-258 1497.88,-258 1497.88,-258 1503.88,-258 1509.88,-264 1509.88,-270 1509.88,-270 1509.88,-282 1509.88,-282 1509.88,-288 1503.88,-294 1497.88,-294"/>
+<text xml:space="preserve" text-anchor="middle" x="1401.75" y="-272.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;12\nInvestment Operations &amp; Servicing</text>
+</a>
+</g>
+</g>
+<!-- ext_in_12&#45;&gt;sd_03_6_anchor -->
+<g id="edge54" class="edge">
+<title>ext_in_12&#45;&gt;sd_03_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1402.99,-257.6C1403.27,-253.68 1403.58,-249.33 1403.91,-244.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1405.99,-245.14 1404.32,-239.01 1401.8,-244.84 1405.99,-245.14"/>
+</g>
+<!-- ext_in_13 -->
+<g id="node70" class="node">
+<title>ext_in_13</title>
+<g id="a_node70"><a xlink:href="./bd-13.html" xlink:title="&lt;&#45; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M1877.5,-466C1877.5,-466 1710,-466 1710,-466 1704,-466 1698,-460 1698,-454 1698,-454 1698,-442 1698,-442 1698,-436 1704,-430 1710,-430 1710,-430 1877.5,-430 1877.5,-430 1883.5,-430 1889.5,-436 1889.5,-442 1889.5,-442 1889.5,-454 1889.5,-454 1889.5,-460 1883.5,-466 1877.5,-466"/>
+<text xml:space="preserve" text-anchor="middle" x="1793.75" y="-444.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- ext_in_13&#45;&gt;sd_03_3_anchor -->
+<g id="edge55" class="edge">
+<title>ext_in_13&#45;&gt;sd_03_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1793.75,-429.6C1793.75,-425.68 1793.75,-421.33 1793.75,-416.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1795.85,-417.01 1793.75,-411.01 1791.65,-417.01 1795.85,-417.01"/>
+</g>
+</g>
+</svg>
+</div>
+<h3>Service Domains (9)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Service Domain</th><th>Example operations</th></tr></thead>
+  <tbody><tr><td>SD-03.1</td><td><a href='./sd-03.1.html'>Manager Sourcing &amp; Pipeline</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Maintain the manager universe, Source managers, Screen for initial fit…</td></tr><tr><td>SD-03.2</td><td><a href='./sd-03.2.html'>Manager Research &amp; Selection</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Define the peer group and classify style, Analyse the track record, Assess the investment process…</td></tr><tr><td>SD-03.3</td><td><a href='./sd-03.3.html'>Fund Operational Due Diligence (ODD)</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Verify service providers, Assess the valuation policy, Assess cash controls…</td></tr><tr><td>SD-03.4</td><td><a href='./sd-03.4.html'>Fund Investment Due Diligence</a> <span class='tag tag-PRIV'>PRIV</span></td><td>Assess the investment thesis, Analyse the return drivers, Review the fund terms…</td></tr><tr><td>SD-03.5</td><td><a href='./sd-03.5.html'>Fund Commitment &amp; Subscription</a> <span class='tag tag-PRIV'>PRIV</span></td><td>Negotiate and review the LPA, Negotiate the side letter and co-investment rights, Complete the subscription…</td></tr><tr><td>SD-03.6</td><td><a href='./sd-03.6.html'>GP &amp; Manager Monitoring</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Monitor manager performance, Monitor organisational health, Participate in the LPAC / advisory board…</td></tr><tr><td>SD-03.7</td><td><a href='./sd-03.7.html'>Manager Mandate Administration</a> <span class='tag tag-PUB'>PUB</span></td><td>Define the mandate parameters and guidelines, Negotiate and execute the investment-management agreement, Open and fund the account…</td></tr><tr><td>SD-03.8</td><td><a href='./sd-03.8.html'>Re-Up &amp; Manager Relationship Management</a> <span class='tag tag-BOTH'>BOTH</span></td><td>Evaluate the re-up decision, Assess succession-plan maturity, Manage the manager relationship…</td></tr><tr><td>SD-03.9</td><td><a href='./sd-03.9.html'>Fund-Commitment Approval &amp; Authorisation</a> <span class='tag tag-PRIV'>PRIV</span></td><td>Synthesise the recommendation memorandum, Operate the staged committee process, Authorise the commitment…</td></tr></tbody>
+</table>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

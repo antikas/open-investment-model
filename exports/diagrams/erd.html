@@ -1,0 +1,2140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Entity ERD — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>Entity ERD — pack-grouped overview</h2>
+<p class='meta'>The 86-entity canonical model — core plus 5 specialisation packs (derivatives, fund-operations, private-markets, public-markets, real-assets). Solid arrows are foreign keys; dashed arrows are <code>Specialises</code> declarations. Each entity links to its full attribute schema. The attribute-level ERD of the core is rendered separately by D2 — see <a href='./entities/core/core-erd.svg'>core-erd.svg</a> when the D2 build step has populated it.</p>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_entities Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 2081.00 3459.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 3429.8)">
+<title>openim_entities</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-3429.8 2052.3,-3429.8 2052.3,28.8 -28.8,28.8"/>
+<g id="clust1" class="cluster">
+<title>cluster_core</title>
+<path fill="white" stroke="#5b7aa6" stroke-dasharray="5,2" d="M485.38,-807C485.38,-807 2003.5,-807 2003.5,-807 2009.5,-807 2015.5,-813 2015.5,-819 2015.5,-819 2015.5,-1507 2015.5,-1507 2015.5,-1513 2009.5,-1519 2003.5,-1519 2003.5,-1519 485.38,-1519 485.38,-1519 479.38,-1519 473.38,-1513 473.38,-1507 473.38,-1507 473.38,-819 473.38,-819 473.38,-813 479.38,-807 485.38,-807"/>
+<text xml:space="preserve" text-anchor="middle" x="1244.44" y="-1503.6" font-family="Times New Roman,serif" font-size="12.00" fill="#5b7aa6">core</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_derivatives</title>
+<path fill="white" stroke="#a07b2c" stroke-dasharray="5,2" d="M1119.5,-1969C1119.5,-1969 1630,-1969 1630,-1969 1636,-1969 1642,-1975 1642,-1981 1642,-1981 1642,-2147 1642,-2147 1642,-2153 1636,-2159 1630,-2159 1630,-2159 1119.5,-2159 1119.5,-2159 1113.5,-2159 1107.5,-2153 1107.5,-2147 1107.5,-2147 1107.5,-1981 1107.5,-1981 1107.5,-1975 1113.5,-1969 1119.5,-1969"/>
+<text xml:space="preserve" text-anchor="middle" x="1374.75" y="-2143.6" font-family="Times New Roman,serif" font-size="12.00" fill="#a07b2c">derivatives</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_fund_operations</title>
+<path fill="white" stroke="#b07d2a" stroke-dasharray="5,2" d="M461.75,-2217C461.75,-2217 1571.88,-2217 1571.88,-2217 1577.88,-2217 1583.88,-2223 1583.88,-2229 1583.88,-2229 1583.88,-2607 1583.88,-2607 1583.88,-2613 1577.88,-2619 1571.88,-2619 1571.88,-2619 461.75,-2619 461.75,-2619 455.75,-2619 449.75,-2613 449.75,-2607 449.75,-2607 449.75,-2229 449.75,-2229 449.75,-2223 455.75,-2217 461.75,-2217"/>
+<text xml:space="preserve" text-anchor="middle" x="1016.81" y="-2603.6" font-family="Times New Roman,serif" font-size="12.00" fill="#b07d2a">fund&#45;operations</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_private_markets</title>
+<path fill="white" stroke="#7a5b9b" stroke-dasharray="5,2" d="M468.5,-2705C468.5,-2705 1608.62,-2705 1608.62,-2705 1614.62,-2705 1620.62,-2711 1620.62,-2717 1620.62,-2717 1620.62,-3047 1620.62,-3047 1620.62,-3053 1614.62,-3059 1608.62,-3059 1608.62,-3059 468.5,-3059 468.5,-3059 462.5,-3059 456.5,-3053 456.5,-3047 456.5,-3047 456.5,-2717 456.5,-2717 456.5,-2711 462.5,-2705 468.5,-2705"/>
+<text xml:space="preserve" text-anchor="middle" x="1038.56" y="-3043.6" font-family="Times New Roman,serif" font-size="12.00" fill="#7a5b9b">private&#45;markets</text>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_public_markets</title>
+<path fill="white" stroke="#5b8a48" stroke-dasharray="5,2" d="M488.38,-39C488.38,-39 1249,-39 1249,-39 1255,-39 1261,-45 1261,-51 1261,-51 1261,-449 1261,-449 1261,-455 1255,-461 1249,-461 1249,-461 488.38,-461 488.38,-461 482.38,-461 476.38,-455 476.38,-449 476.38,-449 476.38,-51 476.38,-51 476.38,-45 482.38,-39 488.38,-39"/>
+<text xml:space="preserve" text-anchor="middle" x="868.69" y="-445.6" font-family="Times New Roman,serif" font-size="12.00" fill="#5b8a48">public&#45;markets</text>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_real_assets</title>
+<path fill="white" stroke="#a65b5b" stroke-dasharray="5,2" d="M20,-816C20,-816 388.75,-816 388.75,-816 394.75,-816 400.75,-822 400.75,-828 400.75,-828 400.75,-1052 400.75,-1052 400.75,-1058 394.75,-1064 388.75,-1064 388.75,-1064 20,-1064 20,-1064 14,-1064 8,-1058 8,-1052 8,-1052 8,-828 8,-828 8,-822 14,-816 20,-816"/>
+<text xml:space="preserve" text-anchor="middle" x="204.38" y="-1048.6" font-family="Times New Roman,serif" font-size="12.00" fill="#a65b5b">real&#45;assets</text>
+</g>
+<!-- ent_E_01 -->
+<g id="node1" class="node">
+<title>ent_E_01</title>
+<g id="a_node1"><a xlink:href="./entity-E-01.html" xlink:title="E&#45;01\\nLegal Entity">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1808.38,-1489C1808.38,-1489 1727.88,-1489 1727.88,-1489 1721.88,-1489 1715.88,-1483 1715.88,-1477 1715.88,-1477 1715.88,-1465 1715.88,-1465 1715.88,-1459 1721.88,-1453 1727.88,-1453 1727.88,-1453 1808.38,-1453 1808.38,-1453 1814.38,-1453 1820.38,-1459 1820.38,-1465 1820.38,-1465 1820.38,-1477 1820.38,-1477 1820.38,-1483 1814.38,-1489 1808.38,-1489"/>
+<text xml:space="preserve" text-anchor="middle" x="1768.12" y="-1467.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;01\nLegal Entity</text>
+</a>
+</g>
+</g>
+<!-- ent_E_02 -->
+<g id="node2" class="node">
+<title>ent_E_02</title>
+<g id="a_node2"><a xlink:href="./entity-E-02.html" xlink:title="E&#45;02\\nInstrument / Asset">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1570.62,-882C1570.62,-882 1460.12,-882 1460.12,-882 1454.12,-882 1448.12,-876 1448.12,-870 1448.12,-870 1448.12,-858 1448.12,-858 1448.12,-852 1454.12,-846 1460.12,-846 1460.12,-846 1570.62,-846 1570.62,-846 1576.62,-846 1582.62,-852 1582.62,-858 1582.62,-858 1582.62,-870 1582.62,-870 1582.62,-876 1576.62,-882 1570.62,-882"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-860.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;02\nInstrument / Asset</text>
+</a>
+</g>
+</g>
+<!-- ent_E_02&#45;&gt;ent_E_01 -->
+<g id="edge2" class="edge">
+<title>ent_E_02&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1528.88,-882.51C1560.66,-929.56 1642,-1050 1642,-1050 1642,-1050 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_09 -->
+<g id="node9" class="node">
+<title>ent_E_09</title>
+<g id="a_node9"><a xlink:href="./entity-E-09.html" xlink:title="E&#45;09\\nAsset Class">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1995.5,-1489C1995.5,-1489 1914.25,-1489 1914.25,-1489 1908.25,-1489 1902.25,-1483 1902.25,-1477 1902.25,-1477 1902.25,-1465 1902.25,-1465 1902.25,-1459 1908.25,-1453 1914.25,-1453 1914.25,-1453 1995.5,-1453 1995.5,-1453 2001.5,-1453 2007.5,-1459 2007.5,-1465 2007.5,-1465 2007.5,-1477 2007.5,-1477 2007.5,-1483 2001.5,-1489 1995.5,-1489"/>
+<text xml:space="preserve" text-anchor="middle" x="1954.88" y="-1467.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;09\nAsset Class</text>
+</a>
+</g>
+</g>
+<!-- ent_E_02&#45;&gt;ent_E_09 -->
+<g id="edge1" class="edge">
+<title>ent_E_02&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1546.27,-882.73C1625.93,-932.63 1837.25,-1065 1837.25,-1065 1837.25,-1065 1920.97,-1356.46 1946.55,-1445.48"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1944.47,-1445.86 1948.14,-1451.05 1948.5,-1444.7 1944.47,-1445.86"/>
+</g>
+<!-- ent_E_03 -->
+<g id="node3" class="node">
+<title>ent_E_03</title>
+<g id="a_node3"><a xlink:href="./entity-E-03.html" xlink:title="E&#45;03\\nPortfolio / Mandate">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1572.88,-1097C1572.88,-1097 1457.88,-1097 1457.88,-1097 1451.88,-1097 1445.88,-1091 1445.88,-1085 1445.88,-1085 1445.88,-1073 1445.88,-1073 1445.88,-1067 1451.88,-1061 1457.88,-1061 1457.88,-1061 1572.88,-1061 1572.88,-1061 1578.88,-1061 1584.88,-1067 1584.88,-1073 1584.88,-1073 1584.88,-1085 1584.88,-1085 1584.88,-1091 1578.88,-1097 1572.88,-1097"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-1075.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;03\nPortfolio / Mandate</text>
+</a>
+</g>
+</g>
+<!-- ent_E_03&#45;&gt;ent_E_01 -->
+<g id="edge5" class="edge">
+<title>ent_E_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1583.6,-1097.73C1613.47,-1106.05 1642,-1114 1642,-1114 1642,-1114 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_03&#45;&gt;ent_E_09 -->
+<g id="edge3" class="edge">
+<title>ent_E_03&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1585.42,-1075.6C1637.13,-1073.05 1699,-1070 1699,-1070 1699,-1070 1837.25,-1070 1837.25,-1070 1837.25,-1070 1920.78,-1357.22 1946.46,-1445.5"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1944.37,-1445.84 1948.06,-1451.01 1948.4,-1444.66 1944.37,-1445.84"/>
+</g>
+<!-- ent_E_10 -->
+<g id="node10" class="node">
+<title>ent_E_10</title>
+<g id="a_node10"><a xlink:href="./entity-E-10.html" xlink:title="E&#45;10\\nBenchmark / Index">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1825.25,-1431C1825.25,-1431 1711,-1431 1711,-1431 1705,-1431 1699,-1425 1699,-1419 1699,-1419 1699,-1407 1699,-1407 1699,-1401 1705,-1395 1711,-1395 1711,-1395 1825.25,-1395 1825.25,-1395 1831.25,-1395 1837.25,-1401 1837.25,-1407 1837.25,-1407 1837.25,-1419 1837.25,-1419 1837.25,-1425 1831.25,-1431 1825.25,-1431"/>
+<text xml:space="preserve" text-anchor="middle" x="1768.12" y="-1409.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;10\nBenchmark / Index</text>
+</a>
+</g>
+</g>
+<!-- ent_E_03&#45;&gt;ent_E_10 -->
+<g id="edge4" class="edge">
+<title>ent_E_03&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#5b7aa6" d="M1583.6,-1097.73C1613.47,-1106.05 1642,-1114 1642,-1114 1642,-1114 1726.37,-1315.62 1756.55,-1387.73"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1754.46,-1388.18 1758.71,-1392.9 1758.33,-1386.55 1754.46,-1388.18"/>
+</g>
+<!-- ent_E_29 -->
+<g id="node29" class="node">
+<title>ent_E_29</title>
+<g id="a_node29"><a xlink:href="./entity-E-29.html" xlink:title="E&#45;29\\nAllocation Plan">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1815.88,-1117C1815.88,-1117 1720.38,-1117 1720.38,-1117 1714.38,-1117 1708.38,-1111 1708.38,-1105 1708.38,-1105 1708.38,-1093 1708.38,-1093 1708.38,-1087 1714.38,-1081 1720.38,-1081 1720.38,-1081 1815.88,-1081 1815.88,-1081 1821.88,-1081 1827.88,-1087 1827.88,-1093 1827.88,-1093 1827.88,-1105 1827.88,-1105 1827.88,-1111 1821.88,-1117 1815.88,-1117"/>
+<text xml:space="preserve" text-anchor="middle" x="1768.12" y="-1095.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;29\nAllocation Plan</text>
+</a>
+</g>
+</g>
+<!-- ent_E_03&#45;&gt;ent_E_29 -->
+<g id="edge6" class="edge">
+<title>ent_E_03&#45;&gt;ent_E_29</title>
+<path fill="none" stroke="#5b7aa6" d="M1585.56,-1077.05C1621.42,-1078.84 1665.02,-1082.34 1700.5,-1086.3"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1700.24,-1088.38 1706.44,-1086.98 1700.72,-1084.21 1700.24,-1088.38"/>
+</g>
+<!-- ent_E_04 -->
+<g id="node4" class="node">
+<title>ent_E_04</title>
+<g id="a_node4"><a xlink:href="./entity-E-04.html" xlink:title="E&#45;04\\nHolding / Position">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1265.38,-1121C1265.38,-1121 1157.12,-1121 1157.12,-1121 1151.12,-1121 1145.12,-1115 1145.12,-1109 1145.12,-1109 1145.12,-1097 1145.12,-1097 1145.12,-1091 1151.12,-1085 1157.12,-1085 1157.12,-1085 1265.38,-1085 1265.38,-1085 1271.38,-1085 1277.38,-1091 1277.38,-1097 1277.38,-1097 1277.38,-1109 1277.38,-1109 1277.38,-1115 1271.38,-1121 1265.38,-1121"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1099.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;04\nHolding / Position</text>
+</a>
+</g>
+</g>
+<!-- ent_E_04&#45;&gt;ent_E_02 -->
+<g id="edge8" class="edge">
+<title>ent_E_04&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1254.38,-1084.31C1288.79,-1069.06 1331.75,-1050 1331.75,-1050 1331.75,-1050 1441.84,-937.88 1491.07,-887.74"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1492.43,-889.35 1495.14,-883.59 1489.43,-886.4 1492.43,-889.35"/>
+</g>
+<!-- ent_E_04&#45;&gt;ent_E_03 -->
+<g id="edge7" class="edge">
+<title>ent_E_04&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1277.81,-1097.79C1324.85,-1094.06 1388.4,-1089.01 1437.78,-1085.08"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1437.95,-1087.18 1443.76,-1084.61 1437.62,-1082.99 1437.95,-1087.18"/>
+</g>
+<!-- ent_E_05 -->
+<g id="node5" class="node">
+<title>ent_E_05</title>
+<g id="a_node5"><a xlink:href="./entity-E-05.html" xlink:title="E&#45;05\\nTransaction">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1251.12,-1039C1251.12,-1039 1171.38,-1039 1171.38,-1039 1165.38,-1039 1159.38,-1033 1159.38,-1027 1159.38,-1027 1159.38,-1015 1159.38,-1015 1159.38,-1009 1165.38,-1003 1171.38,-1003 1171.38,-1003 1251.12,-1003 1251.12,-1003 1257.12,-1003 1263.12,-1009 1263.12,-1015 1263.12,-1015 1263.12,-1027 1263.12,-1027 1263.12,-1033 1257.12,-1039 1251.12,-1039"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1017.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;05\nTransaction</text>
+</a>
+</g>
+</g>
+<!-- ent_E_05&#45;&gt;ent_E_01 -->
+<g id="edge11" class="edge">
+<title>ent_E_05&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1254.38,-1039.69C1288.79,-1054.94 1331.75,-1074 1331.75,-1074 1331.75,-1074 1396.75,-1476 1396.75,-1476 1396.75,-1476 1642,-1476 1642,-1476 1642,-1476 1675.51,-1474.66 1707.85,-1473.37"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1707.72,-1475.48 1713.64,-1473.14 1707.56,-1471.28 1707.72,-1475.48"/>
+</g>
+<!-- ent_E_05&#45;&gt;ent_E_02 -->
+<g id="edge10" class="edge">
+<title>ent_E_05&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1263.62,-1008.53C1296.01,-1000.67 1331.75,-992 1331.75,-992 1331.75,-992 1429.49,-923.49 1481.96,-886.72"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1482.87,-888.64 1486.58,-883.48 1480.46,-885.21 1482.87,-888.64"/>
+</g>
+<!-- ent_E_05&#45;&gt;ent_E_03 -->
+<g id="edge9" class="edge">
+<title>ent_E_05&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1263.84,-1030.9C1311.67,-1040.09 1383.43,-1053.86 1437.92,-1064.32"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1437.37,-1066.36 1443.66,-1065.42 1438.16,-1062.23 1437.37,-1066.36"/>
+</g>
+<!-- ent_E_06 -->
+<g id="node6" class="node">
+<title>ent_E_06</title>
+<g id="a_node6"><a xlink:href="./entity-E-06.html" xlink:title="E&#45;06\\nCash Flow Event">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M934.25,-909C934.25,-909 827.5,-909 827.5,-909 821.5,-909 815.5,-903 815.5,-897 815.5,-897 815.5,-885 815.5,-885 815.5,-879 821.5,-873 827.5,-873 827.5,-873 934.25,-873 934.25,-873 940.25,-873 946.25,-879 946.25,-885 946.25,-885 946.25,-897 946.25,-897 946.25,-903 940.25,-909 934.25,-909"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-887.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;06\nCash Flow Event</text>
+</a>
+</g>
+</g>
+<!-- ent_E_06&#45;&gt;ent_E_02 -->
+<g id="edge13" class="edge">
+<title>ent_E_06&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M946.66,-877.94C984.85,-870.24 1025.75,-862 1025.75,-862 1025.75,-862 1090.75,-834 1090.75,-834 1090.75,-834 1331.75,-834 1331.75,-834 1331.75,-834 1389.47,-843.48 1440.01,-851.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1439.65,-853.85 1445.92,-852.75 1440.34,-849.71 1439.65,-853.85"/>
+</g>
+<!-- ent_E_06&#45;&gt;ent_E_03 -->
+<g id="edge12" class="edge">
+<title>ent_E_06&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M946.66,-904.06C984.85,-911.76 1025.75,-920 1025.75,-920 1025.75,-920 1090.75,-1050 1090.75,-1050 1090.75,-1050 1316.26,-1065.44 1438.21,-1073.79"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1437.73,-1075.86 1443.86,-1074.17 1438.02,-1071.67 1437.73,-1075.86"/>
+</g>
+<!-- ent_E_06&#45;&gt;ent_E_05 -->
+<g id="edge14" class="edge">
+<title>ent_E_06&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#5b7aa6" d="M946.66,-904.06C984.85,-911.76 1025.75,-920 1025.75,-920 1025.75,-920 1090.75,-992 1090.75,-992 1090.75,-992 1121.38,-999.43 1151.63,-1006.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1151.08,-1008.8 1157.41,-1008.18 1152.07,-1004.72 1151.08,-1008.8"/>
+</g>
+<!-- ent_E_07 -->
+<g id="node7" class="node">
+<title>ent_E_07</title>
+<g id="a_node7"><a xlink:href="./entity-E-07.html" xlink:title="E&#45;07\\nValuation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M915.12,-1025C915.12,-1025 846.62,-1025 846.62,-1025 840.62,-1025 834.62,-1019 834.62,-1013 834.62,-1013 834.62,-1001 834.62,-1001 834.62,-995 840.62,-989 846.62,-989 846.62,-989 915.12,-989 915.12,-989 921.12,-989 927.12,-995 927.12,-1001 927.12,-1001 927.12,-1013 927.12,-1013 927.12,-1019 921.12,-1025 915.12,-1025"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1003.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;07\nValuation</text>
+</a>
+</g>
+</g>
+<!-- ent_E_07&#45;&gt;ent_E_02 -->
+<g id="edge16" class="edge">
+<title>ent_E_07&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M927.79,-997.74C969.9,-989.26 1025.75,-978 1025.75,-978 1025.75,-978 1090.75,-876 1090.75,-876 1090.75,-876 1318.77,-869.54 1440.23,-866.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1440.27,-868.2 1446.2,-865.93 1440.15,-864 1440.27,-868.2"/>
+</g>
+<!-- ent_E_07&#45;&gt;ent_E_04 -->
+<g id="edge15" class="edge">
+<title>ent_E_07&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#5b7aa6" d="M927.79,-1016.26C969.9,-1024.74 1025.75,-1036 1025.75,-1036 1025.75,-1036 1090.75,-1068 1090.75,-1068 1090.75,-1068 1113.62,-1074.7 1139.35,-1082.23"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.5,-1084.17 1144.85,-1083.84 1139.68,-1080.14 1138.5,-1084.17"/>
+</g>
+<!-- ent_FO_02 -->
+<g id="node45" class="node">
+<title>ent_FO_02</title>
+<g id="a_node45"><a xlink:href="./entity-FO-02.html" xlink:title="FO&#45;02\\nShare / Unit Class">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M1271,-2368C1271,-2368 1151.5,-2368 1151.5,-2368 1145.5,-2368 1139.5,-2362 1139.5,-2356 1139.5,-2356 1139.5,-2344 1139.5,-2344 1139.5,-2338 1145.5,-2332 1151.5,-2332 1151.5,-2332 1271,-2332 1271,-2332 1277,-2332 1283,-2338 1283,-2344 1283,-2344 1283,-2356 1283,-2356 1283,-2362 1277,-2368 1271,-2368"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2346.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;02\nShare / Unit Class</text>
+</a>
+</g>
+</g>
+<!-- ent_E_07&#45;&gt;ent_FO_02 -->
+<g id="edge17" class="edge">
+<title>ent_E_07&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M927.79,-1016.26C969.9,-1024.74 1025.75,-1036 1025.75,-1036 1025.75,-1036 1090.75,-2285 1090.75,-2285 1090.75,-2285 1135.01,-2309.08 1169.66,-2327.92"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1168.4,-2329.63 1174.68,-2330.65 1170.41,-2325.94 1168.4,-2329.63"/>
+</g>
+<!-- ent_E_08 -->
+<g id="node8" class="node">
+<title>ent_E_08</title>
+<g id="a_node8"><a xlink:href="./entity-E-08.html" xlink:title="E&#45;08\\nPrice &amp; Market Data">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1272.12,-923C1272.12,-923 1150.38,-923 1150.38,-923 1144.38,-923 1138.38,-917 1138.38,-911 1138.38,-911 1138.38,-899 1138.38,-899 1138.38,-893 1144.38,-887 1150.38,-887 1150.38,-887 1272.12,-887 1272.12,-887 1278.12,-887 1284.12,-893 1284.12,-899 1284.12,-899 1284.12,-911 1284.12,-911 1284.12,-917 1278.12,-923 1272.12,-923"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-901.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;08\nPrice &amp; Market Data</text>
+</a>
+</g>
+</g>
+<!-- ent_E_08&#45;&gt;ent_E_02 -->
+<g id="edge18" class="edge">
+<title>ent_E_08&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1284.62,-895.18C1331.69,-888.79 1392.91,-880.48 1440.32,-874.05"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1440.34,-876.17 1446.01,-873.28 1439.78,-872 1440.34,-876.17"/>
+</g>
+<!-- ent_E_10&#45;&gt;ent_E_09 -->
+<g id="edge19" class="edge">
+<title>ent_E_10&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1828.6,-1431.67C1849.73,-1438.31 1873.51,-1445.77 1894.62,-1452.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1893.88,-1454.37 1900.23,-1454.16 1895.14,-1450.36 1893.88,-1454.37"/>
+</g>
+<!-- ent_E_11 -->
+<g id="node11" class="node">
+<title>ent_E_11</title>
+<g id="a_node11"><a xlink:href="./entity-E-11.html" xlink:title="E&#45;11\\nClassification Type &amp; Value">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M957.5,-851C957.5,-851 804.25,-851 804.25,-851 798.25,-851 792.25,-845 792.25,-839 792.25,-839 792.25,-827 792.25,-827 792.25,-821 798.25,-815 804.25,-815 804.25,-815 957.5,-815 957.5,-815 963.5,-815 969.5,-821 969.5,-827 969.5,-827 969.5,-839 969.5,-839 969.5,-845 963.5,-851 957.5,-851"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-829.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;11\nClassification Type &amp; Value</text>
+</a>
+</g>
+</g>
+<!-- ent_E_12 -->
+<g id="node12" class="node">
+<title>ent_E_12</title>
+<g id="a_node12"><a xlink:href="./entity-E-12.html" xlink:title="E&#45;12\\nClassification History">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M626.38,-967C626.38,-967 502.38,-967 502.38,-967 496.38,-967 490.38,-961 490.38,-955 490.38,-955 490.38,-943 490.38,-943 490.38,-937 496.38,-931 502.38,-931 502.38,-931 626.38,-931 626.38,-931 632.38,-931 638.38,-937 638.38,-943 638.38,-943 638.38,-955 638.38,-955 638.38,-961 632.38,-967 626.38,-967"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-945.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;12\nClassification History</text>
+</a>
+</g>
+</g>
+<!-- ent_E_12&#45;&gt;ent_E_11 -->
+<g id="edge20" class="edge">
+<title>ent_E_12&#45;&gt;ent_E_11</title>
+<path fill="none" stroke="#5b7aa6" d="M601.98,-930.34C652.11,-904.77 736,-862 736,-862 736,-862 757.78,-857.61 784.39,-852.25"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="784.68,-854.33 790.14,-851.09 783.85,-850.21 784.68,-854.33"/>
+</g>
+<!-- ent_E_13 -->
+<g id="node13" class="node">
+<title>ent_E_13</title>
+<g id="a_node13"><a xlink:href="./entity-E-13.html" xlink:title="E&#45;13\\nEntity Alias">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M602.75,-1025C602.75,-1025 526,-1025 526,-1025 520,-1025 514,-1019 514,-1013 514,-1013 514,-1001 514,-1001 514,-995 520,-989 526,-989 526,-989 602.75,-989 602.75,-989 608.75,-989 614.75,-995 614.75,-1001 614.75,-1001 614.75,-1013 614.75,-1013 614.75,-1019 608.75,-1025 602.75,-1025"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1003.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;13\nEntity Alias</text>
+</a>
+</g>
+</g>
+<!-- ent_E_14 -->
+<g id="node14" class="node">
+<title>ent_E_14</title>
+<g id="a_node14"><a xlink:href="./entity-E-14.html" xlink:title="E&#45;14\\nExternal Identifier">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M618.5,-1083C618.5,-1083 510.25,-1083 510.25,-1083 504.25,-1083 498.25,-1077 498.25,-1071 498.25,-1071 498.25,-1059 498.25,-1059 498.25,-1053 504.25,-1047 510.25,-1047 510.25,-1047 618.5,-1047 618.5,-1047 624.5,-1047 630.5,-1053 630.5,-1059 630.5,-1059 630.5,-1071 630.5,-1071 630.5,-1077 624.5,-1083 618.5,-1083"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1061.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;14\nExternal Identifier</text>
+</a>
+</g>
+</g>
+<!-- ent_E_15 -->
+<g id="node15" class="node">
+<title>ent_E_15</title>
+<g id="a_node15"><a xlink:href="./entity-E-15.html" xlink:title="E&#45;15\\nDocument Metadata">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M941.75,-1199C941.75,-1199 820,-1199 820,-1199 814,-1199 808,-1193 808,-1187 808,-1187 808,-1175 808,-1175 808,-1169 814,-1163 820,-1163 820,-1163 941.75,-1163 941.75,-1163 947.75,-1163 953.75,-1169 953.75,-1175 953.75,-1175 953.75,-1187 953.75,-1187 953.75,-1193 947.75,-1199 941.75,-1199"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1177.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;15\nDocument Metadata</text>
+</a>
+</g>
+</g>
+<!-- ent_E_15&#45;&gt;ent_E_01 -->
+<g id="edge21" class="edge">
+<title>ent_E_15&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M954.23,-1195.58C990.06,-1202.81 1025.75,-1210 1025.75,-1210 1025.75,-1210 1090.75,-1238 1090.75,-1238 1090.75,-1238 1642,-1309 1642,-1309 1642,-1309 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_15&#45;&gt;ent_E_02 -->
+<g id="edge22" class="edge">
+<title>ent_E_15&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M954.34,-1192.45C1014.67,-1201.98 1090.75,-1214 1090.75,-1214 1090.75,-1214 1331.75,-1214 1331.75,-1214 1331.75,-1214 1396.75,-1050 1396.75,-1050 1396.75,-1050 1466.8,-939.24 1498.78,-888.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1500.43,-889.99 1501.86,-883.79 1496.88,-887.74 1500.43,-889.99"/>
+</g>
+<!-- ent_E_15&#45;&gt;ent_E_03 -->
+<g id="edge23" class="edge">
+<title>ent_E_15&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M954.23,-1195.58C990.06,-1202.81 1025.75,-1210 1025.75,-1210 1025.75,-1210 1090.75,-1232 1090.75,-1232 1090.75,-1232 1331.75,-1232 1331.75,-1232 1331.75,-1232 1435.61,-1144.98 1486.69,-1102.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1487.94,-1103.89 1491.19,-1098.43 1485.24,-1100.67 1487.94,-1103.89"/>
+</g>
+<!-- ent_E_15&#45;&gt;ent_E_04 -->
+<g id="edge24" class="edge">
+<title>ent_E_15&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#5b7aa6" d="M954.23,-1166.42C990.06,-1159.19 1025.75,-1152 1025.75,-1152 1025.75,-1152 1085.67,-1136.09 1137.21,-1122.4"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1137.7,-1124.44 1142.96,-1120.87 1136.62,-1120.38 1137.7,-1124.44"/>
+</g>
+<!-- ent_PM_01 -->
+<g id="node56" class="node">
+<title>ent_PM_01</title>
+<g id="a_node56"><a xlink:href="./entity-PM-01.html" xlink:title="PM&#45;01\\nFund &amp; Vehicle">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M1264.25,-2807C1264.25,-2807 1158.25,-2807 1158.25,-2807 1152.25,-2807 1146.25,-2801 1146.25,-2795 1146.25,-2795 1146.25,-2783 1146.25,-2783 1146.25,-2777 1152.25,-2771 1158.25,-2771 1158.25,-2771 1264.25,-2771 1264.25,-2771 1270.25,-2771 1276.25,-2777 1276.25,-2783 1276.25,-2783 1276.25,-2795 1276.25,-2795 1276.25,-2801 1270.25,-2807 1264.25,-2807"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2785.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;01\nFund &amp; Vehicle</text>
+</a>
+</g>
+</g>
+<!-- ent_E_15&#45;&gt;ent_PM_01 -->
+<g id="edge25" class="edge">
+<title>ent_E_15&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M954.23,-1195.58C990.06,-1202.81 1025.75,-1210 1025.75,-1210 1025.75,-1210 1090.75,-2760 1090.75,-2760 1090.75,-2760 1113.06,-2765.41 1138.39,-2771.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1137.81,-2773.58 1144.13,-2772.95 1138.8,-2769.5 1137.81,-2773.58"/>
+</g>
+<!-- ent_PM_09 -->
+<g id="node64" class="node">
+<title>ent_PM_09</title>
+<g id="a_node64"><a xlink:href="./entity-PM-09.html" xlink:title="PM&#45;09\\nFund Investment">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M937.62,-2749C937.62,-2749 824.12,-2749 824.12,-2749 818.12,-2749 812.12,-2743 812.12,-2737 812.12,-2737 812.12,-2725 812.12,-2725 812.12,-2719 818.12,-2713 824.12,-2713 824.12,-2713 937.62,-2713 937.62,-2713 943.62,-2713 949.62,-2719 949.62,-2725 949.62,-2725 949.62,-2737 949.62,-2737 949.62,-2743 943.62,-2749 937.62,-2749"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2727.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;09\nFund Investment</text>
+</a>
+</g>
+</g>
+<!-- ent_E_15&#45;&gt;ent_PM_09 -->
+<g id="edge26" class="edge">
+<title>ent_E_15&#45;&gt;ent_PM_09</title>
+<path fill="none" stroke="#5b7aa6" d="M807.59,-1195.67C771.66,-1202.86 736,-1210 736,-1210 736,-1210 703.5,-1221 703.5,-1221 703.5,-1221 703.5,-2613 703.5,-2613 703.5,-2613 795.15,-2673.97 846.69,-2708.26"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="845.35,-2709.89 851.51,-2711.46 847.68,-2706.39 845.35,-2709.89"/>
+</g>
+<!-- ent_E_16 -->
+<g id="node16" class="node">
+<title>ent_E_16</title>
+<g id="a_node16"><a xlink:href="./entity-E-16.html" xlink:title="E&#45;16\\nRisk Limit">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M916.25,-1141C916.25,-1141 845.5,-1141 845.5,-1141 839.5,-1141 833.5,-1135 833.5,-1129 833.5,-1129 833.5,-1117 833.5,-1117 833.5,-1111 839.5,-1105 845.5,-1105 845.5,-1105 916.25,-1105 916.25,-1105 922.25,-1105 928.25,-1111 928.25,-1117 928.25,-1117 928.25,-1129 928.25,-1129 928.25,-1135 922.25,-1141 916.25,-1141"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1119.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;16\nRisk Limit</text>
+</a>
+</g>
+</g>
+<!-- ent_E_17 -->
+<g id="node17" class="node">
+<title>ent_E_17</title>
+<g id="a_node17"><a xlink:href="./entity-E-17.html" xlink:title="E&#45;17\\nScenario">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1244.75,-1203C1244.75,-1203 1177.75,-1203 1177.75,-1203 1171.75,-1203 1165.75,-1197 1165.75,-1191 1165.75,-1191 1165.75,-1179 1165.75,-1179 1165.75,-1173 1171.75,-1167 1177.75,-1167 1177.75,-1167 1244.75,-1167 1244.75,-1167 1250.75,-1167 1256.75,-1173 1256.75,-1179 1256.75,-1179 1256.75,-1191 1256.75,-1191 1256.75,-1197 1250.75,-1203 1244.75,-1203"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1181.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;17\nScenario</text>
+</a>
+</g>
+</g>
+<!-- ent_E_18 -->
+<g id="node18" class="node">
+<title>ent_E_18</title>
+<g id="a_node18"><a xlink:href="./entity-E-18.html" xlink:title="E&#45;18\\nLimit Breach">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M606.5,-1141C606.5,-1141 522.25,-1141 522.25,-1141 516.25,-1141 510.25,-1135 510.25,-1129 510.25,-1129 510.25,-1117 510.25,-1117 510.25,-1111 516.25,-1105 522.25,-1105 522.25,-1105 606.5,-1105 606.5,-1105 612.5,-1105 618.5,-1111 618.5,-1117 618.5,-1117 618.5,-1129 618.5,-1129 618.5,-1135 612.5,-1141 606.5,-1141"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1119.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;18\nLimit Breach</text>
+</a>
+</g>
+</g>
+<!-- ent_E_18&#45;&gt;ent_E_16 -->
+<g id="edge27" class="edge">
+<title>ent_E_18&#45;&gt;ent_E_16</title>
+<path fill="none" stroke="#5b7aa6" d="M619.08,-1123C676.71,-1123 767.72,-1123 825.57,-1123"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="825.3,-1125.1 831.3,-1123 825.3,-1120.9 825.3,-1125.1"/>
+</g>
+<!-- ent_E_19 -->
+<g id="node19" class="node">
+<title>ent_E_19</title>
+<g id="a_node19"><a xlink:href="./entity-E-19.html" xlink:title="E&#45;19\\nRisk Measurement">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M938,-1083C938,-1083 823.75,-1083 823.75,-1083 817.75,-1083 811.75,-1077 811.75,-1071 811.75,-1071 811.75,-1059 811.75,-1059 811.75,-1053 817.75,-1047 823.75,-1047 823.75,-1047 938,-1047 938,-1047 944,-1047 950,-1053 950,-1059 950,-1059 950,-1071 950,-1071 950,-1077 944,-1083 938,-1083"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1061.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;19\nRisk Measurement</text>
+</a>
+</g>
+</g>
+<!-- ent_E_18&#45;&gt;ent_E_19 -->
+<g id="edge28" class="edge">
+<title>ent_E_18&#45;&gt;ent_E_19</title>
+<path fill="none" stroke="#5b7aa6" d="M619.08,-1113.1C669.98,-1103.71 746.92,-1089.52 804.05,-1078.98"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="804.26,-1081.08 809.78,-1077.93 803.5,-1076.95 804.26,-1081.08"/>
+</g>
+<!-- ent_E_19&#45;&gt;ent_E_17 -->
+<g id="edge29" class="edge">
+<title>ent_E_19&#45;&gt;ent_E_17</title>
+<path fill="none" stroke="#5b7aa6" d="M950.44,-1078.82C987.5,-1086.29 1025.75,-1094 1025.75,-1094 1025.75,-1094 1090.75,-1150 1090.75,-1150 1090.75,-1150 1126.03,-1160.33 1158.26,-1169.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1157.27,-1171.67 1163.62,-1171.34 1158.45,-1167.64 1157.27,-1171.67"/>
+</g>
+<!-- ent_E_20 -->
+<g id="node20" class="node">
+<title>ent_E_20</title>
+<g id="a_node20"><a xlink:href="./entity-E-20.html" xlink:title="E&#45;20\\nPerformance Result">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M941,-1373C941,-1373 820.75,-1373 820.75,-1373 814.75,-1373 808.75,-1367 808.75,-1361 808.75,-1361 808.75,-1349 808.75,-1349 808.75,-1343 814.75,-1337 820.75,-1337 820.75,-1337 941,-1337 941,-1337 947,-1337 953,-1343 953,-1349 953,-1349 953,-1361 953,-1361 953,-1367 947,-1373 941,-1373"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1351.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;20\nPerformance Result</text>
+</a>
+</g>
+</g>
+<!-- ent_E_22 -->
+<g id="node22" class="node">
+<title>ent_E_22</title>
+<g id="a_node22"><a xlink:href="./entity-E-22.html" xlink:title="E&#45;22\\nMetric Definition">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1262,-1415C1262,-1415 1160.5,-1415 1160.5,-1415 1154.5,-1415 1148.5,-1409 1148.5,-1403 1148.5,-1403 1148.5,-1391 1148.5,-1391 1148.5,-1385 1154.5,-1379 1160.5,-1379 1160.5,-1379 1262,-1379 1262,-1379 1268,-1379 1274,-1385 1274,-1391 1274,-1391 1274,-1403 1274,-1403 1274,-1409 1268,-1415 1262,-1415"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1393.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;22\nMetric Definition</text>
+</a>
+</g>
+</g>
+<!-- ent_E_20&#45;&gt;ent_E_22 -->
+<g id="edge30" class="edge">
+<title>ent_E_20&#45;&gt;ent_E_22</title>
+<path fill="none" stroke="#5b7aa6" d="M953.53,-1364.17C1009.07,-1371.27 1085.57,-1381.05 1140.6,-1388.09"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1140.16,-1390.15 1146.37,-1388.83 1140.69,-1385.99 1140.16,-1390.15"/>
+</g>
+<!-- ent_E_21 -->
+<g id="node21" class="node">
+<title>ent_E_21</title>
+<g id="a_node21"><a xlink:href="./entity-E-21.html" xlink:title="E&#45;21\\nESG Measurement">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M622.62,-1199C622.62,-1199 506.12,-1199 506.12,-1199 500.12,-1199 494.12,-1193 494.12,-1187 494.12,-1187 494.12,-1175 494.12,-1175 494.12,-1169 500.12,-1163 506.12,-1163 506.12,-1163 622.62,-1163 622.62,-1163 628.62,-1163 634.62,-1169 634.62,-1175 634.62,-1175 634.62,-1187 634.62,-1187 634.62,-1193 628.62,-1199 622.62,-1199"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1177.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;21\nESG Measurement</text>
+</a>
+</g>
+</g>
+<!-- ent_E_23 -->
+<g id="node23" class="node">
+<title>ent_E_23</title>
+<g id="a_node23"><a xlink:href="./entity-E-23.html" xlink:title="E&#45;23\\nExtraction Record">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M619.62,-1257C619.62,-1257 509.12,-1257 509.12,-1257 503.12,-1257 497.12,-1251 497.12,-1245 497.12,-1245 497.12,-1233 497.12,-1233 497.12,-1227 503.12,-1221 509.12,-1221 509.12,-1221 619.62,-1221 619.62,-1221 625.62,-1221 631.62,-1227 631.62,-1233 631.62,-1233 631.62,-1245 631.62,-1245 631.62,-1251 625.62,-1257 619.62,-1257"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1235.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;23\nExtraction Record</text>
+</a>
+</g>
+</g>
+<!-- ent_E_23&#45;&gt;ent_E_15 -->
+<g id="edge31" class="edge">
+<title>ent_E_23&#45;&gt;ent_E_15</title>
+<path fill="none" stroke="#5b7aa6" d="M632.07,-1226.7C681.24,-1217.63 748.32,-1205.26 800.29,-1195.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="800.51,-1197.77 806.03,-1194.62 799.75,-1193.64 800.51,-1197.77"/>
+</g>
+<!-- ent_E_24 -->
+<g id="node24" class="node">
+<title>ent_E_24</title>
+<g id="a_node24"><a xlink:href="./entity-E-24.html" xlink:title="E&#45;24\\nReconciliation Break">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M625.62,-1315C625.62,-1315 503.12,-1315 503.12,-1315 497.12,-1315 491.12,-1309 491.12,-1303 491.12,-1303 491.12,-1291 491.12,-1291 491.12,-1285 497.12,-1279 503.12,-1279 503.12,-1279 625.62,-1279 625.62,-1279 631.62,-1279 637.62,-1285 637.62,-1291 637.62,-1291 637.62,-1303 637.62,-1303 637.62,-1309 631.62,-1315 625.62,-1315"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1293.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;24\nReconciliation Break</text>
+</a>
+</g>
+</g>
+<!-- ent_E_25 -->
+<g id="node25" class="node">
+<title>ent_E_25</title>
+<g id="a_node25"><a xlink:href="./entity-E-25.html" xlink:title="E&#45;25\\nAccount">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1242.88,-1473C1242.88,-1473 1179.62,-1473 1179.62,-1473 1173.62,-1473 1167.62,-1467 1167.62,-1461 1167.62,-1461 1167.62,-1449 1167.62,-1449 1167.62,-1443 1173.62,-1437 1179.62,-1437 1179.62,-1437 1242.88,-1437 1242.88,-1437 1248.88,-1437 1254.88,-1443 1254.88,-1449 1254.88,-1449 1254.88,-1461 1254.88,-1461 1254.88,-1467 1248.88,-1473 1242.88,-1473"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1451.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;25\nAccount</text>
+</a>
+</g>
+</g>
+<!-- ent_E_25&#45;&gt;ent_E_01 -->
+<g id="edge32" class="edge">
+<title>ent_E_25&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1255.39,-1444.53C1289.62,-1436.22 1331.75,-1426 1331.75,-1426 1331.75,-1426 1396.75,-1360 1396.75,-1360 1396.75,-1360 1642,-1360 1642,-1360 1642,-1360 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_25&#45;&gt;ent_E_03 -->
+<g id="edge33" class="edge">
+<title>ent_E_25&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1255.39,-1444.53C1289.62,-1436.22 1331.75,-1426 1331.75,-1426 1331.75,-1426 1459.35,-1183.55 1501.23,-1103.97"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1502.92,-1105.28 1503.85,-1099 1499.2,-1103.33 1502.92,-1105.28"/>
+</g>
+<!-- ent_E_26 -->
+<g id="node26" class="node">
+<title>ent_E_26</title>
+<g id="a_node26"><a xlink:href="./entity-E-26.html" xlink:title="E&#45;26\\nCollateral Position">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1266.88,-981C1266.88,-981 1155.62,-981 1155.62,-981 1149.62,-981 1143.62,-975 1143.62,-969 1143.62,-969 1143.62,-957 1143.62,-957 1143.62,-951 1149.62,-945 1155.62,-945 1155.62,-945 1266.88,-945 1266.88,-945 1272.88,-945 1278.88,-951 1278.88,-957 1278.88,-957 1278.88,-969 1278.88,-969 1278.88,-975 1272.88,-981 1266.88,-981"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-959.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;26\nCollateral Position</text>
+</a>
+</g>
+</g>
+<!-- ent_E_26&#45;&gt;ent_E_01 -->
+<g id="edge35" class="edge">
+<title>ent_E_26&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1279.34,-979.28C1306.58,-985.89 1331.75,-992 1331.75,-992 1331.75,-992 1396.75,-1108 1396.75,-1108 1396.75,-1108 1642,-1138 1642,-1138 1642,-1138 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_26&#45;&gt;ent_E_02 -->
+<g id="edge34" class="edge">
+<title>ent_E_26&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1279.34,-946.72C1306.58,-940.11 1331.75,-934 1331.75,-934 1331.75,-934 1405.38,-905.78 1459.13,-885.17"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1459.65,-887.23 1464.5,-883.12 1458.15,-883.3 1459.65,-887.23"/>
+</g>
+<!-- ent_E_27 -->
+<g id="node27" class="node">
+<title>ent_E_27</title>
+<g id="a_node27"><a xlink:href="./entity-E-27.html" xlink:title="E&#45;27\\nLiability Profile">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M611,-1373C611,-1373 517.75,-1373 517.75,-1373 511.75,-1373 505.75,-1367 505.75,-1361 505.75,-1361 505.75,-1349 505.75,-1349 505.75,-1343 511.75,-1337 517.75,-1337 517.75,-1337 611,-1337 611,-1337 617,-1337 623,-1343 623,-1349 623,-1349 623,-1361 623,-1361 623,-1367 617,-1373 611,-1373"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1351.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;27\nLiability Profile</text>
+</a>
+</g>
+</g>
+<!-- ent_E_28 -->
+<g id="node28" class="node">
+<title>ent_E_28</title>
+<g id="a_node28"><a xlink:href="./entity-E-28.html" xlink:title="E&#45;28\\nRisk Budget">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M605.75,-1431C605.75,-1431 523,-1431 523,-1431 517,-1431 511,-1425 511,-1419 511,-1419 511,-1407 511,-1407 511,-1401 517,-1395 523,-1395 523,-1395 605.75,-1395 605.75,-1395 611.75,-1395 617.75,-1401 617.75,-1407 617.75,-1407 617.75,-1419 617.75,-1419 617.75,-1425 611.75,-1431 605.75,-1431"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1409.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;28\nRisk Budget</text>
+</a>
+</g>
+</g>
+<!-- ent_E_29&#45;&gt;ent_E_03 -->
+<g id="edge36" class="edge">
+<title>ent_E_29&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1707.95,-1101.41C1673.55,-1099.95 1629.84,-1096.65 1592.86,-1092.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1593.25,-1090.7 1587.06,-1092.14 1592.8,-1094.87 1593.25,-1090.7"/>
+</g>
+<!-- ent_E_30 -->
+<g id="node30" class="node">
+<title>ent_E_30</title>
+<g id="a_node30"><a xlink:href="./entity-E-30.html" xlink:title="E&#45;30\\nGoal">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1234.62,-1357C1234.62,-1357 1187.88,-1357 1187.88,-1357 1181.88,-1357 1175.88,-1351 1175.88,-1345 1175.88,-1345 1175.88,-1333 1175.88,-1333 1175.88,-1327 1181.88,-1321 1187.88,-1321 1187.88,-1321 1234.62,-1321 1234.62,-1321 1240.62,-1321 1246.62,-1327 1246.62,-1333 1246.62,-1333 1246.62,-1345 1246.62,-1345 1246.62,-1351 1240.62,-1357 1234.62,-1357"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1335.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;30\nGoal</text>
+</a>
+</g>
+</g>
+<!-- ent_E_30&#45;&gt;ent_E_01 -->
+<g id="edge37" class="edge">
+<title>ent_E_30&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1247.05,-1340.3C1349.36,-1344.1 1642,-1355 1642,-1355 1642,-1355 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_30&#45;&gt;ent_E_03 -->
+<g id="edge38" class="edge">
+<title>ent_E_30&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1239.07,-1320.37C1274.3,-1295.9 1331.75,-1256 1331.75,-1256 1331.75,-1256 1440.24,-1150.85 1489.98,-1102.64"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1491.24,-1104.34 1494.09,-1098.66 1488.32,-1101.33 1491.24,-1104.34"/>
+</g>
+<!-- ent_E_31 -->
+<g id="node31" class="node">
+<title>ent_E_31</title>
+<g id="a_node31"><a xlink:href="./entity-E-31.html" xlink:title="E&#45;31\\nGoal Progress Measurement">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M962,-1315C962,-1315 799.75,-1315 799.75,-1315 793.75,-1315 787.75,-1309 787.75,-1303 787.75,-1303 787.75,-1291 787.75,-1291 787.75,-1285 793.75,-1279 799.75,-1279 799.75,-1279 962,-1279 962,-1279 968,-1279 974,-1285 974,-1291 974,-1291 974,-1303 974,-1303 974,-1309 968,-1315 962,-1315"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1293.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;31\nGoal Progress Measurement</text>
+</a>
+</g>
+</g>
+<!-- ent_E_31&#45;&gt;ent_E_22 -->
+<g id="edge40" class="edge">
+<title>ent_E_31&#45;&gt;ent_E_22</title>
+<path fill="none" stroke="#5b7aa6" d="M974.62,-1315.69C1002.46,-1321.31 1025.75,-1326 1025.75,-1326 1025.75,-1326 1090.75,-1368 1090.75,-1368 1090.75,-1368 1114.57,-1373.78 1140.94,-1380.18"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1140.25,-1382.17 1146.58,-1381.55 1141.24,-1378.09 1140.25,-1382.17"/>
+</g>
+<!-- ent_E_31&#45;&gt;ent_E_30 -->
+<g id="edge39" class="edge">
+<title>ent_E_31&#45;&gt;ent_E_30</title>
+<path fill="none" stroke="#5b7aa6" d="M974.66,-1308.87C1038.16,-1316.99 1119.35,-1327.37 1167.95,-1333.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1167.45,-1335.64 1173.67,-1334.32 1167.98,-1331.48 1167.45,-1335.64"/>
+</g>
+<!-- ent_E_32 -->
+<g id="node32" class="node">
+<title>ent_E_32</title>
+<g id="a_node32"><a xlink:href="./entity-E-32.html" xlink:title="E&#45;32\\nTax Lot">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M910.25,-967C910.25,-967 851.5,-967 851.5,-967 845.5,-967 839.5,-961 839.5,-955 839.5,-955 839.5,-943 839.5,-943 839.5,-937 845.5,-931 851.5,-931 851.5,-931 910.25,-931 910.25,-931 916.25,-931 922.25,-937 922.25,-943 922.25,-943 922.25,-955 922.25,-955 922.25,-961 916.25,-967 910.25,-967"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-945.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;32\nTax Lot</text>
+</a>
+</g>
+</g>
+<!-- ent_E_32&#45;&gt;ent_E_01 -->
+<g id="edge41" class="edge">
+<title>ent_E_32&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M922.72,-957.23C965.25,-965.81 1025.75,-978 1025.75,-978 1025.75,-978 1090.75,-1132 1090.75,-1132 1090.75,-1132 1331.75,-1156 1331.75,-1156 1331.75,-1156 1642,-1273 1642,-1273 1642,-1273 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_32&#45;&gt;ent_E_02 -->
+<g id="edge42" class="edge">
+<title>ent_E_32&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M922.72,-940.77C965.25,-932.19 1025.75,-920 1025.75,-920 1025.75,-920 1090.75,-858 1090.75,-858 1090.75,-858 1331.75,-858 1331.75,-858 1331.75,-858 1389.47,-859.9 1440.01,-861.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1439.83,-863.65 1445.9,-861.75 1439.97,-859.45 1439.83,-863.65"/>
+</g>
+<!-- ent_E_32&#45;&gt;ent_E_05 -->
+<g id="edge43" class="edge">
+<title>ent_E_32&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#5b7aa6" d="M922.72,-957.23C965.25,-965.81 1025.75,-978 1025.75,-978 1025.75,-978 1097.66,-994.76 1151.69,-1007.35"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1151.06,-1009.36 1157.38,-1008.68 1152.02,-1005.27 1151.06,-1009.36"/>
+</g>
+<!-- ent_E_33 -->
+<g id="node33" class="node">
+<title>ent_E_33</title>
+<g id="a_node33"><a xlink:href="./entity-E-33.html" xlink:title="E&#45;33\\nFinancial Plan">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M926.75,-1257C926.75,-1257 835,-1257 835,-1257 829,-1257 823,-1251 823,-1245 823,-1245 823,-1233 823,-1233 823,-1227 829,-1221 835,-1221 835,-1221 926.75,-1221 926.75,-1221 932.75,-1221 938.75,-1227 938.75,-1233 938.75,-1233 938.75,-1245 938.75,-1245 938.75,-1251 932.75,-1257 926.75,-1257"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1235.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;33\nFinancial Plan</text>
+</a>
+</g>
+</g>
+<!-- ent_E_33&#45;&gt;ent_E_01 -->
+<g id="edge44" class="edge">
+<title>ent_E_33&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M939.23,-1250.26C1001.06,-1262.4 1090.75,-1280 1090.75,-1280 1090.75,-1280 1642,-1341 1642,-1341 1642,-1341 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_E_33&#45;&gt;ent_E_30 -->
+<g id="edge45" class="edge">
+<title>ent_E_33&#45;&gt;ent_E_30</title>
+<path fill="none" stroke="#5b7aa6" d="M939.15,-1250.54C979.27,-1258.63 1025.75,-1268 1025.75,-1268 1025.75,-1268 1090.75,-1304 1090.75,-1304 1090.75,-1304 1133.76,-1316.6 1168.17,-1326.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1167.56,-1328.69 1173.91,-1328.36 1168.74,-1324.66 1167.56,-1328.69"/>
+</g>
+<!-- ent_E_34 -->
+<g id="node34" class="node">
+<title>ent_E_34</title>
+<g id="a_node34"><a xlink:href="./entity-E-34.html" xlink:title="E&#45;34\\nInvestment Authorisation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M635.38,-1489C635.38,-1489 493.38,-1489 493.38,-1489 487.38,-1489 481.38,-1483 481.38,-1477 481.38,-1477 481.38,-1465 481.38,-1465 481.38,-1459 487.38,-1453 493.38,-1453 493.38,-1453 635.38,-1453 635.38,-1453 641.38,-1453 647.38,-1459 647.38,-1465 647.38,-1465 647.38,-1477 647.38,-1477 647.38,-1483 641.38,-1489 635.38,-1489"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-1467.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;34\nInvestment Authorisation</text>
+</a>
+</g>
+</g>
+<!-- ent_E_34&#45;&gt;ent_E_15 -->
+<g id="edge48" class="edge">
+<title>ent_E_34&#45;&gt;ent_E_15</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-1452.31C653.9,-1446.69 671,-1442 671,-1442 671,-1442 736,-1210 736,-1210 736,-1210 767.11,-1203.73 800.39,-1197.02"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="800.57,-1199.13 806.03,-1195.88 799.74,-1195.01 800.57,-1199.13"/>
+</g>
+<!-- ent_E_34&#45;&gt;ent_PM_01 -->
+<g id="edge46" class="edge">
+<title>ent_E_34&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M568.12,-1489.58C590.07,-1637.88 736,-2624 736,-2624 736,-2624 1025.75,-2702 1025.75,-2702 1025.75,-2702 1090.75,-2760 1090.75,-2760 1090.75,-2760 1113.06,-2765.41 1138.39,-2771.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1137.81,-2773.58 1144.13,-2772.95 1138.8,-2769.5 1137.81,-2773.58"/>
+</g>
+<!-- ent_PM_15 -->
+<g id="node70" class="node">
+<title>ent_PM_15</title>
+<g id="a_node70"><a xlink:href="./entity-PM-15.html" xlink:title="PM&#45;15\\nDeal / Investment Opportunity">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M652.25,-3023C652.25,-3023 476.5,-3023 476.5,-3023 470.5,-3023 464.5,-3017 464.5,-3011 464.5,-3011 464.5,-2999 464.5,-2999 464.5,-2993 470.5,-2987 476.5,-2987 476.5,-2987 652.25,-2987 652.25,-2987 658.25,-2987 664.25,-2993 664.25,-2999 664.25,-2999 664.25,-3011 664.25,-3011 664.25,-3017 658.25,-3023 652.25,-3023"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-3001.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;15\nDeal / Investment Opportunity</text>
+</a>
+</g>
+</g>
+<!-- ent_E_34&#45;&gt;ent_PM_15 -->
+<g id="edge47" class="edge">
+<title>ent_E_34&#45;&gt;ent_PM_15</title>
+<path fill="none" stroke="#5b7aa6" d="M560.94,-1489.59C539.51,-1605.39 425.25,-2223 425.25,-2223 425.25,-2223 425.25,-2953 425.25,-2953 425.25,-2953 449.75,-2964 449.75,-2964 449.75,-2964 477.27,-2973.84 505.35,-2983.89"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="504.31,-2985.75 510.67,-2985.79 505.73,-2981.79 504.31,-2985.75"/>
+</g>
+<!-- ent_E_35 -->
+<g id="node35" class="node">
+<title>ent_E_35</title>
+<g id="a_node35"><a xlink:href="./entity-E-35.html" xlink:title="E&#45;35\\nComplaint Record">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1571,-1407C1571,-1407 1459.75,-1407 1459.75,-1407 1453.75,-1407 1447.75,-1401 1447.75,-1395 1447.75,-1395 1447.75,-1383 1447.75,-1383 1447.75,-1377 1453.75,-1371 1459.75,-1371 1459.75,-1371 1571,-1371 1571,-1371 1577,-1371 1583,-1377 1583,-1383 1583,-1383 1583,-1395 1583,-1395 1583,-1401 1577,-1407 1571,-1407"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-1385.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;35\nComplaint Record</text>
+</a>
+</g>
+</g>
+<!-- ent_E_35&#45;&gt;ent_E_01 -->
+<g id="edge49" class="edge">
+<title>ent_E_35&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1583.6,-1404.52C1613.47,-1411.41 1642,-1418 1642,-1418 1642,-1418 1681.54,-1434.75 1716.16,-1449.41"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.27,-1451.32 1721.62,-1451.72 1716.91,-1447.45 1715.27,-1451.32"/>
+</g>
+<!-- ent_E_36 -->
+<g id="node36" class="node">
+<title>ent_E_36</title>
+<g id="a_node36"><a xlink:href="./entity-E-36.html" xlink:title="E&#45;36\\nOversight Exception">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M1575.5,-1465C1575.5,-1465 1455.25,-1465 1455.25,-1465 1449.25,-1465 1443.25,-1459 1443.25,-1453 1443.25,-1453 1443.25,-1441 1443.25,-1441 1443.25,-1435 1449.25,-1429 1455.25,-1429 1455.25,-1429 1575.5,-1429 1575.5,-1429 1581.5,-1429 1587.5,-1435 1587.5,-1441 1587.5,-1441 1587.5,-1453 1587.5,-1453 1587.5,-1459 1581.5,-1465 1575.5,-1465"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-1443.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;36\nOversight Exception</text>
+</a>
+</g>
+</g>
+<!-- ent_E_36&#45;&gt;ent_E_01 -->
+<g id="edge50" class="edge">
+<title>ent_E_36&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1588.23,-1453.88C1626.22,-1457.51 1672.28,-1461.92 1708.15,-1465.35"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1707.5,-1467.4 1713.67,-1465.88 1707.9,-1463.22 1707.5,-1467.4"/>
+</g>
+<!-- ent_E_37 -->
+<g id="node37" class="node">
+<title>ent_E_37</title>
+<g id="a_node37"><a xlink:href="./entity-E-37.html" xlink:title="E&#45;37\\nESG Compliance Result">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M951.5,-1431C951.5,-1431 810.25,-1431 810.25,-1431 804.25,-1431 798.25,-1425 798.25,-1419 798.25,-1419 798.25,-1407 798.25,-1407 798.25,-1401 804.25,-1395 810.25,-1395 810.25,-1395 951.5,-1395 951.5,-1395 957.5,-1395 963.5,-1401 963.5,-1407 963.5,-1407 963.5,-1419 963.5,-1419 963.5,-1425 957.5,-1431 951.5,-1431"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1409.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;37\nESG Compliance Result</text>
+</a>
+</g>
+</g>
+<!-- ent_E_37&#45;&gt;ent_E_22 -->
+<g id="edge51" class="edge">
+<title>ent_E_37&#45;&gt;ent_E_22</title>
+<path fill="none" stroke="#5b7aa6" d="M963.89,-1409C1018.21,-1406.36 1088.69,-1402.92 1140.35,-1400.41"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1140.42,-1402.5 1146.32,-1400.12 1140.22,-1398.31 1140.42,-1402.5"/>
+</g>
+<!-- ent_E_38 -->
+<g id="node38" class="node">
+<title>ent_E_38</title>
+<g id="a_node38"><a xlink:href="./entity-E-38.html" xlink:title="E&#45;38\\nInternal Credit Rating">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" d="M944.38,-1489C944.38,-1489 817.38,-1489 817.38,-1489 811.38,-1489 805.38,-1483 805.38,-1477 805.38,-1477 805.38,-1465 805.38,-1465 805.38,-1459 811.38,-1453 817.38,-1453 817.38,-1453 944.38,-1453 944.38,-1453 950.38,-1453 956.38,-1459 956.38,-1465 956.38,-1465 956.38,-1477 956.38,-1477 956.38,-1483 950.38,-1489 944.38,-1489"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-1467.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">E&#45;38\nInternal Credit Rating</text>
+</a>
+</g>
+</g>
+<!-- ent_E_38&#45;&gt;ent_E_22 -->
+<g id="edge52" class="edge">
+<title>ent_E_38&#45;&gt;ent_E_22</title>
+<path fill="none" stroke="#5b7aa6" d="M956.76,-1455.91C991.72,-1448.86 1025.75,-1442 1025.75,-1442 1025.75,-1442 1090.75,-1426 1090.75,-1426 1090.75,-1426 1114.57,-1420.22 1140.94,-1413.82"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1141.24,-1415.91 1146.58,-1412.45 1140.25,-1411.83 1141.24,-1415.91"/>
+</g>
+<!-- ent_DR_01 -->
+<g id="node39" class="node">
+<title>ent_DR_01</title>
+<g id="a_node39"><a xlink:href="./entity-DR-01.html" xlink:title="DR&#45;01\\nListed Derivative">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" d="M1267.62,-2013C1267.62,-2013 1154.88,-2013 1154.88,-2013 1148.88,-2013 1142.88,-2007 1142.88,-2001 1142.88,-2001 1142.88,-1989 1142.88,-1989 1142.88,-1983 1148.88,-1977 1154.88,-1977 1154.88,-1977 1267.62,-1977 1267.62,-1977 1273.62,-1977 1279.62,-1983 1279.62,-1989 1279.62,-1989 1279.62,-2001 1279.62,-2001 1279.62,-2007 1273.62,-2013 1267.62,-2013"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-1991.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">DR&#45;01\nListed Derivative</text>
+</a>
+</g>
+</g>
+<!-- ent_DR_01&#45;&gt;ent_E_01 -->
+<g id="edge55" class="edge">
+<title>ent_DR_01&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1280.35,-1982.17C1401.52,-1959.33 1642,-1914 1642,-1914 1642,-1914 1733.22,-1591.04 1759.89,-1496.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1761.89,-1497.27 1761.5,-1490.93 1757.84,-1496.13 1761.89,-1497.27"/>
+</g>
+<!-- ent_DR_01&#45;&gt;ent_E_02 -->
+<g id="edge53" class="edge">
+<title>ent_DR_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1224.81,-1976.26C1255.49,-1938.04 1331.75,-1857 1331.75,-1857 1331.75,-1857 1396.75,-1039 1396.75,-1039 1396.75,-1039 1461.46,-936.67 1494.89,-888.3"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.42,-889.77 1498.13,-883.65 1492.98,-887.37 1496.42,-889.77"/>
+</g>
+<!-- ent_DR_01&#45;&gt;ent_E_02 -->
+<g id="edge56" class="edge">
+<title>ent_DR_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1236.43,-1976.35C1271.35,-1943.19 1331.75,-1879 1331.75,-1879 1331.75,-1879 1396.75,-1061 1396.75,-1061 1396.75,-1061 1471.64,-942.58 1501.9,-889.13"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1503.7,-890.23 1504.8,-883.97 1500.03,-888.18 1503.7,-890.23"/>
+</g>
+<!-- ent_DR_01&#45;&gt;ent_E_10 -->
+<g id="edge54" class="edge">
+<title>ent_DR_01&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#5b7aa6" d="M1280.03,-2011.45C1307,-2017.99 1331.75,-2024 1331.75,-2024 1331.75,-2024 1396.75,-2082 1396.75,-2082 1396.75,-2082 1642,-2082 1642,-2082 1642,-2082 1699,-1442 1699,-1442 1699,-1442 1706.42,-1438.84 1716.36,-1434.61"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1717.12,-1436.57 1721.82,-1432.29 1715.47,-1432.7 1717.12,-1436.57"/>
+</g>
+<!-- ent_DR_02 -->
+<g id="node40" class="node">
+<title>ent_DR_02</title>
+<g id="a_node40"><a xlink:href="./entity-DR-02.html" xlink:title="DR&#45;02\\nOTC Derivative">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" d="M1265,-2071C1265,-2071 1157.5,-2071 1157.5,-2071 1151.5,-2071 1145.5,-2065 1145.5,-2059 1145.5,-2059 1145.5,-2047 1145.5,-2047 1145.5,-2041 1151.5,-2035 1157.5,-2035 1157.5,-2035 1265,-2035 1265,-2035 1271,-2035 1277,-2041 1277,-2047 1277,-2047 1277,-2059 1277,-2059 1277,-2065 1271,-2071 1265,-2071"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2049.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">DR&#45;02\nOTC Derivative</text>
+</a>
+</g>
+</g>
+<!-- ent_DR_02&#45;&gt;ent_E_01 -->
+<g id="edge59" class="edge">
+<title>ent_DR_02&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1277.59,-2068.86C1305.49,-2075.63 1331.75,-2082 1331.75,-2082 1331.75,-2082 1396.75,-2168 1396.75,-2168 1396.75,-2168 1642,-2168 1642,-2168 1642,-2168 1739.74,-1623.52 1762.45,-1497.03"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1764.52,-1497.41 1763.51,-1491.13 1760.38,-1496.67 1764.52,-1497.41"/>
+</g>
+<!-- ent_DR_02&#45;&gt;ent_E_02 -->
+<g id="edge57" class="edge">
+<title>ent_DR_02&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1254.05,-2034.25C1288.51,-2023.49 1331.75,-2013 1331.75,-2013 1331.75,-2013 1396.75,-1039 1396.75,-1039 1396.75,-1039 1461.46,-936.67 1494.89,-888.3"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.42,-889.77 1498.13,-883.65 1492.98,-887.37 1496.42,-889.77"/>
+</g>
+<!-- ent_DR_02&#45;&gt;ent_E_02 -->
+<g id="edge61" class="edge">
+<title>ent_DR_02&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1277.59,-2047.01C1305.49,-2041.37 1331.75,-2035 1331.75,-2035 1331.75,-2035 1396.75,-1061 1396.75,-1061 1396.75,-1061 1471.64,-942.58 1501.9,-889.13"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1503.7,-890.23 1504.8,-883.97 1500.03,-888.18 1503.7,-890.23"/>
+</g>
+<!-- ent_DR_02&#45;&gt;ent_E_10 -->
+<g id="edge58" class="edge">
+<title>ent_DR_02&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#5b7aa6" d="M1277.59,-2068.86C1305.49,-2075.63 1331.75,-2082 1331.75,-2082 1331.75,-2082 1396.75,-2099 1396.75,-2099 1396.75,-2099 1642,-2099 1642,-2099 1642,-2099 1699,-1442 1699,-1442 1699,-1442 1706.42,-1438.84 1716.36,-1434.61"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1717.12,-1436.57 1721.82,-1432.29 1715.47,-1432.7 1717.12,-1436.57"/>
+</g>
+<!-- ent_DR_03 -->
+<g id="node41" class="node">
+<title>ent_DR_03</title>
+<g id="a_node41"><a xlink:href="./entity-DR-03.html" xlink:title="DR&#45;03\\nMaster Agreement &amp; Collateral Terms">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" d="M1622,-2013C1622,-2013 1408.75,-2013 1408.75,-2013 1402.75,-2013 1396.75,-2007 1396.75,-2001 1396.75,-2001 1396.75,-1989 1396.75,-1989 1396.75,-1983 1402.75,-1977 1408.75,-1977 1408.75,-1977 1622,-1977 1622,-1977 1628,-1977 1634,-1983 1634,-1989 1634,-1989 1634,-2001 1634,-2001 1634,-2007 1628,-2013 1622,-2013"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-1991.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">DR&#45;03\nMaster Agreement &amp; Collateral Terms</text>
+</a>
+</g>
+</g>
+<!-- ent_DR_02&#45;&gt;ent_DR_03 -->
+<g id="edge60" class="edge">
+<title>ent_DR_02&#45;&gt;ent_DR_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1277.43,-2040.49C1315.97,-2033.09 1365.67,-2023.55 1409.59,-2015.12"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1409.88,-2017.2 1415.38,-2014 1409.09,-2013.07 1409.88,-2017.2"/>
+</g>
+<!-- ent_DR_03&#45;&gt;ent_E_01 -->
+<g id="edge62" class="edge">
+<title>ent_DR_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1583.6,-1976.27C1613.47,-1967.95 1642,-1960 1642,-1960 1642,-1960 1734.81,-1597.28 1760.57,-1496.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1762.54,-1497.37 1762,-1491.04 1758.48,-1496.33 1762.54,-1497.37"/>
+</g>
+<!-- ent_DR_04 -->
+<g id="node42" class="node">
+<title>ent_DR_04</title>
+<g id="a_node42"><a xlink:href="./entity-DR-04.html" xlink:title="DR&#45;04\\nMargin &amp; Collateral Balance">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" d="M1295,-2129C1295,-2129 1127.5,-2129 1127.5,-2129 1121.5,-2129 1115.5,-2123 1115.5,-2117 1115.5,-2117 1115.5,-2105 1115.5,-2105 1115.5,-2099 1121.5,-2093 1127.5,-2093 1127.5,-2093 1295,-2093 1295,-2093 1301,-2093 1307,-2099 1307,-2105 1307,-2105 1307,-2117 1307,-2117 1307,-2123 1301,-2129 1295,-2129"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2107.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">DR&#45;04\nMargin &amp; Collateral Balance</text>
+</a>
+</g>
+</g>
+<!-- ent_DR_04&#45;&gt;ent_DR_03 -->
+<g id="edge63" class="edge">
+<title>ent_DR_04&#45;&gt;ent_DR_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1289.28,-2092.31C1312.41,-2086.69 1331.75,-2082 1331.75,-2082 1331.75,-2082 1396.75,-2024 1396.75,-2024 1396.75,-2024 1411.99,-2020.24 1431.49,-2015.43"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1431.76,-2017.53 1437.08,-2014.06 1430.75,-2013.45 1431.76,-2017.53"/>
+</g>
+<!-- ent_DR_05 -->
+<g id="node43" class="node">
+<title>ent_DR_05</title>
+<g id="a_node43"><a xlink:href="./entity-DR-05.html" xlink:title="DR&#45;05\\nClearing Relationship">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" d="M1583.38,-2071C1583.38,-2071 1447.38,-2071 1447.38,-2071 1441.38,-2071 1435.38,-2065 1435.38,-2059 1435.38,-2059 1435.38,-2047 1435.38,-2047 1435.38,-2041 1441.38,-2035 1447.38,-2035 1447.38,-2035 1583.38,-2035 1583.38,-2035 1589.38,-2035 1595.38,-2041 1595.38,-2047 1595.38,-2047 1595.38,-2059 1595.38,-2059 1595.38,-2065 1589.38,-2071 1583.38,-2071"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-2049.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">DR&#45;05\nClearing Relationship</text>
+</a>
+</g>
+</g>
+<!-- ent_DR_04&#45;&gt;ent_DR_05 -->
+<g id="edge64" class="edge">
+<title>ent_DR_04&#45;&gt;ent_DR_05</title>
+<path fill="none" stroke="#5b7aa6" d="M1307.43,-2092.73C1346.02,-2085.32 1390.28,-2076.82 1427.93,-2069.6"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1427.9,-2071.74 1433.4,-2068.55 1427.11,-2067.61 1427.9,-2071.74"/>
+</g>
+<!-- ent_DR_05&#45;&gt;ent_E_01 -->
+<g id="edge65" class="edge">
+<title>ent_DR_05&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1595.94,-2034.63C1620.87,-2028.88 1642,-2024 1642,-2024 1642,-2024 1736.63,-1605.76 1761.3,-1496.73"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1763.28,-1497.51 1762.56,-1491.19 1759.18,-1496.58 1763.28,-1497.51"/>
+</g>
+<!-- ent_FO_01 -->
+<g id="node44" class="node">
+<title>ent_FO_01</title>
+<g id="a_node44"><a xlink:href="./entity-FO-01.html" xlink:title="FO&#45;01\\nFund Product">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M1563.88,-2367C1563.88,-2367 1466.88,-2367 1466.88,-2367 1460.88,-2367 1454.88,-2361 1454.88,-2355 1454.88,-2355 1454.88,-2343 1454.88,-2343 1454.88,-2337 1460.88,-2331 1466.88,-2331 1466.88,-2331 1563.88,-2331 1563.88,-2331 1569.88,-2331 1575.88,-2337 1575.88,-2343 1575.88,-2343 1575.88,-2355 1575.88,-2355 1575.88,-2361 1569.88,-2367 1563.88,-2367"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-2345.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;01\nFund Product</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_01&#45;&gt;ent_E_01 -->
+<g id="edge66" class="edge">
+<title>ent_FO_01&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1576.61,-2331.26C1608.85,-2321.76 1642,-2312 1642,-2312 1642,-2312 1699,-1914 1699,-1914 1699,-1914 1748.66,-1591.04 1763.18,-1496.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1765.22,-1497.22 1764.05,-1490.97 1761.07,-1496.58 1765.22,-1497.22"/>
+</g>
+<!-- ent_FO_01&#45;&gt;ent_E_02 -->
+<g id="edge68" class="edge">
+<title>ent_FO_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1455.37,-2330.28C1425.94,-2321.11 1396.75,-2312 1396.75,-2312 1396.75,-2312 1364.25,-2301 1364.25,-2301 1364.25,-2301 1364.25,-1061 1364.25,-1061 1364.25,-1061 1456.3,-941 1496.72,-888.31"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1498.25,-889.77 1500.24,-883.73 1494.92,-887.22 1498.25,-889.77"/>
+</g>
+<!-- ent_FO_01&#45;&gt;ent_E_09 -->
+<g id="edge67" class="edge">
+<title>ent_FO_01&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1576.61,-2331.26C1608.85,-2321.76 1642,-2312 1642,-2312 1642,-2312 1892.38,-1636.82 1944.46,-1496.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1946.28,-1497.52 1946.4,-1491.16 1942.34,-1496.06 1946.28,-1497.52"/>
+</g>
+<!-- ent_FO_02&#45;&gt;ent_E_02 -->
+<g id="edge71" class="edge">
+<title>ent_FO_02&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1246.49,-2331.37C1281.81,-2312.17 1331.75,-2285 1331.75,-2285 1331.75,-2285 1396.75,-1050 1396.75,-1050 1396.75,-1050 1466.8,-939.24 1498.78,-888.66"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1500.43,-889.99 1501.86,-883.79 1496.88,-887.74 1500.43,-889.99"/>
+</g>
+<!-- ent_FO_02&#45;&gt;ent_E_09 -->
+<g id="edge70" class="edge">
+<title>ent_FO_02&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1283.58,-2360.83C1335.5,-2368.7 1396.75,-2378 1396.75,-2378 1396.75,-2378 1642,-2378 1642,-2378 1642,-2378 1837.25,-1988 1837.25,-1988 1837.25,-1988 1924.51,-1601.18 1948.07,-1496.73"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1950.05,-1497.5 1949.32,-1491.18 1945.95,-1496.57 1950.05,-1497.5"/>
+</g>
+<!-- ent_FO_02&#45;&gt;ent_FO_01 -->
+<g id="edge69" class="edge">
+<title>ent_FO_02&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1283.47,-2349.76C1332.92,-2349.6 1398.38,-2349.38 1446.98,-2349.22"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1446.82,-2351.32 1452.81,-2349.2 1446.8,-2347.12 1446.82,-2351.32"/>
+</g>
+<!-- ent_FO_03 -->
+<g id="node46" class="node">
+<title>ent_FO_03</title>
+<g id="a_node46"><a xlink:href="./entity-FO-03.html" xlink:title="FO&#45;03\\nInvestor Unitholding">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M944.38,-2319C944.38,-2319 817.38,-2319 817.38,-2319 811.38,-2319 805.38,-2313 805.38,-2307 805.38,-2307 805.38,-2295 805.38,-2295 805.38,-2289 811.38,-2283 817.38,-2283 817.38,-2283 944.38,-2283 944.38,-2283 950.38,-2283 956.38,-2289 956.38,-2295 956.38,-2295 956.38,-2307 956.38,-2307 956.38,-2313 950.38,-2319 944.38,-2319"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2297.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;03\nInvestor Unitholding</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_03&#45;&gt;ent_E_01 -->
+<g id="edge73" class="edge">
+<title>ent_FO_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M956.76,-2285.91C991.72,-2278.86 1025.75,-2272 1025.75,-2272 1025.75,-2272 1090.75,-1788 1090.75,-1788 1090.75,-1788 1642,-1730 1642,-1730 1642,-1730 1723.4,-1561.51 1754.89,-1496.33"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1756.75,-1497.31 1757.47,-1490.99 1752.97,-1495.48 1756.75,-1497.31"/>
+</g>
+<!-- ent_FO_03&#45;&gt;ent_E_04 -->
+<g id="edge74" class="edge">
+<title>ent_FO_03&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M956.76,-2285.91C991.72,-2278.86 1025.75,-2272 1025.75,-2272 1025.75,-2272 1090.75,-1156 1090.75,-1156 1090.75,-1156 1128.51,-1139.25 1161.58,-1124.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1126.65 1166.74,-1122.3 1160.4,-1122.81 1162.1,-1126.65"/>
+</g>
+<!-- ent_FO_03&#45;&gt;ent_FO_02 -->
+<g id="edge72" class="edge">
+<title>ent_FO_03&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M956.8,-2312.18C1009.05,-2319.98 1078.62,-2330.36 1131.66,-2338.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1131.28,-2340.34 1137.53,-2339.15 1131.9,-2336.19 1131.28,-2340.34"/>
+</g>
+<!-- ent_FO_04 -->
+<g id="node47" class="node">
+<title>ent_FO_04</title>
+<g id="a_node47"><a xlink:href="./entity-FO-04.html" xlink:title="FO&#45;04\\nDealing Order">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M614,-2377C614,-2377 514.75,-2377 514.75,-2377 508.75,-2377 502.75,-2371 502.75,-2365 502.75,-2365 502.75,-2353 502.75,-2353 502.75,-2347 508.75,-2341 514.75,-2341 514.75,-2341 614,-2341 614,-2341 620,-2341 626,-2347 626,-2353 626,-2353 626,-2365 626,-2365 626,-2371 620,-2377 614,-2377"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2355.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;04\nDealing Order</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_04&#45;&gt;ent_E_01 -->
+<g id="edge76" class="edge">
+<title>ent_FO_04&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M626.51,-2342.21C649.87,-2335.8 671,-2330 671,-2330 671,-2330 736,-2214 736,-2214 736,-2214 1090.75,-1758 1090.75,-1758 1090.75,-1758 1642,-1581 1642,-1581 1642,-1581 1703.96,-1526.53 1740.68,-1494.25"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1741.64,-1496.2 1744.76,-1490.66 1738.87,-1493.04 1741.64,-1496.2"/>
+</g>
+<!-- ent_FO_04&#45;&gt;ent_E_05 -->
+<g id="edge79" class="edge">
+<title>ent_FO_04&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M626.51,-2342.21C649.87,-2335.8 671,-2330 671,-2330 671,-2330 736,-1690 736,-1690 736,-1690 1025.75,-1566 1025.75,-1566 1025.75,-1566 1090.75,-1074 1090.75,-1074 1090.75,-1074 1128.51,-1057.25 1161.58,-1042.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1044.65 1166.74,-1040.3 1160.4,-1040.81 1162.1,-1044.65"/>
+</g>
+<!-- ent_FO_04&#45;&gt;ent_E_09 -->
+<g id="edge78" class="edge">
+<title>ent_FO_04&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M571.05,-2377.33C592.99,-2448.16 671,-2700 671,-2700 671,-2700 736,-3064 736,-3064 736,-3064 1090.75,-3097 1090.75,-3097 1090.75,-3097 1642,-3097 1642,-3097 1642,-3097 1837.25,-2811 1837.25,-2811 1837.25,-2811 1935.32,-1684.2 1951.6,-1497.16"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1953.69,-1497.35 1952.12,-1491.19 1949.5,-1496.99 1953.69,-1497.35"/>
+</g>
+<!-- ent_FO_04&#45;&gt;ent_FO_02 -->
+<g id="edge75" class="edge">
+<title>ent_FO_04&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M595.49,-2377.53C644.47,-2407.67 736,-2464 736,-2464 736,-2464 1025.75,-2464 1025.75,-2464 1025.75,-2464 1090.75,-2379 1090.75,-2379 1090.75,-2379 1109.37,-2374.48 1131.91,-2369.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1132.2,-2371.1 1137.54,-2367.65 1131.21,-2367.02 1132.2,-2371.1"/>
+</g>
+<!-- ent_FO_04&#45;&gt;ent_FO_03 -->
+<g id="edge77" class="edge">
+<title>ent_FO_04&#45;&gt;ent_FO_03</title>
+<path fill="none" stroke="#5b7aa6" d="M626.39,-2347.75C675.19,-2338.75 744.1,-2326.04 797.75,-2316.15"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="797.88,-2318.26 803.4,-2315.1 797.11,-2314.13 797.88,-2318.26"/>
+</g>
+<!-- ent_FO_05 -->
+<g id="node48" class="node">
+<title>ent_FO_05</title>
+<g id="a_node48"><a xlink:href="./entity-FO-05.html" xlink:title="FO&#45;05\\nFund Distribution Event">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M953,-2261C953,-2261 808.75,-2261 808.75,-2261 802.75,-2261 796.75,-2255 796.75,-2249 796.75,-2249 796.75,-2237 796.75,-2237 796.75,-2231 802.75,-2225 808.75,-2225 808.75,-2225 953,-2225 953,-2225 959,-2225 965,-2231 965,-2237 965,-2237 965,-2249 965,-2249 965,-2255 959,-2261 953,-2261"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2239.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;05\nFund Distribution Event</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_05&#45;&gt;ent_E_05 -->
+<g id="edge81" class="edge">
+<title>ent_FO_05&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M888.15,-2224.38C915.84,-2142.19 1025.75,-1816 1025.75,-1816 1025.75,-1816 1090.75,-1074 1090.75,-1074 1090.75,-1074 1128.51,-1057.25 1161.58,-1042.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1044.65 1166.74,-1040.3 1160.4,-1040.81 1162.1,-1044.65"/>
+</g>
+<!-- ent_FO_05&#45;&gt;ent_FO_02 -->
+<g id="edge80" class="edge">
+<title>ent_FO_05&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M965.57,-2259.87C997.22,-2266.25 1025.75,-2272 1025.75,-2272 1025.75,-2272 1104.59,-2305.33 1159.19,-2328.41"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1158.32,-2330.33 1164.66,-2330.73 1159.95,-2326.46 1158.32,-2330.33"/>
+</g>
+<!-- ent_FO_06 -->
+<g id="node49" class="node">
+<title>ent_FO_06</title>
+<g id="a_node49"><a xlink:href="./entity-FO-06.html" xlink:title="FO&#45;06\\nFee Accrual">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M925.25,-2589C925.25,-2589 836.5,-2589 836.5,-2589 830.5,-2589 824.5,-2583 824.5,-2577 824.5,-2577 824.5,-2565 824.5,-2565 824.5,-2559 830.5,-2553 836.5,-2553 836.5,-2553 925.25,-2553 925.25,-2553 931.25,-2553 937.25,-2559 937.25,-2565 937.25,-2565 937.25,-2577 937.25,-2577 937.25,-2583 931.25,-2589 925.25,-2589"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2567.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;06\nFee Accrual</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_06&#45;&gt;ent_E_07 -->
+<g id="edge85" class="edge">
+<title>ent_FO_06&#45;&gt;ent_E_07</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M856.58,-2552.37C808.01,-2515.13 703.5,-2435 703.5,-2435 703.5,-2435 703.5,-1047 703.5,-1047 703.5,-1047 736,-1036 736,-1036 736,-1036 785.73,-1026.04 826.92,-1017.8"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="827.28,-1019.87 832.75,-1016.63 826.46,-1015.75 827.28,-1019.87"/>
+</g>
+<!-- ent_FO_06&#45;&gt;ent_E_09 -->
+<g id="edge84" class="edge">
+<title>ent_FO_06&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M902.49,-2589.48C942.27,-2625.15 1025.75,-2700 1025.75,-2700 1025.75,-2700 1090.75,-3063 1090.75,-3063 1090.75,-3063 1642,-3063 1642,-3063 1642,-3063 1837.25,-2392 1837.25,-2392 1837.25,-2392 1931.7,-1646.13 1950.6,-1496.83"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1952.68,-1497.12 1951.36,-1490.9 1948.52,-1496.59 1952.68,-1497.12"/>
+</g>
+<!-- ent_FO_06&#45;&gt;ent_FO_01 -->
+<g id="edge82" class="edge">
+<title>ent_FO_06&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M937.94,-2560.66C1058.54,-2538.41 1331.75,-2488 1331.75,-2488 1331.75,-2488 1432.02,-2411.68 1483.96,-2372.15"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1485.04,-2373.97 1488.54,-2368.66 1482.49,-2370.63 1485.04,-2373.97"/>
+</g>
+<!-- ent_FO_06&#45;&gt;ent_FO_02 -->
+<g id="edge83" class="edge">
+<title>ent_FO_06&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M927.4,-2552.33C969.55,-2535.05 1025.75,-2512 1025.75,-2512 1025.75,-2512 1090.75,-2379 1090.75,-2379 1090.75,-2379 1109.37,-2374.48 1131.91,-2369.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1132.2,-2371.1 1137.54,-2367.65 1131.21,-2367.02 1132.2,-2371.1"/>
+</g>
+<!-- ent_FO_07 -->
+<g id="node50" class="node">
+<title>ent_FO_07</title>
+<g id="a_node50"><a xlink:href="./entity-FO-07.html" xlink:title="FO&#45;07\\nInvestor Tax Statement">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M635.38,-2261C635.38,-2261 493.38,-2261 493.38,-2261 487.38,-2261 481.38,-2255 481.38,-2249 481.38,-2249 481.38,-2237 481.38,-2237 481.38,-2231 487.38,-2225 493.38,-2225 493.38,-2225 635.38,-2225 635.38,-2225 641.38,-2225 647.38,-2231 647.38,-2237 647.38,-2237 647.38,-2249 647.38,-2249 647.38,-2255 641.38,-2261 635.38,-2261"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2239.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;07\nInvestor Tax Statement</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_07&#45;&gt;ent_E_01 -->
+<g id="edge86" class="edge">
+<title>ent_FO_07&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M571.65,-2224.35C602.43,-2132.88 736,-1736 736,-1736 736,-1736 1090.75,-1582 1090.75,-1582 1090.75,-1582 1543.24,-1507.74 1708.02,-1480.7"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1708.1,-1482.81 1713.68,-1479.77 1707.42,-1478.67 1708.1,-1482.81"/>
+</g>
+<!-- ent_FO_07&#45;&gt;ent_E_15 -->
+<g id="edge89" class="edge">
+<title>ent_FO_07&#45;&gt;ent_E_15</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M568.41,-2224.63C591.3,-2086.04 736,-1210 736,-1210 736,-1210 767.11,-1203.73 800.39,-1197.02"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="800.57,-1199.13 806.03,-1195.88 799.74,-1195.01 800.57,-1199.13"/>
+</g>
+<!-- ent_FO_07&#45;&gt;ent_FO_01 -->
+<g id="edge87" class="edge">
+<title>ent_FO_07&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2261.69C653.9,-2267.31 671,-2272 671,-2272 671,-2272 736,-2446 736,-2446 736,-2446 1025.75,-2446 1025.75,-2446 1025.75,-2446 1331.75,-2443 1331.75,-2443 1331.75,-2443 1417.92,-2398.65 1471.88,-2370.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1472.57,-2372.88 1476.95,-2368.26 1470.65,-2369.14 1472.57,-2372.88"/>
+</g>
+<!-- ent_FO_07&#45;&gt;ent_FO_03 -->
+<g id="edge88" class="edge">
+<title>ent_FO_07&#45;&gt;ent_FO_03</title>
+<path fill="none" stroke="#5b7aa6" d="M648.01,-2258.24C694.13,-2266.75 751.41,-2277.31 797.49,-2285.81"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="797.02,-2287.85 803.3,-2286.88 797.78,-2283.72 797.02,-2287.85"/>
+</g>
+<!-- ent_FO_08 -->
+<g id="node51" class="node">
+<title>ent_FO_08</title>
+<g id="a_node51"><a xlink:href="./entity-FO-08.html" xlink:title="FO&#45;08\\nService&#45;Provider Appointment">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M1298.75,-2274C1298.75,-2274 1123.75,-2274 1123.75,-2274 1117.75,-2274 1111.75,-2268 1111.75,-2262 1111.75,-2262 1111.75,-2250 1111.75,-2250 1111.75,-2244 1117.75,-2238 1123.75,-2238 1123.75,-2238 1298.75,-2238 1298.75,-2238 1304.75,-2238 1310.75,-2244 1310.75,-2250 1310.75,-2250 1310.75,-2262 1310.75,-2262 1310.75,-2268 1304.75,-2274 1298.75,-2274"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2252.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;08\nService&#45;Provider Appointment</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_08&#45;&gt;ent_E_01 -->
+<g id="edge91" class="edge">
+<title>ent_FO_08&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1311.38,-2239.62C1438.3,-2218.65 1642,-2185 1642,-2185 1642,-2185 1740.15,-1624.92 1762.59,-1496.86"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1764.61,-1497.49 1763.58,-1491.22 1760.48,-1496.77 1764.61,-1497.49"/>
+</g>
+<!-- ent_FO_08&#45;&gt;ent_FO_01 -->
+<g id="edge90" class="edge">
+<title>ent_FO_08&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1273.03,-2274.71C1323.49,-2290.24 1395.18,-2312.31 1447.31,-2328.36"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1446.41,-2330.28 1452.77,-2330.04 1447.65,-2326.26 1446.41,-2330.28"/>
+</g>
+<!-- ent_FO_09 -->
+<g id="node52" class="node">
+<title>ent_FO_09</title>
+<g id="a_node52"><a xlink:href="./entity-FO-09.html" xlink:title="FO&#45;09\\nOmnibus Account">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M938.75,-2377C938.75,-2377 823,-2377 823,-2377 817,-2377 811,-2371 811,-2365 811,-2365 811,-2353 811,-2353 811,-2347 817,-2341 823,-2341 823,-2341 938.75,-2341 938.75,-2341 944.75,-2341 950.75,-2347 950.75,-2353 950.75,-2353 950.75,-2365 950.75,-2365 950.75,-2371 944.75,-2377 938.75,-2377"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2355.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;09\nOmnibus Account</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_09&#45;&gt;ent_E_01 -->
+<g id="edge94" class="edge">
+<title>ent_FO_09&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M951.28,-2345.01C988.08,-2337.59 1025.75,-2330 1025.75,-2330 1025.75,-2330 1090.75,-1926 1090.75,-1926 1090.75,-1926 1642,-1760 1642,-1760 1642,-1760 1725.65,-1566.8 1756.16,-1496.33"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1758.05,-1497.25 1758.51,-1490.91 1754.2,-1495.58 1758.05,-1497.25"/>
+</g>
+<!-- ent_FO_09&#45;&gt;ent_E_25 -->
+<g id="edge95" class="edge">
+<title>ent_FO_09&#45;&gt;ent_E_25</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M951.28,-2345.01C988.08,-2337.59 1025.75,-2330 1025.75,-2330 1025.75,-2330 1090.75,-1788 1090.75,-1788 1090.75,-1788 1173.2,-1558.25 1201.13,-1480.42"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1203.09,-1481.16 1203.14,-1474.8 1199.14,-1479.74 1203.09,-1481.16"/>
+</g>
+<!-- ent_FO_09&#45;&gt;ent_FO_01 -->
+<g id="edge92" class="edge">
+<title>ent_FO_09&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M951.43,-2346.35C1012.19,-2335.29 1090.75,-2321 1090.75,-2321 1090.75,-2321 1331.75,-2321 1331.75,-2321 1331.75,-2321 1395.01,-2330.7 1447.06,-2338.68"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1446.58,-2340.73 1452.83,-2339.56 1447.22,-2336.58 1446.58,-2340.73"/>
+</g>
+<!-- ent_FO_09&#45;&gt;ent_FO_02 -->
+<g id="edge93" class="edge">
+<title>ent_FO_09&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M951.11,-2357.1C1003.88,-2355.66 1076.57,-2353.66 1131.54,-2352.16"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1131.38,-2354.26 1137.32,-2352 1131.27,-2350.06 1131.38,-2354.26"/>
+</g>
+<!-- ent_FO_10 -->
+<g id="node53" class="node">
+<title>ent_FO_10</title>
+<g id="a_node53"><a xlink:href="./entity-FO-10.html" xlink:title="FO&#45;10\\nETF Creation/Redemption Order">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M659,-2319C659,-2319 469.75,-2319 469.75,-2319 463.75,-2319 457.75,-2313 457.75,-2307 457.75,-2307 457.75,-2295 457.75,-2295 457.75,-2289 463.75,-2283 469.75,-2283 469.75,-2283 659,-2283 659,-2283 665,-2283 671,-2289 671,-2295 671,-2295 671,-2307 671,-2307 671,-2313 665,-2319 659,-2319"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2297.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;10\nETF Creation/Redemption Order</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_E_01 -->
+<g id="edge97" class="edge">
+<title>ent_FO_10&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2282.31C653.9,-2276.69 671,-2272 671,-2272 671,-2272 736,-1896 736,-1896 736,-1896 1090.75,-1696 1090.75,-1696 1090.75,-1696 1642,-1528 1642,-1528 1642,-1528 1684.24,-1508.76 1719.64,-1492.63"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1720.19,-1494.69 1724.78,-1490.29 1718.45,-1490.87 1720.19,-1494.69"/>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_E_02 -->
+<g id="edge100" class="edge">
+<title>ent_FO_10&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2282.31C653.9,-2276.69 671,-2272 671,-2272 671,-2272 736,-1736 736,-1736 736,-1736 1090.75,-1582 1090.75,-1582 1090.75,-1582 1331.75,-1484 1331.75,-1484 1331.75,-1484 1396.75,-1050 1396.75,-1050 1396.75,-1050 1466.8,-939.24 1498.78,-888.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1500.43,-889.99 1501.86,-883.79 1496.88,-887.74 1500.43,-889.99"/>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_E_05 -->
+<g id="edge101" class="edge">
+<title>ent_FO_10&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M633.46,-2282.31C653.9,-2276.69 671,-2272 671,-2272 671,-2272 736,-1598 736,-1598 736,-1598 1025.75,-1500 1025.75,-1500 1025.75,-1500 1090.75,-1074 1090.75,-1074 1090.75,-1074 1128.51,-1057.25 1161.58,-1042.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1044.65 1166.74,-1040.3 1160.4,-1040.81 1162.1,-1044.65"/>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_FO_02 -->
+<g id="edge96" class="edge">
+<title>ent_FO_10&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2319.69C653.9,-2325.31 671,-2330 671,-2330 671,-2330 736,-2446 736,-2446 736,-2446 1025.75,-2446 1025.75,-2446 1025.75,-2446 1090.75,-2379 1090.75,-2379 1090.75,-2379 1109.37,-2374.48 1131.91,-2369.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1132.2,-2371.1 1137.54,-2367.65 1131.21,-2367.02 1132.2,-2371.1"/>
+</g>
+<!-- ent_FO_11 -->
+<g id="node54" class="node">
+<title>ent_FO_11</title>
+<g id="a_node54"><a xlink:href="./entity-FO-11.html" xlink:title="FO&#45;11\\nETF Creation Basket (Portfolio Composition File)">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M1013.75,-2435C1013.75,-2435 748,-2435 748,-2435 742,-2435 736,-2429 736,-2423 736,-2423 736,-2411 736,-2411 736,-2405 742,-2399 748,-2399 748,-2399 1013.75,-2399 1013.75,-2399 1019.75,-2399 1025.75,-2405 1025.75,-2411 1025.75,-2411 1025.75,-2423 1025.75,-2423 1025.75,-2429 1019.75,-2435 1013.75,-2435"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2413.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;11\nETF Creation Basket (Portfolio Composition File)</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_FO_11 -->
+<g id="edge99" class="edge">
+<title>ent_FO_10&#45;&gt;ent_FO_11</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2319.69C653.9,-2325.31 671,-2330 671,-2330 671,-2330 736,-2388 736,-2388 736,-2388 755.46,-2391.92 780.07,-2396.88"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="779.35,-2398.88 785.65,-2398.01 780.18,-2394.76 779.35,-2398.88"/>
+</g>
+<!-- ent_FO_12 -->
+<g id="node55" class="node">
+<title>ent_FO_12</title>
+<g id="a_node55"><a xlink:href="./entity-FO-12.html" xlink:title="FO&#45;12\\nETF Authorised&#45;Participant Agreement">
+<path fill="#fef3e2" stroke="#b07d2a" stroke-width="1.5" d="M1319.75,-2426C1319.75,-2426 1102.75,-2426 1102.75,-2426 1096.75,-2426 1090.75,-2420 1090.75,-2414 1090.75,-2414 1090.75,-2402 1090.75,-2402 1090.75,-2396 1096.75,-2390 1102.75,-2390 1102.75,-2390 1319.75,-2390 1319.75,-2390 1325.75,-2390 1331.75,-2396 1331.75,-2402 1331.75,-2402 1331.75,-2414 1331.75,-2414 1331.75,-2420 1325.75,-2426 1319.75,-2426"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2404.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">FO&#45;12\nETF Authorised&#45;Participant Agreement</text>
+</a>
+</g>
+</g>
+<!-- ent_FO_10&#45;&gt;ent_FO_12 -->
+<g id="edge98" class="edge">
+<title>ent_FO_10&#45;&gt;ent_FO_12</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-2319.69C653.9,-2325.31 671,-2330 671,-2330 671,-2330 736,-2452 736,-2452 736,-2452 1025.75,-2452 1025.75,-2452 1025.75,-2452 1076.42,-2439.92 1124.65,-2428.42"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1124.92,-2430.51 1130.27,-2427.07 1123.94,-2426.42 1124.92,-2430.51"/>
+</g>
+<!-- ent_FO_11&#45;&gt;ent_E_01 -->
+<g id="edge105" class="edge">
+<title>ent_FO_11&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M974.62,-2398.31C1002.46,-2392.69 1025.75,-2388 1025.75,-2388 1025.75,-2388 1090.75,-1964 1090.75,-1964 1090.75,-1964 1642,-1813 1642,-1813 1642,-1813 1729.07,-1575.01 1757.95,-1496.09"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1759.79,-1497.17 1759.88,-1490.81 1755.84,-1495.72 1759.79,-1497.17"/>
+</g>
+<!-- ent_FO_11&#45;&gt;ent_E_02 -->
+<g id="edge102" class="edge">
+<title>ent_FO_11&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M974.62,-2398.31C1002.46,-2392.69 1025.75,-2388 1025.75,-2388 1025.75,-2388 1090.75,-1880 1090.75,-1880 1090.75,-1880 1331.75,-1684 1331.75,-1684 1331.75,-1684 1396.75,-1050 1396.75,-1050 1396.75,-1050 1466.8,-939.24 1498.78,-888.66"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1500.43,-889.99 1501.86,-883.79 1496.88,-887.74 1500.43,-889.99"/>
+</g>
+<!-- ent_FO_11&#45;&gt;ent_FO_01 -->
+<g id="edge103" class="edge">
+<title>ent_FO_11&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1026.38,-2430.84C1062.29,-2434.27 1090.75,-2437 1090.75,-2437 1090.75,-2437 1331.75,-2437 1331.75,-2437 1331.75,-2437 1415.12,-2396.83 1469.2,-2370.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1469.79,-2372.82 1474.28,-2368.32 1467.96,-2369.03 1469.79,-2372.82"/>
+</g>
+<!-- ent_FO_11&#45;&gt;ent_FO_02 -->
+<g id="edge104" class="edge">
+<title>ent_FO_11&#45;&gt;ent_FO_02</title>
+<path fill="none" stroke="#5b7aa6" d="M974.62,-2398.31C1002.46,-2392.69 1025.75,-2388 1025.75,-2388 1025.75,-2388 1081.39,-2376.54 1131.56,-2366.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1131.98,-2368.26 1137.44,-2365 1131.13,-2364.15 1131.98,-2368.26"/>
+</g>
+<!-- ent_FO_12&#45;&gt;ent_E_01 -->
+<g id="edge107" class="edge">
+<title>ent_FO_12&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1289.28,-2389.31C1312.41,-2383.69 1331.75,-2379 1331.75,-2379 1331.75,-2379 1396.75,-2320 1396.75,-2320 1396.75,-2320 1642,-2222 1642,-2222 1642,-2222 1699,-1786 1699,-1786 1699,-1786 1745.39,-1571.51 1761.61,-1496.52"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1763.63,-1497.08 1762.85,-1490.78 1759.53,-1496.2 1763.63,-1497.08"/>
+</g>
+<!-- ent_FO_12&#45;&gt;ent_FO_01 -->
+<g id="edge106" class="edge">
+<title>ent_FO_12&#45;&gt;ent_FO_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1308.26,-2389.25C1353.41,-2380.43 1406.16,-2370.13 1447,-2362.16"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1447.25,-2364.25 1452.73,-2361.04 1446.44,-2360.13 1447.25,-2364.25"/>
+</g>
+<!-- ent_PM_01&#45;&gt;ent_E_02 -->
+<g id="edge111" class="edge">
+<title>ent_PM_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1276.9,-2773.31C1305.05,-2766.48 1331.75,-2760 1331.75,-2760 1331.75,-2760 1396.75,-1050 1396.75,-1050 1396.75,-1050 1466.8,-939.24 1498.78,-888.66"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1500.43,-889.99 1501.86,-883.79 1496.88,-887.74 1500.43,-889.99"/>
+</g>
+<!-- ent_PM_01&#45;&gt;ent_E_09 -->
+<g id="edge110" class="edge">
+<title>ent_PM_01&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M1276.78,-2801.24C1329.98,-2811.33 1396.75,-2824 1396.75,-2824 1396.75,-2824 1642,-2824 1642,-2824 1642,-2824 1837.25,-2139 1837.25,-2139 1837.25,-2139 1927.96,-1619.43 1949.38,-1496.74"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1951.41,-1497.33 1950.37,-1491.05 1947.27,-1496.6 1951.41,-1497.33"/>
+</g>
+<!-- ent_PM_02 -->
+<g id="node57" class="node">
+<title>ent_PM_02</title>
+<g id="a_node57"><a xlink:href="./entity-PM-02.html" xlink:title="PM&#45;02\\nGP / Management Company">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M1600.62,-2813C1600.62,-2813 1430.12,-2813 1430.12,-2813 1424.12,-2813 1418.12,-2807 1418.12,-2801 1418.12,-2801 1418.12,-2789 1418.12,-2789 1418.12,-2783 1424.12,-2777 1430.12,-2777 1430.12,-2777 1600.62,-2777 1600.62,-2777 1606.62,-2777 1612.62,-2783 1612.62,-2789 1612.62,-2789 1612.62,-2801 1612.62,-2801 1612.62,-2807 1606.62,-2813 1600.62,-2813"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-2791.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;02\nGP / Management Company</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_01&#45;&gt;ent_PM_02 -->
+<g id="edge108" class="edge">
+<title>ent_PM_01&#45;&gt;ent_PM_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1276.69,-2790.28C1315.52,-2791.05 1365.87,-2792.05 1410.23,-2792.93"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1410.03,-2795.03 1416.07,-2793.05 1410.11,-2790.83 1410.03,-2795.03"/>
+</g>
+<!-- ent_PM_03 -->
+<g id="node58" class="node">
+<title>ent_PM_03</title>
+<g id="a_node58"><a xlink:href="./entity-PM-03.html" xlink:title="PM&#45;03\\nFund Administrator">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M1577.38,-2755C1577.38,-2755 1453.38,-2755 1453.38,-2755 1447.38,-2755 1441.38,-2749 1441.38,-2743 1441.38,-2743 1441.38,-2731 1441.38,-2731 1441.38,-2725 1447.38,-2719 1453.38,-2719 1453.38,-2719 1577.38,-2719 1577.38,-2719 1583.38,-2719 1589.38,-2725 1589.38,-2731 1589.38,-2731 1589.38,-2743 1589.38,-2743 1589.38,-2749 1583.38,-2755 1577.38,-2755"/>
+<text xml:space="preserve" text-anchor="middle" x="1515.38" y="-2733.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;03\nFund Administrator</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_01&#45;&gt;ent_PM_03 -->
+<g id="edge109" class="edge">
+<title>ent_PM_01&#45;&gt;ent_PM_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1276.69,-2777.91C1322.53,-2770.02 1384.44,-2759.36 1433.58,-2750.91"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1433.69,-2753.02 1439.24,-2749.93 1432.97,-2748.88 1433.69,-2753.02"/>
+</g>
+<!-- ent_PM_02&#45;&gt;ent_E_01 -->
+<g id="edge112" class="edge">
+<title>ent_PM_02&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1597.36,-2776.31C1621.66,-2770.69 1642,-2766 1642,-2766 1642,-2766 1747,-1679.32 1764.63,-1496.85"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1766.7,-1497.24 1765.19,-1491.06 1762.52,-1496.83 1766.7,-1497.24"/>
+</g>
+<!-- ent_PM_03&#45;&gt;ent_E_01 -->
+<g id="edge113" class="edge">
+<title>ent_PM_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1545.2,-2718.42C1582.28,-2694.5 1642,-2656 1642,-2656 1642,-2656 1746.02,-1670.88 1764.37,-1497.05"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1766.46,-1497.31 1765,-1491.12 1762.28,-1496.86 1766.46,-1497.31"/>
+</g>
+<!-- ent_PM_04 -->
+<g id="node59" class="node">
+<title>ent_PM_04</title>
+<g id="a_node59"><a xlink:href="./entity-PM-04.html" xlink:title="PM&#45;04\\nPortfolio Company">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M1272.5,-2749C1272.5,-2749 1150,-2749 1150,-2749 1144,-2749 1138,-2743 1138,-2737 1138,-2737 1138,-2725 1138,-2725 1138,-2719 1144,-2713 1150,-2713 1150,-2713 1272.5,-2713 1272.5,-2713 1278.5,-2713 1284.5,-2719 1284.5,-2725 1284.5,-2725 1284.5,-2737 1284.5,-2737 1284.5,-2743 1278.5,-2749 1272.5,-2749"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2727.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;04\nPortfolio Company</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_04&#45;&gt;ent_E_01 -->
+<g id="edge114" class="edge">
+<title>ent_PM_04&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1285.15,-2712.68C1407.76,-2681.87 1642,-2623 1642,-2623 1642,-2623 1745.8,-1667.34 1764.32,-1496.86"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1766.39,-1497.26 1764.95,-1491.07 1762.21,-1496.8 1766.39,-1497.26"/>
+</g>
+<!-- ent_PM_05 -->
+<g id="node60" class="node">
+<title>ent_PM_05</title>
+<g id="a_node60"><a xlink:href="./entity-PM-05.html" xlink:title="PM&#45;05\\nLegal Vehicle / SPV">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M628.62,-2807C628.62,-2807 500.12,-2807 500.12,-2807 494.12,-2807 488.12,-2801 488.12,-2795 488.12,-2795 488.12,-2783 488.12,-2783 488.12,-2777 494.12,-2771 500.12,-2771 500.12,-2771 628.62,-2771 628.62,-2771 634.62,-2771 640.62,-2777 640.62,-2783 640.62,-2783 640.62,-2795 640.62,-2795 640.62,-2801 634.62,-2807 628.62,-2807"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2785.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;05\nLegal Vehicle / SPV</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_05&#45;&gt;ent_PM_09 -->
+<g id="edge115" class="edge">
+<title>ent_PM_05&#45;&gt;ent_PM_09</title>
+<path fill="none" stroke="#5b7aa6" d="M641.11,-2775.03C690.57,-2765.91 754.9,-2754.05 804.32,-2744.93"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="804.49,-2747.04 810.01,-2743.88 803.73,-2742.91 804.49,-2747.04"/>
+</g>
+<!-- ent_PM_06 -->
+<g id="node61" class="node">
+<title>ent_PM_06</title>
+<g id="a_node61"><a xlink:href="./entity-PM-06.html" xlink:title="PM&#45;06\\nLP Commitment">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M936.5,-2947C936.5,-2947 825.25,-2947 825.25,-2947 819.25,-2947 813.25,-2941 813.25,-2935 813.25,-2935 813.25,-2923 813.25,-2923 813.25,-2917 819.25,-2911 825.25,-2911 825.25,-2911 936.5,-2911 936.5,-2911 942.5,-2911 948.5,-2917 948.5,-2923 948.5,-2923 948.5,-2935 948.5,-2935 948.5,-2941 942.5,-2947 936.5,-2947"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2925.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;06\nLP Commitment</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_06&#45;&gt;ent_E_01 -->
+<g id="edge117" class="edge">
+<title>ent_PM_06&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M949.23,-2923.61C1074.73,-2913.57 1331.75,-2893 1331.75,-2893 1331.75,-2893 1642,-2861 1642,-2861 1642,-2861 1747.65,-1687.31 1764.79,-1496.94"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1766.87,-1497.27 1765.32,-1491.11 1762.69,-1496.89 1766.87,-1497.27"/>
+</g>
+<!-- ent_PM_06&#45;&gt;ent_PM_01 -->
+<g id="edge116" class="edge">
+<title>ent_PM_06&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M949.18,-2912.63C986.62,-2903.52 1025.75,-2894 1025.75,-2894 1025.75,-2894 1090.75,-2818 1090.75,-2818 1090.75,-2818 1113.06,-2812.59 1138.39,-2806.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.8,-2808.5 1144.13,-2805.05 1137.81,-2804.42 1138.8,-2808.5"/>
+</g>
+<!-- ent_PM_07 -->
+<g id="node62" class="node">
+<title>ent_PM_07</title>
+<g id="a_node62"><a xlink:href="./entity-PM-07.html" xlink:title="PM&#45;07\\nCapital Call">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M608.75,-2953C608.75,-2953 520,-2953 520,-2953 514,-2953 508,-2947 508,-2941 508,-2941 508,-2929 508,-2929 508,-2923 514,-2917 520,-2917 520,-2917 608.75,-2917 608.75,-2917 614.75,-2917 620.75,-2923 620.75,-2929 620.75,-2929 620.75,-2941 620.75,-2941 620.75,-2947 614.75,-2953 608.75,-2953"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2931.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;07\nCapital Call</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_07&#45;&gt;ent_E_05 -->
+<g id="edge120" class="edge">
+<title>ent_PM_07&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M621.28,-2919.65C646.62,-2912.69 671,-2906 671,-2906 671,-2906 736,-2212 736,-2212 736,-2212 1025.75,-1731 1025.75,-1731 1025.75,-1731 1090.75,-1074 1090.75,-1074 1090.75,-1074 1128.51,-1057.25 1161.58,-1042.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1044.65 1166.74,-1040.3 1160.4,-1040.81 1162.1,-1044.65"/>
+</g>
+<!-- ent_PM_07&#45;&gt;ent_PM_01 -->
+<g id="edge118" class="edge">
+<title>ent_PM_07&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M621.24,-2942.53C671.01,-2949.24 736,-2958 736,-2958 736,-2958 1025.75,-2958 1025.75,-2958 1025.75,-2958 1090.75,-2818 1090.75,-2818 1090.75,-2818 1113.06,-2812.59 1138.39,-2806.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.8,-2808.5 1144.13,-2805.05 1137.81,-2804.42 1138.8,-2808.5"/>
+</g>
+<!-- ent_PM_07&#45;&gt;ent_PM_06 -->
+<g id="edge119" class="edge">
+<title>ent_PM_07&#45;&gt;ent_PM_06</title>
+<path fill="none" stroke="#5b7aa6" d="M621.24,-2933.93C672.42,-2932.96 748.59,-2931.5 805.03,-2930.43"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="805.03,-2932.53 810.99,-2930.31 804.95,-2928.33 805.03,-2932.53"/>
+</g>
+<!-- ent_PM_08 -->
+<g id="node63" class="node">
+<title>ent_PM_08</title>
+<g id="a_node63"><a xlink:href="./entity-PM-08.html" xlink:title="PM&#45;08\\nDistribution">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M608,-2895C608,-2895 520.75,-2895 520.75,-2895 514.75,-2895 508.75,-2889 508.75,-2883 508.75,-2883 508.75,-2871 508.75,-2871 508.75,-2865 514.75,-2859 520.75,-2859 520.75,-2859 608,-2859 608,-2859 614,-2859 620,-2865 620,-2871 620,-2871 620,-2883 620,-2883 620,-2889 614,-2895 608,-2895"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2873.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;08\nDistribution</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_08&#45;&gt;ent_E_05 -->
+<g id="edge123" class="edge">
+<title>ent_PM_08&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M598.8,-2858.33C629.74,-2841.05 671,-2818 671,-2818 671,-2818 736,-1782 736,-1782 736,-1782 1025.75,-1645 1025.75,-1645 1025.75,-1645 1090.75,-1074 1090.75,-1074 1090.75,-1074 1128.51,-1057.25 1161.58,-1042.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1044.65 1166.74,-1040.3 1160.4,-1040.81 1162.1,-1044.65"/>
+</g>
+<!-- ent_PM_08&#45;&gt;ent_PM_01 -->
+<g id="edge121" class="edge">
+<title>ent_PM_08&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M620.45,-2876.88C742.65,-2876.61 1025.75,-2876 1025.75,-2876 1025.75,-2876 1090.75,-2818 1090.75,-2818 1090.75,-2818 1113.06,-2812.59 1138.39,-2806.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.8,-2808.5 1144.13,-2805.05 1137.81,-2804.42 1138.8,-2808.5"/>
+</g>
+<!-- ent_PM_08&#45;&gt;ent_PM_06 -->
+<g id="edge122" class="edge">
+<title>ent_PM_08&#45;&gt;ent_PM_06</title>
+<path fill="none" stroke="#5b7aa6" d="M620.52,-2886.12C671.87,-2894.61 748.83,-2907.33 805.59,-2916.72"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="805,-2918.75 811.26,-2917.66 805.69,-2914.6 805,-2918.75"/>
+</g>
+<!-- ent_PM_09&#45;&gt;ent_E_04 -->
+<g id="edge126" class="edge">
+<title>ent_PM_09&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M906.94,-2712.36C948.16,-2681.71 1025.75,-2624 1025.75,-2624 1025.75,-2624 1090.75,-1156 1090.75,-1156 1090.75,-1156 1128.51,-1139.25 1161.58,-1124.59"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1162.1,-1126.65 1166.74,-1122.3 1160.4,-1122.81 1162.1,-1126.65"/>
+</g>
+<!-- ent_PM_09&#45;&gt;ent_PM_01 -->
+<g id="edge124" class="edge">
+<title>ent_PM_09&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M950.31,-2743.09C1005.38,-2752.81 1082.54,-2766.44 1138.47,-2776.32"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1137.77,-2778.33 1144.04,-2777.31 1138.5,-2774.19 1137.77,-2778.33"/>
+</g>
+<!-- ent_PM_09&#45;&gt;ent_PM_04 -->
+<g id="edge125" class="edge">
+<title>ent_PM_09&#45;&gt;ent_PM_04</title>
+<path fill="none" stroke="#5b7aa6" d="M950.31,-2731C1002.66,-2731 1074.97,-2731 1130.03,-2731"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1129.83,-2733.1 1135.83,-2731 1129.83,-2728.9 1129.83,-2733.1"/>
+</g>
+<!-- ent_PM_10 -->
+<g id="node65" class="node">
+<title>ent_PM_10</title>
+<g id="a_node65"><a xlink:href="./entity-PM-10.html" xlink:title="PM&#45;10\\nFund Terms">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M926,-2807C926,-2807 835.75,-2807 835.75,-2807 829.75,-2807 823.75,-2801 823.75,-2795 823.75,-2795 823.75,-2783 823.75,-2783 823.75,-2777 829.75,-2771 835.75,-2771 835.75,-2771 926,-2771 926,-2771 932,-2771 938,-2777 938,-2783 938,-2783 938,-2795 938,-2795 938,-2801 932,-2807 926,-2807"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2785.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;10\nFund Terms</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_10&#45;&gt;ent_PM_01 -->
+<g id="edge127" class="edge">
+<title>ent_PM_10&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M938.7,-2789C994.09,-2789 1078.5,-2789 1138.5,-2789"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.17,-2791.1 1144.17,-2789 1138.17,-2786.9 1138.17,-2791.1"/>
+</g>
+<!-- ent_PM_11 -->
+<g id="node66" class="node">
+<title>ent_PM_11</title>
+<g id="a_node66"><a xlink:href="./entity-PM-11.html" xlink:title="PM&#45;11\\nManager Succession Event">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M1293.12,-2865C1293.12,-2865 1129.38,-2865 1129.38,-2865 1123.38,-2865 1117.38,-2859 1117.38,-2853 1117.38,-2853 1117.38,-2841 1117.38,-2841 1117.38,-2835 1123.38,-2829 1129.38,-2829 1129.38,-2829 1293.12,-2829 1293.12,-2829 1299.12,-2829 1305.12,-2835 1305.12,-2841 1305.12,-2841 1305.12,-2853 1305.12,-2853 1305.12,-2859 1299.12,-2865 1293.12,-2865"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-2843.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;11\nManager Succession Event</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_11&#45;&gt;ent_PM_02 -->
+<g id="edge128" class="edge">
+<title>ent_PM_11&#45;&gt;ent_PM_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1305.78,-2830.9C1338.86,-2825.21 1376.28,-2818.77 1410.2,-2812.93"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1410.33,-2815.04 1415.89,-2811.95 1409.62,-2810.9 1410.33,-2815.04"/>
+</g>
+<!-- ent_PM_12 -->
+<g id="node67" class="node">
+<title>ent_PM_12</title>
+<g id="a_node67"><a xlink:href="./entity-PM-12.html" xlink:title="PM&#45;12\\nBenchmark Cross&#45;Reference">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M967.62,-3029C967.62,-3029 794.12,-3029 794.12,-3029 788.12,-3029 782.12,-3023 782.12,-3017 782.12,-3017 782.12,-3005 782.12,-3005 782.12,-2999 788.12,-2993 794.12,-2993 794.12,-2993 967.62,-2993 967.62,-2993 973.62,-2993 979.62,-2999 979.62,-3005 979.62,-3005 979.62,-3017 979.62,-3017 979.62,-3023 973.62,-3029 967.62,-3029"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-3007.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;12\nBenchmark Cross&#45;Reference</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_12&#45;&gt;ent_E_09 -->
+<g id="edge131" class="edge">
+<title>ent_PM_12&#45;&gt;ent_E_09</title>
+<path fill="none" stroke="#5b7aa6" d="M938.4,-3029.67C1000.26,-3050.11 1090.75,-3080 1090.75,-3080 1090.75,-3080 1642,-3080 1642,-3080 1642,-3080 1837.25,-2642 1837.25,-2642 1837.25,-2642 1934.2,-1668.52 1951.31,-1496.74"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1953.39,-1497.08 1951.89,-1490.9 1949.21,-1496.66 1953.39,-1497.08"/>
+</g>
+<!-- ent_PM_12&#45;&gt;ent_E_10 -->
+<g id="edge130" class="edge">
+<title>ent_PM_12&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#5b7aa6" d="M939.01,-2992.28C1115.78,-2942.46 1642,-2813 1642,-2813 1642,-2813 1694.04,-1551.35 1698.67,-1438.98"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1700.77,-1439.16 1698.91,-1433.08 1696.57,-1438.99 1700.77,-1439.16"/>
+</g>
+<!-- ent_PM_12&#45;&gt;ent_E_10 -->
+<g id="edge132" class="edge">
+<title>ent_PM_12&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M980.08,-2992.72C1185.56,-2947.29 1642,-2835 1642,-2835 1642,-2835 1699,-1453 1699,-1453 1699,-1453 1718.55,-1444.68 1736.71,-1435.26"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1737.65,-1437.13 1741.96,-1432.46 1735.68,-1433.43 1737.65,-1437.13"/>
+</g>
+<!-- ent_PM_12&#45;&gt;ent_PM_01 -->
+<g id="edge129" class="edge">
+<title>ent_PM_12&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M958.87,-2992.27C993.07,-2983.95 1025.75,-2976 1025.75,-2976 1025.75,-2976 1090.75,-2818 1090.75,-2818 1090.75,-2818 1113.06,-2812.59 1138.39,-2806.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.8,-2808.5 1144.13,-2805.05 1137.81,-2804.42 1138.8,-2808.5"/>
+</g>
+<!-- ent_PM_13 -->
+<g id="node68" class="node">
+<title>ent_PM_13</title>
+<g id="a_node68"><a xlink:href="./entity-PM-13.html" xlink:title="PM&#45;13\\nInvestor Capital Account">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M955.62,-2865C955.62,-2865 806.12,-2865 806.12,-2865 800.12,-2865 794.12,-2859 794.12,-2853 794.12,-2853 794.12,-2841 794.12,-2841 794.12,-2835 800.12,-2829 806.12,-2829 806.12,-2829 955.62,-2829 955.62,-2829 961.62,-2829 967.62,-2835 967.62,-2841 967.62,-2841 967.62,-2853 967.62,-2853 967.62,-2859 961.62,-2865 955.62,-2865"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-2843.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;13\nInvestor Capital Account</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_13&#45;&gt;ent_E_01 -->
+<g id="edge134" class="edge">
+<title>ent_PM_13&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M968.34,-2859C1025.8,-2866.98 1090.75,-2876 1090.75,-2876 1090.75,-2876 1331.75,-2876 1331.75,-2876 1331.75,-2876 1642,-2824 1642,-2824 1642,-2824 1747.43,-1683.94 1764.74,-1496.84"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1766.8,-1497.29 1765.26,-1491.12 1762.62,-1496.9 1766.8,-1497.29"/>
+</g>
+<!-- ent_PM_13&#45;&gt;ent_E_03 -->
+<g id="edge135" class="edge">
+<title>ent_PM_13&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M968.06,-2829.63C998.7,-2823.45 1025.75,-2818 1025.75,-2818 1025.75,-2818 1090.75,-1964 1090.75,-1964 1090.75,-1964 1331.75,-1799 1331.75,-1799 1331.75,-1799 1396.75,-1360 1396.75,-1360 1396.75,-1360 1475.02,-1173.02 1503.87,-1104.11"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1505.69,-1105.18 1506.07,-1098.83 1501.82,-1103.56 1505.69,-1105.18"/>
+</g>
+<!-- ent_PM_13&#45;&gt;ent_PM_01 -->
+<g id="edge133" class="edge">
+<title>ent_PM_13&#45;&gt;ent_PM_01</title>
+<path fill="none" stroke="#5b7aa6" d="M968.15,-2831.76C1021.13,-2822.4 1088.19,-2810.56 1138.3,-2801.71"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1138.53,-2803.8 1144.07,-2800.69 1137.8,-2799.66 1138.53,-2803.8"/>
+</g>
+<!-- ent_PM_14 -->
+<g id="node69" class="node">
+<title>ent_PM_14</title>
+<g id="a_node69"><a xlink:href="./entity-PM-14.html" xlink:title="PM&#45;14\\nDirect Loan">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" d="M608.75,-2749C608.75,-2749 520,-2749 520,-2749 514,-2749 508,-2743 508,-2737 508,-2737 508,-2725 508,-2725 508,-2719 514,-2713 520,-2713 520,-2713 608.75,-2713 608.75,-2713 614.75,-2713 620.75,-2719 620.75,-2725 620.75,-2725 620.75,-2737 620.75,-2737 620.75,-2743 614.75,-2749 608.75,-2749"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-2727.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PM&#45;14\nDirect Loan</text>
+</a>
+</g>
+</g>
+<!-- ent_PM_14&#45;&gt;ent_E_01 -->
+<g id="edge137" class="edge">
+<title>ent_PM_14&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M621.28,-2746.35C646.62,-2753.31 671,-2760 671,-2760 671,-2760 736,-3040 736,-3040 736,-3040 1025.75,-3040 1025.75,-3040 1025.75,-3040 1642,-2891 1642,-2891 1642,-2891 1747.76,-1690.72 1764.82,-1497.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1766.91,-1497.4 1765.34,-1491.24 1762.72,-1497.04 1766.91,-1497.4"/>
+</g>
+<!-- ent_PM_14&#45;&gt;ent_E_02 -->
+<g id="edge136" class="edge">
+<title>ent_PM_14&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M578.12,-2712.38C606.21,-2678.63 671,-2613 671,-2613 671,-2613 736,-2201 736,-2201 736,-2201 1090.75,-1747 1090.75,-1747 1090.75,-1747 1331.75,-1539 1331.75,-1539 1331.75,-1539 1396.75,-1039 1396.75,-1039 1396.75,-1039 1461.46,-936.67 1494.89,-888.3"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.42,-889.77 1498.13,-883.65 1492.98,-887.37 1496.42,-889.77"/>
+</g>
+<!-- ent_PM_14&#45;&gt;ent_E_02 -->
+<g id="edge138" class="edge">
+<title>ent_PM_14&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M591.21,-2712.4C622.48,-2684.15 671,-2635 671,-2635 671,-2635 736,-2223 736,-2223 736,-2223 1090.75,-1769 1090.75,-1769 1090.75,-1769 1331.75,-1561 1331.75,-1561 1331.75,-1561 1396.75,-1061 1396.75,-1061 1396.75,-1061 1471.64,-942.58 1501.9,-889.13"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1503.7,-890.23 1504.8,-883.97 1500.03,-888.18 1503.7,-890.23"/>
+</g>
+<!-- ent_PM_15&#45;&gt;ent_E_01 -->
+<g id="edge139" class="edge">
+<title>ent_PM_15&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M626.49,-3023.63C675.45,-3038.55 736,-3057 736,-3057 736,-3057 1025.75,-3057 1025.75,-3057 1025.75,-3057 1331.75,-3012 1331.75,-3012 1331.75,-3012 1642,-2937 1642,-2937 1642,-2937 1748.2,-1692.71 1764.92,-1496.82"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1767,-1497.2 1765.41,-1491.04 1762.81,-1496.84 1767,-1497.2"/>
+</g>
+<!-- ent_PB_01 -->
+<g id="node71" class="node">
+<title>ent_PB_01</title>
+<g id="a_node71"><a xlink:href="./entity-PB-01.html" xlink:title="PB&#45;01\\nListed Equity">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M611,-141C611,-141 517.75,-141 517.75,-141 511.75,-141 505.75,-135 505.75,-129 505.75,-129 505.75,-117 505.75,-117 505.75,-111 511.75,-105 517.75,-105 517.75,-105 611,-105 611,-105 617,-105 623,-111 623,-117 623,-117 623,-129 623,-129 623,-135 617,-141 611,-141"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-119.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;01\nListed Equity</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_01&#45;&gt;ent_E_01 -->
+<g id="edge141" class="edge">
+<title>ent_PB_01&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M623.75,-106.97C648.18,-100.27 671,-94 671,-94 671,-94 736,-16 736,-16 736,-16 1331.75,-16 1331.75,-16 1331.75,-16 1642,-21 1642,-21 1642,-21 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_01&#45;&gt;ent_E_02 -->
+<g id="edge140" class="edge">
+<title>ent_PB_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M623.75,-129.13C648.18,-134.73 671,-141 671,-141 671,-141 736,-199 736,-199 736,-199 1025.75,-260 1025.75,-260 1025.75,-260 1090.75,-308 1090.75,-308 1090.75,-308 1331.75,-398 1331.75,-398 1331.75,-398 1396.75,-576 1396.75,-576 1396.75,-576 1478.32,-768.08 1505.6,-838.69"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1503.57,-839.26 1507.68,-844.11 1507.49,-837.76 1503.57,-839.26"/>
+</g>
+<!-- ent_PB_01&#45;&gt;ent_E_02 -->
+<g id="edge143" class="edge">
+<title>ent_PB_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M602.32,-141.75C632.78,-152.51 671,-163 671,-163 671,-163 736,-221 736,-221 736,-221 1025.75,-282 1025.75,-282 1025.75,-282 1090.75,-330 1090.75,-330 1090.75,-330 1331.75,-420 1331.75,-420 1331.75,-420 1396.75,-598 1396.75,-598 1396.75,-598 1470.73,-772.22 1501.35,-838.84"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1499.28,-839.38 1503.71,-843.94 1503.09,-837.61 1499.28,-839.38"/>
+</g>
+<!-- ent_PB_01&#45;&gt;ent_E_11 -->
+<g id="edge142" class="edge">
+<title>ent_PB_01&#45;&gt;ent_E_11</title>
+<path fill="none" stroke="#5b7aa6" d="M623.75,-139.03C648.18,-145.73 671,-152 671,-152 671,-152 736,-466 736,-466 736,-466 837.24,-724.24 869.87,-807.47"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="867.84,-808.07 871.99,-812.89 871.76,-806.53 867.84,-808.07"/>
+</g>
+<!-- ent_PB_02 -->
+<g id="node72" class="node">
+<title>ent_PB_02</title>
+<g id="a_node72"><a xlink:href="./entity-PB-02.html" xlink:title="PB&#45;02\\nDebt Instrument">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M618.88,-315C618.88,-315 509.88,-315 509.88,-315 503.88,-315 497.88,-309 497.88,-303 497.88,-303 497.88,-291 497.88,-291 497.88,-285 503.88,-279 509.88,-279 509.88,-279 618.88,-279 618.88,-279 624.88,-279 630.88,-285 630.88,-291 630.88,-291 630.88,-303 630.88,-303 630.88,-309 624.88,-315 618.88,-315"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-293.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;02\nDebt Instrument</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_02&#45;&gt;ent_E_01 -->
+<g id="edge145" class="edge">
+<title>ent_PB_02&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M631.37,-278.88C652.72,-273.02 671,-268 671,-268 671,-268 736,-26 736,-26 736,-26 1025.75,-26 1025.75,-26 1025.75,-26 1331.75,-35 1331.75,-35 1331.75,-35 1642,-72 1642,-72 1642,-72 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_02&#45;&gt;ent_E_02 -->
+<g id="edge144" class="edge">
+<title>ent_PB_02&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M631.37,-304.91C652.72,-309.98 671,-315 671,-315 671,-315 736,-375 736,-375 736,-375 1331.75,-639 1331.75,-639 1331.75,-639 1453.27,-781.4 1498.06,-839.85"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.18,-840.85 1501.48,-844.36 1499.53,-838.31 1496.18,-840.85"/>
+</g>
+<!-- ent_PB_02&#45;&gt;ent_E_02 -->
+<g id="edge147" class="edge">
+<title>ent_PB_02&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M602.32,-315.75C632.78,-326.51 671,-337 671,-337 671,-337 736,-397 736,-397 736,-397 1331.75,-661 1331.75,-661 1331.75,-661 1438.56,-786.16 1488.81,-840.12"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1487.11,-841.38 1492.75,-844.32 1490.17,-838.51 1487.11,-841.38"/>
+</g>
+<!-- ent_PB_02&#45;&gt;ent_E_11 -->
+<g id="edge146" class="edge">
+<title>ent_PB_02&#45;&gt;ent_E_11</title>
+<path fill="none" stroke="#5b7aa6" d="M631.37,-315.12C652.72,-320.98 671,-326 671,-326 671,-326 736,-546 736,-546 736,-546 832.57,-738.64 867.48,-808.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="865.41,-808.83 869.98,-813.26 869.17,-806.95 865.41,-808.83"/>
+</g>
+<!-- ent_PB_03 -->
+<g id="node73" class="node">
+<title>ent_PB_03</title>
+<g id="a_node73"><a xlink:href="./entity-PB-03.html" xlink:title="PB&#45;03\\nOrder">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M1241,-153C1241,-153 1181.5,-153 1181.5,-153 1175.5,-153 1169.5,-147 1169.5,-141 1169.5,-141 1169.5,-129 1169.5,-129 1169.5,-123 1175.5,-117 1181.5,-117 1181.5,-117 1241,-117 1241,-117 1247,-117 1253,-123 1253,-129 1253,-129 1253,-141 1253,-141 1253,-147 1247,-153 1241,-153"/>
+<text xml:space="preserve" text-anchor="middle" x="1211.25" y="-131.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;03\nOrder</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_03&#45;&gt;ent_E_01 -->
+<g id="edge151" class="edge">
+<title>ent_PB_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M1253.71,-143.33C1288.22,-150.26 1331.75,-159 1331.75,-159 1331.75,-159 1642,-835 1642,-835 1642,-835 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_03&#45;&gt;ent_E_02 -->
+<g id="edge149" class="edge">
+<title>ent_PB_03&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M1253.71,-147.14C1288.22,-157.25 1331.75,-170 1331.75,-170 1331.75,-170 1396.75,-490 1396.75,-490 1396.75,-490 1479.72,-753.82 1506.29,-838.31"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1504.28,-838.92 1508.09,-844.01 1508.29,-837.66 1504.28,-838.92"/>
+</g>
+<!-- ent_PB_03&#45;&gt;ent_E_03 -->
+<g id="edge150" class="edge">
+<title>ent_PB_03&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M1229.88,-153.74C1263.12,-189.07 1331.75,-262 1331.75,-262 1331.75,-262 1396.75,-893 1396.75,-893 1396.75,-893 1466.8,-1003.76 1498.78,-1054.34"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.88,-1055.26 1501.86,-1059.21 1500.43,-1053.01 1496.88,-1055.26"/>
+</g>
+<!-- ent_PB_03&#45;&gt;ent_E_05 -->
+<g id="edge148" class="edge">
+<title>ent_PB_03&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#5b7aa6" d="M1207.3,-153.74C1184.34,-262.65 1069.08,-809.33 1069.08,-809.33 1069.08,-809.33 1069.08,-984.67 1069.08,-984.67 1069.08,-984.67 1090.75,-992 1090.75,-992 1090.75,-992 1121.2,-999.33 1151.48,-1006.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1150.95,-1008.65 1157.28,-1008.01 1151.93,-1004.56 1150.95,-1008.65"/>
+</g>
+<!-- ent_PB_03&#45;&gt;ent_E_05 -->
+<g id="edge152" class="edge">
+<title>ent_PB_03&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M1206.78,-153.59C1180.53,-262.84 1047.42,-816.67 1047.42,-816.67 1047.42,-816.67 1047.42,-977.33 1047.42,-977.33 1047.42,-977.33 1090.75,-992 1090.75,-992 1090.75,-992 1121.2,-999.33 1151.48,-1006.62"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1150.95,-1008.65 1157.28,-1008.01 1151.93,-1004.56 1150.95,-1008.65"/>
+</g>
+<!-- ent_PB_04 -->
+<g id="node74" class="node">
+<title>ent_PB_04</title>
+<g id="a_node74"><a xlink:href="./entity-PB-04.html" xlink:title="PB&#45;04\\nExecution">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M920.38,-83C920.38,-83 841.38,-83 841.38,-83 835.38,-83 829.38,-77 829.38,-71 829.38,-71 829.38,-59 829.38,-59 829.38,-53 835.38,-47 841.38,-47 841.38,-47 920.38,-47 920.38,-47 926.38,-47 932.38,-53 932.38,-59 932.38,-59 932.38,-71 932.38,-71 932.38,-77 926.38,-83 920.38,-83"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-61.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;04\nExecution</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_04&#45;&gt;ent_E_01 -->
+<g id="edge155" class="edge">
+<title>ent_PB_04&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M933.04,-69.09C1050.96,-78.53 1331.75,-101 1331.75,-101 1331.75,-101 1642,-143 1642,-143 1642,-143 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_04&#45;&gt;ent_E_02 -->
+<g id="edge154" class="edge">
+<title>ent_PB_04&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M933.01,-75.31C974.36,-83.64 1025.75,-94 1025.75,-94 1025.75,-94 1090.75,-164 1090.75,-164 1090.75,-164 1331.75,-203 1331.75,-203 1331.75,-203 1396.75,-490 1396.75,-490 1396.75,-490 1479.72,-753.82 1506.29,-838.31"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1504.28,-838.92 1508.09,-844.01 1508.29,-837.66 1504.28,-838.92"/>
+</g>
+<!-- ent_PB_04&#45;&gt;ent_E_05 -->
+<g id="edge156" class="edge">
+<title>ent_PB_04&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M933.01,-75.31C974.36,-83.64 1025.75,-94 1025.75,-94 1025.75,-94 1090.75,-992 1090.75,-992 1090.75,-992 1121.38,-999.43 1151.63,-1006.77"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1151.08,-1008.8 1157.41,-1008.18 1152.07,-1004.72 1151.08,-1008.8"/>
+</g>
+<!-- ent_PB_04&#45;&gt;ent_PB_03 -->
+<g id="edge153" class="edge">
+<title>ent_PB_04&#45;&gt;ent_PB_03</title>
+<path fill="none" stroke="#5b7aa6" d="M933.01,-75.31C974.36,-83.64 1025.75,-94 1025.75,-94 1025.75,-94 1106.99,-112.05 1161.65,-124.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1161.05,-126.22 1167.37,-125.47 1161.97,-122.12 1161.05,-126.22"/>
+</g>
+<!-- ent_PB_05 -->
+<g id="node75" class="node">
+<title>ent_PB_05</title>
+<g id="a_node75"><a xlink:href="./entity-PB-05.html" xlink:title="PB&#45;05\\nAllocation">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M920,-141C920,-141 841.75,-141 841.75,-141 835.75,-141 829.75,-135 829.75,-129 829.75,-129 829.75,-117 829.75,-117 829.75,-111 835.75,-105 841.75,-105 841.75,-105 920,-105 920,-105 926,-105 932,-111 932,-117 932,-117 932,-129 932,-129 932,-135 926,-141 920,-141"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-119.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;05\nAllocation</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_05&#45;&gt;ent_E_01 -->
+<g id="edge160" class="edge">
+<title>ent_PB_05&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M932.7,-118.86C994.53,-113.83 1090.75,-106 1090.75,-106 1090.75,-106 1331.75,-106 1331.75,-106 1331.75,-106 1642,-300 1642,-300 1642,-300 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_05&#45;&gt;ent_E_02 -->
+<g id="edge159" class="edge">
+<title>ent_PB_05&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M932.6,-133.22C974.02,-141.57 1025.75,-152 1025.75,-152 1025.75,-152 1090.75,-204 1090.75,-204 1090.75,-204 1331.75,-262 1331.75,-262 1331.75,-262 1396.75,-490 1396.75,-490 1396.75,-490 1479.72,-753.82 1506.29,-838.31"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1504.28,-838.92 1508.09,-844.01 1508.29,-837.66 1504.28,-838.92"/>
+</g>
+<!-- ent_PB_05&#45;&gt;ent_E_03 -->
+<g id="edge158" class="edge">
+<title>ent_PB_05&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M932.6,-133.22C974.02,-141.57 1025.75,-152 1025.75,-152 1025.75,-152 1090.75,-250 1090.75,-250 1090.75,-250 1331.75,-604 1331.75,-604 1331.75,-604 1396.75,-893 1396.75,-893 1396.75,-893 1466.8,-1003.76 1498.78,-1054.34"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.88,-1055.26 1501.86,-1059.21 1500.43,-1053.01 1496.88,-1055.26"/>
+</g>
+<!-- ent_PB_05&#45;&gt;ent_E_05 -->
+<g id="edge161" class="edge">
+<title>ent_PB_05&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M932.6,-133.22C974.02,-141.57 1025.75,-152 1025.75,-152 1025.75,-152 1090.75,-992 1090.75,-992 1090.75,-992 1121.38,-999.43 1151.63,-1006.77"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1151.08,-1008.8 1157.41,-1008.18 1152.07,-1004.72 1151.08,-1008.8"/>
+</g>
+<!-- ent_PB_05&#45;&gt;ent_PB_03 -->
+<g id="edge157" class="edge">
+<title>ent_PB_05&#45;&gt;ent_PB_03</title>
+<path fill="none" stroke="#5b7aa6" d="M932.46,-124.85C994.87,-127.13 1100.23,-130.98 1161.69,-133.23"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1161.38,-135.32 1167.45,-133.44 1161.53,-131.12 1161.38,-135.32"/>
+</g>
+<!-- ent_PB_06 -->
+<g id="node76" class="node">
+<title>ent_PB_06</title>
+<g id="a_node76"><a xlink:href="./entity-PB-06.html" xlink:title="PB&#45;06\\nSettlement Instruction">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M632.38,-257C632.38,-257 496.38,-257 496.38,-257 490.38,-257 484.38,-251 484.38,-245 484.38,-245 484.38,-233 484.38,-233 484.38,-227 490.38,-221 496.38,-221 496.38,-221 632.38,-221 632.38,-221 638.38,-221 644.38,-227 644.38,-233 644.38,-233 644.38,-245 644.38,-245 644.38,-251 638.38,-257 632.38,-257"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-235.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;06\nSettlement Instruction</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_06&#45;&gt;ent_E_01 -->
+<g id="edge165" class="edge">
+<title>ent_PB_06&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-220.31C653.9,-214.69 671,-210 671,-210 671,-210 736,-21 736,-21 736,-21 1025.75,-21 1025.75,-21 1025.75,-21 1331.75,-23 1331.75,-23 1331.75,-23 1642,-38 1642,-38 1642,-38 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_06&#45;&gt;ent_E_02 -->
+<g id="edge163" class="edge">
+<title>ent_PB_06&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-257.69C653.9,-263.31 671,-268 671,-268 671,-268 736,-340 736,-340 736,-340 1025.75,-385 1025.75,-385 1025.75,-385 1090.75,-478 1090.75,-478 1090.75,-478 1331.75,-541 1331.75,-541 1331.75,-541 1457.68,-763.73 1500.4,-839.28"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1498.51,-840.2 1503.29,-844.39 1502.16,-838.13 1498.51,-840.2"/>
+</g>
+<!-- ent_PB_06&#45;&gt;ent_E_03 -->
+<g id="edge164" class="edge">
+<title>ent_PB_06&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-257.69C653.9,-263.31 671,-268 671,-268 671,-268 736,-380 736,-380 736,-380 1025.75,-499 1025.75,-499 1025.75,-499 1331.75,-648 1331.75,-648 1331.75,-648 1396.75,-893 1396.75,-893 1396.75,-893 1466.8,-1003.76 1498.78,-1054.34"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1496.88,-1055.26 1501.86,-1059.21 1500.43,-1053.01 1496.88,-1055.26"/>
+</g>
+<!-- ent_PB_06&#45;&gt;ent_E_05 -->
+<g id="edge166" class="edge">
+<title>ent_PB_06&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M633.46,-257.69C653.9,-263.31 671,-268 671,-268 671,-268 736,-500 736,-500 736,-500 1025.75,-587 1025.75,-587 1025.75,-587 1090.75,-992 1090.75,-992 1090.75,-992 1121.38,-999.43 1151.63,-1006.77"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1151.08,-1008.8 1157.41,-1008.18 1152.07,-1004.72 1151.08,-1008.8"/>
+</g>
+<!-- ent_PB_06&#45;&gt;ent_PB_05 -->
+<g id="edge162" class="edge">
+<title>ent_PB_06&#45;&gt;ent_PB_05</title>
+<path fill="none" stroke="#5b7aa6" d="M633.46,-220.31C653.9,-214.69 671,-210 671,-210 671,-210 736,-152 736,-152 736,-152 782.22,-142.68 822.27,-134.61"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="822.2,-136.77 827.67,-133.52 821.37,-132.65 822.2,-136.77"/>
+</g>
+<!-- ent_PB_07 -->
+<g id="node77" class="node">
+<title>ent_PB_07</title>
+<g id="a_node77"><a xlink:href="./entity-PB-07.html" xlink:title="PB&#45;07\\nCorporate Action">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M937.25,-199C937.25,-199 824.5,-199 824.5,-199 818.5,-199 812.5,-193 812.5,-187 812.5,-187 812.5,-175 812.5,-175 812.5,-169 818.5,-163 824.5,-163 824.5,-163 937.25,-163 937.25,-163 943.25,-163 949.25,-169 949.25,-175 949.25,-175 949.25,-187 949.25,-187 949.25,-193 943.25,-199 937.25,-199"/>
+<text xml:space="preserve" text-anchor="middle" x="880.88" y="-177.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;07\nCorporate Action</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_07&#45;&gt;ent_E_02 -->
+<g id="edge168" class="edge">
+<title>ent_PB_07&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M949.6,-197.48C986.92,-206.55 1025.75,-216 1025.75,-216 1025.75,-216 1090.75,-250 1090.75,-250 1090.75,-250 1331.75,-354 1331.75,-354 1331.75,-354 1468.39,-735.58 1505.29,-838.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1503.26,-839.18 1507.26,-844.12 1507.21,-837.77 1503.26,-839.18"/>
+</g>
+<!-- ent_PB_07&#45;&gt;ent_E_05 -->
+<g id="edge167" class="edge">
+<title>ent_PB_07&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#5b7aa6" d="M891.99,-199.75C924.74,-268.62 1025.75,-501 1025.75,-501 1025.75,-501 1090.75,-981 1090.75,-981 1090.75,-981 1128.44,-990.15 1161.49,-1000.12"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1160.66,-1002.06 1167.01,-1001.81 1161.89,-998.04 1160.66,-1002.06"/>
+</g>
+<!-- ent_PB_07&#45;&gt;ent_E_05 -->
+<g id="edge169" class="edge">
+<title>ent_PB_07&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M888.24,-199.33C916.09,-270.71 1025.75,-523 1025.75,-523 1025.75,-523 1090.75,-1003 1090.75,-1003 1090.75,-1003 1121.38,-1010.43 1151.63,-1016.35"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1151.1,-1018.38 1157.39,-1017.45 1151.89,-1014.26 1151.1,-1018.38"/>
+</g>
+<!-- ent_PB_08 -->
+<g id="node78" class="node">
+<title>ent_PB_08</title>
+<g id="a_node78"><a xlink:href="./entity-PB-08.html" xlink:title="PB&#45;08\\nIncome Schedule">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M621.88,-199C621.88,-199 506.88,-199 506.88,-199 500.88,-199 494.88,-193 494.88,-187 494.88,-187 494.88,-175 494.88,-175 494.88,-169 500.88,-163 506.88,-163 506.88,-163 621.88,-163 621.88,-163 627.88,-163 633.88,-169 633.88,-175 633.88,-175 633.88,-187 633.88,-187 633.88,-193 627.88,-199 621.88,-199"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-177.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;08\nIncome Schedule</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_08&#45;&gt;ent_E_02 -->
+<g id="edge170" class="edge">
+<title>ent_PB_08&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M634.35,-189.62C654.4,-194.44 671,-199 671,-199 671,-199 736,-261 736,-261 736,-261 1025.75,-328 1025.75,-328 1025.75,-328 1090.75,-399 1090.75,-399 1090.75,-399 1331.75,-466 1331.75,-466 1331.75,-466 1466.08,-750.65 1504.32,-838.64"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1502.31,-839.28 1506.62,-843.96 1506.17,-837.62 1502.31,-839.28"/>
+</g>
+<!-- ent_PB_08&#45;&gt;ent_E_02 -->
+<g id="edge171" class="edge">
+<title>ent_PB_08&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M602.32,-199.75C632.78,-210.51 671,-221 671,-221 671,-221 736,-283 736,-283 736,-283 1025.75,-350 1025.75,-350 1025.75,-350 1090.75,-421 1090.75,-421 1090.75,-421 1331.75,-488 1331.75,-488 1331.75,-488 1457.58,-754.64 1500.35,-838.98"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1498.35,-839.68 1502.94,-844.07 1502.09,-837.77 1498.35,-839.68"/>
+</g>
+<!-- ent_PB_09 -->
+<g id="node79" class="node">
+<title>ent_PB_09</title>
+<g id="a_node79"><a xlink:href="./entity-PB-09.html" xlink:title="PB&#45;09\\nIndex Constituent">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M622.25,-83C622.25,-83 506.5,-83 506.5,-83 500.5,-83 494.5,-77 494.5,-71 494.5,-71 494.5,-59 494.5,-59 494.5,-53 500.5,-47 506.5,-47 506.5,-47 622.25,-47 622.25,-47 628.25,-47 634.25,-53 634.25,-59 634.25,-59 634.25,-71 634.25,-71 634.25,-77 628.25,-83 622.25,-83"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-61.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;09\nIndex Constituent</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_09&#45;&gt;ent_E_02 -->
+<g id="edge173" class="edge">
+<title>ent_PB_09&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M634.77,-51.17C682.01,-41.76 736,-31 736,-31 736,-31 1025.75,-31 1025.75,-31 1025.75,-31 1331.75,-46 1331.75,-46 1331.75,-46 1477.76,-700.01 1508.67,-838.45"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1506.53,-838.5 1509.89,-843.9 1510.63,-837.59 1506.53,-838.5"/>
+</g>
+<!-- ent_PB_09&#45;&gt;ent_E_10 -->
+<g id="edge172" class="edge">
+<title>ent_PB_09&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#5b7aa6" d="M601.56,-46.37C651.65,-26.7 736,0 736,0 736,0 1331.75,0 1331.75,0 1331.75,0 1642,-1 1642,-1 1642,-1 1699,-1117 1699,-1117 1699,-1117 1746.45,-1315.53 1762.15,-1387.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1760.02,-1387.65 1763.33,-1393.07 1764.12,-1386.76 1760.02,-1387.65"/>
+</g>
+<!-- ent_PB_09&#45;&gt;ent_E_10 -->
+<g id="edge174" class="edge">
+<title>ent_PB_09&#45;&gt;ent_E_10</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M634.77,-52.08C682.01,-39.09 736,-22 736,-22 736,-22 1331.75,-22 1331.75,-22 1331.75,-22 1642,-23 1642,-23 1642,-23 1699,-1139 1699,-1139 1699,-1139 1742.08,-1319.24 1759.73,-1387.51"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1757.62,-1387.78 1761.17,-1393.05 1761.69,-1386.72 1757.62,-1387.78"/>
+</g>
+<!-- ent_PB_10 -->
+<g id="node80" class="node">
+<title>ent_PB_10</title>
+<g id="a_node80"><a xlink:href="./entity-PB-10.html" xlink:title="PB&#45;10\\nSecurities Loan">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M617.38,-431C617.38,-431 511.38,-431 511.38,-431 505.38,-431 499.38,-425 499.38,-419 499.38,-419 499.38,-407 499.38,-407 499.38,-401 505.38,-395 511.38,-395 511.38,-395 617.38,-395 617.38,-395 623.38,-395 629.38,-401 629.38,-407 629.38,-407 629.38,-419 629.38,-419 629.38,-425 623.38,-431 617.38,-431"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-409.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;10\nSecurities Loan</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_10&#45;&gt;ent_E_01 -->
+<g id="edge177" class="edge">
+<title>ent_PB_10&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M629.86,-395.3C651.85,-389.26 671,-384 671,-384 671,-384 736,-31 736,-31 736,-31 1025.75,-31 1025.75,-31 1025.75,-31 1642,-105 1642,-105 1642,-105 1699,-1442 1699,-1442 1699,-1442 1706.42,-1445.16 1716.36,-1449.39"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1715.47,-1451.3 1721.82,-1451.71 1717.12,-1447.43 1715.47,-1451.3"/>
+</g>
+<!-- ent_PB_10&#45;&gt;ent_E_02 -->
+<g id="edge176" class="edge">
+<title>ent_PB_10&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#5b7aa6" d="M629.86,-395.3C651.85,-389.26 671,-384 671,-384 671,-384 736,-36 736,-36 736,-36 1025.75,-36 1025.75,-36 1025.75,-36 1331.75,-106 1331.75,-106 1331.75,-106 1476.22,-705.65 1508.17,-838.25"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1506.06,-838.45 1509.51,-843.79 1510.14,-837.47 1506.06,-838.45"/>
+</g>
+<!-- ent_PB_10&#45;&gt;ent_E_04 -->
+<g id="edge175" class="edge">
+<title>ent_PB_10&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#5b7aa6" d="M580.22,-431.6C621.73,-491.51 736,-673 736,-673 736,-673 1025.75,-793 1025.75,-793 1025.75,-793 1090.75,-1039 1090.75,-1039 1090.75,-1039 1142.53,-1061.96 1177.92,-1080.8"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1176.71,-1082.53 1182.99,-1083.54 1178.71,-1078.84 1176.71,-1082.53"/>
+</g>
+<!-- ent_PB_10&#45;&gt;ent_E_04 -->
+<g id="edge179" class="edge">
+<title>ent_PB_10&#45;&gt;ent_E_04</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M574.55,-431.59C609.99,-494.86 736,-695 736,-695 736,-695 1025.75,-815 1025.75,-815 1025.75,-815 1090.75,-1061 1090.75,-1061 1090.75,-1061 1113.43,-1071.06 1139.03,-1081.5"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1138.2,-1083.43 1144.55,-1083.74 1139.78,-1079.54 1138.2,-1083.43"/>
+</g>
+<!-- ent_PB_10&#45;&gt;ent_E_26 -->
+<g id="edge178" class="edge">
+<title>ent_PB_10&#45;&gt;ent_E_26</title>
+<path fill="none" stroke="#5b7aa6" d="M582.99,-431.48C626.59,-477.22 736,-592 736,-592 736,-592 1025.75,-742 1025.75,-742 1025.75,-742 1090.75,-934 1090.75,-934 1090.75,-934 1111.6,-939.06 1135.89,-944.95"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1135.37,-946.99 1141.69,-946.36 1136.36,-942.91 1135.37,-946.99"/>
+</g>
+<!-- ent_PB_11 -->
+<g id="node81" class="node">
+<title>ent_PB_11</title>
+<g id="a_node81"><a xlink:href="./entity-PB-11.html" xlink:title="PB&#45;11\\nProxy Vote">
+<path fill="#e5efe1" stroke="#5b8a48" stroke-width="1.5" d="M606.12,-373C606.12,-373 522.62,-373 522.62,-373 516.62,-373 510.62,-367 510.62,-361 510.62,-361 510.62,-349 510.62,-349 510.62,-343 516.62,-337 522.62,-337 522.62,-337 606.12,-337 606.12,-337 612.12,-337 618.12,-343 618.12,-349 618.12,-349 618.12,-361 618.12,-361 618.12,-367 612.12,-373 606.12,-373"/>
+<text xml:space="preserve" text-anchor="middle" x="564.38" y="-351.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">PB&#45;11\nProxy Vote</text>
+</a>
+</g>
+</g>
+<!-- ent_PB_11&#45;&gt;ent_E_03 -->
+<g id="edge181" class="edge">
+<title>ent_PB_11&#45;&gt;ent_E_03</title>
+<path fill="none" stroke="#5b7aa6" d="M618.81,-369.67C645,-376.86 671,-384 671,-384 671,-384 736,-500 736,-500 736,-500 1025.75,-591 1025.75,-591 1025.75,-591 1331.75,-876 1331.75,-876 1331.75,-876 1444.44,-1001.26 1492.78,-1054.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1490.94,-1056.08 1496.51,-1059.14 1494.06,-1053.28 1490.94,-1056.08"/>
+</g>
+<!-- ent_PB_11&#45;&gt;ent_E_05 -->
+<g id="edge182" class="edge">
+<title>ent_PB_11&#45;&gt;ent_E_05</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M618.81,-369.67C645,-376.86 671,-384 671,-384 671,-384 736,-592 736,-592 736,-592 1025.75,-742 1025.75,-742 1025.75,-742 1090.75,-992 1090.75,-992 1090.75,-992 1121.38,-999.43 1151.63,-1006.77"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1151.08,-1008.8 1157.41,-1008.18 1152.07,-1004.72 1151.08,-1008.8"/>
+</g>
+<!-- ent_PB_11&#45;&gt;ent_PB_07 -->
+<g id="edge180" class="edge">
+<title>ent_PB_11&#45;&gt;ent_PB_07</title>
+<path fill="none" stroke="#5b7aa6" d="M618.81,-340.33C645,-333.14 671,-326 671,-326 671,-326 788.38,-244.51 847.15,-203.71"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="848.02,-205.67 851.75,-200.52 845.63,-202.22 848.02,-205.67"/>
+</g>
+<!-- ent_RA_01 -->
+<g id="node82" class="node">
+<title>ent_RA_01</title>
+<g id="a_node82"><a xlink:href="./entity-RA-01.html" xlink:title="RA&#45;01\\nDirect Real Asset">
+<path fill="#f7dfe0" stroke="#a65b5b" stroke-width="1.5" d="M380.75,-863C380.75,-863 265,-863 265,-863 259,-863 253,-857 253,-851 253,-851 253,-839 253,-839 253,-833 259,-827 265,-827 265,-827 380.75,-827 380.75,-827 386.75,-827 392.75,-833 392.75,-839 392.75,-839 392.75,-851 392.75,-851 392.75,-857 386.75,-863 380.75,-863"/>
+<text xml:space="preserve" text-anchor="middle" x="322.88" y="-841.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">RA&#45;01\nDirect Real Asset</text>
+</a>
+</g>
+</g>
+<!-- ent_RA_01&#45;&gt;ent_E_02 -->
+<g id="edge184" class="edge">
+<title>ent_RA_01&#45;&gt;ent_E_02</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M393.32,-838.09C510.77,-826.41 736,-804 736,-804 736,-804 1025.75,-804 1025.75,-804 1025.75,-804 1331.75,-829 1331.75,-829 1331.75,-829 1389.71,-840.11 1440.32,-849.81"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="1439.63,-851.81 1445.92,-850.88 1440.43,-847.69 1439.63,-851.81"/>
+</g>
+<!-- ent_RA_01&#45;&gt;ent_PM_05 -->
+<g id="edge183" class="edge">
+<title>ent_RA_01&#45;&gt;ent_PM_05</title>
+<path fill="none" stroke="#5b7aa6" d="M325.1,-863.65C338.08,-1061.08 449.75,-2760 449.75,-2760 449.75,-2760 464.34,-2763.72 483.06,-2768.5"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="482.33,-2770.48 488.66,-2769.93 483.37,-2766.41 482.33,-2770.48"/>
+</g>
+<!-- ent_RA_02 -->
+<g id="node83" class="node">
+<title>ent_RA_02</title>
+<g id="a_node83"><a xlink:href="./entity-RA-02.html" xlink:title="RA&#45;02\\nAsset Operating Record">
+<path fill="#f7dfe0" stroke="#a65b5b" stroke-width="1.5" d="M176,-860C176,-860 28,-860 28,-860 22,-860 16,-854 16,-848 16,-848 16,-836 16,-836 16,-830 22,-824 28,-824 28,-824 176,-824 176,-824 182,-824 188,-830 188,-836 188,-836 188,-848 188,-848 188,-854 182,-860 176,-860"/>
+<text xml:space="preserve" text-anchor="middle" x="102" y="-838.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">RA&#45;02\nAsset Operating Record</text>
+</a>
+</g>
+</g>
+<!-- ent_RA_02&#45;&gt;ent_RA_01 -->
+<g id="edge185" class="edge">
+<title>ent_RA_02&#45;&gt;ent_RA_01</title>
+<path fill="none" stroke="#5b7aa6" d="M188.56,-843.17C207.19,-843.43 226.79,-843.7 245.06,-843.95"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="244.71,-846.04 250.74,-844.02 244.77,-841.84 244.71,-846.04"/>
+</g>
+<!-- ent_RA_03 -->
+<g id="node84" class="node">
+<title>ent_RA_03</title>
+<g id="a_node84"><a xlink:href="./entity-RA-03.html" xlink:title="RA&#45;03\\nLease / Tenancy">
+<path fill="#f7dfe0" stroke="#a65b5b" stroke-width="1.5" d="M157.25,-1034C157.25,-1034 46.75,-1034 46.75,-1034 40.75,-1034 34.75,-1028 34.75,-1022 34.75,-1022 34.75,-1010 34.75,-1010 34.75,-1004 40.75,-998 46.75,-998 46.75,-998 157.25,-998 157.25,-998 163.25,-998 169.25,-1004 169.25,-1010 169.25,-1010 169.25,-1022 169.25,-1022 169.25,-1028 163.25,-1034 157.25,-1034"/>
+<text xml:space="preserve" text-anchor="middle" x="102" y="-1012.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">RA&#45;03\nLease / Tenancy</text>
+</a>
+</g>
+</g>
+<!-- ent_RA_03&#45;&gt;ent_E_01 -->
+<g id="edge187" class="edge">
+<title>ent_RA_03&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M104.19,-1034.62C118.26,-1255.75 253,-3372 253,-3372 253,-3372 563.38,-3401 563.38,-3401 563.38,-3401 563.38,-3401 1212.25,-3401 1212.25,-3401 1642,-3372 1642,-3372 1642,-3372 1750.53,-1723.17 1765.44,-1496.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1767.51,-1497.14 1765.81,-1491.02 1763.32,-1496.87 1767.51,-1497.14"/>
+</g>
+<!-- ent_RA_03&#45;&gt;ent_RA_01 -->
+<g id="edge186" class="edge">
+<title>ent_RA_03&#45;&gt;ent_RA_01</title>
+<path fill="none" stroke="#5b7aa6" d="M157.79,-997.31C174.24,-991.69 188,-987 188,-987 188,-987 261.35,-909.2 299.46,-868.77"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="300.75,-870.47 303.33,-864.67 297.69,-867.59 300.75,-870.47"/>
+</g>
+<!-- ent_RA_04 -->
+<g id="node85" class="node">
+<title>ent_RA_04</title>
+<g id="a_node85"><a xlink:href="./entity-RA-04.html" xlink:title="RA&#45;04\\nDevelopment Project">
+<path fill="#f7dfe0" stroke="#a65b5b" stroke-width="1.5" d="M168.5,-976C168.5,-976 35.5,-976 35.5,-976 29.5,-976 23.5,-970 23.5,-964 23.5,-964 23.5,-952 23.5,-952 23.5,-946 29.5,-940 35.5,-940 35.5,-940 168.5,-940 168.5,-940 174.5,-940 180.5,-946 180.5,-952 180.5,-952 180.5,-964 180.5,-964 180.5,-970 174.5,-976 168.5,-976"/>
+<text xml:space="preserve" text-anchor="middle" x="102" y="-954.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">RA&#45;04\nDevelopment Project</text>
+</a>
+</g>
+</g>
+<!-- ent_RA_04&#45;&gt;ent_E_01 -->
+<g id="edge189" class="edge">
+<title>ent_RA_04&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M157.79,-976.69C174.24,-982.31 188,-987 188,-987 188,-987 253,-3326 253,-3326 253,-3326 563.38,-3355 563.38,-3355 563.38,-3355 563.38,-3355 1212.25,-3355 1212.25,-3355 1331.75,-3326 1331.75,-3326 1331.75,-3326 1642,-3234 1642,-3234 1642,-3234 1749.86,-1714.28 1765.29,-1496.79"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1767.37,-1497.25 1765.7,-1491.12 1763.18,-1496.95 1767.37,-1497.25"/>
+</g>
+<!-- ent_RA_04&#45;&gt;ent_RA_01 -->
+<g id="edge188" class="edge">
+<title>ent_RA_04&#45;&gt;ent_RA_01</title>
+<path fill="none" stroke="#5b7aa6" d="M157.79,-939.31C174.24,-933.69 188,-929 188,-929 188,-929 246.32,-892.41 285.97,-867.53"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="286.92,-869.41 290.88,-864.45 284.68,-865.86 286.92,-869.41"/>
+</g>
+<!-- ent_RA_05 -->
+<g id="node86" class="node">
+<title>ent_RA_05</title>
+<g id="a_node86"><a xlink:href="./entity-RA-05.html" xlink:title="RA&#45;05\\nAsset Appraisal">
+<path fill="#f7dfe0" stroke="#a65b5b" stroke-width="1.5" d="M155.38,-918C155.38,-918 48.62,-918 48.62,-918 42.62,-918 36.62,-912 36.62,-906 36.62,-906 36.62,-894 36.62,-894 36.62,-888 42.62,-882 48.62,-882 48.62,-882 155.38,-882 155.38,-882 161.38,-882 167.38,-888 167.38,-894 167.38,-894 167.38,-906 167.38,-906 167.38,-912 161.38,-918 155.38,-918"/>
+<text xml:space="preserve" text-anchor="middle" x="102" y="-896.3" font-family="Helvetica,Arial,sans-serif" font-size="11.00" fill="#1f3a5f">RA&#45;05\nAsset Appraisal</text>
+</a>
+</g>
+</g>
+<!-- ent_RA_05&#45;&gt;ent_E_01 -->
+<g id="edge191" class="edge">
+<title>ent_RA_05&#45;&gt;ent_E_01</title>
+<path fill="none" stroke="#5b7aa6" d="M157.79,-918.69C174.24,-924.31 188,-929 188,-929 188,-929 449.75,-3064 449.75,-3064 449.75,-3064 563.38,-3309 563.38,-3309 563.38,-3309 563.38,-3309 881.88,-3309 881.88,-3309 1642,-3064 1642,-3064 1642,-3064 1748.86,-1703.49 1765.07,-1497.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1767.16,-1497.37 1765.54,-1491.23 1762.97,-1497.05 1767.16,-1497.37"/>
+</g>
+<!-- ent_RA_05&#45;&gt;ent_E_07 -->
+<g id="edge192" class="edge">
+<title>ent_RA_05&#45;&gt;ent_E_07</title>
+<path fill="none" stroke="#a07b2c" stroke-dasharray="5,2" d="M167.88,-902.28C316.91,-907.53 671,-920 671,-920 671,-920 736,-978 736,-978 736,-978 785.7,-988.02 826.68,-996.28"/>
+<polygon fill="#a07b2c" stroke="#a07b2c" points="826.18,-998.32 832.47,-997.45 827.01,-994.2 826.18,-998.32"/>
+</g>
+<!-- ent_RA_05&#45;&gt;ent_RA_01 -->
+<g id="edge190" class="edge">
+<title>ent_RA_05&#45;&gt;ent_RA_01</title>
+<path fill="none" stroke="#5b7aa6" d="M168.08,-883.65C192.38,-877.54 220.2,-870.55 245.43,-864.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="245.7,-866.31 251.01,-862.81 244.68,-862.23 245.7,-866.31"/>
+</g>
+</g>
+</svg>
+</div>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

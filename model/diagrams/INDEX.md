@@ -15,6 +15,6 @@ These render in any GitHub markdown view — the readable form, no build step.
 
 ## Static site
 
-The full model — every Business Domain drilled to Service-Operation depth, every entity page, the landscape and the entity ERD — is rendered as a navigable static HTML + SVG site by the Python generator at [`../../tools/diagrams/`](../../tools/diagrams/). The markdown under `model/service-domains/`, `model/entities/` and `model/ownership-map.md` is the only authoritative source; the generator parses it directly. See [`../../tools/diagrams/README.md`](../../tools/diagrams/README.md) for the build invocation and the per-view details.
+The full model — every Business Domain drilled to Service-Operation depth, every entity page, the landscape and the entity ERD — is rendered as a navigable static HTML + SVG site by the Python generator at [`../../tools/diagrams/`](../../tools/diagrams/), committed at [`../../exports/diagrams/`](../../exports/diagrams/). The markdown under `model/service-domains/`, `model/entities/` and `model/ownership-map.md` is the only authoritative source; the generator parses it directly. See [`../../tools/diagrams/README.md`](../../tools/diagrams/README.md) for the build invocation and the per-view details.
 
-The attribute-level core ERD is the D2 source at [`d2/core-erd.d2`](d2/core-erd.d2); the layer-stack rendering is [`d2/layer-stack.d2`](d2/layer-stack.d2). Both render to SVG via the D2 binary in the CI pipeline alongside the static site.
+The attribute-level core ERD is the D2 source at [`d2/core-erd.d2`](d2/core-erd.d2); the layer-stack rendering is [`d2/layer-stack.d2`](d2/layer-stack.d2). Both render to SVG via the D2 binary as their own build step alongside the static site.

@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BD-02 — OpenIM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --ink: #1f3a5f;
+      --soft-ink: #5b7aa6;
+      --bg: #ffffff;
+      --panel: #fafbfd;
+      --hairline: #d4dce6;
+      --accent: #5b8a48;
+      --code-bg: #f0eee6;
+      --controls-bg: #f0eee6;
+      --link-hover-bg: #dfe8f7;
+      --tag-bg: #dfe8f7;
+      --tag-ink: #1f3a5f;
+      --tag-pub-bg: #e5efe1;
+      --tag-priv-bg: #f7dfe0;
+      --tag-both-bg: #fbf0d8;
+      --diag-dim-opacity: 0.18;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #d8e2ee;
+        --soft-ink: #8aa6c9;
+        --bg: #0e1822;
+        --panel: #16222e;
+        --hairline: #2c3c4e;
+        --accent: #8cb878;
+        --code-bg: #1c2733;
+        --controls-bg: #1c2733;
+        --link-hover-bg: #233346;
+        --tag-bg: #233346;
+        --tag-ink: #d8e2ee;
+        --tag-pub-bg: #1b3024;
+        --tag-priv-bg: #341e21;
+        --tag-both-bg: #2f2a18;
+      }
+      /* SVG diagrams emitted by Graphviz carry inline fill="white" /
+         fill="#dfe8f7" attributes. In dark mode, invert them gently so
+         the boxes remain legible without re-rendering. */
+      .diagram svg {
+        filter: invert(0.92) hue-rotate(180deg) saturate(0.75);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      line-height: 1.55;
+    }
+    header {
+      border-bottom: 1px solid var(--hairline);
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      background: var(--bg);
+    }
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    header nav { font-size: 0.92rem; color: var(--soft-ink); }
+    header nav a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--soft-ink); }
+    header nav a:hover { background: var(--link-hover-bg); }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.5rem 1.4rem 3rem; }
+    h2 { margin-top: 2rem; color: var(--ink); }
+    h3 { margin-top: 1.5rem; color: var(--soft-ink); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram {
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--panel);
+      position: relative;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; max-height: 80vh; }
+    .meta { color: var(--soft-ink); font-size: 0.88rem; }
+    table { border-collapse: collapse; margin: 0.8rem 0 1.6rem; font-size: 0.92rem; width: 100%; }
+    th, td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+    th { color: var(--soft-ink); font-weight: 600; }
+    a { color: var(--ink); }
+    code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .tag { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 8px; font-size: 0.78rem; background: var(--tag-bg); color: var(--tag-ink); margin-left: 0.4rem; }
+    .tag-PUB { background: var(--tag-pub-bg); }
+    .tag-PRIV { background: var(--tag-priv-bg); }
+    .tag-BOTH { background: var(--tag-both-bg); }
+    footer { border-top: 1px solid var(--hairline); padding: 1rem 1.4rem; font-size: 0.85rem; color: var(--soft-ink); background: var(--bg); }
+    ul.tight { margin: 0.3rem 0 1rem 1.2rem; padding: 0; }
+    ul.tight li { margin: 0.15rem 0; }
+    .controls { display: flex; gap: 0.5rem; padding: 0.4rem 0.6rem; background: var(--controls-bg); font-size: 0.85rem; }
+    .controls button {
+      font: inherit; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--hairline); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer;
+    }
+    .controls button:hover { background: var(--link-hover-bg); }
+
+    /* Tag highlighting — hovering any entity link dims every other
+       entity link and emphasises sibling instances of the same entity id.
+       Pure CSS via the shared `entity-ref` class plus the per-entity id
+       carried on `data-entity` (e.g. data-entity="E-09"). */
+    .entity-ref { transition: opacity 0.12s linear, font-weight 0.12s linear; }
+    main:has(.entity-ref:hover) .entity-ref { opacity: var(--diag-dim-opacity); }
+    main:has(.entity-ref[data-entity="E-01"]:hover) .entity-ref[data-entity="E-01"],
+    main:has(.entity-ref[data-entity="E-02"]:hover) .entity-ref[data-entity="E-02"],
+    main:has(.entity-ref[data-entity="E-03"]:hover) .entity-ref[data-entity="E-03"],
+    main:has(.entity-ref[data-entity="E-04"]:hover) .entity-ref[data-entity="E-04"],
+    main:has(.entity-ref[data-entity="E-05"]:hover) .entity-ref[data-entity="E-05"],
+    main:has(.entity-ref[data-entity="E-06"]:hover) .entity-ref[data-entity="E-06"],
+    main:has(.entity-ref[data-entity="E-07"]:hover) .entity-ref[data-entity="E-07"],
+    main:has(.entity-ref[data-entity="E-08"]:hover) .entity-ref[data-entity="E-08"],
+    main:has(.entity-ref[data-entity="E-09"]:hover) .entity-ref[data-entity="E-09"] { opacity: 1; font-weight: 700; }
+    /* For every other entity id, fall back to a less-specific rule that
+       still emphasises the hovered link; siblings outside the small-set
+       above keep the dim fallback. This trims template size while keeping
+       the principal-spine entities (E-01..E-09) emphasised. */
+    .entity-ref:hover { opacity: 1 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="./index.html" style="text-decoration:none; color:var(--ink);">OpenIM Diagrams</a></h1>
+    <nav>
+      <a href="./index.html">Index</a> ·
+      <a href="./landscape.html">Landscape</a> ·
+      <a href="./erd.html">Entity ERD</a>
+    </nav>
+  </header>
+  <main>
+    
+<h2>BD-02 — Securities Research &amp; Selection <span class='tag'>Front</span></h2>
+<div class='diagram'><!-- Generated by graphviz version 15.1.0 (20260618.0150)
+ -->
+<!-- Title: openim_bd Pages: 1 -->
+<svg
+ viewBox="0.00 0.00 4347.00 430.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 400.8)">
+<title>openim_bd</title>
+<polygon fill="white" stroke="none" points="-28.8,28.8 -28.8,-400.8 4318.23,-400.8 4318.23,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="2144.72" y="-354.7" font-family="Times New Roman,serif" font-size="14.00" fill="#1f3a5f">BD&#45;02 — Securities Research &amp; Selection</text>
+<g id="clust1" class="cluster">
+<title>cluster_sd_02_1</title>
+<g id="a_clust1"><a xlink:href="./sd-02.1.html" xlink:title="SD&#45;02.1\\nInvestment Idea Generation\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1318.43,-180C1318.43,-180 2282.43,-180 2282.43,-180 2288.43,-180 2294.43,-186 2294.43,-192 2294.43,-192 2294.43,-241.5 2294.43,-241.5 2294.43,-247.5 2288.43,-253.5 2282.43,-253.5 2282.43,-253.5 1318.43,-253.5 1318.43,-253.5 1312.43,-253.5 1306.43,-247.5 1306.43,-241.5 1306.43,-241.5 1306.43,-192 1306.43,-192 1306.43,-186 1312.43,-180 1318.43,-180"/>
+<text xml:space="preserve" text-anchor="middle" x="1800.43" y="-239.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.1\nInvestment Idea Generation\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_sd_02_2</title>
+<g id="a_clust2"><a xlink:href="./sd-02.2.html" xlink:title="SD&#45;02.2\\nFundamental Equity Research\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1318.43,-94C1318.43,-94 2412.43,-94 2412.43,-94 2418.43,-94 2424.43,-100 2424.43,-106 2424.43,-106 2424.43,-155.5 2424.43,-155.5 2424.43,-161.5 2418.43,-167.5 2412.43,-167.5 2412.43,-167.5 1318.43,-167.5 1318.43,-167.5 1312.43,-167.5 1306.43,-161.5 1306.43,-155.5 1306.43,-155.5 1306.43,-106 1306.43,-106 1306.43,-100 1312.43,-94 1318.43,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="1865.43" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.2\nFundamental Equity Research\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_sd_02_3</title>
+<g id="a_clust3"><a xlink:href="./sd-02.3.html" xlink:title="SD&#45;02.3\\nCredit Research &amp; Analysis\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M3212.43,-94C3212.43,-94 4264.43,-94 4264.43,-94 4270.43,-94 4276.43,-100 4276.43,-106 4276.43,-106 4276.43,-155.5 4276.43,-155.5 4276.43,-161.5 4270.43,-167.5 4264.43,-167.5 4264.43,-167.5 3212.43,-167.5 3212.43,-167.5 3206.43,-167.5 3200.43,-161.5 3200.43,-155.5 3200.43,-155.5 3200.43,-106 3200.43,-106 3200.43,-100 3206.43,-94 3212.43,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="3738.43" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.3\nCredit Research &amp; Analysis\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_sd_02_4</title>
+<g id="a_clust4"><a xlink:href="./sd-02.4.html" xlink:title="SD&#45;02.4\\nQuantitative &amp; Systematic Research\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2444.43,-94C2444.43,-94 3180.43,-94 3180.43,-94 3186.43,-94 3192.43,-100 3192.43,-106 3192.43,-106 3192.43,-155.5 3192.43,-155.5 3192.43,-161.5 3186.43,-167.5 3180.43,-167.5 3180.43,-167.5 2444.43,-167.5 2444.43,-167.5 2438.43,-167.5 2432.43,-161.5 2432.43,-155.5 2432.43,-155.5 2432.43,-106 2432.43,-106 2432.43,-100 2438.43,-94 2444.43,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="2812.43" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.4\nQuantitative &amp; Systematic Research\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_sd_02_5</title>
+<g id="a_clust5"><a xlink:href="./sd-02.5.html" xlink:title="SD&#45;02.5\\nSecurity Selection &amp; Recommendation\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2444.43,-8C2444.43,-8 3622.43,-8 3622.43,-8 3628.43,-8 3634.43,-14 3634.43,-20 3634.43,-20 3634.43,-69.5 3634.43,-69.5 3634.43,-75.5 3628.43,-81.5 3622.43,-81.5 3622.43,-81.5 2444.43,-81.5 2444.43,-81.5 2438.43,-81.5 2432.43,-75.5 2432.43,-69.5 2432.43,-69.5 2432.43,-20 2432.43,-20 2432.43,-14 2438.43,-8 2444.43,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="3033.43" y="-67.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.5\nSecurity Selection &amp; Recommendation\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_sd_02_6</title>
+<g id="a_clust6"><a xlink:href="./sd-02.6.html" xlink:title="SD&#45;02.6\\nInvestment Thesis Management\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M1110.43,-8C1110.43,-8 2232.43,-8 2232.43,-8 2238.43,-8 2244.43,-14 2244.43,-20 2244.43,-20 2244.43,-69.5 2244.43,-69.5 2244.43,-75.5 2238.43,-81.5 2232.43,-81.5 2232.43,-81.5 1110.43,-81.5 1110.43,-81.5 1104.43,-81.5 1098.43,-75.5 1098.43,-69.5 1098.43,-69.5 1098.43,-20 1098.43,-20 1098.43,-14 1104.43,-8 1110.43,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="1671.43" y="-67.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.6\nInvestment Thesis Management\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_sd_02_7</title>
+<g id="a_clust7"><a xlink:href="./sd-02.7.html" xlink:title="SD&#45;02.7\\nResearch Management &amp; Coverage\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M27.43,-94C27.43,-94 1198.43,-94 1198.43,-94 1204.43,-94 1210.43,-100 1210.43,-106 1210.43,-106 1210.43,-155.5 1210.43,-155.5 1210.43,-161.5 1204.43,-167.5 1198.43,-167.5 1198.43,-167.5 27.43,-167.5 27.43,-167.5 21.43,-167.5 15.43,-161.5 15.43,-155.5 15.43,-155.5 15.43,-106 15.43,-106 15.43,-100 21.43,-94 27.43,-94"/>
+<text xml:space="preserve" text-anchor="middle" x="612.93" y="-153.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.7\nResearch Management &amp; Coverage\n[PUB]</text>
+</a>
+</g>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_sd_02_8</title>
+<g id="a_clust8"><a xlink:href="./sd-02.8.html" xlink:title="SD&#45;02.8\\nResearch Procurement &amp; Evaluation\\n[PUB]">
+<path fill="#dfe8f7" stroke="#5b7aa6" d="M2917.43,-266C2917.43,-266 3947.43,-266 3947.43,-266 3953.43,-266 3959.43,-272 3959.43,-278 3959.43,-278 3959.43,-327.5 3959.43,-327.5 3959.43,-333.5 3953.43,-339.5 3947.43,-339.5 3947.43,-339.5 2917.43,-339.5 2917.43,-339.5 2911.43,-339.5 2905.43,-333.5 2905.43,-327.5 2905.43,-327.5 2905.43,-278 2905.43,-278 2905.43,-272 2911.43,-266 2917.43,-266"/>
+<text xml:space="preserve" text-anchor="middle" x="3432.43" y="-325.05" font-family="Times New Roman,serif" font-size="11.00" fill="#1f3a5f">SD&#45;02.8\nResearch Procurement &amp; Evaluation\n[PUB]</text>
+</a>
+</g>
+</g>
+<!-- sd_02_1_anchor -->
+<!-- sd_02_2_anchor -->
+<!-- sd_02_1_anchor&#45;&gt;sd_02_2_anchor -->
+<g id="edge5" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-200.46C1296.47,-187.61 1295.26,-150.76 1302.82,-132.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1304.64,-133.14 1305.7,-126.87 1300.97,-131.11 1304.64,-133.14"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_2_anchor -->
+<g id="edge6" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1314.43,-180C1314.43,-178.33 1314.43,-176.61 1314.43,-174.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1316.53,-175.01 1314.43,-169.01 1312.33,-175.01 1316.53,-175.01"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_2_anchor -->
+<g id="edge8" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1329.67,-180C1329.94,-178.25 1330.17,-176.45 1330.36,-174.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1332.43,-175.14 1330.74,-169.01 1328.24,-174.85 1332.43,-175.14"/>
+</g>
+<!-- sd_02_3_anchor -->
+<!-- sd_02_1_anchor&#45;&gt;sd_02_3_anchor -->
+<g id="edge1" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-203.36C1295.89,-197.8 1304.43,-180 1304.43,-180 1304.43,-180 3175.43,-167.5 3175.43,-167.5 3175.43,-167.5 3181.81,-140.53 3194.58,-127.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3195.77,-129.39 3199.24,-124.06 3193.21,-126.07 3195.77,-129.39"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_3_anchor -->
+<g id="edge12" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1326.43,-180C1326.43,-180 3197.43,-167.5 3197.43,-167.5 3197.43,-167.5 3197.94,-165.36 3198.74,-161.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3200.75,-162.6 3200.09,-156.28 3196.66,-161.64 3200.75,-162.6"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_3_anchor -->
+<g id="edge13" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_3_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1348.43,-180C1348.43,-180 3086.67,-168.39 3212.28,-167.55"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3211.93,-169.65 3217.92,-167.51 3211.9,-165.45 3211.93,-169.65"/>
+</g>
+<!-- sd_02_4_anchor -->
+<!-- sd_02_1_anchor&#45;&gt;sd_02_4_anchor -->
+<g id="edge2" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-203.36C1295.89,-197.8 1304.43,-180 1304.43,-180 1304.43,-180 2407.43,-167.5 2407.43,-167.5 2407.43,-167.5 2413.81,-140.53 2426.58,-127.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2427.77,-129.39 2431.24,-124.06 2425.21,-126.07 2427.77,-129.39"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_4_anchor -->
+<g id="edge16" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1326.43,-180C1326.43,-180 2429.43,-167.5 2429.43,-167.5 2429.43,-167.5 2429.94,-165.36 2430.74,-161.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2432.75,-162.6 2432.09,-156.28 2428.66,-161.64 2432.75,-162.6"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_4_anchor -->
+<g id="edge17" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_4_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1348.43,-180C1348.43,-180 2348.4,-168.67 2444.1,-167.58"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2443.94,-169.69 2449.92,-167.52 2443.9,-165.49 2443.94,-169.69"/>
+</g>
+<!-- sd_02_6_anchor -->
+<!-- sd_02_1_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge3" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-203.85C1289.77,-198.94 1281.43,-180 1281.43,-180 1281.43,-180 1193.43,-94 1193.43,-94 1193.43,-94 1095.43,-81.5 1095.43,-81.5 1095.43,-81.5 1089.83,-57.84 1094.61,-44.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1096.32,-45.5 1097.65,-39.28 1092.74,-43.31 1096.32,-45.5"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge28" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-186.82C1304.73,-182.95 1303.43,-180 1303.43,-180 1303.43,-180 1215.43,-94 1215.43,-94 1215.43,-94 1147.59,-85.35 1124.8,-82.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1125.15,-80.37 1118.93,-81.69 1124.62,-84.53 1125.15,-80.37"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge35" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1325.43,-180C1325.43,-180 1237.43,-94 1237.43,-94 1237.43,-94 1169.59,-85.35 1146.8,-82.44"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1147.15,-80.37 1140.93,-81.69 1146.62,-84.53 1147.15,-80.37"/>
+</g>
+<!-- sd_02_7_anchor -->
+<!-- sd_02_1_anchor&#45;&gt;sd_02_7_anchor -->
+<g id="edge4" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-203.85C1289.77,-198.94 1281.43,-180 1281.43,-180 1281.43,-180 13.43,-167.5 13.43,-167.5 13.43,-167.5 7.35,-143.93 11.79,-130.35"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="13.49,-131.6 14.68,-125.36 9.85,-129.5 13.49,-131.6"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_7_anchor -->
+<g id="edge39" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-186.82C1304.73,-182.95 1303.43,-180 1303.43,-180 1303.43,-180 146.8,-168.6 42.88,-167.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="42.97,-165.47 36.95,-167.51 42.92,-169.67 42.97,-165.47"/>
+</g>
+<!-- sd_02_1_anchor&#45;&gt;sd_02_7_anchor -->
+<g id="edge41" class="edge">
+<title>sd_02_1_anchor&#45;&gt;sd_02_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1325.43,-180C1325.43,-180 168.8,-168.6 64.88,-167.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="64.97,-165.47 58.95,-167.51 64.92,-169.67 64.97,-165.47"/>
+</g>
+<!-- so_02_1_01 -->
+<g id="node2" class="node">
+<title>so_02_1_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1531.68,-224C1531.68,-224 1349.18,-224 1349.18,-224 1343.18,-224 1337.18,-218 1337.18,-212 1337.18,-212 1337.18,-200 1337.18,-200 1337.18,-194 1343.18,-188 1349.18,-188 1349.18,-188 1531.68,-188 1531.68,-188 1537.68,-188 1543.68,-194 1543.68,-200 1543.68,-200 1543.68,-212 1543.68,-212 1543.68,-218 1537.68,-224 1531.68,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1440.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Define and maintain the investable universe</text>
+</g>
+<!-- so_02_1_02 -->
+<g id="node3" class="node">
+<title>so_02_1_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1678.81,-224C1678.81,-224 1578.06,-224 1578.06,-224 1572.06,-224 1566.06,-218 1566.06,-212 1566.06,-212 1566.06,-200 1566.06,-200 1566.06,-194 1572.06,-188 1578.06,-188 1578.06,-188 1678.81,-188 1678.81,-188 1684.81,-188 1690.81,-194 1690.81,-200 1690.81,-200 1690.81,-212 1690.81,-212 1690.81,-218 1684.81,-224 1678.81,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1628.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run quantitative screens</text>
+</g>
+<!-- so_02_1_03 -->
+<g id="node4" class="node">
+<title>so_02_1_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1824.43,-224C1824.43,-224 1724.43,-224 1724.43,-224 1718.43,-224 1712.43,-218 1712.43,-212 1712.43,-212 1712.43,-200 1712.43,-200 1712.43,-194 1718.43,-188 1724.43,-188 1724.43,-188 1824.43,-188 1824.43,-188 1830.43,-188 1836.43,-194 1836.43,-200 1836.43,-200 1836.43,-212 1836.43,-212 1836.43,-218 1830.43,-224 1824.43,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1774.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Source non&#45;screen ideas</text>
+</g>
+<!-- so_02_1_04 -->
+<g id="node5" class="node">
+<title>so_02_1_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2018.06,-224C2018.06,-224 1870.81,-224 1870.81,-224 1864.81,-224 1858.81,-218 1858.81,-212 1858.81,-212 1858.81,-200 1858.81,-200 1858.81,-194 1864.81,-188 1870.81,-188 1870.81,-188 2018.06,-188 2018.06,-188 2024.06,-188 2030.06,-194 2030.06,-200 2030.06,-200 2030.06,-212 2030.06,-212 2030.06,-218 2024.06,-224 2018.06,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1944.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Generate hedge&#45;fund strategy ideas</text>
+</g>
+<!-- so_02_1_05 -->
+<g id="node6" class="node">
+<title>so_02_1_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2151.06,-224C2151.06,-224 2063.81,-224 2063.81,-224 2057.81,-224 2051.81,-218 2051.81,-212 2051.81,-212 2051.81,-200 2051.81,-200 2051.81,-194 2057.81,-188 2063.81,-188 2063.81,-188 2151.06,-188 2151.06,-188 2157.06,-188 2163.06,-194 2163.06,-200 2163.06,-200 2163.06,-212 2163.06,-212 2163.06,-218 2157.06,-224 2151.06,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2107.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Capture and log ideas</text>
+</g>
+<!-- so_02_1_06 -->
+<g id="node7" class="node">
+<title>so_02_1_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2274.18,-224C2274.18,-224 2196.68,-224 2196.68,-224 2190.68,-224 2184.68,-218 2184.68,-212 2184.68,-212 2184.68,-200 2184.68,-200 2184.68,-194 2190.68,-188 2196.68,-188 2196.68,-188 2274.18,-188 2274.18,-188 2280.18,-188 2286.18,-194 2286.18,-200 2286.18,-200 2286.18,-212 2286.18,-212 2286.18,-218 2280.18,-224 2274.18,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2235.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Triage and prioritise</text>
+</g>
+<!-- sd_02_5_anchor -->
+<!-- sd_02_2_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge10" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.43,-117.36C1295.89,-111.8 1304.43,-94 1304.43,-94 1304.43,-94 2407.43,-81.5 2407.43,-81.5 2407.43,-81.5 2413.81,-54.53 2426.58,-41.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2427.77,-43.39 2431.24,-38.06 2425.21,-40.07 2427.77,-43.39"/>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge19" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1326.43,-94C1326.43,-94 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2429.94,-79.36 2430.74,-75.99"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2432.75,-76.6 2432.09,-70.28 2428.66,-75.64 2432.75,-76.6"/>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge26" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1348.43,-94C1348.43,-94 2348.4,-82.67 2444.1,-81.58"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2443.94,-83.69 2449.92,-81.52 2443.9,-79.49 2443.94,-83.69"/>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge11" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.44,-117.92C1288.45,-113.14 1275.43,-94 1275.43,-94 1275.43,-94 1095.43,-81.5 1095.43,-81.5 1095.43,-81.5 1089.83,-57.84 1094.61,-44.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1096.32,-45.5 1097.65,-39.28 1092.74,-43.31 1096.32,-45.5"/>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge29" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1306.44,-107.24C1302.02,-100.75 1297.43,-94 1297.43,-94 1297.43,-94 1158.39,-84.34 1124.71,-82.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1125.07,-79.93 1118.94,-81.6 1124.78,-84.12 1125.07,-79.93"/>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge37" class="edge">
+<title>sd_02_2_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1319.43,-94C1319.43,-94 1180.39,-84.34 1146.71,-82.01"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1147.07,-79.93 1140.94,-81.6 1146.78,-84.12 1147.07,-79.93"/>
+</g>
+<!-- ext_out_05 -->
+<g id="node62" class="node">
+<title>ext_out_05</title>
+<g id="a_node62"><a xlink:href="./bd-05.html" xlink:title="&#45;&gt; BD&#45;05\\nPortfolio Management">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M2406.06,-52C2406.06,-52 2270.81,-52 2270.81,-52 2264.81,-52 2258.81,-46 2258.81,-40 2258.81,-40 2258.81,-28 2258.81,-28 2258.81,-22 2264.81,-16 2270.81,-16 2270.81,-16 2406.06,-16 2406.06,-16 2412.06,-16 2418.06,-22 2418.06,-28 2418.06,-28 2418.06,-40 2418.06,-40 2418.06,-46 2412.06,-52 2406.06,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2338.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;05\nPortfolio Management</text>
+</a>
+</g>
+</g>
+<!-- sd_02_2_anchor&#45;&gt;ext_out_05 -->
+<g id="edge43" class="edge">
+<title>sd_02_2_anchor&#45;&gt;ext_out_05</title>
+<g id="a_edge43"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M1326.43,-94C1326.43,-94 2249.43,-81.5 2249.43,-81.5 2249.43,-81.5 2274.67,-68.31 2298.26,-55.99"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2299.11,-57.91 2303.46,-53.27 2297.17,-54.19 2299.11,-57.91"/>
+</a>
+</g>
+</g>
+<!-- so_02_2_01 -->
+<g id="node9" class="node">
+<title>so_02_2_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1449.81,-138C1449.81,-138 1349.06,-138 1349.06,-138 1343.06,-138 1337.06,-132 1337.06,-126 1337.06,-126 1337.06,-114 1337.06,-114 1337.06,-108 1343.06,-102 1349.06,-102 1349.06,-102 1449.81,-102 1449.81,-102 1455.81,-102 1461.81,-108 1461.81,-114 1461.81,-114 1461.81,-126 1461.81,-126 1461.81,-132 1455.81,-138 1449.81,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1399.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Understand the business</text>
+</g>
+<!-- so_02_2_02 -->
+<g id="node10" class="node">
+<title>so_02_2_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1592.56,-138C1592.56,-138 1496.31,-138 1496.31,-138 1490.31,-138 1484.31,-132 1484.31,-126 1484.31,-126 1484.31,-114 1484.31,-114 1484.31,-108 1490.31,-102 1496.31,-102 1496.31,-102 1592.56,-102 1592.56,-102 1598.56,-102 1604.56,-108 1604.56,-114 1604.56,-114 1604.56,-126 1604.56,-126 1604.56,-132 1598.56,-138 1592.56,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1544.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess earnings quality</text>
+</g>
+<!-- so_02_2_03 -->
+<g id="node11" class="node">
+<title>so_02_2_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1795.93,-138C1795.93,-138 1638.93,-138 1638.93,-138 1632.93,-138 1626.93,-132 1626.93,-126 1626.93,-126 1626.93,-114 1626.93,-114 1626.93,-108 1632.93,-102 1638.93,-102 1638.93,-102 1795.93,-102 1795.93,-102 1801.93,-102 1807.93,-108 1807.93,-114 1807.93,-114 1807.93,-126 1807.93,-126 1807.93,-132 1801.93,-138 1795.93,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1717.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Build and maintain the financial model</text>
+</g>
+<!-- so_02_2_04 -->
+<g id="node12" class="node">
+<title>so_02_2_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1972.43,-138C1972.43,-138 1842.43,-138 1842.43,-138 1836.43,-138 1830.43,-132 1830.43,-126 1830.43,-126 1830.43,-114 1830.43,-114 1830.43,-108 1836.43,-102 1842.43,-102 1842.43,-102 1972.43,-102 1972.43,-102 1978.43,-102 1984.43,-108 1984.43,-114 1984.43,-114 1984.43,-126 1984.43,-126 1984.43,-132 1978.43,-138 1972.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1907.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Forecast company performance</text>
+</g>
+<!-- so_02_2_05 -->
+<g id="node13" class="node">
+<title>so_02_2_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2088.43,-138C2088.43,-138 2018.43,-138 2018.43,-138 2012.43,-138 2006.43,-132 2006.43,-126 2006.43,-126 2006.43,-114 2006.43,-114 2006.43,-108 2012.43,-102 2018.43,-102 2018.43,-102 2088.43,-102 2088.43,-102 2094.43,-102 2100.43,-108 2100.43,-114 2100.43,-114 2100.43,-126 2100.43,-126 2100.43,-132 2094.43,-138 2088.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2053.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Value the security</text>
+</g>
+<!-- so_02_2_06 -->
+<g id="node14" class="node">
+<title>so_02_2_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2258.81,-138C2258.81,-138 2134.06,-138 2134.06,-138 2128.06,-138 2122.06,-132 2122.06,-126 2122.06,-126 2122.06,-114 2122.06,-114 2122.06,-108 2128.06,-102 2134.06,-102 2134.06,-102 2258.81,-102 2258.81,-102 2264.81,-102 2270.81,-108 2270.81,-114 2270.81,-114 2270.81,-126 2270.81,-126 2270.81,-132 2264.81,-138 2258.81,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2196.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Integrate material ESG factors</text>
+</g>
+<!-- so_02_2_07 -->
+<g id="node15" class="node">
+<title>so_02_2_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2404.06,-138C2404.06,-138 2304.81,-138 2304.81,-138 2298.81,-138 2292.81,-132 2292.81,-126 2292.81,-126 2292.81,-114 2292.81,-114 2292.81,-108 2298.81,-102 2304.81,-102 2304.81,-102 2404.06,-102 2404.06,-102 2410.06,-102 2416.06,-108 2416.06,-114 2416.06,-114 2416.06,-126 2416.06,-126 2416.06,-132 2410.06,-138 2404.06,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2354.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Author the research note</text>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge14" class="edge">
+<title>sd_02_3_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3200.43,-117.85C3183.77,-112.94 3175.43,-94 3175.43,-94 3175.43,-94 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2423.83,-57.84 2428.61,-44.27"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2430.32,-45.5 2431.65,-39.28 2426.74,-43.31 2430.32,-45.5"/>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge20" class="edge">
+<title>sd_02_3_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3200.43,-100.82C3198.73,-96.95 3197.43,-94 3197.43,-94 3197.43,-94 2536.29,-82.92 2458.82,-81.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2458.98,-79.53 2452.95,-81.53 2458.91,-83.73 2458.98,-79.53"/>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge23" class="edge">
+<title>sd_02_3_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3219.43,-94C3219.43,-94 2558.29,-82.92 2480.82,-81.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2480.98,-79.53 2474.95,-81.53 2480.91,-83.73 2480.98,-79.53"/>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge15" class="edge">
+<title>sd_02_3_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M3200.43,-100.82C3198.73,-96.95 3197.43,-94 3197.43,-94 3197.43,-94 1257.19,-82.34 1124.56,-81.54"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1124.96,-79.45 1118.95,-81.51 1124.93,-83.65 1124.96,-79.45"/>
+</g>
+<!-- ext_out_07 -->
+<g id="node64" class="node">
+<title>ext_out_07</title>
+<g id="a_node64"><a xlink:href="./bd-07.html" xlink:title="&#45;&gt; BD&#45;07\\nInvestment Risk">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M4277.43,-52C4277.43,-52 4165.43,-52 4165.43,-52 4159.43,-52 4153.43,-46 4153.43,-40 4153.43,-40 4153.43,-28 4153.43,-28 4153.43,-22 4159.43,-16 4165.43,-16 4165.43,-16 4277.43,-16 4277.43,-16 4283.43,-16 4289.43,-22 4289.43,-28 4289.43,-28 4289.43,-40 4289.43,-40 4289.43,-46 4283.43,-52 4277.43,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="4221.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;07\nInvestment Risk</text>
+</a>
+</g>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;ext_out_07 -->
+<g id="edge45" class="edge">
+<title>sd_02_3_anchor&#45;&gt;ext_out_07</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3219.43,-94C3219.43,-94 4142.43,-81.5 4142.43,-81.5 4142.43,-81.5 4164.41,-68.56 4185.18,-56.34"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="4186.16,-58.2 4190.26,-53.35 4184.03,-54.58 4186.16,-58.2"/>
+</g>
+<!-- ext_out_10 -->
+<g id="node65" class="node">
+<title>ext_out_10</title>
+<g id="a_node65"><a xlink:href="./bd-10.html" xlink:title="&#45;&gt; BD&#45;10\\nInvestment Compliance &amp; Guideline Monitoring">
+<path fill="#e9e2f0" stroke="#7a5b9b" stroke-width="1.5" stroke-dasharray="5,2" d="M3905.81,-52C3905.81,-52 3661.06,-52 3661.06,-52 3655.06,-52 3649.06,-46 3649.06,-40 3649.06,-40 3649.06,-28 3649.06,-28 3649.06,-22 3655.06,-16 3661.06,-16 3661.06,-16 3905.81,-16 3905.81,-16 3911.81,-16 3917.81,-22 3917.81,-28 3917.81,-28 3917.81,-40 3917.81,-40 3917.81,-46 3911.81,-52 3905.81,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="3783.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;10\nInvestment Compliance &amp; Guideline Monitoring</text>
+</a>
+</g>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;ext_out_10 -->
+<g id="edge46" class="edge">
+<title>sd_02_3_anchor&#45;&gt;ext_out_10</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3219.43,-94C3219.43,-94 3639.43,-81.5 3639.43,-81.5 3639.43,-81.5 3682.73,-67.52 3721.84,-54.89"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3722.08,-57.02 3727.14,-53.18 3720.79,-53.02 3722.08,-57.02"/>
+</g>
+<!-- ext_out_13 -->
+<g id="node66" class="node">
+<title>ext_out_13</title>
+<g id="a_node66"><a xlink:href="./bd-13.html" xlink:title="&#45;&gt; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M4119.18,-52C4119.18,-52 3951.68,-52 3951.68,-52 3945.68,-52 3939.68,-46 3939.68,-40 3939.68,-40 3939.68,-28 3939.68,-28 3939.68,-22 3945.68,-16 3951.68,-16 3951.68,-16 4119.18,-16 4119.18,-16 4125.18,-16 4131.18,-22 4131.18,-28 4131.18,-28 4131.18,-40 4131.18,-40 4131.18,-46 4125.18,-52 4119.18,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="4035.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- sd_02_3_anchor&#45;&gt;ext_out_13 -->
+<g id="edge47" class="edge">
+<title>sd_02_3_anchor&#45;&gt;ext_out_13</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M3219.43,-94C3219.43,-94 3928.43,-81.5 3928.43,-81.5 3928.43,-81.5 3959.29,-68.09 3987.86,-55.67"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="3988.62,-57.63 3993.29,-53.32 3986.95,-53.78 3988.62,-57.63"/>
+</g>
+<!-- so_02_3_01 -->
+<g id="node17" class="node">
+<title>so_02_3_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3342.06,-138C3342.06,-138 3242.81,-138 3242.81,-138 3236.81,-138 3230.81,-132 3230.81,-126 3230.81,-126 3230.81,-114 3230.81,-114 3230.81,-108 3236.81,-102 3242.81,-102 3242.81,-102 3342.06,-102 3342.06,-102 3348.06,-102 3354.06,-108 3354.06,-114 3354.06,-114 3354.06,-126 3354.06,-126 3354.06,-132 3348.06,-138 3342.06,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3292.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assess creditworthiness</text>
+</g>
+<!-- so_02_3_02 -->
+<g id="node18" class="node">
+<title>so_02_3_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3463.06,-138C3463.06,-138 3387.81,-138 3387.81,-138 3381.81,-138 3375.81,-132 3375.81,-126 3375.81,-126 3375.81,-114 3375.81,-114 3375.81,-108 3381.81,-102 3387.81,-102 3387.81,-102 3463.06,-102 3463.06,-102 3469.06,-102 3475.06,-108 3475.06,-114 3475.06,-114 3475.06,-126 3475.06,-126 3475.06,-132 3469.06,-138 3463.06,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3425.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse covenants</text>
+</g>
+<!-- so_02_3_03 -->
+<g id="node19" class="node">
+<title>so_02_3_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3611.93,-138C3611.93,-138 3508.93,-138 3508.93,-138 3502.93,-138 3496.93,-132 3496.93,-126 3496.93,-126 3496.93,-114 3496.93,-114 3496.93,-108 3502.93,-102 3508.93,-102 3508.93,-102 3611.93,-102 3611.93,-102 3617.93,-102 3623.93,-108 3623.93,-114 3623.93,-114 3623.93,-126 3623.93,-126 3623.93,-132 3617.93,-138 3611.93,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3560.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Estimate default and loss</text>
+</g>
+<!-- so_02_3_04 -->
+<g id="node20" class="node">
+<title>so_02_3_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3810.68,-138C3810.68,-138 3658.18,-138 3658.18,-138 3652.18,-138 3646.18,-132 3646.18,-126 3646.18,-126 3646.18,-114 3646.18,-114 3646.18,-108 3652.18,-102 3658.18,-102 3658.18,-102 3810.68,-102 3810.68,-102 3816.68,-102 3822.68,-108 3822.68,-114 3822.68,-114 3822.68,-126 3822.68,-126 3822.68,-132 3816.68,-138 3810.68,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3734.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run downside and recovery analysis</text>
+</g>
+<!-- so_02_3_05 -->
+<g id="node21" class="node">
+<title>so_02_3_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3944.43,-138C3944.43,-138 3856.43,-138 3856.43,-138 3850.43,-138 3844.43,-132 3844.43,-126 3844.43,-126 3844.43,-114 3844.43,-114 3844.43,-108 3850.43,-102 3856.43,-102 3856.43,-102 3944.43,-102 3944.43,-102 3950.43,-102 3956.43,-108 3956.43,-114 3956.43,-114 3956.43,-126 3956.43,-126 3956.43,-132 3950.43,-138 3944.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3900.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Analyse relative value</text>
+</g>
+<!-- so_02_3_06 -->
+<g id="node22" class="node">
+<title>so_02_3_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M4124.31,-138C4124.31,-138 3990.56,-138 3990.56,-138 3984.56,-138 3978.56,-132 3978.56,-126 3978.56,-126 3978.56,-114 3978.56,-114 3978.56,-108 3984.56,-102 3990.56,-102 3990.56,-102 4124.31,-102 4124.31,-102 4130.31,-102 4136.31,-108 4136.31,-114 4136.31,-114 4136.31,-126 4136.31,-126 4136.31,-132 4130.31,-138 4124.31,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="4057.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the internal credit rating</text>
+</g>
+<!-- so_02_3_07 -->
+<g id="node23" class="node">
+<title>so_02_3_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M4256.31,-138C4256.31,-138 4170.56,-138 4170.56,-138 4164.56,-138 4158.56,-132 4158.56,-126 4158.56,-126 4158.56,-114 4158.56,-114 4158.56,-108 4164.56,-102 4170.56,-102 4170.56,-102 4256.31,-102 4256.31,-102 4262.31,-102 4268.31,-108 4268.31,-114 4268.31,-114 4268.31,-126 4268.31,-126 4268.31,-132 4262.31,-138 4256.31,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="4213.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Author the credit note</text>
+</g>
+<!-- sd_02_4_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge18" class="edge">
+<title>sd_02_4_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2432.43,-114.46C2422.47,-101.61 2421.26,-64.76 2428.82,-46.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2430.64,-47.14 2431.7,-40.87 2426.97,-45.11 2430.64,-47.14"/>
+</g>
+<!-- sd_02_4_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge21" class="edge">
+<title>sd_02_4_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2440.43,-94C2440.43,-92.33 2440.43,-90.61 2440.43,-88.87"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2442.53,-89.01 2440.43,-83.01 2438.33,-89.01 2442.53,-89.01"/>
+</g>
+<!-- sd_02_4_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge25" class="edge">
+<title>sd_02_4_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2455.67,-94C2455.94,-92.25 2456.17,-90.45 2456.36,-88.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2458.43,-89.14 2456.74,-83.01 2454.24,-88.85 2458.43,-89.14"/>
+</g>
+<!-- sd_02_4_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge30" class="edge">
+<title>sd_02_4_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2432.44,-115.17C2424.66,-108.16 2418.43,-94 2418.43,-94 2418.43,-94 1219.21,-82.57 1113.81,-81.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1113.97,-79.47 1107.95,-81.51 1113.93,-83.67 1113.97,-79.47"/>
+</g>
+<!-- sd_02_4_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge33" class="edge">
+<title>sd_02_4_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2440.43,-94C2440.43,-94 1241.21,-82.57 1135.81,-81.57"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1135.97,-79.47 1129.95,-81.51 1135.93,-83.67 1135.97,-79.47"/>
+</g>
+<!-- so_02_4_01 -->
+<g id="node25" class="node">
+<title>so_02_4_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2594.18,-138C2594.18,-138 2474.68,-138 2474.68,-138 2468.68,-138 2462.68,-132 2462.68,-126 2462.68,-126 2462.68,-114 2462.68,-114 2462.68,-108 2468.68,-102 2474.68,-102 2474.68,-102 2594.18,-102 2594.18,-102 2600.18,-102 2606.18,-108 2606.18,-114 2606.18,-114 2606.18,-126 2606.18,-126 2606.18,-132 2600.18,-138 2594.18,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2534.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Research factors and signals</text>
+</g>
+<!-- so_02_4_02 -->
+<g id="node26" class="node">
+<title>so_02_4_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2704.43,-138C2704.43,-138 2640.43,-138 2640.43,-138 2634.43,-138 2628.43,-132 2628.43,-126 2628.43,-126 2628.43,-114 2628.43,-114 2628.43,-108 2634.43,-102 2640.43,-102 2640.43,-102 2704.43,-102 2704.43,-102 2710.43,-102 2716.43,-108 2716.43,-114 2716.43,-114 2716.43,-126 2716.43,-126 2716.43,-132 2710.43,-138 2704.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2672.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Evaluate signals</text>
+</g>
+<!-- so_02_4_03 -->
+<g id="node27" class="node">
+<title>so_02_4_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2850.43,-138C2850.43,-138 2750.43,-138 2750.43,-138 2744.43,-138 2738.43,-132 2738.43,-126 2738.43,-126 2738.43,-114 2738.43,-114 2738.43,-108 2744.43,-102 2750.43,-102 2750.43,-102 2850.43,-102 2850.43,-102 2856.43,-102 2862.43,-108 2862.43,-114 2862.43,-114 2862.43,-126 2862.43,-126 2862.43,-132 2856.43,-138 2850.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2800.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Develop the alpha model</text>
+</g>
+<!-- so_02_4_04 -->
+<g id="node28" class="node">
+<title>so_02_4_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2927.93,-138C2927.93,-138 2896.93,-138 2896.93,-138 2890.93,-138 2884.93,-132 2884.93,-126 2884.93,-126 2884.93,-114 2884.93,-114 2884.93,-108 2890.93,-102 2896.93,-102 2896.93,-102 2927.93,-102 2927.93,-102 2933.93,-102 2939.93,-108 2939.93,-114 2939.93,-114 2939.93,-126 2939.93,-126 2939.93,-132 2933.93,-138 2927.93,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="2912.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Backtest</text>
+</g>
+<!-- so_02_4_05 -->
+<g id="node29" class="node">
+<title>so_02_4_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3046.56,-138C3046.56,-138 2974.31,-138 2974.31,-138 2968.31,-138 2962.31,-132 2962.31,-126 2962.31,-126 2962.31,-114 2962.31,-114 2962.31,-108 2968.31,-102 2974.31,-102 2974.31,-102 3046.56,-102 3046.56,-102 3052.56,-102 3058.56,-108 3058.56,-114 3058.56,-114 3058.56,-126 3058.56,-126 3058.56,-132 3052.56,-138 3046.56,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3010.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Validate the model</text>
+</g>
+<!-- so_02_4_06 -->
+<g id="node30" class="node">
+<title>so_02_4_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3172.31,-138C3172.31,-138 3092.56,-138 3092.56,-138 3086.56,-138 3080.56,-132 3080.56,-126 3080.56,-126 3080.56,-114 3080.56,-114 3080.56,-108 3086.56,-102 3092.56,-102 3092.56,-102 3172.31,-102 3172.31,-102 3178.31,-102 3184.31,-108 3184.31,-114 3184.31,-114 3184.31,-126 3184.31,-126 3184.31,-132 3178.31,-138 3172.31,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="3132.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor alpha decay</text>
+</g>
+<!-- sd_02_5_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge27" class="edge">
+<title>sd_02_5_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2432.43,-68.54C2430.73,-75.9 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2423.93,-84.62 2423.93,-84.62 2423.93,-84.62 1229.9,-84.62 1124.79,-81.88"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1125.04,-79.79 1118.94,-81.58 1124.83,-83.98 1125.04,-79.79"/>
+</g>
+<!-- sd_02_5_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge31" class="edge">
+<title>sd_02_5_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2432.43,-68.54C2430.73,-75.9 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2418.43,-87.75 2418.43,-87.75 2418.43,-87.75 1128.43,-87.75 1128.43,-87.75 1128.43,-87.75 1126.33,-86.55 1123.96,-85.21"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1125,-83.39 1118.75,-82.25 1122.93,-87.04 1125,-83.39"/>
+</g>
+<!-- sd_02_5_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge34" class="edge">
+<title>sd_02_5_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M2432.43,-68.54C2430.73,-75.9 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2412.93,-90.88 2412.93,-90.88 2412.93,-90.88 1133.93,-90.88 1133.93,-90.88 1133.93,-90.88 1128.42,-87.74 1123.76,-85.1"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1125,-83.39 1118.75,-82.25 1122.93,-87.04 1125,-83.39"/>
+</g>
+<!-- so_02_5_01 -->
+<g id="node32" class="node">
+<title>so_02_5_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2616.06,-52C2616.06,-52 2474.81,-52 2474.81,-52 2468.81,-52 2462.81,-46 2462.81,-40 2462.81,-40 2462.81,-28 2462.81,-28 2462.81,-22 2468.81,-16 2474.81,-16 2474.81,-16 2616.06,-16 2616.06,-16 2622.06,-16 2628.06,-22 2628.06,-28 2628.06,-28 2628.06,-40 2628.06,-40 2628.06,-46 2622.06,-52 2616.06,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2545.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Make the buy / sell / hold decision</text>
+</g>
+<!-- so_02_5_02 -->
+<g id="node33" class="node">
+<title>so_02_5_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2766.68,-52C2766.68,-52 2662.18,-52 2662.18,-52 2656.18,-52 2650.18,-46 2650.18,-40 2650.18,-40 2650.18,-28 2650.18,-28 2650.18,-22 2656.18,-16 2662.18,-16 2662.18,-16 2766.68,-16 2766.68,-16 2772.68,-16 2778.68,-22 2778.68,-28 2778.68,-28 2778.68,-40 2778.68,-40 2778.68,-46 2772.68,-52 2766.68,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2714.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Assign a conviction rating</text>
+</g>
+<!-- so_02_5_03 -->
+<g id="node34" class="node">
+<title>so_02_5_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2888.06,-52C2888.06,-52 2812.81,-52 2812.81,-52 2806.81,-52 2800.81,-46 2800.81,-40 2800.81,-40 2800.81,-28 2800.81,-28 2800.81,-22 2806.81,-16 2812.81,-16 2812.81,-16 2888.06,-16 2888.06,-16 2894.06,-16 2900.06,-22 2900.06,-28 2900.06,-28 2900.06,-40 2900.06,-40 2900.06,-46 2894.06,-52 2888.06,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2850.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set the price target</text>
+</g>
+<!-- so_02_5_04 -->
+<g id="node35" class="node">
+<title>so_02_5_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3093.06,-52C3093.06,-52 2933.81,-52 2933.81,-52 2927.81,-52 2921.81,-46 2921.81,-40 2921.81,-40 2921.81,-28 2921.81,-28 2921.81,-22 2927.81,-16 2933.81,-16 2933.81,-16 3093.06,-16 3093.06,-16 3099.06,-16 3105.06,-22 3105.06,-28 3105.06,-28 3105.06,-40 3105.06,-40 3105.06,-46 3099.06,-52 3093.06,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="3013.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Produce the recommendation rationale</text>
+</g>
+<!-- so_02_5_05 -->
+<g id="node36" class="node">
+<title>so_02_5_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3346.06,-52C3346.06,-52 3138.81,-52 3138.81,-52 3132.81,-52 3126.81,-46 3126.81,-40 3126.81,-40 3126.81,-28 3126.81,-28 3126.81,-22 3132.81,-16 3138.81,-16 3138.81,-16 3346.06,-16 3346.06,-16 3352.06,-16 3358.06,-22 3358.06,-28 3358.06,-28 3358.06,-40 3358.06,-40 3358.06,-46 3352.06,-52 3346.06,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="3242.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the research / stock&#45;selection committee</text>
+</g>
+<!-- so_02_5_06 -->
+<g id="node37" class="node">
+<title>so_02_5_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3614.56,-52C3614.56,-52 3392.31,-52 3392.31,-52 3386.31,-52 3380.31,-46 3380.31,-40 3380.31,-40 3380.31,-28 3380.31,-28 3380.31,-22 3386.31,-16 3392.31,-16 3392.31,-16 3614.56,-16 3614.56,-16 3620.56,-16 3626.56,-22 3626.56,-28 3626.56,-28 3626.56,-40 3626.56,-40 3626.56,-46 3620.56,-52 3614.56,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="3503.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the recommended, approved and focus lists</text>
+</g>
+<!-- sd_02_6_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge22" class="edge">
+<title>sd_02_6_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1117.43,-81.5C1117.43,-81.5 1122.93,-84.62 1122.93,-84.62 1122.93,-84.62 2423.93,-84.62 2423.93,-84.62 2423.93,-84.62 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2429.96,-79.2 2430.8,-75.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2432.78,-76.34 2432.09,-70.02 2428.69,-75.39 2432.78,-76.34"/>
+</g>
+<!-- sd_02_6_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge24" class="edge">
+<title>sd_02_6_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1117.43,-81.5C1117.43,-81.5 1128.43,-87.75 1128.43,-87.75 1128.43,-87.75 2418.43,-87.75 2418.43,-87.75 2418.43,-87.75 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2429.96,-79.2 2430.8,-75.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2432.78,-76.34 2432.09,-70.02 2428.69,-75.39 2432.78,-76.34"/>
+</g>
+<!-- sd_02_6_anchor&#45;&gt;sd_02_5_anchor -->
+<g id="edge38" class="edge">
+<title>sd_02_6_anchor&#45;&gt;sd_02_5_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1117.43,-81.5C1117.43,-81.5 1133.93,-90.88 1133.93,-90.88 1133.93,-90.88 2412.93,-90.88 2412.93,-90.88 2412.93,-90.88 2429.43,-81.5 2429.43,-81.5 2429.43,-81.5 2429.96,-79.2 2430.8,-75.62"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2432.78,-76.34 2432.09,-70.02 2428.69,-75.39 2432.78,-76.34"/>
+</g>
+<!-- sd_02_6_anchor&#45;&gt;sd_02_7_anchor -->
+<g id="edge40" class="edge">
+<title>sd_02_6_anchor&#45;&gt;sd_02_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1098.43,-35.54C1005.63,-41.13 143.24,-88.67 53.9,-93.59"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="53.82,-91.49 47.94,-93.92 54.05,-95.68 53.82,-91.49"/>
+</g>
+<!-- sd_02_6_anchor&#45;&gt;sd_02_7_anchor -->
+<g id="edge42" class="edge">
+<title>sd_02_6_anchor&#45;&gt;sd_02_7_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M1098.43,-35.79C1003.33,-42.42 162.87,-88.79 75.73,-93.6"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="75.82,-91.49 69.94,-93.92 76.05,-95.68 75.82,-91.49"/>
+</g>
+<!-- so_02_6_01 -->
+<g id="node39" class="node">
+<title>so_02_6_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1206.56,-52C1206.56,-52 1140.31,-52 1140.31,-52 1134.31,-52 1128.31,-46 1128.31,-40 1128.31,-40 1128.31,-28 1128.31,-28 1128.31,-22 1134.31,-16 1140.31,-16 1140.31,-16 1206.56,-16 1206.56,-16 1212.56,-16 1218.56,-22 1218.56,-28 1218.56,-28 1218.56,-40 1218.56,-40 1218.56,-46 1212.56,-52 1206.56,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Author the thesis</text>
+</g>
+<!-- so_02_6_02 -->
+<g id="node40" class="node">
+<title>so_02_6_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1338.31,-52C1338.31,-52 1252.56,-52 1252.56,-52 1246.56,-52 1240.56,-46 1240.56,-40 1240.56,-40 1240.56,-28 1240.56,-28 1240.56,-22 1246.56,-16 1252.56,-16 1252.56,-16 1338.31,-16 1338.31,-16 1344.31,-16 1350.31,-22 1350.31,-28 1350.31,-28 1350.31,-40 1350.31,-40 1350.31,-46 1344.31,-52 1338.31,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1295.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Stress&#45;test the thesis</text>
+</g>
+<!-- so_02_6_03 -->
+<g id="node41" class="node">
+<title>so_02_6_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1454.43,-52C1454.43,-52 1384.43,-52 1384.43,-52 1378.43,-52 1372.43,-46 1372.43,-40 1372.43,-40 1372.43,-28 1372.43,-28 1372.43,-22 1378.43,-16 1384.43,-16 1384.43,-16 1454.43,-16 1454.43,-16 1460.43,-16 1466.43,-22 1466.43,-28 1466.43,-28 1466.43,-40 1466.43,-40 1466.43,-46 1460.43,-52 1454.43,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1419.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Monitor the thesis</text>
+</g>
+<!-- so_02_6_04 -->
+<g id="node42" class="node">
+<title>so_02_6_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1584.56,-52C1584.56,-52 1500.31,-52 1500.31,-52 1494.31,-52 1488.31,-46 1488.31,-40 1488.31,-40 1488.31,-28 1488.31,-28 1488.31,-22 1494.31,-16 1500.31,-16 1500.31,-16 1584.56,-16 1584.56,-16 1590.56,-16 1596.56,-22 1596.56,-28 1596.56,-28 1596.56,-40 1596.56,-40 1596.56,-46 1590.56,-52 1584.56,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1542.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Revalidate the thesis</text>
+</g>
+<!-- so_02_6_05 -->
+<g id="node43" class="node">
+<title>so_02_6_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1708.18,-52C1708.18,-52 1630.68,-52 1630.68,-52 1624.68,-52 1618.68,-46 1618.68,-40 1618.68,-40 1618.68,-28 1618.68,-28 1618.68,-22 1624.68,-16 1630.68,-16 1630.68,-16 1708.18,-16 1708.18,-16 1714.18,-16 1720.18,-22 1720.18,-28 1720.18,-28 1720.18,-40 1720.18,-40 1720.18,-46 1714.18,-52 1708.18,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1669.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Detect thesis creep</text>
+</g>
+<!-- so_02_6_06 -->
+<g id="node44" class="node">
+<title>so_02_6_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1838.18,-52C1838.18,-52 1754.68,-52 1754.68,-52 1748.68,-52 1742.68,-46 1742.68,-40 1742.68,-40 1742.68,-28 1742.68,-28 1742.68,-22 1748.68,-16 1754.68,-16 1754.68,-16 1838.18,-16 1838.18,-16 1844.18,-16 1850.18,-22 1850.18,-28 1850.18,-28 1850.18,-40 1850.18,-40 1850.18,-46 1844.18,-52 1838.18,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1796.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Trigger sell discipline</text>
+</g>
+<!-- so_02_6_07 -->
+<g id="node45" class="node">
+<title>so_02_6_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2024.68,-52C2024.68,-52 1884.18,-52 1884.18,-52 1878.18,-52 1872.18,-46 1872.18,-40 1872.18,-40 1872.18,-28 1872.18,-28 1872.18,-22 1878.18,-16 1884.18,-16 1884.18,-16 2024.68,-16 2024.68,-16 2030.68,-16 2036.68,-22 2036.68,-28 2036.68,-28 2036.68,-40 2036.68,-40 2036.68,-46 2030.68,-52 2024.68,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="1954.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Run the exit / post&#45;mortem review</text>
+</g>
+<!-- so_02_6_08 -->
+<g id="node46" class="node">
+<title>so_02_6_08</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M2224.43,-52C2224.43,-52 2070.43,-52 2070.43,-52 2064.43,-52 2058.43,-46 2058.43,-40 2058.43,-40 2058.43,-28 2058.43,-28 2058.43,-22 2064.43,-16 2070.43,-16 2070.43,-16 2224.43,-16 2224.43,-16 2230.43,-16 2236.43,-22 2236.43,-28 2236.43,-28 2236.43,-40 2236.43,-40 2236.43,-46 2230.43,-52 2224.43,-52"/>
+<text xml:space="preserve" text-anchor="middle" x="2147.43" y="-30.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the strategy&#45;level live thesis</text>
+</g>
+<!-- sd_02_7_anchor&#45;&gt;sd_02_2_anchor -->
+<g id="edge7" class="edge">
+<title>sd_02_7_anchor&#45;&gt;sd_02_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M35.43,-167.5C35.43,-167.5 42.77,-171.67 42.77,-171.67 42.77,-171.67 1290.1,-171.67 1290.1,-171.67 1290.1,-171.67 1297.43,-167.5 1297.43,-167.5 1297.43,-167.5 1300.46,-159.03 1303.97,-149.24"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1305.88,-150.12 1305.93,-143.77 1301.93,-148.71 1305.88,-150.12"/>
+</g>
+<!-- sd_02_7_anchor&#45;&gt;sd_02_2_anchor -->
+<g id="edge9" class="edge">
+<title>sd_02_7_anchor&#45;&gt;sd_02_2_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M35.43,-167.5C35.43,-167.5 50.1,-175.83 50.1,-175.83 50.1,-175.83 1282.77,-175.83 1282.77,-175.83 1282.77,-175.83 1297.43,-167.5 1297.43,-167.5 1297.43,-167.5 1300.46,-159.03 1303.97,-149.24"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1305.88,-150.12 1305.93,-143.77 1301.93,-148.71 1305.88,-150.12"/>
+</g>
+<!-- sd_02_7_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge32" class="edge">
+<title>sd_02_7_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M15.44,-118.41C-7.47,-114.62 2.43,-94 2.43,-94 2.43,-94 954.23,-41.57 1090.94,-35.56"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1091.02,-37.66 1096.92,-35.31 1090.84,-33.46 1091.02,-37.66"/>
+</g>
+<!-- sd_02_7_anchor&#45;&gt;sd_02_6_anchor -->
+<g id="edge36" class="edge">
+<title>sd_02_7_anchor&#45;&gt;sd_02_6_anchor</title>
+<path fill="none" stroke="#5b7aa6" d="M24.43,-94C24.43,-94 959.87,-42.47 1091.26,-35.72"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1091.04,-37.84 1096.92,-35.44 1090.83,-33.64 1091.04,-37.84"/>
+</g>
+<!-- so_02_7_01 -->
+<g id="node48" class="node">
+<title>so_02_7_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M166.93,-138C166.93,-138 57.93,-138 57.93,-138 51.93,-138 45.93,-132 45.93,-126 45.93,-126 45.93,-114 45.93,-114 45.93,-108 51.93,-102 57.93,-102 57.93,-102 166.93,-102 166.93,-102 172.93,-102 178.93,-108 178.93,-114 178.93,-114 178.93,-126 178.93,-126 178.93,-132 172.93,-138 166.93,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="112.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Define the coverage model</text>
+</g>
+<!-- so_02_7_02 -->
+<g id="node49" class="node">
+<title>so_02_7_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M360.06,-138C360.06,-138 212.81,-138 212.81,-138 206.81,-138 200.81,-132 200.81,-126 200.81,-126 200.81,-114 200.81,-114 200.81,-108 206.81,-102 212.81,-102 212.81,-102 360.06,-102 360.06,-102 366.06,-102 372.06,-108 372.06,-114 372.06,-114 372.06,-126 372.06,-126 372.06,-132 366.06,-138 360.06,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="286.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set coverage initiation and cadence</text>
+</g>
+<!-- so_02_7_03 -->
+<g id="node50" class="node">
+<title>so_02_7_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M531.18,-138C531.18,-138 405.68,-138 405.68,-138 399.68,-138 393.68,-132 393.68,-126 393.68,-126 393.68,-114 393.68,-114 393.68,-108 399.68,-102 405.68,-102 405.68,-102 531.18,-102 531.18,-102 537.18,-102 543.18,-108 543.18,-114 543.18,-114 543.18,-126 543.18,-126 543.18,-132 537.18,-138 531.18,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="468.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage the research workflow</text>
+</g>
+<!-- so_02_7_04 -->
+<g id="node51" class="node">
+<title>so_02_7_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M693.31,-138C693.31,-138 577.56,-138 577.56,-138 571.56,-138 565.56,-132 565.56,-126 565.56,-126 565.56,-114 565.56,-114 565.56,-108 571.56,-102 577.56,-102 577.56,-102 693.31,-102 693.31,-102 699.31,-102 705.31,-108 705.31,-114 705.31,-114 705.31,-126 705.31,-126 705.31,-132 699.31,-138 693.31,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="635.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Maintain the research record</text>
+</g>
+<!-- so_02_7_05 -->
+<g id="node52" class="node">
+<title>so_02_7_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M781.93,-138C781.93,-138 738.93,-138 738.93,-138 732.93,-138 726.93,-132 726.93,-126 726.93,-126 726.93,-114 726.93,-114 726.93,-108 732.93,-102 738.93,-102 738.93,-102 781.93,-102 781.93,-102 787.93,-102 793.93,-108 793.93,-114 793.93,-114 793.93,-126 793.93,-126 793.93,-132 787.93,-138 781.93,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="760.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Track ideas</text>
+</g>
+<!-- so_02_7_06 -->
+<g id="node53" class="node">
+<title>so_02_7_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1024.43,-138C1024.43,-138 828.43,-138 828.43,-138 822.43,-138 816.43,-132 816.43,-126 816.43,-126 816.43,-114 816.43,-114 816.43,-108 822.43,-102 828.43,-102 828.43,-102 1024.43,-102 1024.43,-102 1030.43,-102 1036.43,-108 1036.43,-114 1036.43,-114 1036.43,-126 1036.43,-126 1036.43,-132 1030.43,-138 1024.43,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="926.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Manage corporate access and expert networks</text>
+</g>
+<!-- so_02_7_07 -->
+<g id="node54" class="node">
+<title>so_02_7_07</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M1190.56,-138C1190.56,-138 1070.31,-138 1070.31,-138 1064.31,-138 1058.31,-132 1058.31,-126 1058.31,-126 1058.31,-114 1058.31,-114 1058.31,-108 1064.31,-102 1070.31,-102 1070.31,-102 1190.56,-102 1190.56,-102 1196.56,-102 1202.56,-108 1202.56,-114 1202.56,-114 1202.56,-126 1202.56,-126 1202.56,-132 1196.56,-138 1190.56,-138"/>
+<text xml:space="preserve" text-anchor="middle" x="1130.43" y="-116.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Control research entitlements</text>
+</g>
+<!-- sd_02_8_anchor -->
+<!-- ext_out_06 -->
+<g id="node63" class="node">
+<title>ext_out_06</title>
+<g id="a_node63"><a xlink:href="./bd-06.html" xlink:title="&#45;&gt; BD&#45;06\\nTrading &amp; Execution">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M2765.68,-224C2765.68,-224 2637.18,-224 2637.18,-224 2631.18,-224 2625.18,-218 2625.18,-212 2625.18,-212 2625.18,-200 2625.18,-200 2625.18,-194 2631.18,-188 2637.18,-188 2637.18,-188 2765.68,-188 2765.68,-188 2771.68,-188 2777.68,-194 2777.68,-200 2777.68,-200 2777.68,-212 2777.68,-212 2777.68,-218 2771.68,-224 2765.68,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2701.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;06\nTrading &amp; Execution</text>
+</a>
+</g>
+</g>
+<!-- sd_02_8_anchor&#45;&gt;ext_out_06 -->
+<g id="edge44" class="edge">
+<title>sd_02_8_anchor&#45;&gt;ext_out_06</title>
+<g id="a_edge44"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2905.43,-288.6C2877.86,-280.33 2788.43,-253.5 2788.43,-253.5 2788.43,-253.5 2763.6,-240.23 2740.46,-227.86"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="2741.67,-226.13 2735.39,-225.15 2739.69,-229.83 2741.67,-226.13"/>
+</a>
+</g>
+</g>
+<!-- ext_out_14 -->
+<g id="node67" class="node">
+<title>ext_out_14</title>
+<g id="a_node67"><a xlink:href="./bd-14.html" xlink:title="&#45;&gt; BD&#45;14\\nEnterprise Risk, Control &amp; Assurance">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M3015.18,-224C3015.18,-224 2811.68,-224 2811.68,-224 2805.68,-224 2799.68,-218 2799.68,-212 2799.68,-212 2799.68,-200 2799.68,-200 2799.68,-194 2805.68,-188 2811.68,-188 2811.68,-188 3015.18,-188 3015.18,-188 3021.18,-188 3027.18,-194 3027.18,-200 3027.18,-200 3027.18,-212 3027.18,-212 3027.18,-218 3021.18,-224 3015.18,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="2913.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;14\nEnterprise Risk, Control &amp; Assurance</text>
+</a>
+</g>
+</g>
+<!-- sd_02_8_anchor&#45;&gt;ext_out_14 -->
+<g id="edge48" class="edge">
+<title>sd_02_8_anchor&#45;&gt;ext_out_14</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M2913.43,-266C2913.43,-255.33 2913.43,-242.9 2913.43,-232.2"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="2915.53,-232.24 2913.43,-226.24 2911.33,-232.24 2915.53,-232.24"/>
+</g>
+<!-- ext_out_16 -->
+<g id="node68" class="node">
+<title>ext_out_16</title>
+<g id="a_node68"><a xlink:href="./bd-16.html" xlink:title="&#45;&gt; BD&#45;16\\nEnterprise Governance &amp; Accountability">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M3274.06,-224C3274.06,-224 3060.81,-224 3060.81,-224 3054.81,-224 3048.81,-218 3048.81,-212 3048.81,-212 3048.81,-200 3048.81,-200 3048.81,-194 3054.81,-188 3060.81,-188 3060.81,-188 3274.06,-188 3274.06,-188 3280.06,-188 3286.06,-194 3286.06,-200 3286.06,-200 3286.06,-212 3286.06,-212 3286.06,-218 3280.06,-224 3274.06,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="3167.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&#45;&gt; BD&#45;16\nEnterprise Governance &amp; Accountability</text>
+</a>
+</g>
+</g>
+<!-- sd_02_8_anchor&#45;&gt;ext_out_16 -->
+<g id="edge49" class="edge">
+<title>sd_02_8_anchor&#45;&gt;ext_out_16</title>
+<g id="a_edge49"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M2924.43,-266C2924.43,-266 3038.43,-253.5 3038.43,-253.5 3038.43,-253.5 3076.9,-239.63 3111.83,-227.04"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="3112.22,-229.13 3117.16,-225.12 3110.8,-225.18 3112.22,-229.13"/>
+</a>
+</g>
+</g>
+<!-- so_02_8_01 -->
+<g id="node56" class="node">
+<title>so_02_8_01</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3043.56,-310C3043.56,-310 2947.31,-310 2947.31,-310 2941.31,-310 2935.31,-304 2935.31,-298 2935.31,-298 2935.31,-286 2935.31,-286 2935.31,-280 2941.31,-274 2947.31,-274 2947.31,-274 3043.56,-274 3043.56,-274 3049.56,-274 3055.56,-280 3055.56,-286 3055.56,-286 3055.56,-298 3055.56,-298 3055.56,-304 3049.56,-310 3043.56,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="2995.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Set the research budget</text>
+</g>
+<!-- so_02_8_02 -->
+<g id="node57" class="node">
+<title>so_02_8_02</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3233.18,-310C3233.18,-310 3089.68,-310 3089.68,-310 3083.68,-310 3077.68,-304 3077.68,-298 3077.68,-298 3077.68,-286 3077.68,-286 3077.68,-280 3083.68,-274 3089.68,-274 3089.68,-274 3233.18,-274 3233.18,-274 3239.18,-274 3245.18,-280 3245.18,-286 3245.18,-286 3245.18,-298 3245.18,-298 3245.18,-304 3239.18,-310 3233.18,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="3161.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Source external research providers</text>
+</g>
+<!-- so_02_8_03 -->
+<g id="node58" class="node">
+<title>so_02_8_03</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3373.81,-310C3373.81,-310 3279.06,-310 3279.06,-310 3273.06,-310 3267.06,-304 3267.06,-298 3267.06,-298 3267.06,-286 3267.06,-286 3267.06,-280 3273.06,-274 3279.06,-274 3279.06,-274 3373.81,-274 3373.81,-274 3379.81,-274 3385.81,-280 3385.81,-286 3385.81,-286 3385.81,-298 3385.81,-298 3385.81,-304 3379.81,-310 3373.81,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="3326.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Operate the broker vote</text>
+</g>
+<!-- so_02_8_04 -->
+<g id="node59" class="node">
+<title>so_02_8_04</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3533.18,-310C3533.18,-310 3419.68,-310 3419.68,-310 3413.68,-310 3407.68,-304 3407.68,-298 3407.68,-298 3407.68,-286 3407.68,-286 3407.68,-280 3413.68,-274 3419.68,-274 3419.68,-274 3533.18,-274 3533.18,-274 3539.18,-274 3545.18,-280 3545.18,-286 3545.18,-286 3545.18,-298 3545.18,-298 3545.18,-304 3539.18,-310 3533.18,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="3476.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Allocate research payments</text>
+</g>
+<!-- so_02_8_05 -->
+<g id="node60" class="node">
+<title>so_02_8_05</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3759.56,-310C3759.56,-310 3579.31,-310 3579.31,-310 3573.31,-310 3567.31,-304 3567.31,-298 3567.31,-298 3567.31,-286 3567.31,-286 3567.31,-280 3573.31,-274 3579.31,-274 3579.31,-274 3759.56,-274 3759.56,-274 3765.56,-274 3771.56,-280 3771.56,-286 3771.56,-286 3771.56,-298 3771.56,-298 3771.56,-304 3765.56,-310 3759.56,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="3669.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Administer the Research Payment Account</text>
+</g>
+<!-- so_02_8_06 -->
+<g id="node61" class="node">
+<title>so_02_8_06</title>
+<path fill="white" stroke="#5b7aa6" stroke-width="1.5" d="M3939.68,-310C3939.68,-310 3805.18,-310 3805.18,-310 3799.18,-310 3793.18,-304 3793.18,-298 3793.18,-298 3793.18,-286 3793.18,-286 3793.18,-280 3799.18,-274 3805.18,-274 3805.18,-274 3939.68,-274 3939.68,-274 3945.68,-274 3951.68,-280 3951.68,-286 3951.68,-286 3951.68,-298 3951.68,-298 3951.68,-304 3945.68,-310 3939.68,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="3872.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00" fill="#3a3a3a">Evidence unbundling compliance</text>
+</g>
+<!-- ext_in_01 -->
+<g id="node69" class="node">
+<title>ext_in_01</title>
+<g id="a_node69"><a xlink:href="./bd-01.html" xlink:title="&lt;&#45; BD&#45;01\\nInvestment Strategy &amp; Allocation">
+<path fill="#dfe8f7" stroke="#5b7aa6" stroke-width="1.5" stroke-dasharray="5,2" d="M1406.06,-310C1406.06,-310 1222.81,-310 1222.81,-310 1216.81,-310 1210.81,-304 1210.81,-298 1210.81,-298 1210.81,-286 1210.81,-286 1210.81,-280 1216.81,-274 1222.81,-274 1222.81,-274 1406.06,-274 1406.06,-274 1412.06,-274 1418.06,-280 1418.06,-286 1418.06,-286 1418.06,-298 1418.06,-298 1418.06,-304 1412.06,-310 1406.06,-310"/>
+<text xml:space="preserve" text-anchor="middle" x="1314.43" y="-288.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;01\nInvestment Strategy &amp; Allocation</text>
+</a>
+</g>
+</g>
+<!-- ext_in_01&#45;&gt;sd_02_1_anchor -->
+<g id="edge50" class="edge">
+<title>ext_in_01&#45;&gt;sd_02_1_anchor</title>
+<path fill="none" stroke="#5b7aa6" stroke-dasharray="5,2" d="M1314.43,-273.6C1314.43,-269.68 1314.43,-265.33 1314.43,-260.78"/>
+<polygon fill="#5b7aa6" stroke="#5b7aa6" points="1316.53,-261.01 1314.43,-255.01 1312.33,-261.01 1316.53,-261.01"/>
+</g>
+<!-- ext_in_13 -->
+<g id="node70" class="node">
+<title>ext_in_13</title>
+<g id="a_node70"><a xlink:href="./bd-13.html" xlink:title="&lt;&#45; BD&#45;13\\nInvestment Data &amp; Reporting">
+<path fill="#fbf0d8" stroke="#a07b2c" stroke-width="1.5" stroke-dasharray="5,2" d="M1280.18,-224C1280.18,-224 1112.68,-224 1112.68,-224 1106.68,-224 1100.68,-218 1100.68,-212 1100.68,-212 1100.68,-200 1100.68,-200 1100.68,-194 1106.68,-188 1112.68,-188 1112.68,-188 1280.18,-188 1280.18,-188 1286.18,-188 1292.18,-194 1292.18,-200 1292.18,-200 1292.18,-212 1292.18,-212 1292.18,-218 1286.18,-224 1280.18,-224"/>
+<text xml:space="preserve" text-anchor="middle" x="1196.43" y="-202.5" font-family="Helvetica,Arial,sans-serif" font-size="10.00">&lt;&#45; BD&#45;13\nInvestment Data &amp; Reporting</text>
+</a>
+</g>
+</g>
+<!-- ext_in_13&#45;&gt;sd_02_2_anchor -->
+<g id="edge51" class="edge">
+<title>ext_in_13&#45;&gt;sd_02_2_anchor</title>
+<g id="a_edge51"><a xlink:title="aggregate BD reference (narrative)">
+<path fill="none" stroke="#808080" stroke-width="0.8" stroke-dasharray="5,2" d="M1221.17,-187.39C1245.35,-170.18 1281.29,-144.6 1300.73,-130.75"/>
+<polygon fill="#808080" stroke="#808080" stroke-width="0.8" points="1301.78,-132.59 1305.45,-127.4 1299.34,-129.17 1301.78,-132.59"/>
+</a>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<h3>Service Domains (8)</h3>
+<table>
+  <thead><tr><th>ID</th><th>Service Domain</th><th>Example operations</th></tr></thead>
+  <tbody><tr><td>SD-02.1</td><td><a href='./sd-02.1.html'>Investment Idea Generation</a> <span class='tag tag-PUB'>PUB</span></td><td>Define and maintain the investable universe, Run quantitative screens, Source non-screen ideas…</td></tr><tr><td>SD-02.2</td><td><a href='./sd-02.2.html'>Fundamental Equity Research</a> <span class='tag tag-PUB'>PUB</span></td><td>Understand the business, Assess earnings quality, Build and maintain the financial model…</td></tr><tr><td>SD-02.3</td><td><a href='./sd-02.3.html'>Credit Research &amp; Analysis</a> <span class='tag tag-PUB'>PUB</span></td><td>Assess creditworthiness, Analyse covenants, Estimate default and loss…</td></tr><tr><td>SD-02.4</td><td><a href='./sd-02.4.html'>Quantitative &amp; Systematic Research</a> <span class='tag tag-PUB'>PUB</span></td><td>Research factors and signals, Evaluate signals, Develop the alpha model…</td></tr><tr><td>SD-02.5</td><td><a href='./sd-02.5.html'>Security Selection &amp; Recommendation</a> <span class='tag tag-PUB'>PUB</span></td><td>Make the buy / sell / hold decision, Assign a conviction rating, Set the price target…</td></tr><tr><td>SD-02.6</td><td><a href='./sd-02.6.html'>Investment Thesis Management</a> <span class='tag tag-PUB'>PUB</span></td><td>Author the thesis, Stress-test the thesis, Monitor the thesis…</td></tr><tr><td>SD-02.7</td><td><a href='./sd-02.7.html'>Research Management &amp; Coverage</a> <span class='tag tag-PUB'>PUB</span></td><td>Define the coverage model, Set coverage initiation and cadence, Manage the research workflow…</td></tr><tr><td>SD-02.8</td><td><a href='./sd-02.8.html'>Research Procurement &amp; Evaluation</a> <span class='tag tag-PUB'>PUB</span></td><td>Set the research budget, Source external research providers, Operate the broker vote…</td></tr></tbody>
+</table>
+
+  </main>
+  <footer>
+    OpenIM diagrams · 17 Business Domains · 171 Service Domains · 1035 Service Operations · 86 Entities
+  </footer>
+
+  <script src="./svg-pan-zoom.min.js"></script>
+  <script>
+    (function () {
+      var svgs = document.querySelectorAll('.diagram svg');
+      svgs.forEach(function (svg) {
+        try {
+          var pz = svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true, minZoom: 0.3, maxZoom: 8 });
+          var holder = svg.closest('.diagram');
+          if (!holder) return;
+          var ctrl = document.createElement('div');
+          ctrl.className = 'controls';
+          ctrl.innerHTML = '<button data-act="in">Zoom +</button> <button data-act="out">Zoom –</button> <button data-act="reset">Reset</button>';
+          holder.insertBefore(ctrl, svg);
+          ctrl.addEventListener('click', function (e) {
+            var act = e.target.dataset && e.target.dataset.act;
+            if (!act) return;
+            if (act === 'in') pz.zoomIn();
+            else if (act === 'out') pz.zoomOut();
+            else if (act === 'reset') { pz.resetZoom(); pz.center(); pz.fit(); }
+          });
+        } catch (err) { /* svg-pan-zoom not critical */ }
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+name: Stage OpenIM MCP package
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit:
+        description: Exact public main commit approved for staging
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: openim-mcp-staging
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    if: github.repository == 'antikas/open-investment-model'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out the approved public source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up the trusted-publishing runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Verify the immutable public source
+        env:
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_SHA" = "$EXPECTED_COMMIT"
+          test -z "$(git status --porcelain)"
+          test "$(git remote get-url origin)" = "https://github.com/antikas/open-investment-model"
+
+      - name: Pin the npm client required for staged publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global npm@11.18.0
+          test "$(npm --version)" = "11.18.0"
+
+      - name: Install the exact dependency tree
+        working-directory: mcp
+        run: npm ci
+
+      - name: Run the complete package quality gate
+        working-directory: mcp
+        run: npm run quality
+
+      - name: Confirm the candidate version is not already public
+        working-directory: mcp
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm view "$(node -p "require('./package.json').name")" versions --json > "$RUNNER_TEMP/openim-versions.json"
+          node --input-type=module - "$RUNNER_TEMP/openim-versions.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import packageJson from './package.json' with { type: 'json' };
+          const published = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          if (published.includes(packageJson.version)) {
+            throw new Error(`${packageJson.name}@${packageJson.version} is already public`);
+          }
+          NODE
+
+      - name: Stage the package for maintainer review
+        working-directory: mcp
+        run: npm stage publish

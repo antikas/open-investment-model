@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -6,12 +7,13 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
+const packageJson = JSON.parse(readFileSync(resolve(moduleDir, '../../package.json'), 'utf8'));
 
 test('a clean MCP client can discover and call the read-only server', async () => {
   const client = new Client({ name: 'openim-test-client', version: '1.0.0' });
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [resolve(moduleDir, 'server.js')],
+    args: [resolve(moduleDir, '../server.js')],
     stderr: 'pipe',
   });
 
@@ -31,6 +33,9 @@ test('a clean MCP client can discover and call the read-only server', async () =
     const structured = response.structuredContent as { modelVersion: string; results: Array<{ id: string }> };
     assert.equal(structured.modelVersion, '0.3.0');
     assert.ok(structured.results.some((item) => item.id === 'PM-07'));
+
+    const serverVersion = client.getServerVersion();
+    assert.equal(serverVersion?.version, packageJson.version);
 
     const resources = await client.listResources();
     assert.ok(resources.resources.some((resource) => resource.uri === 'openim://identity'));

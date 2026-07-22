@@ -1,0 +1,43 @@
+{
+  "name": "openim",
+  "version": "0.1.0",
+  "description": "An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.",
+  "author": {
+    "name": "Georgios Antikatzidis",
+    "url": "https://github.com/antikas"
+  },
+  "homepage": "https://openinvestmentmodel.org/",
+  "repository": "https://github.com/antikas/open-investment-model",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "research",
+    "enterprise-architecture",
+    "institutional investment management",
+    "buy-side",
+    "asset management",
+    "investment operating model",
+    "service-domain model",
+    "canonical data model",
+    "reference model"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Open Investment Model",
+    "shortDescription": "Research and architecture with the open model.",
+    "longDescription": "An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.",
+    "developerName": "Georgios Antikatzidis",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Research"
+    ],
+    "websiteURL": "https://openinvestmentmodel.org/",
+    "defaultPrompt": [
+      "Map this investment-management requirement to OpenIM.",
+      "Find the OpenIM elements relevant to this architecture.",
+      "List OpenIM exports with versioned official sources."
+    ]
+  }
+}

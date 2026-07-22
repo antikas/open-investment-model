@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { getCatalogItem, loadCatalog, searchCatalog } from './catalog.js';
 
-const catalog = loadCatalog();
+const moduleDir = dirname(fileURLToPath(import.meta.url));
+const catalog = loadCatalog(resolve(moduleDir, '../model-index.json'));
 
 test('catalogue is complete and release-pinned', () => {
   assert.equal(catalog.modelVersion, catalog.identity.version);
@@ -36,8 +39,8 @@ test('catalogue remains independent of product implementations', () => {
 });
 
 test('server manifest and package identity agree', () => {
-  const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-  const manifest = JSON.parse(readFileSync(new URL('../server.json', import.meta.url), 'utf8'));
+  const packageJson = JSON.parse(readFileSync(resolve(moduleDir, '../../package.json'), 'utf8'));
+  const manifest = JSON.parse(readFileSync(resolve(moduleDir, '../../server.json'), 'utf8'));
   assert.equal(packageJson.mcpName, manifest.name);
   assert.equal(packageJson.version, manifest.version);
   assert.equal(packageJson.name, manifest.packages[0].identifier);

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "id": "https://openinvestmentmodel.org/#openim",
+  "name": "Open Investment Model",
+  "alternateName": "OpenIM",
+  "description": "An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.",
+  "type": "CreativeWork",
+  "officialUrl": "https://openinvestmentmodel.org/",
+  "sourceRepository": "https://github.com/antikas/open-investment-model",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "maintainer": {
+    "name": "Georgios Antikatzidis",
+    "url": "https://github.com/antikas"
+  },
+  "maturity": "Maintained reference model; not a standard, product, or production system.",
+  "keywords": [
+    "institutional investment management",
+    "buy-side",
+    "asset management",
+    "investment operating model",
+    "service-domain model",
+    "canonical data model",
+    "reference model"
+  ],
+  "alignsWith": [
+    "https://bian.org/",
+    "https://spec.edmcouncil.org/fibo/",
+    "https://www.finos.org/common-domain-model"
+  ]
+}

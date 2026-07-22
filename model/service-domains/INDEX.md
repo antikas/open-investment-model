@@ -383,6 +383,6 @@ Decompositions of the buy-side routinely miss these — either because they are 
 
 The third level — **Service Operations** under each Service Domain — and the per-Service-Domain files are **built**: every Service Domain has its own file carrying its operations, inputs / outputs, entities and standards. Remaining work on the service-domain model:
 
-- The standards-alignment detail and, for agentINVEST, the typed tools that expose each Service Domain.
+- The standards-alignment detail and implementation-neutral interfaces through which a Service Domain may be exposed.
 
 See [PRIOR-ART.md](../../PRIOR-ART.md) for how this model relates to BIAN, FIBO, ISDA CDM, ILPA, GIPS and the rest of the standards landscape.

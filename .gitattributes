@@ -1,30 +1,8 @@
-# OpenIM line-ending policy.
-#
-# Scope: the agentINVEST launcher/script class and the dbt source that is
-# executed/read INSIDE WSL2. These files must materialise with LF on every
-# checkout regardless of the operator's core.autocrlf — a CRLF-materialised
-# *.sh aborts WSL bash at `set -euo pipefail` (exit 2), which broke
-# `pnpm dbt:build` / `agentinvest-cli seed` / the `bootstrap` data-half on a
-# fresh Windows checkout. This is deliberately TARGETED, not a repo-wide
-# `* text=auto`: the model markdown, docs, and host-side files keep the
-# operator's native line-ending behaviour (no repo-wide churn).
+# OpenIM public distribution line-ending policy.
+# Shell and JavaScript launcher files use LF on every checkout. Model Markdown
+# and host-side files keep the operator's native line-ending behaviour.
+*.sh  text eol=lf
+*.mjs text eol=lf
 
-# --- launcher/script class (the breaking surface + its same-class radius) ---
-*.sh   text eol=lf
-*.mjs  text eol=lf
-
-# --- the dbt + config + canonical-model source executed/read inside WSL2 (reference/ only) ---
-# dbt + the Python/uv toolchain read these under WSL2; pinning LF keeps the whole
-# WSL-executed agentINVEST surface line-ending-consistent and forecloses the next
-# latent CRLF case in the same execution context. Path-scoped so nothing outside
-# reference/ (e.g. model/docs YAML) is touched. The *.py + *.csv lines were added
-# when the canonical-model package + dbt entity seeds (read by the WSL2-side
-# uv/dbt toolchain) landed — same rationale as the dbt source.
-reference/**/*.sql  text eol=lf
-reference/**/*.yml  text eol=lf
-reference/**/*.toml text eol=lf
-reference/**/*.py   text eol=lf
-reference/**/*.csv  text eol=lf
-# JSON seeds/oracle (e.g. break_labels.json) the generator writes LF — keep eol=lf so
-# a regenerate stays byte-stable and the pipeline stays idempotent (the .csv rationale).
-reference/**/*.json text eol=lf
+# Generated SVG/HTML retains renderer whitespace verbatim.
+exports/diagrams/** -whitespace

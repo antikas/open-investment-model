@@ -1,9 +1,0 @@
-node_modules/
-dist/
-.turbo/
-*.log
-
-# scratch-file convention
-_probe-*
-_test-*
-_scratch-*

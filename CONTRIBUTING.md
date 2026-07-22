@@ -37,10 +37,6 @@ Corrections or extensions to the documented mappings against adjacent standards 
 - Definitions are measurable: a reader can decide whether a given activity falls inside or outside the capability.
 - Reader-facing model files carry no process commentary — provenance and decision history live in the PR, not the artefact.
 
-## Contributing to agentINVEST (the reference implementation)
-
-Code contributions under `reference/` follow the existing structure: a pnpm workspace (TypeScript orchestrator, Python tools, dbt data layer). Match the patterns in place, keep the deterministic spine intact (the LLM never computes a figure of record), and include tests alongside behaviour changes. See [reference/README.md](reference/README.md) for the build and run story.
-
 ## Process
 
 1. Open an issue describing the change and its grounding.

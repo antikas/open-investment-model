@@ -7,8 +7,6 @@ The short version: **OpenIM is a service-domain and master-data reference model 
 ## The layer picture
 
 ```
-  Agent channel        MCP server / typed tool surface   ← OpenIM defines (agentINVEST)
-  ──────────────────────────────────────────────────────────────────────────
   Service domains      OpenIM service-domain model       ← OpenIM (new)
   Master data          OpenIM canonical model:
                        funds, portfolios, mandates,
@@ -87,7 +85,7 @@ The FINOS AI Governance Framework (AIGF v2.0, 2025) carries an agentic-AI risk c
 
 ## The agent-native prior art
 
-A scan for an existing agent-native investment-management reference architecture — a buy-side counterpart to public AI-native bank reference projects — found none. What exists is agentic *trading* frameworks (multi-agent orchestration for making trading decisions) and toy-scale portfolio MCP servers. None of these decomposes the *institutional investment manager as a firm* into agent-consumable service domains with a canonical model and an audit-bound tool surface. That position is unoccupied.
+A scan for an existing machine-consumable investment management reference model, equivalent to public banking reference models, found none. Agentic *trading* frameworks and small portfolio MCP servers exist, but they do not decompose the *institutional investment manager as a firm*. OpenIM provides service domains and a canonical model that people, architecture tools and AI agents can adopt independently.
 
 ## Where OpenIM might live
 
@@ -98,6 +96,6 @@ FINOS — the Fintech Open Source Foundation — is both the natural long-term h
 Stated plainly, against the prior art above:
 
 1. **Service-domain-first** — a capability decomposition of the firm, not only a data model. This is the differentiator against `glue`.
-2. **Agent-native** — a typed tool surface, an MCP server, and audit binding as first-class concerns. This is the parallel to public AI-native bank reference work.
+2. **Machine-consumable:** plain-text source, deterministic validation and model-derived exports for architecture tools, knowledge graphs, retrieval systems and AI agents, with no prescribed runtime.
 3. **Private-markets master-data** — explicit entity resolution and golden keys for the no-universal-identifier reality of private markets.
 4. **Vendor-neutral and maintained** — open and maintainer-led (see [GOVERNANCE.md](GOVERNANCE.md)), MIT-licensed, not tied to a single vendor's platform. This is the failure mode of `glue` that OpenIM exists to avoid.

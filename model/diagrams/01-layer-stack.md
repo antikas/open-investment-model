@@ -1,6 +1,6 @@
 # Layer stack — OpenIM in the standards landscape
 
-OpenIM is a *layer*, and it is honest about which layer. It does not replace [FIBO](https://spec.edmcouncil.org/fibo/), it does not compete with [ISDA CDM](https://www.finos.org/common-domain-model), it is not a wire format. The diagram below shows where OpenIM (and its agent-native reference implementation, **agentINVEST**) sits in relation to the adjacent standards.
+OpenIM is a *layer*, and it is honest about which layer. It does not replace [FIBO](https://spec.edmcouncil.org/fibo/), it does not compete with [ISDA CDM](https://www.finos.org/common-domain-model), and it is not a wire format. The diagram below shows where the model sits in relation to adjacent standards. Implementations sit above OpenIM and remain independent of the project.
 
 The textual rendering of the same picture is in [`../../PRIOR-ART.md`](../../PRIOR-ART.md), with the full explanation of each layer's relationship to OpenIM.
 
@@ -9,10 +9,6 @@ flowchart TB
     classDef openim   fill:#1f3a5f,stroke:#0e1e33,color:#fff,font-weight:bold
     classDef reuse    fill:#e8eef7,stroke:#5b7aa6,color:#1f3a5f
     classDef govern   fill:#f0eee6,stroke:#a09578,color:#5a513a
-
-    subgraph AGENT[Agent channel]
-        A1["agentINVEST<br/>MCP server · typed tool surface<br/><i>OpenIM defines</i>"]:::openim
-    end
 
     subgraph MODEL[OpenIM — the reference model]
         direction TB
@@ -31,22 +27,19 @@ flowchart TB
 
     G1["FINOS AI Governance Framework<br/><i>governance · align to</i>"]:::govern
 
-    A1 --> M1
-    A1 --> M2
     M1 -.consumes.-> B1
     M1 -.consumes.-> B4
     M1 -.consumes.-> B5
     M2 -.builds on.-> B2
     M2 -.references.-> B3
     M2 -.aligns to.-> G1
-    A1 -.aligns to.-> G1
 ```
 
 ## Reading the diagram
 
-- The **agent channel** (agentINVEST) sits above the model — it is the surface an agent talks to.
 - The **model layer** (OpenIM) is the new thing — service-domain decomposition (BD / SD / SO) plus the canonical entity model. This is the part with no existing open equivalent.
+- **Implementations** may sit above the model and expose it through applications, APIs, agents or other interfaces. OpenIM does not prescribe or endorse one.
 - The **layers below** are reused or aligned to. ISDA CDM models trades; OpenIM models the portfolio, fund and mandate *above* the trade. FIBO models the *what* of instruments and legal entities; OpenIM uses FIBO semantics where they cover the concept. ILPA / GIPS are reporting and presentation standards OpenIM consumes or conforms to. The wire formats are interop at the edges.
-- The **FINOS AI Governance Framework** is the governance companion OpenIM aligns its agent-channel risk catalogue to, rather than inventing its own.
+- The **FINOS AI Governance Framework** is the governance companion OpenIM aligns to, rather than inventing its own risk taxonomy.
 
 The full prose statement of each adjacency is in [`../../PRIOR-ART.md`](../../PRIOR-ART.md) — that document is the project's credibility artefact.

@@ -1,6 +1,6 @@
 # OpenIM: Open Investment Model
 
-> An open, MIT-licensed, vendor-neutral **reference model for institutional investment management**: a service-domain decomposition of the buy-side firm plus a canonical entity model, designed to be consumed by AI agents, with a working agent-native reference implementation. It is to the buy-side what BIAN is to retail banking. It sits above FIBO (which it uses for instrument and legal-entity semantics), is complementary to ISDA CDM (which models the transaction layer below it), and is the maintained, vendor-neutral, agent-native successor in spirit to the archived FINOS `glue` project.
+> An open, MIT-licensed, vendor-neutral **reference model for institutional investment management**: a service-domain decomposition of the buy-side firm plus a canonical entity model, designed to be read and used by people, architecture tools and AI agents. It is to the buy-side what BIAN is to retail banking. It sits above FIBO (which it uses for instrument and legal-entity semantics), is complementary to ISDA CDM (which models the transaction layer below it), and is the maintained, vendor-neutral successor in spirit to the archived FINOS `glue` project.
 
 ## Why OpenIM exists
 
@@ -22,26 +22,18 @@ The model, and the figures of record produced on top of it, exist for the questi
 - *Where do two systems disagree on a position or a mark, and which is right?*
 - *Is this the same counterparty as that one, resolved to a single legal entity across every feed?*
 
-None of these is exotic; every manager asks them daily. The work is in the answer, which lives in fragments across systems that do not share a model. OpenIM is the shared model that makes them answerable, and [agentINVEST](reference/README.md) shows the deterministic figure-of-record path that produces the numbers. What you build on top of that is yours to design: how those answers are governed and made safe to act on.
+None of these is exotic; every manager asks them daily. The work is in the answer, which lives in fragments across systems that do not share a model. OpenIM supplies the shared map. What you build on top of it, how you compute figures of record, and how you govern action remain implementation choices.
 
 ## What OpenIM is
 
-Two interlocking layers, in one repository.
-
-### 1. The model ([`model/`](model/README.md))
-
-The reference model itself. Two halves:
+One reference model with two connected parts ([`model/`](model/README.md)):
 
 - **[Service domains](model/service-domains/INDEX.md)**: *what the firm does.* A decomposition of the buy-side firm into **17 Business Domains and 171 Service Domains**, each a discrete, non-overlapping unit of business capability, decomposed three levels deep: every Service Domain enumerates its Service Operations, roughly 1,030 across the model. The service-domain decomposition is the OpenIM equivalent of BIAN's Service Landscape, and the part with no existing open equivalent.
 - **[Entities](model/entities/INDEX.md)**: *what the firm knows.* A canonical data model of **86 entities**: a **generalised core of 38** (Legal Entity, Instrument / Asset, Portfolio / Mandate, Holding / Position, Transaction, Cash Flow, Valuation, the reference entities and the risk entities, true of every institutional investor) plus five **specialisation packs** that specialise the core by the form a holding or operation takes: public-markets (11 entities), fund-operations (12), private-markets (15), derivatives (5) and real-assets (5). It serves the firm that *issues* funds (UCITS, mutual funds, hedge funds) as fully as the one that *allocates* into them (sovereign and pension funds, insurers), each activating the subset its mandate needs; entity resolution is first-class (acute in private markets, useful across any cross-feed reconciliation); aligned to FIBO.
 
-### 2. agentINVEST, the reference implementation ([`reference/`](reference/README.md))
+OpenIM does not prescribe or endorse a product, runtime, agent framework, data platform or implementation. The model is open for anyone to adopt, adapt and build on under the MIT licence.
 
-An agent-native implementation built on the model: a typed agent-tool catalogue, an MCP server, an OpenAPI surface, a canonical data layer, an operator UI, and audit and governance binding: the model made executable and agent-consumable.
-
-The whole implementation (the durable-execution substrate, the typed tool catalogue, the canonical data layer, the orchestrator and its workflows, and the agent ingress) is drawn in the [solution-architecture diagram](reference/docs/architecture/agentinvest-solution-architecture.svg), with a [layer-by-layer walkthrough](reference/docs/architecture/agentinvest-solution-architecture.md).
-
-agentINVEST and the model it implements are governed on the record; what enters the model and when a version is cut is set out in [GOVERNANCE.md](GOVERNANCE.md).
+The canonical machine-readable identity for the project is [`metadata/openim.json`](metadata/openim.json).
 
 ## The model at a glance
 
@@ -75,10 +67,6 @@ See [`model/service-domains/INDEX.md`](model/service-domains/INDEX.md) for the f
 
 ## Quickstart
 
-Three tiers, in increasing depth. Tier 1 needs only Python; Tier 3 is the full agent demo.
-
-### Tier 1: explore the model and check its integrity
-
 The model is plain Markdown, readable on GitHub without installing anything. Start at [`model/service-domains/INDEX.md`](model/service-domains/INDEX.md) (what the firm does) and [`model/entities/INDEX.md`](model/entities/INDEX.md) (what the firm knows); the [glossary](model/glossary.md) defines the investment-management vocabulary, and [`model/diagrams/`](model/diagrams/INDEX.md) holds the diagrams.
 
 To run the model's structural-integrity validator locally (counts, identifiers, link resolution, cross-file count agreement), you need Python 3.9 or later, standard library only:
@@ -89,32 +77,13 @@ cd open-investment-model
 python tools/openim-validate/validate.py
 ```
 
-Exit `0` means the model is structurally clean. What it checks: [`tools/openim-validate/README.md`](tools/openim-validate/README.md).
-
-### Tier 2: build the canonical data layer locally
-
-The agentINVEST canonical data layer is a dbt project on an in-process DuckDB backend: synthetic seed data, no external services, no credentials. Prerequisites: Node 22+, [pnpm](https://pnpm.io) and [uv](https://docs.astral.sh/uv/); on Windows the Python/dbt toolchain runs inside WSL2.
-
-```sh
-cd reference/python
-uv sync --group dbt        # one-time: create the Python env with the dbt toolchain (inside WSL2 on Windows)
-cd ..
-pnpm dbt:build             # dbt build: seed + run + test against a local DuckDB file
-```
-
-A green run ends with dbt's `PASS=… ERROR=0` summary. The full runbook (where the DuckDB file lands, recovery from a stale database, the dev-to-prod path) is [`reference/dbt/README.md`](reference/dbt/README.md).
-
-### Tier 3: run the full agentINVEST demo
-
-The end-to-end demo (the durable-execution substrate, the typed tool surface, the NAV-strike workflow with its LLM planning loop and human approval gate, the operator UI) additionally needs the Restate dev server, the pnpm workspace installed, and an Anthropic API key. The setup and run sequence is in [`reference/README.md`](reference/README.md).
+Exit `0` means the model is structurally clean. What it checks: [`tools/openim-validate/README.md`](tools/openim-validate/README.md). Machine-readable exports for architecture tools, graphs and AI retrieval are published under [`exports/`](exports/).
 
 ## How OpenIM relates to existing standards
 
 OpenIM is a *layer*, and it is honest about which layer. It does not replace FIBO or compete with ISDA CDM, and it is not a wire format.
 
 ```
-  Agent channel        MCP server / typed tool surface   ← OpenIM defines (agentINVEST)
-  ──────────────────────────────────────────────────────────────────────────
   Service domains      OpenIM service-domain model       ← OpenIM (new)
   Master data          OpenIM canonical model:
                        funds, portfolios, mandates,
@@ -134,8 +103,8 @@ Your first question is probably "what about FIBO?" or "what about CDM?". It is a
 ## What makes OpenIM different
 
 1. **Service-domain-first.** A capability decomposition of the firm, not only a data model. It is the differentiator against the archived `glue`.
-2. **Agent-native.** A typed tool surface, an MCP server, and audit binding as first-class concerns, the buy-side parallel to the AI-native bank reference architectures.
-3. **Private-markets master-data, made runnable.** Explicit entity resolution and golden keys for the reality that private markets have no universal identifier. A model that assumes a shared identifier breaks the moment it meets a GP report. It is implemented and demonstrated in agentINVEST as a deterministic three-tier resolver with golden-record survivorship, scored by a labelled evaluation that holds **zero mis-merges**, with no model in the of-record decision. See [the entity-resolution capability](reference/docs/capabilities/entity-resolution.md).
+2. **Machine-consumable.** Plain-text source, deterministic validation and published machine-readable exports make the model usable by architecture tools, knowledge graphs, retrieval systems and AI agents without requiring a particular runtime.
+3. **Private-markets master-data.** Explicit entity resolution and golden keys address the reality that private markets have no universal identifier. A model that assumes a shared identifier breaks the moment it meets a GP report.
 4. **Vendor-neutral and maintained.** Open and maintainer-led (see [GOVERNANCE.md](GOVERNANCE.md)), MIT-licensed, tied to no vendor's platform. Vendor-dependence and abandonment were the failure mode of `glue`; OpenIM exists to avoid both.
 
 ## Declared scope
@@ -143,9 +112,9 @@ Your first question is probably "what about FIBO?" or "what about CDM?". It is a
 Stated plainly, so nobody over-reads the project:
 
 - **The model is a reference model, not a design blueprint.** Like BIAN's Service Landscape, it decomposes a generic firm; an implementation activates the subset its mandate requires. The model is the union of capability; an implementation is a subset.
-- **The reference implementation is demonstration-grade.** agentINVEST exists to prove the model is executable and agent-consumable, not to be deployed as production software.
-- **All data is synthetic.** No real fund, portfolio, position or counterparty data appears anywhere in this repository.
-- **The autonomy ceiling is supervised.** Every state mutation passes a human approval gate. The LLM plans, drafts and explains; it never computes a figure of record. Every figure of record comes from the deterministic data layer. That is the deterministic spine: the model stays out of the truth path.
+- **The model is implementation-neutral.** OpenIM does not define a preferred product, agent, protocol, data platform or operating architecture. Implementations may use all, part or none of it.
+- **The public repository contains the model and model-derived exports.** It does not contain operational investment data or claim that a particular implementation is part of OpenIM.
+- **Use is open.** Commercial and non-commercial implementations may adopt, adapt and extend OpenIM under the MIT licence without endorsement from the project.
 
 ## Repository layout
 
@@ -156,7 +125,9 @@ open-investment-model/
 ├── CONTRIBUTING.md              How to contribute
 ├── CODE_OF_CONDUCT.md           Community standards
 ├── GOVERNANCE.md                How the project is governed
+├── CITATION.cff                 Machine-readable citation metadata
 ├── LICENSE                      MIT
+├── metadata/                    Canonical machine-readable project identity
 ├── model/                       OpenIM, the reference model
 │   ├── README.md
 │   ├── service-domains/         The 17 Business Domain / 171 Service Domain decomposition
@@ -165,10 +136,8 @@ open-investment-model/
 │   ├── glossary.md              Plain-English definitions of the vocabulary the model uses
 │   ├── ownership-map.md         Which Service Domain owns which entity
 │   └── fibo-alignment.md        The entity-by-entity FIBO alignment
-├── reference/                   agentINVEST, the agent-native reference implementation
-│   └── README.md
 └── tools/
-    ├── openim-validate/         Structural-integrity validator for the model (Tier 1 above)
+    ├── openim-validate/         Structural-integrity validator for the model
     └── diagrams/                Generator for the rendered static-site view of the model
 ```
 

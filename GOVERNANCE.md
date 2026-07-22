@@ -10,7 +10,7 @@ The model carries an explicit version (currently 0.1). A version is cut when a c
 
 ## Scope of authority
 
-Governance here covers the model and its reference implementation in this repository. OpenIM is a reference model, not a standard — nobody certifies against it, and adopting all, part or none of it is an implementer's free choice under the MIT licence.
+Governance here covers the OpenIM reference model and its model-derived public exports. OpenIM is a reference model, not a standard: nobody certifies against it, and adopting all, part or none of it is an implementer's free choice under the MIT licence. Implementations built on OpenIM remain separate projects and are not governed, endorsed or designated as preferred by OpenIM.
 
 ## Long-term home
 

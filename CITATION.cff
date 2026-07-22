@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use the Open Investment Model, please cite it using this metadata."
+title: "Open Investment Model (OpenIM)"
+type: dataset
+authors:
+  - family-names: Antikatzidis
+    given-names: Georgios
+url: "https://openinvestmentmodel.org/"
+repository-code: "https://github.com/antikas/open-investment-model"
+license: MIT
+keywords:
+  - institutional investment management
+  - buy-side
+  - reference model
+  - service-domain model
+  - canonical data model
+abstract: >-
+  An open, vendor-neutral reference model for institutional investment
+  management, comprising a service-domain decomposition of the buy-side firm
+  and a canonical entity model.

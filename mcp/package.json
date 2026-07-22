@@ -1,5 +1,5 @@
 {
-  "name": "@antikas/openim-mcp",
+  "name": "@openinvestmentmodel/openim-mcp",
   "version": "0.1.0",
   "description": "Read-only MCP server for the Open Investment Model, with versioned and source-cited model retrieval.",
   "type": "module",

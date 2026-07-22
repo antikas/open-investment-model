@@ -84,7 +84,7 @@ Exit `0` means the model is structurally clean. What it checks: [`tools/openim-v
 The read-only [OpenIM MCP server](mcp/README.md) lets compatible AI and coding tools search and retrieve the released model with official source links and exact version provenance:
 
 ```sh
-npx -y @antikas/openim-mcp
+npx -y @openinvestmentmodel/openim-mcp
 ```
 
 It exposes model retrieval only. It does not give investment advice, execute transactions or prescribe an implementation.

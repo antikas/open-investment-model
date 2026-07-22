@@ -9,7 +9,7 @@ The server searches and retrieves OpenIM Business Domains, Service Domains, Serv
 Node.js 20 or later is required.
 
 ```sh
-npx -y @antikas/openim-mcp
+npx -y @openinvestmentmodel/openim-mcp
 ```
 
 Generic MCP client configuration:
@@ -19,7 +19,7 @@ Generic MCP client configuration:
   "mcpServers": {
     "openim": {
       "command": "npx",
-      "args": ["-y", "@antikas/openim-mcp"]
+      "args": ["-y", "@openinvestmentmodel/openim-mcp"]
     }
   }
 }

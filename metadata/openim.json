@@ -5,7 +5,7 @@
   "alternateName": "OpenIM",
   "description": "An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.",
   "type": "CreativeWork",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "datePublished": "2026-07-22",
   "officialUrl": "https://openinvestmentmodel.org/",
   "sourceRepository": "https://github.com/antikas/open-investment-model",

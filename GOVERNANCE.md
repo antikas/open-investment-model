@@ -6,7 +6,7 @@ OpenIM is maintainer-led. [Georgios Antikatzidis](https://github.com/antikas) is
 
 ## How versions are cut
 
-The model carries an explicit version (currently 0.1). A version is cut when a coherent set of accepted changes warrants it, not on a calendar. Every released version passes the mechanical validator (`tools/openim-validate/`), and changes between versions are traceable through the PR history. Within a version the model is stable: implementations can reference it without chasing a moving target.
+The model carries an explicit version (currently 0.3.0). A version is cut when a coherent set of accepted changes warrants it, not on a calendar. Every released version passes the mechanical validator (`tools/openim-validate/`), and changes between versions are traceable through the PR history. Within a version the model is stable: implementations can reference it without chasing a moving target.
 
 ## Scope of authority
 

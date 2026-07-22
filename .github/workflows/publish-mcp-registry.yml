@@ -1,0 +1,82 @@
+name: Publish OpenIM to the MCP Registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit:
+        description: Exact public main commit approved for registry publication
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: openim-mcp-registry
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'antikas/open-investment-model'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out the approved public source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the immutable public source
+        env:
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_SHA" = "$EXPECTED_COMMIT"
+          test -z "$(git status --porcelain)"
+
+      - name: Verify the manifest matches the published npm package
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const server = JSON.parse(readFileSync('mcp/server.json', 'utf8'));
+          const pkg = JSON.parse(readFileSync('mcp/package.json', 'utf8'));
+          if (server.name !== pkg.mcpName) throw new Error('server.json name does not match package mcpName');
+          if (server.version !== pkg.version) throw new Error('server.json version does not match package version');
+          if (server.packages[0].identifier !== pkg.name) throw new Error('server.json package identifier mismatch');
+          NODE
+
+      - name: Install mcp-publisher (pinned release)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/v1.8.0/mcp-publisher_linux_amd64.tar.gz"
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher --help >/dev/null
+
+      - name: Authenticate to the MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish the server manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd mcp
+          ../mcp-publisher publish
+
+      - name: Verify the registry entry
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 10
+          curl -fsSL "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.antikas/openim" \
+            | grep -q '"io.github.antikas/openim"'

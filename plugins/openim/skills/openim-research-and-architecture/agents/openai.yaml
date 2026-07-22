@@ -1,0 +1,13 @@
+interface:
+  display_name: "OpenIM Research and Architecture"
+  short_description: "Query the versioned open investment model"
+  default_prompt: "Use $openim-research-and-architecture to map this requirement to versioned OpenIM sources."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "openim"
+      description: "Local read-only OpenIM model retrieval supplied by this plugin."
+
+policy:
+  allow_implicit_invocation: true

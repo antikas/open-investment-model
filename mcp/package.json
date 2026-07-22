@@ -1,6 +1,6 @@
 {
   "name": "@openinvestmentmodel/openim-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read-only MCP server for the Open Investment Model, with versioned and source-cited model retrieval.",
   "type": "module",
   "main": "dist/server.js",
@@ -8,9 +8,11 @@
     "openim-mcp": "dist/server.js"
   },
   "files": [
-    "dist/catalog.js",
+    "dist/LICENSE",
     "dist/model-index.json",
     "dist/server.js",
+    "dist/server.js.LEGAL.txt",
+    "dist/THIRD_PARTY_NOTICES.txt",
     "README.md",
     "server.json"
   ],
@@ -39,19 +41,26 @@
     "node": ">=20"
   },
   "scripts": {
+    "clean": "node scripts/clean.mjs",
     "build:index": "node scripts/build-index.mjs",
     "build:manifest": "node scripts/build-manifest.mjs",
-    "build:code": "tsc -p tsconfig.json",
-    "build": "npm run build:index && npm run build:manifest && npm run build:code",
-    "test": "npm run build && node --test dist/*.test.js",
-    "prepack": "npm test"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "^4.4.3"
+    "build:runtime": "node scripts/build-runtime.mjs",
+    "build:tests": "tsc -p tsconfig.test.json",
+    "build": "npm run clean && npm run build:index && npm run build:manifest && npm run build:runtime",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && npm run typecheck && npm run build:tests && node --test dist/tests/*.test.js",
+    "audit:production": "npm audit --omit=dev",
+    "check:bundle": "node scripts/quality-gates.mjs bundle",
+    "check:consumer": "node scripts/quality-gates.mjs consumer",
+    "check:reproducible": "node scripts/quality-gates.mjs reproducible",
+    "quality": "npm run audit:production && npm test && npm run check:bundle && npm run check:consumer && npm run check:reproducible",
+    "prepack": "npm run build && npm run check:bundle"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@types/node": "^24.10.0",
+    "esbuild": "^0.28.1",
+    "zod": "^4.4.3",
     "typescript": "^7.0.2"
   },
   "overrides": {

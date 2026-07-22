@@ -11,10 +11,12 @@ import {
   type ItemType,
 } from './catalog.js';
 
+declare const __OPENIM_MCP_VERSION__: string;
+
 const catalog = loadCatalog();
 const server = new McpServer({
   name: 'io.github.antikas/openim',
-  version: '0.1.0',
+  version: __OPENIM_MCP_VERSION__,
   title: 'Open Investment Model',
   description: 'Read-only, versioned and source-cited access to the Open Investment Model.',
   websiteUrl: catalog.identity.officialUrl,
@@ -59,11 +61,12 @@ server.registerTool(
   async ({ id }) => {
     const item = getCatalogItem(catalog, id);
     return item
-      ? result({ modelVersion: catalog.modelVersion, item })
+      ? result({ modelVersion: catalog.modelVersion, officialSource: catalog.identity.officialUrl, item })
       : result({
           error: 'not_found',
           id,
           modelVersion: catalog.modelVersion,
+          officialSource: catalog.identity.officialUrl,
           suggestions: searchCatalog(catalog, id, undefined, 5),
         });
   },
@@ -109,7 +112,7 @@ server.registerTool(
       : catalog.items
           .filter((item) => item.type === 'export')
           .map(({ content: _content, ...item }) => ({ ...item, modelVersion: catalog.modelVersion }));
-    return result({ modelVersion: catalog.modelVersion, exports });
+    return result({ modelVersion: catalog.modelVersion, officialSource: catalog.identity.officialUrl, exports });
   },
 );
 
@@ -121,7 +124,14 @@ server.registerTool(
     inputSchema: {},
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
-  async () => result({ identity: catalog.identity, counts: catalog.counts, generatedFrom: catalog.generatedFrom }),
+  async () =>
+    result({
+      modelVersion: catalog.modelVersion,
+      officialSource: catalog.identity.officialUrl,
+      identity: catalog.identity,
+      counts: catalog.counts,
+      generatedFrom: catalog.generatedFrom,
+    }),
 );
 
 server.registerResource(

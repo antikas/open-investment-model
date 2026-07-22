@@ -79,6 +79,16 @@ python tools/openim-validate/validate.py
 
 Exit `0` means the model is structurally clean. What it checks: [`tools/openim-validate/README.md`](tools/openim-validate/README.md). Machine-readable exports for architecture tools, graphs and AI retrieval are published under [`exports/`](exports/).
 
+### Use OpenIM from an AI agent
+
+The read-only [OpenIM MCP server](mcp/README.md) lets compatible AI and coding tools search and retrieve the released model with official source links and exact version provenance:
+
+```sh
+npx -y @antikas/openim-mcp
+```
+
+It exposes model retrieval only. It does not give investment advice, execute transactions or prescribe an implementation.
+
 ## How OpenIM relates to existing standards
 
 OpenIM is a *layer*, and it is honest about which layer. It does not replace FIBO or compete with ISDA CDM, and it is not a wire format.

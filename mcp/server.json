@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.antikas/openim",
+  "title": "Open Investment Model",
+  "description": "Search and retrieve the Open Investment Model (OpenIM), the open, MIT-licensed reference model for institutional buy-side investment management.",
+  "repository": {
+    "url": "https://github.com/antikas/open-investment-model",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@antikas/openim-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

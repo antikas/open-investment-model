@@ -1,0 +1,60 @@
+{
+  "name": "@antikas/openim-mcp",
+  "version": "0.1.0",
+  "description": "Read-only MCP server for the Open Investment Model, with versioned and source-cited model retrieval.",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "openim-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist/catalog.js",
+    "dist/model-index.json",
+    "dist/server.js",
+    "README.md",
+    "server.json"
+  ],
+  "mcpName": "io.github.antikas/openim",
+  "license": "MIT",
+  "author": "Georgios Antikatzidis",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antikas/open-investment-model.git",
+    "directory": "mcp"
+  },
+  "homepage": "https://openinvestmentmodel.org/",
+  "bugs": {
+    "url": "https://github.com/antikas/open-investment-model/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "investment-management",
+    "asset-management",
+    "buy-side",
+    "reference-model",
+    "canonical-data-model"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:index": "node scripts/build-index.mjs",
+    "build:manifest": "node scripts/build-manifest.mjs",
+    "build:code": "tsc -p tsconfig.json",
+    "build": "npm run build:index && npm run build:manifest && npm run build:code",
+    "test": "npm run build && node --test dist/*.test.js",
+    "prepack": "npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "@hono/node-server": "2.0.11"
+  }
+}

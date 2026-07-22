@@ -13,7 +13,7 @@ const manifest = {
   $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
   name: pkg.mcpName,
   title: identity.name,
-  description: `Search and retrieve the ${identity.name} (${identity.alternateName}), the open, MIT-licensed reference model for institutional buy-side investment management.`,
+  description: `Read-only ${identity.alternateName} search for institutional buy-side investment models and architecture.`,
   repository: {
     url: identity.sourceRepository,
     source: 'github',

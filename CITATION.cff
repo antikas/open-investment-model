@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use the Open Investment Model, please cite it using this metadata."
 title: "Open Investment Model (OpenIM)"
 type: dataset
+version: 0.1.0
+date-released: 2026-07-22
 authors:
   - family-names: Antikatzidis
     given-names: Georgios

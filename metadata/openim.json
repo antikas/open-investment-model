@@ -28,5 +28,14 @@
     "https://bian.org/",
     "https://spec.edmcouncil.org/fibo/",
     "https://www.finos.org/common-domain-model"
+  ],
+  "citationIdentifiers": [
+    {
+      "version": "0.3.1",
+      "versionDoi": "10.5281/zenodo.22149525",
+      "conceptDoi": "10.5281/zenodo.22149524",
+      "recordUrl": "https://zenodo.org/records/22149525",
+      "verifiedOn": "2026-08-28"
+    }
   ]
 }

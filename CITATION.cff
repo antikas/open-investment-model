@@ -9,6 +9,7 @@ authors:
     given-names: "Georgios"
 url: "https://openinvestmentmodel.org/"
 repository-code: "https://github.com/antikas/open-investment-model"
+doi: "10.5281/zenodo.22149525"
 license: "MIT"
 keywords:
   - "institutional investment management"

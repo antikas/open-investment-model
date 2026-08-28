@@ -1,35 +1,38 @@
 # OpenIM Service-Domain Model
 
-The service-domain decomposition of an institutional investment manager — the buy-side: asset managers, sovereign wealth funds, LP allocators, institutional investors. Asset-class agnostic; covers public equities, fixed income, cash and money markets, private equity, private credit, real estate, infrastructure, natural resources and commodities, and hedge funds and active strategies — invested both through external managers and funds, and through direct and co-investments. (Secondaries and co-investment are transaction types over these classes, not asset classes — see [E-09 Asset Class](../entities/core/E-09-asset-class.md).)
+This map describes the business capabilities of an institutional investment firm. It covers asset managers and asset owners across public and private markets.
 
-This is the OpenIM equivalent of BIAN's Service Landscape.
+The model contains **17 Business Domains and 171 Service Domains**. A Business Domain groups a broad area of work. A Service Domain defines one bounded capability and lists its Service Operations.
 
-> Vocabulary not familiar? The [glossary](../glossary.md) defines the investment-management terms used here (LP / GP / LPA, capital call, distribution, J-curve, vintage, the IRR / TVPI / DPI / RVPI family, waterfall and carry, GIPS / ILPA, and the rest).
->
-> Visual: the [Business Domain map](../diagrams/02-business-domain-map.md) renders the 17 Business Domains grouped by office tag with Service-Domain counts. The full set of diagrams is in [`../diagrams/`](../diagrams/INDEX.md).
+The [glossary](../glossary.md) defines unfamiliar investment terms. The [Business Domain map](../diagrams/02-business-domain-map.md) provides a visual overview.
 
 ## How to read this model
 
-OpenIM mirrors BIAN's *form* — a business is decomposed into discrete, non-overlapping units of capability — at a deliberately shallower depth. BIAN uses four levels (Business Area → Business Domain → Service Domain → Service Operation); OpenIM uses two structural levels (Business Domain → Service Domain), because the buy-side firm is a smaller enterprise than a universal bank. The third level — Service Operations — is decomposed within each Service Domain's own file (a `## Service Operations` section), not as a separate structural tier.
+Start with the summary table and choose the Business Domain closest to the work you are describing. Its directory page explains the domain boundary and links to each Service Domain.
 
-A **Service Domain** is a discrete, non-overlapping unit of business capability — a single thing the firm does, owning the full lifecycle of one asset or entity type. Service domains are *capabilities*, not organisational units: a real firm's departments each consume many service domains, and one service domain may be exercised by several departments.
+Each Service Domain file contains a definition, purpose, boundary and `## Service Operations` section. It also links to related entities and adjacent capabilities.
 
-**Office tag** is applied at Business-Domain level (Front / Middle / Back / Cross-cutting / Commercial), not per service domain — several service domains span offices, and forcing a per-domain office tag would break non-overlap.
+A Service Domain represents a business capability. It is independent of a firm's organisation chart, so several departments may exercise the same capability.
 
-**Applicability tag**, per service domain:
-- `PUB` — applies to liquid / public-markets investing
-- `PRIV` — applies to private-markets / fund / direct investing
-- `BOTH` — applies to both
+**Office tags** group Business Domains for navigation. Firms can organise the same capabilities differently.
+
+**Applicability tags** indicate the investment context of a Service Domain:
+
+- `PUB`: public-market investing
+- `PRIV`: private-market, fund or direct investing
+- `BOTH`: both contexts
 
 ## What this model covers
 
-OpenIM is a reference model for **investment management** — the buy-side whole. Public-equity, fixed-income, private-equity, private-credit, real-asset, infrastructure, hedge-fund and derivative capabilities are all parts of one model. An implementation activates the subset its mandate requires and leaves the rest dormant: a listed-equity manager activates BD-02 and the public capabilities of BD-05 / BD-06 / BD-08 / BD-09 / BD-12, and leaves BD-03 / BD-04 dormant; an LP allocator activates BD-03 and leaves BD-06's execution domains dormant.
+The model covers investment activity conducted through securities, funds, derivatives and direct holdings. It also covers the operating capabilities that support those investments.
 
-This follows the BIAN precedent — BIAN's Service Landscape decomposes a generic universal bank, and an individual bank derives its own blueprint as a subset. The model is the union of capability; an implementation is a subset.
+An implementation selects the subset relevant to its mandate. For example, a listed-equity manager uses securities research and trading capabilities. An allocator using external funds relies more heavily on manager and fund investment capabilities.
 
 ## Organised by capability, not by asset class
 
-The model is two levels — Business Domain → Service Domain — with a per-Service-Domain applicability tag. It is organised by capability rather than by asset class, because a capability is the same capability whatever the asset class: "Performance Measurement" is one Service Domain whether the portfolio is listed equity or private equity. The `PUB` / `PRIV` / `BOTH` tag marks where a capability applies — where it is dormant for a given mandate — not a different capability. A tag never licenses asset-class-specific framing of a capability that should read generically; the asset-class balance review enforces that.
+Capabilities are organised by the work performed. Asset class is a separate classification in [E-09 Asset Class](../entities/core/E-09-asset-class.md).
+
+For example, Performance Measurement remains one Service Domain across listed and private investments. The applicability tag records the contexts in which that capability is used.
 
 ## Summary
 

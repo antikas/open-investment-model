@@ -31,7 +31,7 @@ test('a clean MCP client can discover and call the read-only server', async () =
       arguments: { query: 'capital call lifecycle', limit: 10 },
     });
     const structured = response.structuredContent as { modelVersion: string; results: Array<{ id: string }> };
-    assert.equal(structured.modelVersion, '0.3.0');
+    assert.equal(structured.modelVersion, '0.3.1');
     assert.ok(structured.results.some((item) => item.id === 'PM-07'));
 
     const serverVersion = client.getServerVersion();

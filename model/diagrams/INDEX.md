@@ -1,20 +1,22 @@
-# OpenIM Diagrams
+# OpenIM diagrams
 
-The visual companion to the [OpenIM model](../README.md).
+These diagrams provide visual routes into the [OpenIM model](../README.md). Start with the Business Domain map for capabilities or the conceptual entity diagram for information concepts.
 
-## GitHub-native diagrams
+## Markdown diagrams
 
-These render in any GitHub markdown view — the readable form, no build step.
+The diagrams in this directory render in GitHub without a separate build step.
 
 | # | Diagram | What it shows |
 |---|---|---|
-| 01 | [Layer stack](01-layer-stack.md) | OpenIM's position in the standards landscape — agent channel above, FIBO / ISDA CDM / identifiers / wire formats / reporting / governance around it. |
-| 02 | [Business Domain map](02-business-domain-map.md) | The 17 Business Domains grouped by office tag (Front / Middle / Back / Cross-cutting / Commercial), with Service-Domain counts. Graphical companion to the summary table in [`../service-domains/INDEX.md`](../service-domains/INDEX.md). |
-| 03 | [Conceptual ERD — core entities](03-conceptual-erd.md) | The 38-entity core entity model — organised into six groups (primary spine, reference and identity, risk, computed-result and metadata, operational, strategy) — and the key relationships among them. |
-| 04 | [Asset class × form of holding](04-asset-class-form-of-holding-matrix.md) | The orthogonality matrix — the nine asset classes (E-09) against the four form-of-holding specialisation packs, every crossing walked to its entity-and-Service-Domain home. The demonstration that the asset-class axis and the form-of-holding axis are independent. |
+| 01 | [Layer stack](01-layer-stack.md) | OpenIM's relationship to adjacent standards and model layers. |
+| 02 | [Business Domain map](02-business-domain-map.md) | The 17 Business Domains, grouped by office label with Service Domain counts. |
+| 03 | [Conceptual entity diagram](03-conceptual-erd.md) | The 38 core entities and their main relationships. |
+| 04 | [Asset class and form of holding](04-asset-class-form-of-holding-matrix.md) | How asset classes cross the specialisation packs used for different holding forms. |
 
-## Static site
+## Generated static views
 
-The full model — every Business Domain drilled to Service-Operation depth, every entity page, the landscape and the entity ERD — is rendered as a navigable static HTML + SVG site by the Python generator at [`../../tools/diagrams/`](../../tools/diagrams/), committed at [`../../exports/diagrams/`](../../exports/diagrams/). The markdown under `model/service-domains/`, `model/entities/` and `model/ownership-map.md` is the only authoritative source; the generator parses it directly. See [`../../tools/diagrams/README.md`](../../tools/diagrams/README.md) for the build invocation and the per-view details.
+The Python generator under [`../../tools/diagrams/`](../../tools/diagrams/) reads the model Markdown and writes navigable HTML and SVG views to [`../../exports/diagrams/`](../../exports/diagrams/).
 
-The attribute-level core ERD is the D2 source at [`d2/core-erd.d2`](d2/core-erd.d2); the layer-stack rendering is [`d2/layer-stack.d2`](d2/layer-stack.d2). Both render to SVG via the D2 binary as their own build step alongside the static site.
+The source remains under `model/service-domains/`, `model/entities/` and `model/ownership-map.md`. See the [diagram generator guide](../../tools/diagrams/README.md) for build commands and output details.
+
+The attribute-level core entity diagram uses [`d2/core-erd.d2`](d2/core-erd.d2). The layer stack uses [`d2/layer-stack.d2`](d2/layer-stack.d2). The build renders both D2 files to SVG.

@@ -1,14 +1,14 @@
-# Service Domain ↔ Entity Ownership Map
+# Service Domain to Entity Ownership Map
 
-The consolidated map of which Service Domain is the **authoritative source** for each entity in the canonical OpenIM entity model. It declares, for each entity that has a non-default ownership pattern, the exact partition, facet or co-ownership structure under which the pattern operates.
+This map identifies the Service Domain responsible for each entity in the OpenIM canonical model. It also records cases where ownership is partitioned, faceted or shared.
 
-This map is the **SSOT for entity ownership.** Each entity file's `Owned by` line is reconciled to it; the Tier-0 validator enforces the consistency. The map answers two questions for every entity: which Service Domain is its authoritative source, and which Service Domains consume it.
+An **authoritative source** is the capability responsible for the entity's identity and governed state. The term describes business accountability. An implementation can assign the supporting application separately.
 
-The model has 17 Business Domains and 171 Service Domains; the canonical entity model has 86 entities — a generalised core of 38 (`E-NN`) plus five specialisation packs (`PB-NN`, `FO-NN`, `PM-NN`, `DR-NN`, `RA-NN`).
+This file is the source of truth for entity ownership. Each entity file's `Owned by` line must agree with it, and the structural validator checks that agreement.
 
 ## The four ownership patterns
 
-The model's default is **one entity, one owning Service Domain.** 76 of 86 entities follow this default. The remaining ten are not defects — they are entities whose shape genuinely admits more than one authoritative source. This map declares the pattern that applies to each, so the ownership is *explicit* rather than implicit.
+The default is **one entity, one owning Service Domain**. This pattern applies to 76 of the 86 entities. The remaining entities use one of the multi-owner patterns below.
 
 **1. Single owner.** One Service Domain is the authoritative source for every instance. The vast majority (76 of 86 entities). *Example:* SD-13.1 owns E-02 Instrument / Asset.
 

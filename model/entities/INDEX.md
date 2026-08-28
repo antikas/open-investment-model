@@ -1,29 +1,29 @@
 # OpenIM Canonical Entity Model
 
-The canonical data model for the buy-side firm — the *things* an institutional investment manager keeps records about. It is built for the full breadth of the buy-side, not one segment: a traditional active manager that *issues* funds and reports to investors (the CTI / UCITS / '40-Act mutual-fund shape), a sovereign or pension *allocator*, a hedge fund, an insurer, a wealth manager — each one activates the subset of the model its mandate needs. Where the [service-domain model](../service-domains/INDEX.md) decomposes what the firm *does*, this entity model decomposes what the firm *knows*.
+This catalogue describes the core information used by an institutional investment firm. The [Service Domain model](../service-domains/INDEX.md) describes what the firm does. This entity model describes the information those capabilities use.
 
-> Vocabulary not familiar? The [glossary](../glossary.md) defines the investment-management terms used here (NAV, IBOR / ABOR, the IRR / TVPI / DPI / RVPI family, four-lens NAV, golden key, LEI / FIGI / ISIN, and the rest).
->
-> Visual: the [conceptual ERD](../diagrams/03-conceptual-erd.md) renders the core and its key relationships at a glance.
+The [glossary](../glossary.md) defines unfamiliar terms. The [conceptual entity diagram](../diagrams/03-conceptual-erd.md) shows the core entities and their main relationships.
 
-## Structure — a generalised core, plus specialisation packs
+## Structure
 
 The entity model has two layers:
 
-- **[`core/`](core/)** — the entities true of *every* institutional investor, whatever it invests in. A long-only equity manager, a fixed-income manager, a hedge fund, a multi-asset sovereign fund — all of them hold positions, in instruments, in portfolios, against counterparties, generating cash flows, valued over time. Identifier scheme `E-NN`.
-- **[`specialisations/`](specialisations/)** — the entities specific to one *form* an investment takes. Each pack specialises the core by the instrument family and the access route — not by asset class: listed securities (`public-markets/`), the issued-fund / fund-operator form (`fund-operations/`), the fund-investing route (`private-markets/`), the derivative instrument family (`derivatives/`), and directly-held physical assets (`real-assets/`). A fund is a kind of instrument, a capital call is a kind of transaction, a fund NAV is a kind of valuation. Identifier scheme is the pack prefix — `PB-NN`, `FO-NN`, `PM-NN`, `DR-NN`, `RA-NN`.
+- **[`core/`](core/)** contains 38 concepts shared across institutional investment firms. Core identifiers use `E-NN`.
+- **[`specialisations/`](specialisations/)** contains 48 entities that add detail for a particular form of holding or operation. Each pack has its own identifier prefix.
 
-This is the BIAN-faithful shape — a general model, specialised — and it is what makes OpenIM serve institutional investment management broadly rather than either the long-only manager or the private-markets LP alone.
+The five packs cover public markets, fund operations, private markets, derivatives and real assets. An implementation selects the core and specialisations that fit its mandate.
 
-**The packs are orthogonal to the asset-class taxonomy.** [E-09 Asset Class](core/E-09-asset-class.md) is the *what* — the nine-class economic-exposure taxonomy (public equities, fixed income, cash, private equity, private credit, real estate, infrastructure, natural resources / commodities, hedge funds). The specialisation packs are the *how* — the form the holding or operation takes. The two axes cross, they do not mirror each other: a listed-equity or fixed-income exposure is held directly (public-markets) or referenced by a swap (derivatives); a private-equity or private-credit exposure is held through the fund route (private-markets) or originated directly; a natural-resources exposure is held directly (real-assets), through a fund (private-markets), or via an exchange-traded commodity; and any of these asset classes, *issued* as a fund rather than held, is a fund-operations record — a manager running equity, bond, multi-asset or alternative funds inhabits the fund-operations pack whatever the underlying class. E-09 is the single asset-class spine the model reconciles to; the five packs are a deliberately coarser, orthogonal structuring by form of holding or operation — which is why there are five packs and nine asset classes, and why that is not a mismatch.
+The packs and asset classes are separate dimensions. [E-09 Asset Class](core/E-09-asset-class.md) classifies economic exposure. A specialisation pack describes how an investment is held or operated.
+
+For example, an equity exposure may be a listed security, a fund holding or the reference asset of a derivative. One asset class can therefore use several specialisation packs.
 
 ## Design stance
 
-- **Manager and allocator, not one side.** The model serves the firm that *issues* funds as fully as the firm that *allocates* into them. The issuer side — fund products, share / unit classes, NAV per unit, investor unitholdings, subscriptions and redemptions, fee accrual (FO-06), transfer agency (`fund-operations/`) — and the allocator side — commitments, capital calls, distributions, capital accounts (`private-markets/`) — are mirror views of the same fund, not competing shapes. A UCITS or mutual-fund manager, a hedge fund, a sovereign or pension allocator and an insurer each light up a different subset; none is the privileged case.
-- **Entity resolution as a first-class assumption.** Identity is never guaranteed shared across systems — custodian, administrator, counterparty and vendor feeds name the same party and instrument differently, and ISIN / CUSIP / SEDOL / FIGI / LEI coverage runs out at the edges. Every OpenIM master carries an internal golden key, an alias set (E-13) and an external-identifier map (E-14), so the model *resolves* identity rather than assuming a shared key. The problem is universal — a hedge fund reconciling prime-broker feeds, a manager mapping vendor identifiers across order-management and accounting systems, an allocator ingesting administrator data all hit it — and most acute in private markets, where there is no reliable shared identifier at all.
-- **Aligns to FIBO.** Where FIBO already models a concept — a legal entity, an equity, a bond — OpenIM references FIBO semantics rather than re-defining them. The core Legal Entity (E-01) and Instrument / Asset (E-02) are the alignment spine. See [PRIOR-ART.md](../../PRIOR-ART.md).
-- **Bi-temporal.** Attributes that change over time are modelled with effective-time and record-time (E-12), so the model can answer "what did we believe, and as of when."
-- **Roles, not duplicate masters.** Issuer, counterparty, manager, custodian, administrator, portfolio company are *roles* a Legal Entity plays — one party master, not six.
+- **Managers and asset owners:** the model covers firms that issue funds and firms that allocate capital. Each uses a different subset.
+- **Entity resolution:** master entities carry an internal key, aliases through E-13 and external identifiers through E-14. Implementations can reconcile records that use different source identifiers.
+- **FIBO alignment:** OpenIM maps to FIBO semantics where concepts align. E-01 Legal Entity and E-02 Instrument / Asset form the main alignment spine.
+- **Bi-temporal history:** E-12 records effective time and record time for changing classifications.
+- **Legal Entity roles:** issuer, counterparty, manager and custodian are roles of E-01 Legal Entity. They are not separate party masters.
 
 ---
 

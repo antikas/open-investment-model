@@ -55,3 +55,7 @@ The package carries OpenIM's MIT licence in `dist/LICENSE`. Bundled third-party 
 ## Licence
 
 MIT. OpenIM is a reference model, not a standard, investment product or production system.
+
+## Privacy Policy
+
+This server runs locally on your machine. The model content ships inside the package; the server has no accounts, sends no telemetry, and operates no backend service. Full policy: https://openinvestmentmodel.org/privacy/

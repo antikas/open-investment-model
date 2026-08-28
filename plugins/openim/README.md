@@ -1,6 +1,6 @@
 # OpenIM local plugin
 
-This plugin gives coding and research agents read-only access to the Open Investment Model through the pinned `@openinvestmentmodel/openim-mcp@0.1.1` stdio package.
+This plugin gives coding and research agents read-only access to the Open Investment Model through the pinned `@openinvestmentmodel/openim-mcp@0.1.2` stdio package.
 
 An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.
 

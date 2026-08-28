@@ -1,46 +1,65 @@
 # Contributing to OpenIM
 
-Thank you for considering a contribution. OpenIM is a reference model — its value is precision, non-overlap and honest grounding, so the contribution process is built around those qualities rather than volume.
+OpenIM accepts corrections, model changes and standards-alignment improvements. Contributions are reviewed for clear scope, evidence and consistency with the existing model.
 
-## Before you start
+## Start with an issue
 
-Open an issue first. A model change discussed before it is drafted saves both sides time: the boundary questions (does this capability already have a home? which entity owns this data?) are cheaper to settle in an issue than in review comments on a finished PR.
+Open an issue before drafting a substantial model change. Describe the problem, identify the current model location and include the evidence you expect the proposal to use.
 
-## The three kinds of model change
+Early discussion is especially useful when a capability may already have a home or an entity may already have an owner.
 
-### 1. A Service Domain change
+## Service Domain proposals
 
-Adding, splitting, merging or re-scoping a unit of business capability. A proposal must carry:
+A Service Domain proposal adds, splits, merges or changes the scope of a business capability. Include:
 
-- **Definition** — what the capability is, in plain language, and the business outcome it owns.
-- **Boundary** — what it explicitly does *not* cover, and which existing Service Domains border it. Non-overlap with the existing 171 is the hardest test and the most valuable part of the proposal.
-- **Owned entities** — which data entities (if any) this capability owns, and how that squares with the [ownership map](model/ownership-map.md).
-- **Applicability** — public markets, private markets, or both; and which institution archetypes (asset manager, pension fund, sovereign investor, insurer, wealth manager, hedge fund) exercise it.
-- **Grounding** — the external sources that evidence the capability exists as a distinct discipline: regulatory frameworks, industry bodies (CFA, ILPA, AIMA, ISDA), academic or practitioner literature. "My firm does it this way" is a data point, not grounding.
+- **Definition:** the capability in plain language and the business outcome it owns.
+- **Boundary:** the activities in scope, the adjacent Service Domains and the relevant `Out of scope` statements.
+- **Owned entities:** the entities the capability owns, with any required change to the [ownership map](model/ownership-map.md).
+- **Applicability:** the markets and institution types that exercise the capability.
+- **Grounding:** primary or authoritative sources showing that the capability exists as a distinct discipline.
 
-### 2. An entity change
+A firm's local operating model is useful evidence. Broader grounding is required before that local pattern becomes part of a general reference model.
 
-Adding or changing an entity in the canonical data model. A proposal must carry:
+## Entity proposals
 
-- **Definition** — what real-world thing the entity represents and why the firm must hold consistent, single-source data about it.
-- **Attributes** — the attribute schema, with types and the identifier story (how instances are identified when no universal identifier exists).
-- **Ownership** — the owning Service Domain, and which ownership pattern applies (single owner, key-partitioned, faceted or co-owned).
-- **Relationships** — how it relates to existing entities; whether it belongs in the generalised core or a specialisation pack, and why.
+An entity proposal adds or changes a concept in the canonical entity model. Include:
 
-### 3. A standards-alignment change
+- **Definition:** the real-world concept represented by the entity.
+- **Reason for inclusion:** why the firm needs consistent identity and information for that concept.
+- **Attributes:** the proposed schema and types.
+- **Identity:** the internal key, aliases and external identifiers used to distinguish instances.
+- **Ownership:** the owning Service Domain and the ownership pattern applied.
+- **Relationships:** links to existing entities and the proposed core or specialisation-pack placement.
 
-Corrections or extensions to the documented mappings against adjacent standards (FIBO, ISDA CDM, ILPA, GIPS, ISO 20022). These need citations to the specific published artefact (the FIBO ontology module, the CDM version, the template revision) — alignment claims are checkable claims.
+## Standards-alignment proposals
 
-## The quality bar
+An alignment proposal corrects or extends a documented mapping to an external standard. Cite the exact published artefact, version and concept involved.
 
-- Every PR must pass the validator: `python tools/openim-validate/validate.py` from the repo root. It checks counts, identifiers, links and section structure across the whole model.
-- Definitions are measurable: a reader can decide whether a given activity falls inside or outside the capability.
-- Reader-facing model files carry no process commentary — provenance and decision history live in the PR, not the artefact.
+Examples include FIBO ontology terms, FINOS Common Domain Model concepts, ILPA templates, GIPS provisions and ISO 20022 messages.
 
-## Process
+## Quality requirements
 
-1. Open an issue describing the change and its grounding.
-2. Fork, branch, make the change, run the validator.
-3. Open a PR referencing the issue. The maintainer reviews against the criteria above — see [GOVERNANCE.md](GOVERNANCE.md) for how decisions are made.
+- Definitions must let a reader decide whether an activity or concept falls within the stated boundary.
+- Reader-facing model files contain the current definition. Decision history belongs in the issue, pull request and commit record.
+- Links, identifiers, headings and required sections must remain structurally valid.
+- A model change includes any necessary updates to indexes, ownership mappings and generated outputs.
 
-By contributing you agree that your contributions are licensed under the [MIT License](LICENSE).
+Run the validator from the repository root:
+
+```sh
+python tools/openim-validate/validate.py
+```
+
+See the [validator guide](tools/openim-validate/README.md) for the checks it performs.
+
+## Contribution process
+
+1. Open an issue with the proposed change and its grounding.
+2. Fork the repository and create a focused branch.
+3. Make the change and run the validator.
+4. Open a pull request that links to the issue and explains the model impact.
+5. Address review comments and keep the evidence in the pull-request record.
+
+The maintainer reviews proposals under [GOVERNANCE.md](GOVERNANCE.md).
+
+By contributing, you agree that your contribution is licensed under the [MIT licence](LICENSE).

@@ -1,101 +1,117 @@
-# Prior Art
+# Related standards and models
 
-OpenIM does not exist in a vacuum. This document names the standards, models, and projects adjacent to OpenIM, states honestly what each one is, and explains where OpenIM sits in relation to it. If you are evaluating OpenIM, read this first — your first question is almost certainly answered here.
+OpenIM sits among established standards, public models and implementation platforms. This document records their scope and explains how OpenIM relates to them.
 
-The short version: **OpenIM is a service-domain and master-data reference model for the buy-side firm.** Every standard below is either a different layer, a different type of artefact, a different industry, or no longer maintained. None of them is a current, open, agent-native service-domain decomposition of an institutional investment manager. That is the gap OpenIM fills.
+Its purpose is scope alignment. The record includes earlier buy-side models and current adjacent work.
 
-## The layer picture
+## OpenIM's scope
 
-```
-  Service domains      OpenIM service-domain model       ← OpenIM (new)
-  Master data          OpenIM canonical model:
-                       funds, portfolios, mandates,
-                       GP/LP, commitments, allocations,
-                       entity resolution / golden keys   ← OpenIM (new)
-  ──────────────────────────────────────────────────────────────────────────
-  Transaction layer    ISDA CDM                          ← reuse
-  Concept ontology     FIBO                              ← align to / build on
-  Identifiers          LEI · FIGI · ISIN · Private CUSIP  ← reference / resolve across
-  Wire / messaging     ISO 20022 · FIX · FpML            ← interop edge
-  Reporting / perf     ILPA templates · GIPS             ← consume / conform to
-  Governance           FINOS AI Governance Framework     ← align to
-```
+OpenIM links two views of an institutional investment firm:
 
-## What OpenIM relates to, and how
+- a capability map of Business Domains and Service Domains
+- a canonical entity model for the information those capabilities use
 
-### BIAN — Banking Industry Architecture Network — *precedent, not competitor*
+Generated exports express the same source in forms used by architecture, data and graph tools.
 
-BIAN is an open service-domain reference model for **retail and commercial banking**: ~7 business areas, ~36 business domains, ~280+ service domains, each an atomic, non-overlapping unit of business capability. It is a reference framework for organising capabilities, explicitly not a design blueprint for any particular bank.
+The table below shows where adjacent artefacts fit.
 
-OpenIM is, deliberately, "BIAN for the buy-side." BIAN is the structural precedent OpenIM borrows its form from. BIAN does not touch institutional investing — there is no asset-management or allocator content in it. OpenIM does not compete with BIAN; it occupies the equivalent position for a different industry.
+| Need | Primary artefact | OpenIM relationship |
+|---|---|---|
+| Firm-level capability map | OpenIM Service Domains | Core OpenIM scope |
+| Canonical investment entities | OpenIM entities with FIBO mappings | Core OpenIM scope and semantic alignment |
+| Financial concepts and relationships | FIBO | Reuse or map where concepts align |
+| Products and transaction lifecycles | FINOS Common Domain Model | Reference at the transaction layer |
+| External identifiers | LEI, FIGI, ISIN and other schemes | Store and resolve across identifiers |
+| Financial messages | ISO 20022, FIX and FpML | Use at interoperability boundaries |
+| Private-capital reporting | ILPA templates | Use as reporting inputs and outputs |
+| Investment performance presentation | GIPS standards | Apply as domain rules |
+| AI risk and mitigation vocabulary | FINOS AI Governance Framework | Use as an external governance reference |
 
-### FIBO — Financial Industry Business Ontology — *a lower layer; OpenIM builds on it*
+## Capability and data models
 
-FIBO (EDM Council, standardised through OMG; MIT-licensed) is a formal **ontology** of the *things* of financial business — instruments, legal entities, securities, derivatives, indices. It answers "what is a credit default swap, an equity, a legal entity?"
+### BIAN
 
-FIBO is **not a competitor and OpenIM does not replace it.** FIBO is a different layer. FIBO's coverage is rich on the *nouns* of financial business — legal entities (its strongest area, with a full LEI model), instruments, securities, market indices, and — more than is commonly assumed — funds, collective investment vehicles and the GP/LP partnership roles. What FIBO does **not** model is the investment manager's operating layer: the private-markets investment lifecycle (commitments, capital calls, distributions, capital accounts, NAV as a valuation event), the portfolio-mandate and allocation layer, the classification and entity-resolution machinery, and the risk-operating layer (limits, scenarios, breaches, measurements). It also models real estate only as a securitised instrument, never as a directly-held operating asset. OpenIM **uses FIBO for instrument and legal-entity semantics where FIBO already covers them** — the alignment is mapped concept-by-concept in [fibo-alignment.md](model/fibo-alignment.md) — and adds the buy-side operating and master-data layer FIBO does not model. FIBO is OpenIM's most important alignment dependency.
+[BIAN's Service Landscape](https://bian.org/deliverables/service-landscape/) is a reference structure that categorises and organises Service Domains for banking. A BIAN Service Domain represents a discrete business capability.
 
-### ISDA CDM — Common Domain Model — *complementary; the transaction layer below OpenIM*
+BIAN provides the structural precedent for OpenIM's capability map. OpenIM uses its own Business Domains, Service Domains and definitions for institutional investment management.
 
-ISDA CDM (now a FINOS project) is a machine-readable, machine-executable model of financial products, the trades in them, and the lifecycle events of those trades — execution, confirmation, settlement, margin, collateral.
+### FIBO
 
-CDM models the **transaction grain**. It does not model the portfolio, the fund, the mandate, the LP commitment, or the allocation decision. OpenIM's portfolio and holdings service domains reference CDM for the trade and lifecycle representation rather than re-inventing it. OpenIM models the portfolio, fund, mandate and allocation layer *above* CDM's transaction layer.
+The [Financial Industry Business Ontology](https://spec.edmcouncil.org/fibo/) defines financial concepts and the relationships between them. EDM Council hosts FIBO, and the Object Management Group standardises it. FIBO is published in formats that people and software can read.
 
-### FINOS `glue` — buy-side enterprise data model — *prior art, named honestly; archived*
+OpenIM maps canonical entities to FIBO concepts where the meanings align. The [entity-level alignment](model/fibo-alignment.md) records each mapping and its status. OpenIM retains local concepts for firm capabilities and information that fall outside a suitable FIBO term.
 
-`glue` was an enterprise data model for the buy-side — Party, Business Relationship, Investment Strategy, Instruments, Portfolios — contributed to FINOS by EPAM Systems in 2020.
+### FINOS Common Domain Model
 
-This is the one piece of genuine buy-side prior art, and OpenIM names it openly. `glue` matters because it proves the *idea* of an open buy-side model is not novel. But: `glue` is **archived** — the FINOS repository has been read-only since 2023. It was a *data model*, not a *service-domain decomposition* — it modelled what data the buy-side stores, not what service domains a buy-side firm operates. It carried a single-vendor lineage (EPAM's "Wave" ecosystem) rather than being vendor-neutral by design. And it predates the agent era entirely.
+The [FINOS Common Domain Model](https://cdm.finos.org/docs/cdm-overview/) is a machine-readable model for financial products, trades and lifecycle events. Its published scope includes product, event and process models, with supporting reference data.
 
-OpenIM is, in spirit, the maintained, vendor-neutral, service-domain-first, agent-native successor to what `glue` attempted. Pretending `glue` never existed would be the dishonest move; citing it is the honest one.
+OpenIM refers to CDM for product and transaction-lifecycle concepts. OpenIM's primary scope is the wider firm capability map and the canonical information used across that map.
 
-### Quadra — a current, open buy-side effort converging independently — *the closest living adjacent work*
+### FINOS `glue`
 
-Where `glue` proves the idea is not novel, Quadra proves it is happening again, now, and independently. Quadra is a new open buy-side platform from Stuart Plane, the founder of Cadis and Matrix and a long-standing practitioner in buy-side enterprise data management and security mastering. It starts from an open, git-native data model with the operating engines built on top of it, and like OpenIM it treats that model as the foundation its agents run on, with the deterministic core kept out of the numbers-of-record.
+[FINOS `glue`](https://github.com/finos/glue) describes itself as an enterprise data model for the buy side, tailored to wealth and asset managers. It includes concepts such as parties, business relationships, investment strategies, instruments and portfolios.
 
-Quadra is the closest current, credible, adjacent prior art OpenIM has found, and the convergence is the substance of the point. Two efforts, arrived at separately, have landed on the same core convictions: open and git-native, model-first, agent-native, an institutional operating layer that spans public and private markets, and entity resolution taken seriously rather than assumed away. Independent agreement of that kind is evidence the open buy-side model thesis is right, not a threat to it.
+FINOS archived the repository in May 2023, leaving it read-only. OpenIM treats `glue` as direct prior art for open buy-side data modelling. OpenIM adds a linked service-domain map and maintains model-derived exports from the same source.
 
-The difference is one of kind, not of camp. Quadra is a platform, a runnable system built to operate a firm. OpenIM is a vendor-neutral reference model, a service-domain and master-data decomposition published under MIT and meant to be read and built on by anyone, platforms included. A reference model and an implementing platform sit at different layers and can share a vocabulary rather than compete for one. Naming Quadra, and naming it as convergent rather than rival, is the honest posture.
+### Quadra
 
-### Open-source retail quant platforms — *a different scope, and a different kind of artefact*
+[Quadra](https://github.com/quadra-platform) is a current investment data management platform for asset managers and asset owners. Its public description covers ingestion, entity resolution, master data, lineage and an investment book across public and private markets.
 
-A class of open-source projects assembles quantitative-finance libraries — portfolio optimisation, volatility modelling, backtesting, broker execution — into an end-to-end workflow for retail investors and independent quants. A current example is [`menonf/InvestmentManagement`](https://github.com/menonf/InvestmentManagement): a Python toolkit over SQL Server / Databricks that loads public market data, backtests strategies, constructs and executes portfolios, measures performance and risk, and adds an LLM layer for natural-language querying and strategy generation.
+The full platform and data model are source available under the Business Source License 1.1. A [public sample](https://github.com/quadra-platform/data-model-sample) exposes part of the model under the MIT licence.
 
-These are **code toolkits, not reference models**, and they cover the **public-markets front office** — data, signal, optimisation, execution — not the institutional middle and back office (fund accounting, NAV, capital calls, LP servicing, custody) and not private markets. Their security masters assume one clean public-market identifier per instrument, with no entity-resolution or golden-key layer. And where they reach for AI, the model sits in the decision path (strategy generation). OpenIM sits elsewhere on all three axes: a vendor-neutral service-domain and master-data **reference model** for the **institutional** buy-side across **public and private** markets, with the model kept out of the numbers-of-record by design.
+Quadra and OpenIM overlap in investment-data vocabulary. They have different artefact types: Quadra is a platform with an operating data model, while OpenIM is an implementation-neutral reference model. This comparison uses Quadra's public materials only.
 
-### ILPA reporting templates — *consumed by OpenIM's LP service domains*
+## Reporting and performance standards
 
-ILPA's quarterly reporting templates (the 2025 Reporting Template v2.0 and Performance Template) standardise the **format and field-level content** of GP-to-LP reporting in private equity. They standardise what a capital-call notice contains; they do not standardise the *identity* of the entities within it ("is this the same fund as last quarter?"). That identity and master-data gap is exactly OpenIM territory. OpenIM's private-markets service domains consume and produce ILPA-format reporting.
+### ILPA templates
 
-### GIPS — Global Investment Performance Standards — *domain rules OpenIM conforms to*
+The [Institutional Limited Partners Association reporting templates](https://ilpa.org/industry-guidance/templates-standards-model-documents/ilpa-templates-hub/ilpa-reporting-template/) define reporting formats for private-capital fees, expenses, carried interest and performance.
 
-GIPS (CFA Institute) is a voluntary standard for **calculating and presenting investment performance**. It is a domain-rule standard, not a data or service model. Its concepts — composite, the firm, investment discretion — are useful canonical-model vocabulary. OpenIM's performance and reporting service domains are designed to be consistent with GIPS.
+OpenIM uses ILPA templates as external reporting structures for relevant private-market capabilities. Canonical entity identity remains a separate concern inside OpenIM.
 
-### ISO 20022 / FIX / FpML — *wire formats at the interop edge*
+### GIPS standards
 
-These are messaging and protocol standards — ISO 20022 the broad financial-messaging metamodel, FIX the electronic-trading wire protocol, FpML the XML standard for OTC derivatives. They are a different *type* of artefact from OpenIM. OpenIM's service domains use them as the interoperability formats at their edges. No overlap in kind: these are the wire; OpenIM is the capability and master-data model.
+The [Global Investment Performance Standards](https://www.gipsstandards.org/standards/) provide requirements for calculating and presenting investment performance. CFA Institute publishes provisions for firms, asset owners and verifiers.
 
-### Identifier standards — LEI, FIGI/OpenFIGI, ISIN, Private CUSIP — *the substrate OpenIM resolves across*
+OpenIM treats GIPS concepts as domain rules for performance and reporting capabilities. OpenIM records the entities and capability boundaries that an implementation can use when applying those rules.
 
-Public markets are well served by ISIN, CUSIP, SEDOL, FIGI, LEI. Private markets historically had almost nothing; Private CUSIPs (CUSIP Global Services with Aumni, a J.P. Morgan company) launched in 2025 but coverage is early. OpenIM does not compete with identifiers — it is the model that must *reference and resolve across* them. Because private markets lack a universal identifier, OpenIM's master-data domains include explicit entity-resolution, golden-key, and alias structures. A model that assumes a shared identifier breaks on private markets; OpenIM is built for the reality that there isn't one.
+## Messaging and identifiers
 
-### FINOS AI Governance Framework — *the governance companion OpenIM aligns to*
+### ISO 20022, FIX and FpML
 
-The FINOS AI Governance Framework (AIGF v2.0, 2025) carries an agentic-AI risk catalogue cross-referenced to OWASP, MITRE, and the EU AI Act. OpenIM aligns its governance and audit binding to AIGF rather than inventing its own risk taxonomy. AIGF is the natural governance companion to an agent-native buy-side reference model.
+[ISO 20022](https://www.iso20022.org/about-iso-20022) provides a common approach for developing financial messages and a central dictionary of business items. [FIX](https://www.fixtrading.org/standards/) and [FpML](https://www.fpml.org/) provide established protocols for trading and derivatives use cases.
 
-## The agent-native prior art
+OpenIM treats these as interoperability artefacts. Service Domains can reference the messages used at their boundaries while keeping the capability definition independent of a wire format.
 
-A scan for an existing machine-consumable investment management reference model, equivalent to public banking reference models, found none. Agentic *trading* frameworks and small portfolio MCP servers exist, but they do not decompose the *institutional investment manager as a firm*. OpenIM provides service domains and a canonical model that people, architecture tools and AI agents can adopt independently.
+### Identifier schemes
 
-## Where OpenIM might live
+Investment firms use several external identifier schemes, including LEI, FIGI and ISIN. Their coverage and purpose differ.
 
-FINOS — the Fintech Open Source Foundation — is both the natural long-term home for a project like OpenIM and the place a parallel buy-side modelling effort would most likely emerge (FINOS has a growing buy-side membership). OpenIM launches independently to keep authorship and direction clear; contributing it into FINOS later is a credible path and an open question, not a closed one.
+OpenIM entities store external identifiers and aliases alongside a firm-specific internal key. This structure lets implementations reconcile records across providers and schemes. The model does not claim authority over the external identifiers themselves.
 
-## OpenIM's four differentiators
+## AI governance
 
-Stated plainly, against the prior art above:
+### FINOS AI Governance Framework
 
-1. **Service-domain-first** — a capability decomposition of the firm, not only a data model. This is the differentiator against `glue`.
-2. **Machine-consumable:** plain-text source, deterministic validation and model-derived exports for architecture tools, knowledge graphs, retrieval systems and AI agents, with no prescribed runtime.
-3. **Private-markets master-data** — explicit entity resolution and golden keys for the no-universal-identifier reality of private markets.
-4. **Vendor-neutral and maintained** — open and maintainer-led (see [GOVERNANCE.md](GOVERNANCE.md)), MIT-licensed, not tied to a single vendor's platform. This is the failure mode of `glue` that OpenIM exists to avoid.
+The [FINOS AI Governance Framework](https://air-governance-framework.finos.org/) publishes a catalogue of generative-AI risks and mitigations for financial services. It also maps its content to external regulations and standards.
+
+Where OpenIM refers to AI governance, this framework supplies an external risk and mitigation vocabulary. OpenIM's model remains usable without an AI runtime.
+
+## Other software and models
+
+Open-source trading platforms, portfolio libraries and analytics tools are implementation artefacts. They may consume OpenIM concepts or overlap with part of its domain.
+
+OpenIM assesses a specific project by artefact type and scope. A runnable platform, a message standard, an ontology and a reference model can describe related subject matter while serving different purposes.
+
+## OpenIM's bounded contribution
+
+The repository supports four specific statements about OpenIM:
+
+1. It links a capability decomposition of an institutional investment firm to a canonical entity model.
+2. It publishes the model in plain-text source under the MIT licence.
+3. It generates architecture, schema and graph representations from that source.
+4. It includes explicit entity-resolution structures and documented mappings to adjacent standards.
+
+The prior-art record places those features in context. FINOS `glue` demonstrates earlier open buy-side data modelling. Quadra demonstrates current adjacent work. BIAN, FIBO and CDM provide important structural or semantic precedents.
+
+Corrections and missing primary sources can be proposed through the [contribution process](CONTRIBUTING.md).

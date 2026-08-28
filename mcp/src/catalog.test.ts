@@ -21,7 +21,7 @@ test('catalogue is complete and release-pinned', () => {
 test('exact identifiers resolve with official provenance', () => {
   const entity = getCatalogItem(catalog, 'E-01');
   assert.equal(entity?.title, 'Legal Entity');
-  assert.match(entity?.sourceUrl ?? '', /\/blob\/v0\.3\.0\/model\/entities\/core\/E-01-/);
+  assert.match(entity?.sourceUrl ?? '', /\/blob\/v0\.3\.1\/model\/entities\/core\/E-01-/);
   assert.match(entity?.officialUrl ?? '', /^https:\/\/openinvestmentmodel\.org\//);
 });
 

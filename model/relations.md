@@ -1,18 +1,18 @@
 # Entity Relation Vocabulary
 
-The typed, named set of **relationships** between the entities of the OpenIM canonical model — the edges that turn the entity model from a data dictionary into a graph an agent, an analyst or a warehouse can traverse. Where the [entity model](entities/INDEX.md) says *what a firm knows* and the [ownership map](ownership-map.md) says *who is the authoritative source*, this vocabulary says *how the things a firm knows connect*.
+This file defines the named relationships between entities in the OpenIM canonical model. The [entity catalogue](entities/INDEX.md) defines each concept. The [ownership map](ownership-map.md) assigns business accountability. This vocabulary explains how the concepts connect.
 
-Every foreign-key column and every specialisation line in the entity model is an edge. This document names each of those edges with a **relationship verb** carrying a meaning — `ISSUED_BY`, `MANAGED_BY`, `POSITION_IN`, `HAS_SUBJECT` — rather than the raw column that implements it. Each verb is directed, has a declared inverse, and carries the cardinality and kind of the relationship. The [mapping table](#the-mapping) at the end binds every edge in the model to exactly one verb.
+Every foreign-key column and `Specialises` line becomes an edge. A relationship verb gives that edge a stable meaning independent of its source column. The [mapping table](#the-mapping) assigns one verb to each edge in the model.
 
 ## How to read a relation
 
-Each verb is declared once, in the block below, and reused wherever the same relationship holds. A verb carries:
+Each verb is declared once and reused wherever the same relationship applies. Its declaration contains:
 
-- **Two names, one meaning.** An **LPG name** in `UPPER_SNAKE` (`ISSUED_BY`) — the labelled-property-graph relationship type, the openCypher / graph-engine idiom — and an **OWL name** in `lower-kebab` (`issued-by`) — the same relationship as an ontology super-property. One vocabulary, two serialisation casings.
-- **A direction.** Every edge runs *source &rarr; target*, following the foreign key: the entity that carries the column points to the entity the column resolves to.
-- **An inverse.** The named relationship in the other direction, so the graph is traversable both ways (`ISSUED_BY` &harr; `ISSUER_OF`). No two verbs share an inverse.
-- **A kind.** `is-a` (specialisation), `composition` (a part of a whole that does not stand alone), `role` (the target plays a named role — issuer, custodian, counterparty), or `reference` (a plain typed pointer).
-- **A cardinality.** The source-to-target multiplicity — `n-to-1` for a normal foreign key (many rows point to one target), `n-to-n` where the column holds a set.
+- **Two serialisation names.** The labelled property graph (LPG) name uses `UPPER_SNAKE`, such as `ISSUED_BY`. The Web Ontology Language (OWL) name uses `lower-kebab`, such as `issued-by`.
+- **A direction.** Every edge runs from source to target, following the foreign key. The entity that carries the column points to the entity the column resolves to.
+- **An inverse.** The inverse names the relationship in the other direction, such as `ISSUED_BY` &harr; `ISSUER_OF`.
+- **A kind.** `is-a` marks specialisation. `composition` marks a whole-part relationship. `role` links an entity to a party acting in a named capacity. `reference` is an association without those stronger meanings.
+- **A cardinality.** `n-to-1` covers an ordinary foreign key. `n-to-n` applies when the column holds a set.
 
 ## The relation verbs
 

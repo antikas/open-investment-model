@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@openinvestmentmodel/openim-mcp@0.1.1"
+        "@openinvestmentmodel/openim-mcp@0.1.2"
       ]
     }
   }

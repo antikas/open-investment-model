@@ -1,8 +1,8 @@
-# Layer stack — OpenIM in the standards landscape
+# OpenIM and adjacent model layers
 
-OpenIM is a *layer*, and it is honest about which layer. It does not replace [FIBO](https://spec.edmcouncil.org/fibo/), it does not compete with [ISDA CDM](https://www.finos.org/common-domain-model), and it is not a wire format. The diagram below shows where the model sits in relation to adjacent standards. Implementations sit above OpenIM and remain independent of the project.
+OpenIM is a firm-level reference model. The diagram shows its relationship to specialist standards and identifier schemes. Implementations sit outside the model and remain under their owners' control.
 
-The textual rendering of the same picture is in [`../../PRIOR-ART.md`](../../PRIOR-ART.md), with the full explanation of each layer's relationship to OpenIM.
+[Related standards and models](../../PRIOR-ART.md) provides the detailed explanation and primary source links.
 
 ```mermaid
 flowchart TB
@@ -10,36 +10,38 @@ flowchart TB
     classDef reuse    fill:#e8eef7,stroke:#5b7aa6,color:#1f3a5f
     classDef govern   fill:#f0eee6,stroke:#a09578,color:#5a513a
 
-    subgraph MODEL[OpenIM — the reference model]
+    subgraph MODEL[OpenIM: firm-level reference model]
         direction TB
-        M1["Service-domain model<br/>17 Business Domains / 171 Service Domains<br/><i>what the firm does</i>"]:::openim
-        M2["Canonical entity model<br/>86 entities — core + 5 specialisation packs<br/><i>what the firm knows</i>"]:::openim
+        M1["Service Domain model<br/>17 Business Domains / 171 Service Domains<br/><i>business capabilities</i>"]:::openim
+        M2["Canonical entity model<br/>86 entities: core + 5 specialisation packs<br/><i>core information</i>"]:::openim
     end
 
-    subgraph BELOW[Layers OpenIM reuses or aligns to]
+    subgraph RELATED[Specialist standards and schemes]
         direction TB
-        B1["ISDA CDM — transaction layer<br/>trades and trade lifecycle"]:::reuse
-        B2["FIBO — concept ontology<br/>instrument and legal-entity semantics"]:::reuse
-        B3["Identifiers — LEI · FIGI · ISIN · Private CUSIP"]:::reuse
-        B4["Wire / messaging — ISO 20022 · FIX · FpML"]:::reuse
-        B5["Reporting / performance — ILPA templates · GIPS"]:::reuse
+        B1["FINOS CDM: products and transaction lifecycles"]:::reuse
+        B2["FIBO: financial concepts and relationships"]:::reuse
+        B3["Identifiers: LEI · FIGI · ISIN"]:::reuse
+        B4["Messages: ISO 20022 · FIX · FpML"]:::reuse
+        B5["Reporting and performance: ILPA · GIPS"]:::reuse
     end
 
-    G1["FINOS AI Governance Framework<br/><i>governance · align to</i>"]:::govern
+    G1["FINOS AI Governance Framework<br/><i>external governance reference</i>"]:::govern
 
-    M1 -.consumes.-> B1
-    M1 -.consumes.-> B4
-    M1 -.consumes.-> B5
-    M2 -.builds on.-> B2
-    M2 -.references.-> B3
-    M2 -.aligns to.-> G1
+    M1 -.references.-> B1
+    M1 -.references.-> B4
+    M1 -.references.-> B5
+    M2 -.aligns to.-> B2
+    M2 -.uses.-> B3
+    M1 -.references.-> G1
 ```
 
 ## Reading the diagram
 
-- The **model layer** (OpenIM) is the new thing — service-domain decomposition (BD / SD / SO) plus the canonical entity model. This is the part with no existing open equivalent.
-- **Implementations** may sit above the model and expose it through applications, APIs, agents or other interfaces. OpenIM does not prescribe or endorse one.
-- The **layers below** are reused or aligned to. ISDA CDM models trades; OpenIM models the portfolio, fund and mandate *above* the trade. FIBO models the *what* of instruments and legal entities; OpenIM uses FIBO semantics where they cover the concept. ILPA / GIPS are reporting and presentation standards OpenIM consumes or conforms to. The wire formats are interop at the edges.
-- The **FINOS AI Governance Framework** is the governance companion OpenIM aligns to, rather than inventing its own risk taxonomy.
+- OpenIM connects a capability map to a canonical entity model.
+- FIBO provides financial concepts that OpenIM maps to where the meanings align.
+- FINOS CDM provides product and transaction-lifecycle concepts.
+- Identifier and message standards operate at integration boundaries.
+- ILPA and GIPS provide external reporting or performance rules for relevant capabilities.
+- The FINOS AI Governance Framework supplies an external risk and mitigation vocabulary when an implementation uses AI.
 
-The full prose statement of each adjacency is in [`../../PRIOR-ART.md`](../../PRIOR-ART.md) — that document is the project's credibility artefact.
+See [PRIOR-ART.md](../../PRIOR-ART.md) for the scope and limits of each relationship.

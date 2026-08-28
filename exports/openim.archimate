@@ -51,7 +51,7 @@
       <documentation>Business Domain (Middle office). A grouping of the Service Domain capabilities in this area of the buy-side firm.</documentation>
     </element>
     <element identifier="id-bd-12" xsi:type="Grouping">
-      <name>BD-12 Investment Operations &amp; Servicing</name>
+      <name>BD-12 Investment Operations and Servicing</name>
       <documentation>Business Domain (Back office). A grouping of the Service Domain capabilities in this area of the buy-side firm.</documentation>
     </element>
     <element identifier="id-bd-13" xsi:type="Grouping">

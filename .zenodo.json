@@ -1,0 +1,37 @@
+{
+  "title": "Open Investment Model (OpenIM)",
+  "description": "An open, MIT-licensed, vendor-neutral reference model for institutional investment management, comprising a service-domain decomposition of the buy-side firm and a canonical entity model.",
+  "creators": [
+    {
+      "name": "Antikatzidis, Georgios"
+    }
+  ],
+  "version": "0.3.1",
+  "publication_date": "2026-08-28",
+  "license": "mit",
+  "upload_type": "dataset",
+  "access_right": "open",
+  "keywords": [
+    "institutional investment management",
+    "buy-side",
+    "asset management",
+    "investment operating model",
+    "service-domain model",
+    "canonical data model",
+    "reference model"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/antikas/open-investment-model",
+      "relation": "isDerivedFrom",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://openinvestmentmodel.org/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other",
+      "scheme": "url"
+    }
+  ]
+}

@@ -1,34 +1,38 @@
-# OpenIM — The Model
+# OpenIM model
 
-This directory holds the OpenIM model: the open, vendor-neutral reference model for institutional investment management. It has two interlocking halves.
+This directory contains the two connected parts of the OpenIM reference model. One describes the firm's business capabilities. The other describes the information those capabilities use.
 
-## [`service-domains/`](service-domains/INDEX.md) — what the firm does
+## Business capabilities
 
-A service-domain decomposition of the buy-side firm — **17 Business Domains, 171 Service Domains**. Each Service Domain is a discrete, non-overlapping unit of business capability. This is the OpenIM equivalent of BIAN's Service Landscape, and it is the part of OpenIM with no existing open equivalent.
+[`service-domains/`](service-domains/INDEX.md) maps **17 Business Domains and 171 Service Domains**.
 
-Start at [`service-domains/INDEX.md`](service-domains/INDEX.md).
+A Business Domain groups a broad area of work. A Service Domain defines a more specific capability, its boundary and its Service Operations.
 
-## [`entities/`](entities/INDEX.md) — what the firm knows
+Start with the [Business Domain index](service-domains/INDEX.md) when you need to describe firm scope or locate a capability.
 
-The canonical data model — the *things* an institutional investor keeps records about. It has two layers:
+## Canonical entities
 
-- A **generalised core** (`entities/core/`, 38 entities) — Legal Entity, Instrument / Asset, Portfolio / Mandate, Holding / Position, Transaction, Cash Flow, Valuation, the reference entities, the risk entities, the computed-result and metadata entities, the operational entities and the strategy entities. True of every institutional investor, whatever it invests in.
-- **Specialisation packs** (`entities/specialisations/`) — five packs that specialise the core by the form a holding or operation takes (instrument family, access route, or issuing role), orthogonal to the asset-class taxonomy: public-markets (listed securities, 11), fund-operations (the issued-fund / fund-operator form, 12), private-markets (the private / illiquid / no-universal-ID shape — the fund route plus directly-originated private credit and the direct-deal pipeline record, 15), derivatives (the derivative instrument family, 5), and real-assets (directly-held physical assets, 5) — 48 specialisation entities, 86 with the core.
+[`entities/`](entities/INDEX.md) defines **86 canonical entities**.
 
-Designed for the full breadth of the buy-side — the firm that *issues* funds (UCITS, mutual funds, hedge funds) and the one that *allocates* into them (sovereign, pension, insurer) alike, each activating the subset it needs — with entity resolution as a first-class assumption (acute in private markets, useful across any cross-feed reconciliation) and aligned to FIBO for legal-entity and instrument semantics.
+A canonical entity is a reference concept for information that a firm needs to identify consistently. The catalogue has a generalised core of 38 entities and five specialisation packs.
 
-Start at [`entities/INDEX.md`](entities/INDEX.md).
+Start with the [entity index](entities/INDEX.md) when you need to compare data concepts or follow the information used by a capability.
 
-## How the two halves interlock
+## How the two parts connect
 
-The service-domain model decomposes *capability*; the entity model decomposes *data*. They join through ownership: each Service Domain owns a small set of entities (it is their authoritative source) and consumes others. The full ownership map is in [`ownership-map.md`](ownership-map.md). The **relationships between the entities** — the typed, named edge set that makes the entity model a navigable graph — are declared in [`relations.md`](relations.md).
+The [ownership map](ownership-map.md) identifies the Service Domain that acts as the authoritative source for each entity. It also records cases where ownership is partitioned, faceted or shared.
 
-## Positioning
+[`relations.md`](relations.md) defines the named relationships between entities. Together, ownership and relations connect the capability map to the information model.
 
-The model is a **reference model, not a standard** — a reference framework, in BIAN's own language, not a design blueprint. It sits above FIBO, is complementary to ISDA CDM, and is the maintained, vendor-neutral, service-domain-first successor in spirit to the archived FINOS `glue` project. The full positioning is in [`../PRIOR-ART.md`](../PRIOR-ART.md).
+## Supporting references
 
-## Reader's references
+- The [glossary](glossary.md) defines domain terms used across the model.
+- The [diagram index](diagrams/INDEX.md) provides visual views of the capability and entity structures.
+- The [FIBO alignment](fibo-alignment.md) records entity-level mappings to FIBO concepts.
+- [Related standards and models](../PRIOR-ART.md) explains how OpenIM relates to BIAN, FIBO, FINOS CDM and buy-side prior art.
 
-- [`glossary.md`](glossary.md) — plain-English definitions of the investment-management vocabulary the model uses (LP/GP, capital call, distribution, J-curve, IRR / TVPI / DPI / RVPI / MOIC / PME, four-lens NAV, IBOR / ABOR, LEI / FIGI / ISIN, golden key, side letter, MFN, waterfall, hurdle, carry, and the rest). Read first if a term is unfamiliar.
-- [`diagrams/`](diagrams/INDEX.md) — the visual companion to the model: a layer stack of OpenIM's position in the standards landscape, the Business Domain map, and the conceptual ERD of the core entities.
-- [`relations.md`](relations.md) — the **entity relation vocabulary**: the typed, named set of relationships between the entities (the edges), each with its direction, inverse, cardinality and kind, plus the mapping that binds every foreign-key column and specialisation line to a verb. Read to understand how the things the model records connect.
+## Using the model
+
+OpenIM supplies common categories and definitions for local design. Firms select the relevant subset, add local detail and retain responsibility for implementation choices.
+
+The Markdown files are the model source. Generated views and exports are derived from them for each release. The two BPMN files are hand-authored, non-normative illustrations and may lag the model.

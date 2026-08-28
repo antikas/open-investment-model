@@ -1,29 +1,23 @@
 # FIBO Alignment
 
-OpenIM builds on the [Financial Industry Business Ontology (FIBO)](https://spec.edmcouncil.org/fibo/) for the semantics FIBO already carries, and adds the layer FIBO does not model. This document is the concept-by-concept alignment: for every OpenIM core entity, the FIBO concept it corresponds to — or an explicit statement that FIBO does not model it, because those silences are what OpenIM contributes.
+OpenIM maps its canonical entities to the [Financial Industry Business Ontology](https://spec.edmcouncil.org/fibo/) where the concepts have compatible meanings. This document records that mapping entity by entity.
 
-FIBO is a **lower layer**. It is a formal OWL ontology of the *things* of financial business — legal entities, instruments, securities, funds, indices — maintained by the EDM Council and standardised through OMG, published MIT-licensed. OpenIM is a service-domain decomposition plus a canonical operating model of the buy-side firm. The alignment below is exactly that — an alignment, not a contest. FIBO is OpenIM's most important alignment dependency.
+FIBO defines financial concepts and the relationships between them. EDM Council hosts FIBO, and the Object Management Group standardises it. OpenIM uses those semantics where they fit its firm-level capability and entity model.
 
-**On the identifiers below.** Curies follow FIBO's own ontology-prefix convention (e.g. `fibo-fbc-fi-fi:FinancialInstrument`) and resolve under `https://spec.edmcouncil.org/fibo/ontology/`. One boundary matters for accuracy: FIBO's most foundational classes — `LegalEntity`, `LegalPerson` and similar — are defined in the **OMG Commons Ontology Library (`cmns-*`)**, which FIBO imports and refines. Where a class is canonically a Commons class, it is cited as `cmns-*`, not `fibo-*`.
+Each mapping has one of three outcomes. A clean mapping uses a compatible FIBO concept. A partial mapping records the shared meaning and the OpenIM extension. An OpenIM-only entry records that this review found no suitable FIBO concept.
 
-## What FIBO covers, and where it stops
+The identifiers below follow FIBO's ontology-prefix convention, such as `fibo-fbc-fi-fi:FinancialInstrument`. Foundational classes from the OMG Commons Ontology Library retain their `cmns-*` identifiers.
 
-FIBO's coverage is **rich on the nouns of financial business**:
+## Coverage relevant to OpenIM
 
-- **Legal entities** — its strongest area: corporations, partnerships, branches, trusts, sole proprietorships, and a full Legal Entity Identifier (LEI) model.
-- **Financial instruments** — a deep `FinancialInstrument` hierarchy: equity, debt, derivative, cash, commodity, currency.
-- **Securities, funds and collective investment vehicles** — including, *more than is commonly assumed*, private-equity funds, hedge funds, sovereign wealth funds, funds-of-funds, fund managers and administrators, and the GP/LP partnership roles.
-- **Market indices, interest rates and FX**, corporate actions, loans, and derivatives master agreements.
+FIBO provides concepts relevant to several parts of OpenIM:
 
-What FIBO **does not** model is the **investment manager's operating layer**:
+- legal entities and registered identifiers
+- financial instruments and securities
+- funds and collective investment vehicles
+- market indices, rates and corporate actions
 
-- the **private-markets investment lifecycle** — commitments as drawable obligations, capital calls, distributions, capital accounts, NAV as a valuation *event*, the waterfall;
-- the **portfolio-mandate and allocation layer** — the discretionary mandate an asset manager runs on behalf of an asset owner;
-- the **classification and entity-resolution machinery** — extensible time-varying classification, aliases, the golden-key cross-reference that the no-universal-identifier reality of private markets demands;
-- the entire **risk-operating layer** — configured risk limits, scenarios, limit breaches, point-in-time risk measurements;
-- **directly-held real assets** — FIBO touches real estate only as a securitised instrument (REITs, mortgage-backed securities), never as a directly-held operating asset with leases, development and appraisal.
-
-That operating-and-master-data layer is OpenIM's contribution. FIBO models the funds and the partnerships *as legal and structural objects*; OpenIM models *how an institutional investor operates against them*.
+OpenIM also defines operating records for capabilities such as allocation, valuation, entity resolution and risk. The tables below assess whether a suitable FIBO concept exists for each OpenIM entity.
 
 ## FIBO domains referenced
 

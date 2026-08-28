@@ -1,6 +1,6 @@
 {
   "name": "@openinvestmentmodel/openim-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Read-only MCP server for the Open Investment Model, with versioned and source-cited model retrieval.",
   "type": "module",
   "main": "dist/server.js",
@@ -57,13 +57,16 @@
     "prepack": "npm run build && npm run check:bundle"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@types/node": "^24.10.0",
     "esbuild": "^0.28.1",
     "zod": "^4.4.3",
     "typescript": "^7.0.2"
   },
   "overrides": {
-    "@hono/node-server": "2.0.11"
+    "@hono/node-server": "2.0.11",
+    "fast-uri": "3.1.5",
+    "hono": "4.13.5",
+    "ip-address": "10.5.0"
   }
 }

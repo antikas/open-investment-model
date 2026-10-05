@@ -91,7 +91,7 @@ See [PRIOR-ART.md](PRIOR-ART.md) for the detailed comparison and source links.
 
 ## Exports
 
-[`exports/`](exports/) contains formats for architecture and data tooling, including graph use cases. ArchiMate, JSON Schema, OWL, SHACL and property-graph exports are generated from the model source for each release.
+[`exports/`](exports/) contains formats for architecture and data tooling, including graph use cases. ArchiMate, JSON Schema, OWL, SHACL and property-graph exports are generated from the model source for each release. `openim-playground.rdf` is an adaptation of the OWL ontology for the Ontology Playground, with `openim-playground-mapping.csv` accounting for every source class and property; [`tools/playground/`](tools/playground/) regenerates both from `exports/openim.rdf`.
 
 The two BPMN files are hand-authored, non-normative illustrations. They are not generated from the model and may lag it. Each export README explains its scope and loading instructions.
 

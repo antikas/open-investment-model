@@ -264,6 +264,46 @@ async function checkConsumer() {
   }
 }
 
+async function checkPublishedConsumer(packageSpec = `${packageJson.name}@${packageJson.version}`) {
+  assert.equal(
+    packageSpec,
+    `${packageJson.name}@${packageJson.version}`,
+    'published consumer proof must use the exact package version in package.json',
+  );
+  const temp = mkdtempSync(resolve(tmpdir(), 'openim-mcp-published-consumer-'));
+  try {
+    const consumer = resolve(temp, 'consumer');
+    mkdirSync(consumer);
+    const userConfig = resolve(temp, 'anonymous.npmrc');
+    writeFileSync(userConfig, 'registry=https://registry.npmjs.org/\nalways-auth=false\n');
+    writeFileSync(
+      resolve(consumer, 'package.json'),
+      `${JSON.stringify({ name: 'openim-mcp-public-consumer', version: '1.0.0', private: true }, null, 2)}\n`,
+    );
+    const env = anonymousNpmEnvironment(userConfig);
+    executeNpm(['install', '--ignore-scripts', '--no-audit', '--no-fund', packageSpec], {
+      cwd: consumer,
+      env,
+    });
+    const report = audit({ cwd: consumer, env, omitDev: true });
+    assert.equal(report.metadata.vulnerabilities.total, 0, 'public consumer production audit is not clean');
+
+    const serverPath = resolve(
+      consumer,
+      'node_modules',
+      ...packageJson.name.split('/'),
+      'dist',
+      'server.js',
+    );
+    await checkPackedTools(serverPath);
+    console.log(
+      `Published consumer PASS: ${packageSpec}, zero production audit findings, five provenance-bearing tools.`,
+    );
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+}
+
 function checkReproducible() {
   const temp = mkdtempSync(resolve(tmpdir(), 'openim-mcp-repro-'));
   try {
@@ -285,5 +325,10 @@ function checkReproducible() {
 const command = process.argv[2];
 if (command === 'bundle') checkBundle();
 else if (command === 'consumer') await checkConsumer();
+else if (command === 'published-consumer') await checkPublishedConsumer(process.argv[3]);
 else if (command === 'reproducible') checkReproducible();
-else throw new Error('Usage: node scripts/quality-gates.mjs <bundle|consumer|reproducible>');
+else {
+  throw new Error(
+    'Usage: node scripts/quality-gates.mjs <bundle|consumer|published-consumer|reproducible>',
+  );
+}

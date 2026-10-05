@@ -1,6 +1,6 @@
 {
   "name": "@openinvestmentmodel/openim-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Read-only MCP server for the Open Investment Model, with versioned and source-cited model retrieval.",
   "type": "module",
   "main": "dist/server.js",
@@ -52,6 +52,7 @@
     "audit:production": "npm audit --omit=dev",
     "check:bundle": "node scripts/quality-gates.mjs bundle",
     "check:consumer": "node scripts/quality-gates.mjs consumer",
+    "check:published-consumer": "node scripts/quality-gates.mjs published-consumer",
     "check:reproducible": "node scripts/quality-gates.mjs reproducible",
     "quality": "npm run audit:production && npm test && npm run check:bundle && npm run check:consumer && npm run check:reproducible",
     "prepack": "npm run build && npm run check:bundle"
@@ -64,9 +65,9 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
-    "@hono/node-server": "2.0.11",
-    "fast-uri": "3.1.5",
-    "hono": "4.13.5",
-    "ip-address": "10.5.0"
+    "@hono/node-server": "2.1.3",
+    "fast-uri": "3.1.8",
+    "hono": "4.13.13",
+    "ip-address": "10.7.3"
   }
 }

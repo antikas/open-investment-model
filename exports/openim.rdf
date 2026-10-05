@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rdf:RDF
   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-  xmlns:owl="http://www.w3.org/2002/07/owl#"
-  xmlns:skos="http://www.w3.org/2004/02/skos/core#"
   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xmlns:openim="https://w3id.org/openim/ontology/"
+  xmlns:skos="http://www.w3.org/2004/02/skos/core#"
 >
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-20#performance_result_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-20"/>
     <rdfs:label>performance_result_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/RA-02#net_operating_income">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -109,6 +111,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-01"/>
     <rdfs:label>fund_product_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-02#domicile">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -160,6 +163,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-30"/>
     <rdfs:label>goal_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-01#primary_listing_mic">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -196,6 +200,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-15"/>
     <rdfs:label>deal_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-15#storage_path">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -220,12 +225,14 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-22"/>
     <rdfs:label>metric_definition_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-07#corporate_action_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-07"/>
     <rdfs:label>corporate_action_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-15#source_channel">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -259,6 +266,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-06"/>
     <rdfs:label>settlement_instruction_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-04#settlement_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -331,6 +339,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-26"/>
     <rdfs:label>collateral_position_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-01#launch_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -343,6 +352,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-05"/>
     <rdfs:label>transaction_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-20#metric_definition_id">
     <rdfs:comment>Declared type: varchar (FK → E-22).</rdfs:comment>
@@ -391,6 +401,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-02"/>
     <rdfs:label>instrument_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-27#projection_basis">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -431,6 +442,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-02"/>
     <rdfs:label>gp_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-08#appointed_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -455,6 +467,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-05"/>
     <rdfs:label>appraisal_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/RA-05#valuation_standard">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -491,6 +504,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-03"/>
     <rdfs:label>csa_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:partKeyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:partKeyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-02#derivative_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -579,6 +593,13 @@
     <rdfs:label>superseded_by_key</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#fund_family_id">
+    <rdfs:comment>Declared type: varchar (FK → Fund Family).</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-01"/>
+    <rdfs:label>fund_family_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:partKeyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:partKeyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-10#basket_leg_settlement_date">
     <rdfs:comment>Declared type: date (nullable).</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-10"/>
@@ -602,6 +623,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-08"/>
     <rdfs:label>appointment_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-05#pay_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -614,6 +636,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-01"/>
     <rdfs:label>entity_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-11#estimated_cash">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -632,6 +655,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-35"/>
     <rdfs:label>complaint_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-26#eligibility_status">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -697,6 +721,14 @@
     <rdfs:label>coupon_rate</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#double"/>
   </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/DR-01#instrument_id">
+    <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-01"/>
+    <rdfs:label>instrument_id</rdfs:label>
+    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
+    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-05#declaration_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-05"/>
@@ -956,6 +988,13 @@
     <rdfs:label>facility_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-11#classification_value_key">
+    <rdfs:comment>Declared type: int.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-11"/>
+    <rdfs:label>classification_value_key</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <openim:partKeyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:partKeyPosition>
+  </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-31#goal_id">
     <rdfs:comment>Declared type: varchar (FK → E-30).</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-31"/>
@@ -1015,12 +1054,14 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-05"/>
     <rdfs:label>clearing_relationship_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-38#internal_credit_rating_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-38"/>
     <rdfs:label>internal_credit_rating_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-09#effective_from">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -1223,6 +1264,13 @@
     <rdfs:label>maturity_date</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-32#tax_lot_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-32"/>
+    <rdfs:label>tax_lot_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-06#formula_spec_ref">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-06"/>
@@ -1260,6 +1308,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-37"/>
     <rdfs:label>esg_compliance_result_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/PM-11#successor_gp_id">
     <rdfs:comment>Declared type: varchar (FK → PM-02).</rdfs:comment>
@@ -1327,6 +1376,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-05"/>
     <rdfs:label>vehicle_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-38#rating_analyst">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -1399,6 +1449,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-11"/>
     <rdfs:label>vote_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-27#as_of_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -1430,6 +1481,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-01"/>
     <rdfs:label>real_asset_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-02#class_name">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -1509,6 +1561,7 @@
     <rdfs:label>direct_loan_id</rdfs:label>
     <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
     <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-07#call_number">
     <rdfs:comment>Declared type: int.</rdfs:comment>
@@ -1539,6 +1592,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-05"/>
     <rdfs:label>distribution_event_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-12#provider">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -1649,6 +1703,13 @@
     <rdfs:label>provider</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-03#unitholding_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-03"/>
+    <rdfs:label>unitholding_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-07#withholding_reported">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-07"/>
@@ -1696,6 +1757,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-03"/>
     <rdfs:label>master_agreement_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-01#manager_entity_id">
     <rdfs:comment>Declared type: varchar (FK → E-01).</rdfs:comment>
@@ -1767,6 +1829,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-11"/>
     <rdfs:label>succession_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-30#priority_layer">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -1779,6 +1842,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-09"/>
     <rdfs:label>omnibus_account_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-28#drawdown_trigger">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -1834,6 +1898,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-24"/>
     <rdfs:label>break_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-06#crystallisation_trigger">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -1913,12 +1978,6 @@
     <rdfs:label>portfolio_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#fund_family_id">
-    <rdfs:comment>Declared type: varchar (FK → Fund Family).</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-01"/>
-    <rdfs:label>fund_family_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/PM-07#fund_id">
     <rdfs:comment>Declared type: varchar (FK → PM-01).</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-07"/>
@@ -1985,6 +2044,13 @@
       </owl:ObjectProperty>
     </rdfs:subPropertyOf>
   </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-13#alias_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-13"/>
+    <rdfs:label>alias_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-26#direction">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-26"/>
@@ -2024,6 +2090,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-16"/>
     <rdfs:label>limit_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-03#csa_law_form">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2036,6 +2103,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-04"/>
     <rdfs:label>company_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-23#as_of_period">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -2054,6 +2122,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-34"/>
     <rdfs:label>authorisation_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-07#payment_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -2066,6 +2135,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-28"/>
     <rdfs:label>risk_budget_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-01#strike_price">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -2306,18 +2376,27 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-25"/>
     <rdfs:label>account_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-04#balance_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-04"/>
     <rdfs:label>balance_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-19#model_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-19"/>
     <rdfs:label>model_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-19#measurement_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-19"/>
+    <rdfs:label>measurement_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-17#owner">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2501,6 +2580,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-02"/>
     <rdfs:label>operating_record_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-05#allocation_status">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2519,6 +2599,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-10"/>
     <rdfs:label>benchmark_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-21#subject_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2537,6 +2618,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-12"/>
     <rdfs:label>ap_agreement_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-08#currency">
     <rdfs:comment>Declared type: char.</rdfs:comment>
@@ -2570,6 +2652,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-04"/>
     <rdfs:label>book</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#vehicle_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2594,6 +2677,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-33"/>
     <rdfs:label>financial_plan_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-06#effective_from">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -2637,6 +2721,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-06"/>
     <rdfs:label>fee_accrual_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-30#target_currency">
     <rdfs:comment>Declared type: char.</rdfs:comment>
@@ -2662,6 +2747,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-07"/>
     <rdfs:label>call_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-01#domicile">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2860,6 +2946,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-15"/>
     <rdfs:label>document_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#family_name">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -2940,7 +3027,7 @@
   <owl:Ontology rdf:about="https://w3id.org/openim/ontology">
     <rdfs:comment>A FIBO-aligned OWL ontology of the OpenIM canonical entity model — the buy-side reference model's master data, generated from the model. Entities are owl:Class; specialisations are rdfs:subClassOf; attributes are datatype/object properties. FIBO is the lower layer the entity model aligns to (owl:equivalentClass / skos:closeMatch); this ontology expresses a reference model and does not declare OpenIM a standard.</rdfs:comment>
     <rdfs:label>OpenIM — Open Investment Model canonical entity ontology</rdfs:label>
-    <owl:versionInfo>0.2.0</owl:versionInfo>
+    <owl:versionInfo>0.3.2</owl:versionInfo>
   </owl:Ontology>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-11#effective_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -2959,6 +3046,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-13"/>
     <rdfs:label>capital_account_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-01#isin">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -3041,6 +3129,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-17"/>
     <rdfs:label>scenario_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-27#key_rate_durations">
     <rdfs:comment>Declared type: document (JSON).</rdfs:comment>
@@ -3158,6 +3247,13 @@
     <rdfs:label>cash_in_lieu_names</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-03#order_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-03"/>
+    <rdfs:label>order_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-01#fund_name">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-01"/>
@@ -3181,6 +3277,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-04"/>
     <rdfs:label>execution_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-11#lodged_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -3295,13 +3392,6 @@
     <rdfs:label>currency</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/DR-01#instrument_id">
-    <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-01"/>
-    <rdfs:label>instrument_id</rdfs:label>
-    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
-    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
-  </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#last_reviewed_at">
     <rdfs:comment>Declared type: date.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-01"/>
@@ -3519,6 +3609,10 @@
     <rdfs:label>return_value</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
   </owl:DatatypeProperty>
+  <owl:AnnotationProperty rdf:about="https://w3id.org/openim/ontology/partKeyPosition">
+    <rdfs:comment>On a column that is the declared key of a further structure the entity describes (a later attribute table of the same entity): the 1-based position of the column in that structure's key. It is not part of the entity's own key.</rdfs:comment>
+    <rdfs:label>part key position</rdfs:label>
+  </owl:AnnotationProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-01#known_aliases">
     <rdfs:comment>Declared type: array.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-01"/>
@@ -3576,12 +3670,6 @@
       </owl:ObjectProperty>
     </rdfs:subPropertyOf>
   </owl:ObjectProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-11#classification_value_key">
-    <rdfs:comment>Declared type: int.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-11"/>
-    <rdfs:label>classification_value_key</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-19#as_of_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-19"/>
@@ -3605,6 +3693,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-06"/>
     <rdfs:label>cash_flow_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-17#effective_from">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -3617,6 +3706,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-10"/>
     <rdfs:label>creation_redemption_order_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-12#redemption_fee_basis_points">
     <rdfs:comment>Declared type: decimal (nullable).</rdfs:comment>
@@ -3702,6 +3792,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-03"/>
     <rdfs:label>lease_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/PB-06#counterparty_entity_id">
     <rdfs:comment>Declared type: varchar (FK → E-01).</rdfs:comment>
@@ -3886,6 +3977,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-09"/>
     <rdfs:label>index_constituent_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-06#transaction_id">
     <rdfs:comment>Declared type: varchar (FK → E-05).</rdfs:comment>
@@ -3964,6 +4056,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-01"/>
     <rdfs:label>fund_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-09#formula_spec_ref">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -3988,6 +4081,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-11"/>
     <rdfs:label>basket_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-14#recovery_estimate">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -4002,6 +4096,13 @@
     <rdfs:range rdf:resource="https://w3id.org/openim/ontology/RA-01"/>
     <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-real-asset"/>
   </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-18#breach_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-18"/>
+    <rdfs:label>breach_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-36#monetary_impact_amount">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-36"/>
@@ -4032,6 +4133,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-31"/>
     <rdfs:label>goal_progress_measurement_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-03#cost_basis">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -4056,6 +4158,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-03"/>
     <rdfs:label>admin_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-12#authorised_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -4218,6 +4321,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-05"/>
     <rdfs:label>allocation_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-11#cash_component_currency">
     <rdfs:comment>Declared type: char(3).</rdfs:comment>
@@ -4256,12 +4360,14 @@
     <rdfs:label>instrument_id</rdfs:label>
     <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
     <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-07#tax_statement_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-07"/>
     <rdfs:label>tax_statement_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-04#instrument_id">
     <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
@@ -4283,6 +4389,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-11"/>
     <rdfs:label>classification_type_key</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-21#unit">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -4417,12 +4524,14 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-08"/>
     <rdfs:label>income_schedule_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-10#loan_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-10"/>
     <rdfs:label>loan_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-06#period_start">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -4538,6 +4647,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-21"/>
     <rdfs:label>esg_measurement_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-01#related_entity_id">
     <rdfs:comment>Declared type: varchar (FK → self).</rdfs:comment>
@@ -4599,6 +4709,10 @@
     <rdfs:label>transaction_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
+  <owl:AnnotationProperty rdf:about="https://w3id.org/openim/ontology/keyPosition">
+    <rdfs:comment>On a column of an entity's own declared key: the 1-based position of the column in that key (1 = first key column; a composite key is 1, 2, ...). A specialisation's key is its parent's key, carried by a foreign-key column.</rdfs:comment>
+    <rdfs:label>key position</rdfs:label>
+  </owl:AnnotationProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-02#known_aliases">
     <rdfs:comment>Declared type: array.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-02"/>
@@ -4738,6 +4852,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-08"/>
     <rdfs:label>dist_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/PB-01#gics_sector">
     <rdfs:comment>Declared type: varchar (FK → E-11).</rdfs:comment>
@@ -4820,6 +4935,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-07"/>
     <rdfs:label>valuation_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-24#status">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -4955,12 +5071,14 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-12"/>
     <rdfs:label>cross_reference_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-08#market_data_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-08"/>
     <rdfs:label>market_data_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-07#confidence_score">
     <rdfs:comment>Declared type: float.</rdfs:comment>
@@ -5009,6 +5127,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-23"/>
     <rdfs:label>extraction_record_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-05#counterparty_entity_id">
     <rdfs:comment>Declared type: varchar (FK → E-01).</rdfs:comment>
@@ -5052,6 +5171,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-14"/>
     <rdfs:label>external_id_record</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-07#cash_rate">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
@@ -5267,6 +5387,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-04"/>
     <rdfs:label>order_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-06#share_class_id">
     <rdfs:comment>Declared type: varchar (FK → FO-02).</rdfs:comment>
@@ -5298,6 +5419,13 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-02"/>
     <rdfs:label>effective_date</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-09#investment_id">
+    <rdfs:comment>Declared type: varchar.</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-09"/>
+    <rdfs:label>investment_id</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-02#asset_class">
     <rdfs:comment>Declared type: int (FK → E-09).</rdfs:comment>
@@ -5458,12 +5586,6 @@
     <rdfs:label>composite_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-18#breach_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-18"/>
-    <rdfs:label>breach_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-12#ap_entity_id">
     <rdfs:comment>Declared type: varchar (FK → E-01).</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-12"/>
@@ -5506,6 +5628,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-09"/>
     <rdfs:label>asset_class_key</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-03#eligible_collateral">
     <rdfs:comment>Declared type: array.</rdfs:comment>
@@ -5555,6 +5678,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-06"/>
     <rdfs:label>commitment_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-09#closed_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -5640,12 +5764,6 @@
     <rdfs:label>parent_portfolio_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-32#tax_lot_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-32"/>
-    <rdfs:label>tax_lot_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-10#order_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-10"/>
@@ -5727,12 +5845,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-27"/>
     <rdfs:label>liability_profile_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-03#unitholding_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-03"/>
-    <rdfs:label>unitholding_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-02#seniority">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -5794,12 +5907,6 @@
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-09"/>
     <rdfs:label>investment_type</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-13#alias_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-13"/>
-    <rdfs:label>alias_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-14#external_system">
@@ -5921,12 +6028,6 @@
     <rdfs:label>settlement_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-19#measurement_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-19"/>
-    <rdfs:label>measurement_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/RA-04#cost_incurred_to_date">
     <rdfs:comment>Declared type: decimal.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-04"/>
@@ -5963,12 +6064,13 @@
     <rdfs:label>currency</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-06#asset_class">
-    <rdfs:comment>Declared type: int (FK → E-09).</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-06"/>
-    <rdfs:label>asset_class</rdfs:label>
-    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-09"/>
-    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/classified-as-asset-class"/>
+  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/DR-02#instrument_id">
+    <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-02"/>
+    <rdfs:label>instrument_id</rdfs:label>
+    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
+    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-19#measure_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -5976,6 +6078,13 @@
     <rdfs:label>measure_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/FO-06#asset_class">
+    <rdfs:comment>Declared type: int (FK → E-09).</rdfs:comment>
+    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-06"/>
+    <rdfs:label>asset_class</rdfs:label>
+    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-09"/>
+    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/classified-as-asset-class"/>
+  </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-01#known_aliases">
     <rdfs:comment>Declared type: array.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-01"/>
@@ -6170,13 +6279,6 @@
     <rdfs:label>sub_sector</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/DR-02#instrument_id">
-    <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/DR-02"/>
-    <rdfs:label>instrument_id</rdfs:label>
-    <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
-    <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
-  </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-13#period">
     <rdfs:comment>Declared type: date.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-13"/>
@@ -6200,6 +6302,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-10"/>
     <rdfs:label>terms_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/E-37#metric_definition_id">
     <rdfs:comment>Declared type: varchar (FK → E-22).</rdfs:comment>
@@ -6332,12 +6435,6 @@
     <rdfs:label>definition_type</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-03#order_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PB-03"/>
-    <rdfs:label>order_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-04#currency">
     <rdfs:comment>Declared type: char.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-04"/>
@@ -6439,17 +6536,12 @@
     <rdfs:label>basket_leg_settlement_status</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-09#investment_id">
-    <rdfs:comment>Declared type: varchar.</rdfs:comment>
-    <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-09"/>
-    <rdfs:label>investment_id</rdfs:label>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-02#share_class_id">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/FO-02"/>
     <rdfs:label>share_class_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PB-03#time_in_force">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -6474,6 +6566,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-04"/>
     <rdfs:label>position_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/PM-02#gp_name">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -6581,6 +6674,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-03"/>
     <rdfs:label>portfolio_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-23#source_type">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -6599,6 +6693,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-36"/>
     <rdfs:label>oversight_exception_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/RA-01#country">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -6966,6 +7061,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-29"/>
     <rdfs:label>plan_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:ObjectProperty rdf:about="https://w3id.org/openim/ontology/PB-02#instrument_id">
     <rdfs:comment>Declared type: varchar (FK → E-02).</rdfs:comment>
@@ -6973,6 +7069,7 @@
     <rdfs:label>instrument_id</rdfs:label>
     <rdfs:range rdf:resource="https://w3id.org/openim/ontology/E-02"/>
     <rdfs:subPropertyOf rdf:resource="https://w3id.org/openim/ontology/on-instrument"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:ObjectProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/DR-05#clearing_account_ref">
     <rdfs:comment>Declared type: varchar.</rdfs:comment>
@@ -7078,6 +7175,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/PM-10"/>
     <rdfs:label>hurdle_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:partKeyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:partKeyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/FO-04#valuation_date">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -7090,6 +7188,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/E-12"/>
     <rdfs:label>classification_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-38#effective_to">
     <rdfs:comment>Declared type: date.</rdfs:comment>
@@ -7187,6 +7286,7 @@
     <rdfs:domain rdf:resource="https://w3id.org/openim/ontology/RA-04"/>
     <rdfs:label>project_id</rdfs:label>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <openim:keyPosition rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</openim:keyPosition>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="https://w3id.org/openim/ontology/E-28#effective_to">
     <rdfs:comment>Declared type: date.</rdfs:comment>

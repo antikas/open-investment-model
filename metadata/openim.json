@@ -36,6 +36,13 @@
       "conceptDoi": "10.5281/zenodo.22149524",
       "recordUrl": "https://zenodo.org/records/22149525",
       "verifiedOn": "2026-08-28"
+    },
+    {
+      "version": "0.3.2",
+      "versionDoi": "10.5281/zenodo.23170593",
+      "conceptDoi": "10.5281/zenodo.22149524",
+      "recordUrl": "https://zenodo.org/records/23170593",
+      "verifiedOn": "2026-10-05"
     }
   ]
 }

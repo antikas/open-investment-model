@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "openim",
   "display_name": "Open Investment Model",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Read-only search and retrieval over the Open Investment Model (OpenIM), the open, MIT-licensed reference model for institutional buy-side investment management.",
   "long_description": "An open, vendor-neutral reference model for institutional investment management: a service-domain decomposition of the buy-side firm and a canonical entity model. Search model elements from plain language, retrieve versioned content with official source links, map requirements to candidate elements, and list machine-readable exports. Read-only; no accounts, no telemetry, no investment advice.",
   "author": { "name": "Georgios Antikatzidis", "url": "https://github.com/antikas" },

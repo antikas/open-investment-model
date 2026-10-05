@@ -1,0 +1,6 @@
+# Python dependency of the Ontology Playground adaptation (tools/playground/).
+#   rdflib - reads the released OWL ontology (RDF/XML) and, in the tests, parses
+#            the written adaptation back as an independent check.
+# Install: python -m pip install -r tools/playground/requirements.txt
+# Tests also need pytest.
+rdflib>=7.0,<8

@@ -8,6 +8,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(readFileSync(resolve(moduleDir, '../../package.json'), 'utf8'));
+const modelIdentity = JSON.parse(readFileSync(resolve(moduleDir, '../../../metadata/openim.json'), 'utf8'));
 
 test('a clean MCP client can discover and call the read-only server', async () => {
   const client = new Client({ name: 'openim-test-client', version: '1.0.0' });
@@ -31,7 +32,7 @@ test('a clean MCP client can discover and call the read-only server', async () =
       arguments: { query: 'capital call lifecycle', limit: 10 },
     });
     const structured = response.structuredContent as { modelVersion: string; results: Array<{ id: string }> };
-    assert.equal(structured.modelVersion, '0.3.1');
+    assert.equal(structured.modelVersion, modelIdentity.version);
     assert.ok(structured.results.some((item) => item.id === 'PM-07'));
 
     const serverVersion = client.getServerVersion();

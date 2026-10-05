@@ -8,7 +8,7 @@
 <https://w3id.org/openim/ontology> a owl:Ontology ;
     rdfs:label "OpenIM — Open Investment Model canonical entity ontology" ;
     rdfs:comment "A FIBO-aligned OWL ontology of the OpenIM canonical entity model — the buy-side reference model's master data, generated from the model. Entities are owl:Class; specialisations are rdfs:subClassOf; attributes are datatype/object properties. FIBO is the lower layer the entity model aligns to (owl:equivalentClass / skos:closeMatch); this ontology expresses a reference model and does not declare OpenIM a standard." ;
-    owl:versionInfo "0.2.0" .
+    owl:versionInfo "0.3.2" .
 
 <https://w3id.org/openim/ontology/DR-01#ccp_entity_id> a owl:ObjectProperty ;
     rdfs:label "ccp_entity_id" ;
@@ -59,7 +59,8 @@
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-01 ;
     rdfs:range openim:E-02 ;
-    rdfs:subPropertyOf openim:on-instrument .
+    rdfs:subPropertyOf openim:on-instrument ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-01#option_right> a owl:DatatypeProperty ;
     rdfs:label "option_right" ;
@@ -147,7 +148,8 @@
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:DR-02 ;
     rdfs:range openim:E-02 ;
-    rdfs:subPropertyOf openim:on-instrument .
+    rdfs:subPropertyOf openim:on-instrument ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-02#master_agreement_id> a owl:ObjectProperty ;
     rdfs:label "master_agreement_id" ;
@@ -241,7 +243,8 @@
     rdfs:label "csa_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:DR-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:partKeyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-03#csa_law_form> a owl:DatatypeProperty ;
     rdfs:label "csa_law_form" ;
@@ -296,7 +299,8 @@
     rdfs:label "master_agreement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:DR-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-03#minimum_transfer_amount> a owl:DatatypeProperty ;
     rdfs:label "minimum_transfer_amount" ;
@@ -338,7 +342,8 @@
     rdfs:label "balance_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:DR-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-04#clearing_relationship_id> a owl:ObjectProperty ;
     rdfs:label "clearing_relationship_id" ;
@@ -456,7 +461,8 @@
     rdfs:label "clearing_relationship_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:DR-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/DR-05#investor_entity_id> a owl:ObjectProperty ;
     rdfs:label "investor_entity_id" ;
@@ -487,7 +493,8 @@
     rdfs:label "entity_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-01 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-01#entity_name> a owl:DatatypeProperty ;
     rdfs:label "entity_name" ;
@@ -584,7 +591,8 @@
     rdfs:label "instrument_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-02 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-02#instrument_name> a owl:DatatypeProperty ;
     rdfs:label "instrument_name" ;
@@ -667,7 +675,8 @@
     rdfs:label "portfolio_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-03#portfolio_name> a owl:DatatypeProperty ;
     rdfs:label "portfolio_name" ;
@@ -703,7 +712,8 @@
     rdfs:label "book" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 2 .
 
 <https://w3id.org/openim/ontology/E-04#commitment_usd> a owl:DatatypeProperty ;
     rdfs:label "commitment_usd" ;
@@ -747,7 +757,8 @@
     rdfs:label "position_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-04#quantity> a owl:DatatypeProperty ;
     rdfs:label "quantity" ;
@@ -816,7 +827,8 @@
     rdfs:label "transaction_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-05#transaction_type> a owl:DatatypeProperty ;
     rdfs:label "transaction_type" ;
@@ -840,7 +852,8 @@
     rdfs:label "cash_flow_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-06 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-06#cash_flow_type> a owl:DatatypeProperty ;
     rdfs:label "cash_flow_type" ;
@@ -942,7 +955,8 @@
     rdfs:label "valuation_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-07 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-07#valuation_level> a owl:DatatypeProperty ;
     rdfs:label "valuation_level" ;
@@ -979,7 +993,8 @@
     rdfs:label "market_data_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-08 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-08#observation_date> a owl:DatatypeProperty ;
     rdfs:label "observation_date" ;
@@ -1009,7 +1024,8 @@
     rdfs:label "asset_class_key" ;
     rdfs:comment "Declared type: int." ;
     rdfs:domain openim:E-09 ;
-    rdfs:range xsd:integer .
+    rdfs:range xsd:integer ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-09#asset_class_label> a owl:DatatypeProperty ;
     rdfs:label "asset_class_label" ;
@@ -1058,7 +1074,8 @@
     rdfs:label "benchmark_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-10 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-10#benchmark_kind> a owl:DatatypeProperty ;
     rdfs:label "benchmark_kind" ;
@@ -1106,13 +1123,15 @@
     rdfs:label "classification_type_key" ;
     rdfs:comment "Declared type: int." ;
     rdfs:domain openim:E-11 ;
-    rdfs:range xsd:integer .
+    rdfs:range xsd:integer ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-11#classification_value_key> a owl:DatatypeProperty ;
     rdfs:label "classification_value_key" ;
     rdfs:comment "Declared type: int." ;
     rdfs:domain openim:E-11 ;
-    rdfs:range xsd:integer .
+    rdfs:range xsd:integer ;
+    openim:partKeyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-11#description> a owl:DatatypeProperty ;
     rdfs:label "description" ;
@@ -1160,7 +1179,8 @@
     rdfs:label "classification_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-12 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-12#classification_type> a owl:ObjectProperty ;
     rdfs:label "classification_type" ;
@@ -1216,7 +1236,8 @@
     rdfs:label "alias_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-13 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-13#alias_name> a owl:DatatypeProperty ;
     rdfs:label "alias_name" ;
@@ -1264,7 +1285,8 @@
     rdfs:label "external_id_record" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-14 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-14#external_system> a owl:DatatypeProperty ;
     rdfs:label "external_system" ;
@@ -1306,7 +1328,8 @@
     rdfs:label "document_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-15 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-15#document_type> a owl:DatatypeProperty ;
     rdfs:label "document_type" ;
@@ -1372,7 +1395,8 @@
     rdfs:label "limit_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-16 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-16#limit_type> a owl:DatatypeProperty ;
     rdfs:label "limit_type" ;
@@ -1450,7 +1474,8 @@
     rdfs:label "scenario_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-17 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-17#scenario_name> a owl:DatatypeProperty ;
     rdfs:label "scenario_name" ;
@@ -1480,7 +1505,8 @@
     rdfs:label "breach_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-18 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-18#breach_severity> a owl:DatatypeProperty ;
     rdfs:label "breach_severity" ;
@@ -1560,7 +1586,8 @@
     rdfs:label "measurement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-19 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-19#method> a owl:DatatypeProperty ;
     rdfs:label "method" ;
@@ -1634,7 +1661,8 @@
     rdfs:label "performance_result_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-20 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-20#period_end> a owl:DatatypeProperty ;
     rdfs:label "period_end" ;
@@ -1694,7 +1722,8 @@
     rdfs:label "esg_measurement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-21 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-21#measure_type> a owl:DatatypeProperty ;
     rdfs:label "measure_type" ;
@@ -1784,7 +1813,8 @@
     rdfs:label "metric_definition_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-22 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-22#metric_family> a owl:DatatypeProperty ;
     rdfs:label "metric_family" ;
@@ -1863,7 +1893,8 @@
     rdfs:label "extraction_record_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-23 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-23#model_id> a owl:DatatypeProperty ;
     rdfs:label "model_id" ;
@@ -1905,7 +1936,8 @@
     rdfs:label "break_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-24 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-24#cause_classification> a owl:DatatypeProperty ;
     rdfs:label "cause_classification" ;
@@ -1983,7 +2015,8 @@
     rdfs:label "account_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-25 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-25#account_number> a owl:DatatypeProperty ;
     rdfs:label "account_number" ;
@@ -2070,7 +2103,8 @@
     rdfs:label "collateral_position_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-26 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-26#collateral_value> a owl:DatatypeProperty ;
     rdfs:label "collateral_value" ;
@@ -2179,7 +2213,8 @@
     rdfs:label "liability_profile_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-27 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-27#present_value> a owl:DatatypeProperty ;
     rdfs:label "present_value" ;
@@ -2269,7 +2304,8 @@
     rdfs:label "risk_budget_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-28 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-28#subject_id> a owl:DatatypeProperty ;
     rdfs:label "subject_id" ;
@@ -2323,7 +2359,8 @@
     rdfs:label "plan_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-29 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-29#plan_type> a owl:DatatypeProperty ;
     rdfs:label "plan_type" ;
@@ -2361,7 +2398,8 @@
     rdfs:label "goal_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-30 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-30#goal_name> a owl:DatatypeProperty ;
     rdfs:label "goal_name" ;
@@ -2453,7 +2491,8 @@
     rdfs:label "goal_progress_measurement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-31 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-31#metric_definition_id> a owl:ObjectProperty ;
     rdfs:label "metric_definition_id" ;
@@ -2553,7 +2592,8 @@
     rdfs:label "tax_lot_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-32 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-32#wash_sale_adjustment_amount> a owl:DatatypeProperty ;
     rdfs:label "wash_sale_adjustment_amount" ;
@@ -2589,7 +2629,8 @@
     rdfs:label "financial_plan_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-33 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-33#goal_set> a owl:ObjectProperty ;
     rdfs:label "goal_set" ;
@@ -2639,7 +2680,8 @@
     rdfs:label "authorisation_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-34 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-34#authority_verification_note> a owl:DatatypeProperty ;
     rdfs:label "authority_verification_note" ;
@@ -2737,7 +2779,8 @@
     rdfs:label "complaint_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-35 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-35#complaint_received_date> a owl:DatatypeProperty ;
     rdfs:label "complaint_received_date" ;
@@ -2840,7 +2883,8 @@
     rdfs:label "oversight_exception_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-36 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-36#resolution_action> a owl:DatatypeProperty ;
     rdfs:label "resolution_action" ;
@@ -2888,7 +2932,8 @@
     rdfs:label "esg_compliance_result_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-37 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-37#mandate_esg_screen_result> a owl:DatatypeProperty ;
     rdfs:label "mandate_esg_screen_result" ;
@@ -2949,7 +2994,8 @@
     rdfs:label "internal_credit_rating_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:E-38 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/E-38#rating_analyst> a owl:DatatypeProperty ;
     rdfs:label "rating_analyst" ;
@@ -3059,7 +3105,8 @@
     rdfs:label "fund_product_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-01 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-01#launch_date> a owl:DatatypeProperty ;
     rdfs:label "launch_date" ;
@@ -3212,7 +3259,8 @@
     rdfs:label "share_class_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-02 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-03#account_reference> a owl:DatatypeProperty ;
     rdfs:label "account_reference" ;
@@ -3256,7 +3304,8 @@
     rdfs:label "unitholding_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-03#units_held> a owl:DatatypeProperty ;
     rdfs:label "units_held" ;
@@ -3305,7 +3354,8 @@
     rdfs:label "order_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-04#order_type> a owl:DatatypeProperty ;
     rdfs:label "order_type" ;
@@ -3373,7 +3423,8 @@
     rdfs:label "distribution_event_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-05#distribution_per_unit> a owl:DatatypeProperty ;
     rdfs:label "distribution_per_unit" ;
@@ -3483,7 +3534,8 @@
     rdfs:label "fee_accrual_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-06 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-06#fee_type> a owl:DatatypeProperty ;
     rdfs:label "fee_type" ;
@@ -3649,7 +3701,8 @@
     rdfs:label "tax_statement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-07 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-07#tax_year> a owl:DatatypeProperty ;
     rdfs:label "tax_year" ;
@@ -3698,7 +3751,8 @@
     rdfs:label "appointment_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-08 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-08#delegates_to_entity_id> a owl:ObjectProperty ;
     rdfs:label "delegates_to_entity_id" ;
@@ -3811,7 +3865,8 @@
     rdfs:label "omnibus_account_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-09 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-09#opened_date> a owl:DatatypeProperty ;
     rdfs:label "opened_date" ;
@@ -3893,7 +3948,8 @@
     rdfs:label "creation_redemption_order_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-10 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-10#creation_unit_size> a owl:DatatypeProperty ;
     rdfs:label "creation_unit_size" ;
@@ -3997,7 +4053,8 @@
     rdfs:label "basket_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-11 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-11#basket_type> a owl:DatatypeProperty ;
     rdfs:label "basket_type" ;
@@ -4084,7 +4141,8 @@
     rdfs:label "ap_agreement_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:FO-12 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/FO-12#ap_entity_id> a owl:ObjectProperty ;
     rdfs:label "ap_entity_id" ;
@@ -4190,7 +4248,8 @@
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-01 ;
     rdfs:range openim:E-02 ;
-    rdfs:subPropertyOf openim:on-instrument .
+    rdfs:subPropertyOf openim:on-instrument ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-01#isin> a owl:DatatypeProperty ;
     rdfs:label "isin" ;
@@ -4331,7 +4390,8 @@
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PB-02 ;
     rdfs:range openim:E-02 ;
-    rdfs:subPropertyOf openim:on-instrument .
+    rdfs:subPropertyOf openim:on-instrument ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-02#isin> a owl:DatatypeProperty ;
     rdfs:label "isin" ;
@@ -4418,7 +4478,8 @@
     rdfs:label "order_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-03#order_quantity> a owl:DatatypeProperty ;
     rdfs:label "order_quantity" ;
@@ -4529,7 +4590,8 @@
     rdfs:label "execution_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-04#execution_venue> a owl:DatatypeProperty ;
     rdfs:label "execution_venue" ;
@@ -4609,7 +4671,8 @@
     rdfs:label "allocation_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-05#allocation_method> a owl:DatatypeProperty ;
     rdfs:label "allocation_method" ;
@@ -4774,7 +4837,8 @@
     rdfs:label "settlement_instruction_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-06 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-06#settlement_status> a owl:DatatypeProperty ;
     rdfs:label "settlement_status" ;
@@ -4810,7 +4874,8 @@
     rdfs:label "corporate_action_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-07 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-07#currency> a owl:DatatypeProperty ;
     rdfs:label "currency" ;
@@ -4909,7 +4974,8 @@
     rdfs:label "income_schedule_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-08 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-08#income_type> a owl:DatatypeProperty ;
     rdfs:label "income_type" ;
@@ -5001,7 +5067,8 @@
     rdfs:label "index_constituent_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-09 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-09#index_weight> a owl:DatatypeProperty ;
     rdfs:label "index_weight" ;
@@ -5071,7 +5138,8 @@
     rdfs:label "loan_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-10 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PB-10#loan_start_date> a owl:DatatypeProperty ;
     rdfs:label "loan_start_date" ;
@@ -5194,7 +5262,8 @@
     rdfs:label "vote_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PB-11 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-01#administrator_id> a owl:ObjectProperty ;
     rdfs:label "administrator_id" ;
@@ -5244,13 +5313,15 @@
     rdfs:label "fund_family_id" ;
     rdfs:comment "Declared type: varchar (FK → Fund Family)." ;
     rdfs:domain openim:PM-01 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:partKeyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-01#fund_id> a owl:DatatypeProperty ;
     rdfs:label "fund_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-01 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-01#fund_name> a owl:DatatypeProperty ;
     rdfs:label "fund_name" ;
@@ -5335,7 +5406,8 @@
     rdfs:label "gp_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-02 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-02#gp_name> a owl:DatatypeProperty ;
     rdfs:label "gp_name" ;
@@ -5365,7 +5437,8 @@
     rdfs:label "admin_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-03#admin_name> a owl:DatatypeProperty ;
     rdfs:label "admin_name" ;
@@ -5407,7 +5480,8 @@
     rdfs:label "company_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-04#company_name> a owl:DatatypeProperty ;
     rdfs:label "company_name" ;
@@ -5516,7 +5590,8 @@
     rdfs:label "vehicle_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-05#vehicle_name> a owl:DatatypeProperty ;
     rdfs:label "vehicle_name" ;
@@ -5540,7 +5615,8 @@
     rdfs:label "commitment_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-06 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-06#committed_usd> a owl:DatatypeProperty ;
     rdfs:label "committed_usd" ;
@@ -5584,7 +5660,8 @@
     rdfs:label "call_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-07 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-07#call_number> a owl:DatatypeProperty ;
     rdfs:label "call_number" ;
@@ -5653,7 +5730,8 @@
     rdfs:label "dist_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-08 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-08#dist_type> a owl:DatatypeProperty ;
     rdfs:label "dist_type" ;
@@ -5727,7 +5805,8 @@
     rdfs:label "investment_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-09 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-09#investment_type> a owl:DatatypeProperty ;
     rdfs:label "investment_type" ;
@@ -5800,7 +5879,8 @@
     rdfs:label "hurdle_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-10 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:partKeyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-10#source> a owl:DatatypeProperty ;
     rdfs:label "source" ;
@@ -5812,7 +5892,8 @@
     rdfs:label "terms_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-10 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-10#version> a owl:DatatypeProperty ;
     rdfs:label "version" ;
@@ -5849,7 +5930,8 @@
     rdfs:label "succession_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-11 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-11#successor_gp_id> a owl:ObjectProperty ;
     rdfs:label "successor_gp_id" ;
@@ -5876,7 +5958,8 @@
     rdfs:label "cross_reference_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-12 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-12#fund_id> a owl:ObjectProperty ;
     rdfs:label "fund_id" ;
@@ -5919,7 +6002,8 @@
     rdfs:label "capital_account_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-13 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-13#carried_interest> a owl:DatatypeProperty ;
     rdfs:label "carried_interest" ;
@@ -6013,7 +6097,8 @@
     rdfs:comment "Declared type: varchar (FK → E-02)." ;
     rdfs:domain openim:PM-14 ;
     rdfs:range openim:E-02 ;
-    rdfs:subPropertyOf openim:on-instrument .
+    rdfs:subPropertyOf openim:on-instrument ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-14#drawn_amount> a owl:DatatypeProperty ;
     rdfs:label "drawn_amount" ;
@@ -6098,7 +6183,8 @@
     rdfs:label "deal_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:PM-15 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/PM-15#deal_name> a owl:DatatypeProperty ;
     rdfs:label "deal_name" ;
@@ -6220,7 +6306,8 @@
     rdfs:label "real_asset_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-01 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/RA-01#size_unit> a owl:DatatypeProperty ;
     rdfs:label "size_unit" ;
@@ -6292,7 +6379,8 @@
     rdfs:label "operating_record_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-02 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/RA-02#period_end> a owl:DatatypeProperty ;
     rdfs:label "period_end" ;
@@ -6365,7 +6453,8 @@
     rdfs:label "lease_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-03 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/RA-03#lease_start> a owl:DatatypeProperty ;
     rdfs:label "lease_start" ;
@@ -6489,7 +6578,8 @@
     rdfs:label "project_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-04 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/RA-04#project_phase> a owl:DatatypeProperty ;
     rdfs:label "project_phase" ;
@@ -6532,7 +6622,8 @@
     rdfs:label "appraisal_id" ;
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-05 ;
-    rdfs:range xsd:string .
+    rdfs:range xsd:string ;
+    openim:keyPosition 1 .
 
 <https://w3id.org/openim/ontology/RA-05#appraised_value> a owl:DatatypeProperty ;
     rdfs:label "appraised_value" ;
@@ -6613,6 +6704,14 @@
     rdfs:comment "Declared type: varchar." ;
     rdfs:domain openim:RA-05 ;
     rdfs:range xsd:string .
+
+openim:keyPosition a owl:AnnotationProperty ;
+    rdfs:label "key position" ;
+    rdfs:comment "On a column of an entity's own declared key: the 1-based position of the column in that key (1 = first key column; a composite key is 1, 2, ...). A specialisation's key is its parent's key, carried by a foreign-key column." .
+
+openim:partKeyPosition a owl:AnnotationProperty ;
+    rdfs:label "part key position" ;
+    rdfs:comment "On a column that is the declared key of a further structure the entity describes (a later attribute table of the same entity): the 1-based position of the column in that structure's key. It is not part of the entity's own key." .
 
 openim:acquires a owl:ObjectProperty ;
     rdfs:label "ACQUIRES" ;
